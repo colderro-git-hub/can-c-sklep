@@ -1,3 +1,5 @@
+import { faqItems } from './faq';
+
 // Dane tymczasowe. W kroku z Supabase te listy będą pobierane z bazy (panel admina).
 
 export type Product = {
@@ -59,18 +61,12 @@ export const features = [
 ];
 
 export const reviews = [
-  { quote: 'Brak konserwantów, długa data ważności po otwarciu, można stosować pod soczewki miękkie.', author: 'Marek' },
+  { quote: 'Używam tych kropli od lat i są dla mnie niezawodne.', author: 'Miranda Sz.' },
   { quote: 'Dobrze nawilżają zmęczone oczy. Łatwo się je aplikuje.', author: 'Wacław' },
   { quote: 'Bardzo dobre krople nawilżające dla osób pracujących długo przy komputerze.', author: 'Stały klient' },
 ];
 
-export const faqs = [
-  { q: 'Czym są krople Can-C?', a: 'To krople do oczu z N-acetylokarnozyną (NAC), formą karnozyny opracowaną do stosowania do oczu. Produkt jest zatwierdzony przez Innovative Vision Products (IVP).' },
-  { q: 'Czym N-acetylokarnozyna różni się od L-karnozyny?', a: 'To spokrewnione, ale różne związki. Do stosowania do oczu przeznaczona jest wyłącznie N-acetylokarnozyna; innych form karnozyny nie należy aplikować do oczu.' },
-  { q: 'Czy mogę stosować krople przy soczewkach?', a: 'Tak, preparat może być stosowany przez użytkowników soczewek kontaktowych.' },
-  { q: 'Na jak długo wystarcza jedno opakowanie?', a: 'Jedno opakowanie (2 × 5 ml) to około miesiąca kuracji.' },
-  { q: 'Jak szybko wysyłacie zamówienia?', a: '[Do uzupełnienia: czas realizacji i przewoźnicy]' },
-];
+export const faqs = faqItems.filter((f) => f.home).map(({ q, a }) => ({ q, a }));
 
 // Rabat zależy od liczby sztuk – ta sama funkcja posłuży później do liczenia ceny po stronie serwera
 export const discountFor = (qty: number, product: Product) =>

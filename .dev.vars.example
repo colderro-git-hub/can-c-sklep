@@ -1,0 +1,7 @@
+# Skopiuj ten plik jako .dev.vars (NIE wysyłaj .dev.vars do GitHuba).
+# Klucz testowy Turnstile – zawsze przepuszcza. Na produkcji ustaw prawdziwy w Cloudflare (Secrets).
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+RESEND_API_KEY=re_TWOJ_KLUCZ
+# Do czasu weryfikacji domeny w Resend: nadawca onboarding@resend.dev, odbiorca = e-mail Twojego konta Resend
+CONTACT_FROM=Can-C <onboarding@resend.dev>
+CONTACT_TO=colderro@gmail.com
