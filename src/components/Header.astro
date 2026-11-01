@@ -42,11 +42,19 @@ const current = Astro.url.pathname;
       <a href="/konto/" class="icon-btn" aria-label="Twoje konto">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="6.5" r="3.5" stroke="currentColor" stroke-width="1.2" /><path d="M3 18c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5" stroke="currentColor" stroke-width="1.2" /></svg>
       </a>
-      <a href="/koszyk/" class="cart">Koszyk <span class="cart__count" aria-label="liczba produktów">0</span></a>
+      <a href="/koszyk/" class="cart">Koszyk <span class="cart__count" data-cart-count aria-label="liczba produktów w koszyku">0</span></a>
       <a href="https://can-c.store/" class="lang" hreflang="en">EN</a>
     </div>
   </div>
 </header>
+
+<script>
+  import { cartCount, onCartChange } from '../lib/cart';
+  const badge = document.querySelector<HTMLElement>('[data-cart-count]');
+  const update = () => { if (badge) badge.textContent = String(cartCount()); };
+  update();
+  onCartChange(update);
+</script>
 
 <style>
   .promo { background: var(--c-gray-200); font-size: var(--fs-small); color: rgba(1, 8, 15, 0.85); }
