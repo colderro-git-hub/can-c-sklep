@@ -14,6 +14,9 @@ export type Env = {
   P24_CRC?: string;
   P24_API_KEY?: string;
   P24_SANDBOX?: string; // 'true' = sandbox.przelewy24.pl
+  ACCESS_TEAM_DOMAIN?: string; // np. colderro.cloudflareaccess.com
+  ACCESS_AUD?: string;         // Application Audience (AUD) z Cloudflare Access; kilka po przecinku
+  ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {

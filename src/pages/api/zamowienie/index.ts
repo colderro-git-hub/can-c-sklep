@@ -63,7 +63,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let sb: ReturnType<typeof db>;
   let p24: ReturnType<typeof p24Config>;
   try { sb = db(env); p24 = p24Config(env); } catch (e) {
-    console.error(e);
+    console.error('Konfiguracja: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Sklep jest chwilowo niedostępny. Spróbuj za kilka minut.' });
   }
 
@@ -121,7 +121,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return json(200, { redirect, number: order.number });
   } catch (e) {
-        console.error('Błąd tworzenia zamówienia: ' + (e instanceof Error ? e.message : String(e)));
+    console.error('Błąd tworzenia zamówienia: ' + (e instanceof Error ? e.message : String(e)));
     return json(502, { error: 'Nie udało się rozpocząć płatności. Spróbuj ponownie.' });
   }
 };
