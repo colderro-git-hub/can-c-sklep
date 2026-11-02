@@ -18,6 +18,7 @@ export type Env = {
   ACCESS_AUD?: string;         // Application Audience (AUD) z Cloudflare Access; kilka po przecinku
   ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
   ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
+  FURGONETKA_API_KEY?: string; // klucz integracji własnej (ten sam wpisujesz w panelu Furgonetki)
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {

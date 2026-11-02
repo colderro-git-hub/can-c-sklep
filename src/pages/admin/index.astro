@@ -1,5 +1,6 @@
 ---
 import '../../styles/global.css';
+import { FURGONETKA_PANEL_URL } from '../../config';
 ---
 <!doctype html>
 <html lang="pl">
@@ -10,7 +11,7 @@ import '../../styles/global.css';
     <title>Panel Can-C</title>
     <link rel="preload" href="/fonts/geomanist-regular.woff2" as="font" type="font/woff2" crossorigin />
   </head>
-  <body class="admin">
+  <body class="admin" data-furgonetka={FURGONETKA_PANEL_URL}>
     <nav class="side" aria-label="Panel">
       <a href="/" class="brand">Can-C <span>admin</span></a>
       <button type="button" class="side__link" data-tab="orders" aria-current="page">Zamówienia <span class="count" data-count-paid></span></button>
@@ -76,9 +77,20 @@ import '../../styles/global.css';
   const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Opłacone', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { created: 'Utworzone', p24_registered: 'Przekierowanie do P24', p24_notification: 'Powiadomienie z P24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_shipped: 'Mail o wysyłce', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24' };
+  const EVENT: Record<string, string> = { furgonetka_tracking: 'Numer przesyłki z Furgonetki', auto_completed: 'Zrealizowane automatycznie', created: 'Utworzone', p24_registered: 'Przekierowanie do P24', p24_notification: 'Powiadomienie z P24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_shipped: 'Mail o wysyłce', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24' };
   const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const FURG = document.body.dataset.furgonetka || 'https://furgonetka.pl/konto';
+  const track = (carrier: string, nr: string) => {
+    const c = (carrier || '').toLowerCase(), n = encodeURIComponent(nr);
+    if (c.includes('dpd')) return `https://tracktrace.dpd.com.pl/parcelDetails?typ=1&p1=${n}`;
+    if (c.includes('inpost')) return `https://inpost.pl/sledzenie-przesylek?number=${n}`;
+    if (c.includes('dhl')) return `https://www.dhl.com/pl-pl/home/sledzenie-przesylek.html?tracking-id=${n}`;
+    if (c.includes('poczta')) return `https://emonitoring.poczta-polska.pl/?numer=${n}`;
+    if (c.includes('orlen')) return `https://www.orlenpaczka.pl/sledz-paczke/?numer=${n}`;
+    return 'https://furgonetka.pl/zlokalizuj';
+  };
+  const trackLink = (carrier: string, nr: string) => `<a href="${track(carrier, nr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(nr)}</a>`;
 
   const state = { status: 'paid', q: '', page: 1, pages: 1 };
 
@@ -114,7 +126,7 @@ import '../../styles/global.css';
           <td>${date(o.created_at)}</td>
           <td>${esc(o.shipping_address?.name || '')}<br><span class="muted">${esc(o.email)}</span></td>
           <td>${o.order_items.map((i: any) => `${esc(i.name)} × ${i.qty}`).join('<br>')}</td>
-          <td>${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? 'Paczkomat ' + esc(o.shipping_point) : esc(o.shipping_method || '—')}${o.tracking_number ? `<br><span class="muted">${esc(o.tracking_number)}</span>` : ''}</td>
+          <td>${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? 'Paczkomat ' + esc(o.shipping_point) : esc(o.shipping_method || '—')}${o.tracking_number ? `<br>${trackLink(o.carrier || o.shipping_method, o.tracking_number)}` : ''}</td>
           <td class="r">${pln(o.total)}</td>
           <td><span class="st st--${o.status}">${STATUS[o.status] || o.status}</span></td>
         </tr>`).join('') : '<tr><td colspan="7" class="muted">Brak zamówień.</td></tr>';
@@ -144,17 +156,22 @@ import '../../styles/global.css';
         <p>${o.shipping_method === 'dpd' ? `Kurier DPD: ${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat: <strong>${esc(o.shipping_point || '—')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</p>
         ${o.billing ? `<h3>Faktura</h3><p>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</p>` : ''}
         ${o.customer_note ? `<h3>Uwagi klienta</h3><p class="note">${esc(o.customer_note)}</p>` : ''}
-        ${o.tracking_number ? `<h3>Przesyłka</h3><p>${esc(o.carrier || '')} ${esc(o.tracking_number)}</p>` : ''}
+        ${o.tracking_number ? `<h3>Przesyłka</h3><p>${esc(o.carrier || '')} ${trackLink(o.carrier || o.shipping_method, o.tracking_number)}</p>` : ''}
         ${can(['paid', 'on_hold']) ? `
-          <form class="ship" data-ship>
+          <div class="furg">
             <h3>Wysyłka</h3>
+            <p class="muted">Zamówienie jest już w Furgonetce (pobiera je co kilka minut). Po nadaniu numer przesyłki wróci tu sam, status zmieni się na „Wysłane”, a klient dostanie e-mail.</p>
+            <a class="btn" href="${FURG}" target="_blank" rel="noopener">Nadaj w Furgonetce (nr ${o.number})</a>
+          </div>
+          <details class="manual"><summary>Wpisz numer przesyłki ręcznie</summary>
+          <form class="ship" data-ship>
             <div class="row">
               <label class="field">Przewoźnik<select name="carrier" class="input"><option value="inpost" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>DPD</option></select></label>
               <label class="field">Numer przesyłki<input name="tracking" class="input" required /></label>
             </div>
             <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail z numerem</label>
             <button class="btn">Oznacz jako wysłane</button>
-          </form>` : ''}
+          </form></details>` : ''}
         <div class="actions">
           ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--ghost" data-act="complete">Zrealizowane</button>' : ''}
           ${can(['paid']) ? '<button type="button" class="btn btn--ghost" data-act="hold">Wstrzymaj</button>' : ''}
@@ -300,6 +317,9 @@ import '../../styles/global.css';
   :global(.items) { list-style: none; margin: 0; padding: 0; }
   :global(.items li) { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--c-gray-400); }
   :global(.items .sum) { border-bottom: 0; font-size: 1.125rem; }
+  :global(.furg) { padding: 16px; background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
+  :global(.furg .btn) { align-self: flex-start; }
+  :global(.manual summary) { cursor: pointer; font-size: var(--fs-small); color: var(--c-link); padding: 8px 0; }
   :global(.ship) { padding: 16px; background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
   :global(.ship .row) { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
   :global(.check) { display: flex; gap: 10px; align-items: center; font-size: var(--fs-small); }

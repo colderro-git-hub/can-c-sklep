@@ -18,4 +18,16 @@ export const TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
 
 // Klucz mapy punktów Furgonetki (publiczny, działa tylko na domenach dodanych w panelu Furgonetki).
 // Pobierz: furgonetka.pl/api/mapa/dostep → Dodaj klienta mapy. Puste = zamiast mapy pole do wpisania kodu.
-export const FURGONETKA_MAP_KEY = '6732987098093482766743909';
+export const FURGONETKA_MAP_KEY = '';
+
+// ---------- Furgonetka: integracja własna ----------
+// Adres panelu Furgonetki, w którym nadajesz przesyłki (zakładka ze sprzedażą / zamówieniami ze sklepów).
+export const FURGONETKA_PANEL_URL = 'https://furgonetka.pl/konto';
+// Domyślna paczka podpowiadana w Furgonetce (cm / kg) i waga jednej sztuki produktu.
+export const PARCEL_DEFAULTS = { width: 20, height: 10, depth: 8, weightPerItem: 0.1 };
+// Stawka VAT produktów (%) – SPRAWDŹ z księgowością, wpływa tylko na dane przekazywane Furgonetce.
+export const PRODUCT_VAT_RATE = 23;
+// Stałe numery produktów dla Furgonetki (wymaga liczb).
+export const PRODUCT_NUMERIC_ID: Record<string, number> = {
+  'krople-can-c': 1, 'krople-can-c-k9': 2, 'kapsulki-can-c-60': 3, 'kapsulki-can-c-90': 4,
+};

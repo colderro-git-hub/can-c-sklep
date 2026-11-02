@@ -25,7 +25,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   try {
     const sb = db(env);
     const { rows, total } = await sb.selectCount(
-      `orders?select=id,number,created_at,email,status,total,shipping_method,shipping_point,tracking_number,source,shipping_address,order_items(name,qty)` +
+      `orders?select=id,number,created_at,email,status,total,shipping_method,shipping_point,tracking_number,carrier,source,shipping_address,order_items(name,qty)` +
         (filters.length ? `&${filters.join('&')}` : '') +
         `&order=created_at.desc&limit=${PAGE}&offset=${(page - 1) * PAGE}`,
     );

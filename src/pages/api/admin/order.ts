@@ -3,15 +3,11 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { sendMail } from '../../../lib/mail';
+import { trackingUrl } from '../../../lib/tracking';
 
 export const prerender = false;
 
 const UUID = /^[0-9a-f-]{36}$/i;
-const trackingUrl = (carrier: string, nr: string) =>
-  carrier === 'dpd'
-    ? `https://tracktrace.dpd.com.pl/parcelDetails?typ=1&p1=${encodeURIComponent(nr)}`
-    : `https://inpost.pl/sledzenie-przesylek?number=${encodeURIComponent(nr)}`;
-
 // Szczegóły zamówienia: ?id=uuid
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = await getEnv(locals);
