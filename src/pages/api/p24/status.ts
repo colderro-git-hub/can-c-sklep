@@ -55,43 +55,51 @@ export const POST: APIRoute = async ({ request, locals }) => {
     console.error('Stany magazynowe: ' + (e instanceof Error ? e.message : String(e)));
   }
 
-  // ---------- E-maile (błąd wysyłki nie cofa płatności) ----------
+  // ---------- E-maile (błąd wysyłki nie cofa płatności; każdy mail wysyłany niezależnie) ----------
+  const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+  let lines = '', delivery = '';
   try {
     const items = await sb.select<any>(`order_items?select=name,qty,total&order_id=eq.${order.id}`);
-    const lines = items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
-    const delivery = order.shipping_method === 'inpost_locker' ? `Paczkomat InPost ${order.shipping_point}` : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
-    const origin = new URL(request.url).origin;
+    lines = items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
+    delivery = order.shipping_method === 'inpost_locker'
+      ? `Paczkomat InPost ${order.shipping_point}`
+      : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
+  } catch (e) { console.error('Dane do e-maila: ' + errMsg(e)); }
+  const origin = new URL(request.url).origin;
 
+  try {
     await sendMail(env, {
       to: order.email,
       subject: `Potwierdzenie zamówienia nr ${order.number} – Can-C`,
       replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
       text: [
-        'Dziękujemy za zamówienie!',
-        '',
+        'Dziękujemy za zamówienie!', '',
         `Numer zamówienia: ${order.number}`,
-        `Płatność: przyjęta (${zl(order.total)})`,
-        '',
-        lines,
-        '',
+        `Płatność: przyjęta (${zl(order.total)})`, '',
+        lines, '',
         `Dostawa: ${delivery} (bezpłatna)`,
-        order.wants_invoice ? 'Faktura: zostanie wysłana osobno.' : '',
-        '',
+        order.wants_invoice ? 'Faktura: zostanie wysłana osobno.' : '', '',
         'Gdy paczka zostanie nadana, wyślemy numer przesyłki.',
-        `Historia zamówień: ${origin}/konto/`,
-        '',
+        `Historia zamówień: ${origin}/konto/`, '',
         'Zespół Can-C',
       ].join('\n'),
     });
-    if (env.CONTACT_TO) {
+    await sb.insert('order_events', { order_id: order.id, type: 'mail_confirmation', data: {} }, 'id');
+  } catch (e) {
+    console.error('E-mail do klienta (potwierdzenie) nie wysłany: ' + errMsg(e));
+    await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { to: 'klient', error: errMsg(e).slice(0, 300) } }, 'id').catch(() => {});
+  }
+
+  if (env.CONTACT_TO) {
+    try {
       await sendMail(env, {
         to: env.CONTACT_TO.split(',').map((s) => s.trim()),
         subject: `[can-c.pl] Nowe opłacone zamówienie nr ${order.number} – ${zl(order.total)}`,
-        text: `${lines}\n\nDostawa: ${delivery}\nKlient: ${order.email}\nFaktura: ${order.wants_invoice ? 'tak' : 'nie'}`,
+        text: `${lines}\n\nDostawa: ${delivery}\nKlient: ${order.email}\nFaktura: ${order.wants_invoice ? 'tak' : 'nie'}\n\nPanel: ${origin}/admin/`,
       });
+    } catch (e) {
+      console.error('E-mail do sklepu (nowe zamówienie) nie wysłany: ' + errMsg(e));
     }
-  } catch (e) {
-    console.error('Błąd wysyłki e-maila potwierdzenia: ' + (e instanceof Error ? e.message : String(e)));
   }
 
   return json(200, { ok: true });
