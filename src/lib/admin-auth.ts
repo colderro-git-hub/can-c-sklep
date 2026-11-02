@@ -33,31 +33,34 @@ export async function requireAdmin(request: Request, env: Env): Promise<string |
     console.error('Brak konfiguracji panelu admina (ACCESS_TEAM_DOMAIN, ACCESS_AUD, ADMIN_EMAILS)');
     return null;
   }
+  const deny = (reason: string) => { console.warn(`Admin auth: ${reason}`); return null; };
   const token = readToken(request);
-  if (!token) return null;
+  if (!token) return deny('brak tokenu Access w żądaniu (czy adres jest chroniony przez Cloudflare Access?)');
   const [h, p, s] = token.split('.');
-  if (!h || !p || !s) return null;
+  if (!h || !p || !s) return deny('nieprawidłowy format tokenu');
 
   try {
     const header = decodeJson(h);
     const payload = decodeJson(p);
     const keys = await getKeys(ACCESS_TEAM_DOMAIN.replace(/^https?:\/\//, '').replace(/\/$/, ''));
     const jwk = keys.find((k) => k.kid === header.kid);
-    if (!jwk || header.alg !== 'RS256') return null;
+    if (!jwk || header.alg !== 'RS256') return deny(`nie znaleziono klucza ${header.kid} dla domeny ${ACCESS_TEAM_DOMAIN} – sprawdź ACCESS_TEAM_DOMAIN`);
 
     const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
     const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64url(s), new TextEncoder().encode(`${h}.${p}`));
-    if (!ok) return null;
+    if (!ok) return deny('nieprawidłowy podpis tokenu');
 
     const now = Math.floor(Date.now() / 1000);
-    if (typeof payload.exp !== 'number' || payload.exp < now) return null;
+    if (typeof payload.exp !== 'number' || payload.exp < now) return deny('token wygasł – odśwież stronę');
     const auds = ACCESS_AUD.split(',').map((a) => a.trim());
     const tokenAud: string[] = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-    if (!tokenAud.some((a) => auds.includes(a))) return null;
+    if (!tokenAud.some((a) => auds.includes(a))) {
+      return deny(`AUD się nie zgadza – token ma ${tokenAud.map((a) => a.slice(0, 8) + '…').join(', ')}, ACCESS_AUD zaczyna się od ${auds.map((a) => a.slice(0, 8) + '…').join(', ')}`);
+    }
 
     const email = String(payload.email || '').toLowerCase();
     const allowed = ADMIN_EMAILS.toLowerCase().split(',').map((e) => e.trim());
-    return allowed.includes(email) ? email : null;
+    return allowed.includes(email) ? email : deny(`e-mail ${email || '(brak)'} nie jest na liście ADMIN_EMAILS`);
   } catch (e) {
     console.error('Błąd weryfikacji tokenu Access: ' + (e instanceof Error ? e.message : String(e)));
     return null;
