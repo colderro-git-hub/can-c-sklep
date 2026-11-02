@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     const sb = db(env);
-    const [order] = await sb.select<any>(`orders?select=id,number,email,status,shipping_method&id=eq.${b.id}`);
+    const [order] = await sb.select<any>(`orders?select=id,number,email,status,shipping_method,source&id=eq.${b.id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
 
     if (b.action === 'note') {
@@ -62,6 +62,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(200, { ok: true });
     }
 
+    // Zamówienia z WooCommerce obsługuje stary sklep aż do dnia startu (wtedy ustawimy ALLOW_WC_ACTIONS=true)
+    if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') {
+      return json(409, { error: 'To zamówienie pochodzi z WooCommerce – obsłuż je w obecnym sklepie.' });
+    }
     if (!rule.from.includes(order.status)) return json(409, { error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` });
 
     const patch: Record<string, unknown> = { status: rule.to };

@@ -17,6 +17,7 @@ export type Env = {
   ACCESS_TEAM_DOMAIN?: string; // np. colderro.cloudflareaccess.com
   ACCESS_AUD?: string;         // Application Audience (AUD) z Cloudflare Access; kilka po przecinku
   ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
+  ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {

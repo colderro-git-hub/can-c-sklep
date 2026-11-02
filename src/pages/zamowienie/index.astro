@@ -1,10 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { products } from '../../data/shop';
+import { FURGONETKA_MAP_KEY } from '../../config';
 
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
 <Base title="Dostawa i płatność | Can-C" description="Złóż zamówienie w sklepie Can-C.">
+  {FURGONETKA_MAP_KEY && <script is:inline src="https://furgonetka.pl/js/dist/map/map.js" async></script>}
   <section class="section checkout-wrap">
     <div class="container">
       <ol class="steps" aria-label="Etapy zamówienia">
@@ -37,9 +39,17 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             <label class="choice"><input type="radio" name="shippingMethod" value="dpd" />
               <span class="choice__text"><span>Kurier DPD</span><span class="muted">Dostawa pod wskazany adres</span></span><span class="ok">0,00 zł</span></label>
 
-            <div class="sub" data-locker>
-              <label class="field">Kod Paczkomatu<input class="input" type="text" name="locker" placeholder="np. WRO01M" autocapitalize="characters" maxlength="15" /></label>
-              <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener">Znajdź Paczkomat na mapie InPost</a>
+            <div class="sub" data-locker data-map-key={FURGONETKA_MAP_KEY}>
+              <div class="locker-pick" data-map-wrap hidden>
+                <div class="locker-pick__info">
+                  <span data-locker-label>Nie wybrano Paczkomatu</span>
+                  <span class="muted" data-locker-name></span>
+                </div>
+                <button type="button" class="btn" data-map-open>Wybierz Paczkomat na mapie</button>
+              </div>
+              <label class="field" data-locker-manual>Kod Paczkomatu<input class="input" type="text" name="locker" placeholder="np. WRO01M" autocapitalize="characters" maxlength="15" /></label>
+              <input type="hidden" name="lockerName" />
+              <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener" data-locker-link>Znajdź Paczkomat na mapie InPost</a>
             </div>
             <div class="sub grid3" data-address hidden>
               <label class="field">Ulica i numer<input class="input" type="text" name="street" autocomplete="street-address" /></label>
@@ -132,6 +142,37 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       invoice.hidden = !(e.target as HTMLInputElement).checked;
     });
 
+    const errorEl = form.querySelector<HTMLElement>('[data-error]')!;
+    // Mapa punktów Furgonetki (jeśli skonfigurowano klucz). Pole ręczne zostaje jako zapas.
+    const mapKey = locker.dataset.mapKey;
+    if (mapKey) {
+      const wrap = locker.querySelector<HTMLElement>('[data-map-wrap]')!;
+      const manual = locker.querySelector<HTMLElement>('[data-locker-manual]')!;
+      const codeInput = form.querySelector<HTMLInputElement>('input[name="locker"]')!;
+      const nameInput = form.querySelector<HTMLInputElement>('input[name="lockerName"]')!;
+      wrap.hidden = false;
+      manual.hidden = true;
+      locker.querySelector<HTMLElement>('[data-locker-link]')!.hidden = true;
+      locker.querySelector('[data-map-open]')!.addEventListener('click', () => {
+        const F = (window as any).Furgonetka;
+        if (!F) { manual.hidden = false; errorEl.textContent = 'Mapa nie załadowała się. Wpisz kod Paczkomatu ręcznie.'; return; }
+        new F.Map({
+          apiKey: mapKey,
+          courierServices: ['inpost'],
+          courierServicesFilter: ['inpost'],
+          city: String(new FormData(form).get('city') || ''),
+          locale: 'pl',
+          callback: (params: any) => {
+            codeInput.value = params.point.code;
+            nameInput.value = params.point.name || '';
+            locker.querySelector('[data-locker-label]')!.textContent = `Paczkomat ${params.point.code}`;
+            locker.querySelector('[data-locker-name]')!.textContent = params.point.name || '';
+            locker.querySelector('[data-map-open]')!.textContent = 'Zmień Paczkomat';
+          },
+        }).show();
+      });
+    }
+
     const error = form.querySelector<HTMLElement>('[data-error]')!;
     const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
 
@@ -151,7 +192,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           body: JSON.stringify({
             items,
             email: val('email'), phone: val('phone'), firstName: val('firstName'), lastName: val('lastName'),
-            shippingMethod: val('shippingMethod'), locker: val('locker'),
+            shippingMethod: val('shippingMethod'), locker: val('locker'), lockerName: val('lockerName'),
             street: val('street'), postcode: val('postcode'), city: val('city'),
             invoice: fd.get('invoice') !== null,
             company: val('company'), nip: val('nip'), invStreet: val('invStreet'), invPostcode: val('invPostcode'), invCity: val('invCity'),
@@ -194,6 +235,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .choice__text { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 1.125rem; }
   .choice__text .muted { font-size: var(--fs-small); }
   .ok { color: var(--c-ok); }
+  .locker-pick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .locker-pick[hidden], [data-locker-manual][hidden], [data-locker-link][hidden] { display: none; }
+  .locker-pick__info { display: flex; flex-direction: column; gap: 2px; font-size: 1.125rem; }
+  .locker-pick__info .muted { font-size: var(--fs-small); }
   .check { display: flex; gap: 12px; align-items: flex-start; }
   .check input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
   .small { font-size: var(--fs-small); line-height: 24px; color: rgba(1, 8, 15, 0.75); }

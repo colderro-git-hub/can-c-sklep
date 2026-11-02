@@ -36,6 +36,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const lastName = str(body.lastName, 60);
   const method = body.shippingMethod === 'dpd' ? 'dpd' : 'inpost_locker';
   const locker = str(body.locker, 15).toUpperCase();
+  const lockerName = str(body.lockerName, 150);
   const addr = { street: str(body.street, 120), postcode: str(body.postcode, 6), city: str(body.city, 60) };
   const wantsInvoice = body.invoice === true;
   const inv = { company: str(body.company, 150), nip: str(body.nip, 13).replace(/[^\d]/g, ''), street: str(body.invStreet, 120), postcode: str(body.invPostcode, 6), city: str(body.invCity, 60) };
@@ -95,7 +96,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       total: priced.total,
       shipping_method: method,
       shipping_point: method === 'inpost_locker' ? locker : null,
-      shipping_address: method === 'dpd' ? { name, phone, ...addr, country: 'PL' } : { name, phone },
+      shipping_address: method === 'dpd' ? { name, phone, ...addr, country: 'PL' } : { name, phone, ...(lockerName ? { point_name: lockerName } : {}) },
       billing: wantsInvoice ? inv : null,
       wants_invoice: wantsInvoice,
       customer_note: note || null,

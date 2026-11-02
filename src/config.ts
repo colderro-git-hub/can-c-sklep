@@ -15,3 +15,7 @@ export const site = {
 // Klucz witryny Turnstile jest publiczny, więc może być w kodzie.
 // Poniżej klucz testowy Cloudflare (zawsze przepuszcza). Podmień na własny z panelu Turnstile.
 export const TURNSTILE_SITE_KEY = '1x00000000000000000000AA';
+
+// Klucz mapy punktów Furgonetki (publiczny, działa tylko na domenach dodanych w panelu Furgonetki).
+// Pobierz: furgonetka.pl/api/mapa/dostep → Dodaj klienta mapy. Puste = zamiast mapy pole do wpisania kodu.
+export const FURGONETKA_MAP_KEY = '6732987098093482766743909';

@@ -131,15 +131,17 @@ import '../../styles/global.css';
       const { order: o, events } = await api(`/api/admin/order?id=${id}`);
       $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
       const a = o.shipping_address || {};
-      const can = (from: string[]) => from.includes(o.status);
+      const wc = o.source === 'woocommerce';
+      const can = (from: string[]) => !wc && from.includes(o.status);
       body.innerHTML = `
+        ${wc ? '<p class="wc-note">Zamówienie z WooCommerce (import). Do dnia startu obsługuj je w obecnym sklepie – tu tylko podgląd i notatki.</p>' : ''}
         <p><span class="st st--${o.status}">${STATUS[o.status]}</span> <span class="muted">${date(o.created_at)}${o.paid_at ? ' · opłacone ' + date(o.paid_at) : ''}</span></p>
         <h3>Produkty</h3>
         <ul class="items">${o.order_items.map((i: any) => `<li><span>${esc(i.name)} × ${i.qty}${i.discount ? ` <span class="muted">(rabat ${pln(i.discount)})</span>` : ''}</span><span>${pln(i.total)}</span></li>`).join('')}
           <li class="sum"><span>Razem</span><span>${pln(o.total)}</span></li></ul>
         <h3>Klient i dostawa</h3>
         <p>${esc(a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' '))}<br>${esc(o.email)}<br>${esc(a.phone || o.customers?.phone || '')}</p>
-        <p>${o.shipping_method === 'dpd' ? `Kurier DPD: ${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat: <strong>${esc(o.shipping_point || '—')}</strong>`}</p>
+        <p>${o.shipping_method === 'dpd' ? `Kurier DPD: ${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat: <strong>${esc(o.shipping_point || '—')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</p>
         ${o.billing ? `<h3>Faktura</h3><p>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</p>` : ''}
         ${o.customer_note ? `<h3>Uwagi klienta</h3><p class="note">${esc(o.customer_note)}</p>` : ''}
         ${o.tracking_number ? `<h3>Przesyłka</h3><p>${esc(o.carrier || '')} ${esc(o.tracking_number)}</p>` : ''}
@@ -306,6 +308,7 @@ import '../../styles/global.css';
   :global(.danger) { color: #D32300 !important; }
   :global(.events) { margin: 0; padding-left: 18px; font-size: var(--fs-small); display: flex; flex-direction: column; gap: 6px; }
   :global(.note) { padding: 12px; background: var(--c-gray-100); }
+  :global(.wc-note) { padding: 12px 16px; background: #FFF4D6; font-size: var(--fs-small); }
   :global(.noteform) { display: flex; flex-direction: column; gap: 8px; }
   :global(.noteform textarea) { height: auto; padding: 10px 14px; }
 
