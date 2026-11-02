@@ -1,0 +1,323 @@
+---
+import '../../styles/global.css';
+---
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Panel Can-C</title>
+    <link rel="preload" href="/fonts/geomanist-regular.woff2" as="font" type="font/woff2" crossorigin />
+  </head>
+  <body class="admin">
+    <nav class="side" aria-label="Panel">
+      <a href="/" class="brand">Can-C <span>admin</span></a>
+      <button type="button" class="side__link" data-tab="orders" aria-current="page">Zamówienia <span class="count" data-count-paid></span></button>
+      <button type="button" class="side__link" data-tab="products">Produkty</button>
+      <a href="/" class="side__link side__link--muted">Sklep</a>
+    </nav>
+
+    <main class="main">
+      <!-- ZAMÓWIENIA -->
+      <section data-view="orders">
+        <div class="head">
+          <h1>Zamówienia</h1>
+          <form class="search" data-search>
+            <label class="sr-only" for="q">Szukaj</label>
+            <input id="q" name="q" type="search" class="input" placeholder="Numer lub e-mail" />
+          </form>
+        </div>
+        <div class="pill-group filters" role="tablist" aria-label="Status">
+          <button type="button" class="pill" data-status="paid" aria-pressed="true">Do wysłania <span data-count="paid"></span></button>
+          <button type="button" class="pill" data-status="on_hold" aria-pressed="false">Wstrzymane <span data-count="on_hold"></span></button>
+          <button type="button" class="pill" data-status="shipped" aria-pressed="false">Wysłane</button>
+          <button type="button" class="pill" data-status="pending_payment" aria-pressed="false">Czekają na płatność <span data-count="pending_payment"></span></button>
+          <button type="button" class="pill" data-status="completed" aria-pressed="false">Zrealizowane</button>
+          <button type="button" class="pill" data-status="cancelled" aria-pressed="false">Anulowane</button>
+          <button type="button" class="pill" data-status="" aria-pressed="false">Wszystkie</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Nr</th><th>Data</th><th>Klient</th><th>Produkty</th><th>Dostawa</th><th class="r">Kwota</th><th>Status</th></tr></thead>
+            <tbody data-rows></tbody>
+          </table>
+        </div>
+        <div class="pager"><button type="button" class="btn btn--ghost" data-prev>Poprzednie</button><span data-page></span><button type="button" class="btn btn--ghost" data-next>Następne</button></div>
+      </section>
+
+      <!-- PRODUKTY -->
+      <section data-view="products" hidden>
+        <div class="head"><h1>Produkty</h1></div>
+        <p class="notice">Cena z panelu obowiązuje przy płatności od razu. Cena wyświetlana na stronie produktu odświeży się po najbliższym wdrożeniu sklepu – przy zmianie ceny daj znać, zaktualizujemy też stronę.</p>
+        <div class="table-wrap">
+          <table class="table">
+            <thead><tr><th>Produkt</th><th>Cena brutto (zł)</th><th>Stan</th><th>EAN</th><th>Aktywny</th><th></th></tr></thead>
+            <tbody data-products></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- SZCZEGÓŁY ZAMÓWIENIA -->
+    <aside class="drawer" data-drawer hidden aria-label="Szczegóły zamówienia">
+      <div class="drawer__head">
+        <h2 data-d-title></h2>
+        <button type="button" class="close" data-close aria-label="Zamknij">×</button>
+      </div>
+      <div class="drawer__body" data-d-body></div>
+    </aside>
+    <p class="toast" role="status" data-toast hidden></p>
+  </body>
+</html>
+
+<script>
+  type Order = any;
+  const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+  const date = (s: string) => new Date(s).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
+  const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Opłacone', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
+  const EVENT: Record<string, string> = { created: 'Utworzone', p24_registered: 'Przekierowanie do P24', p24_notification: 'Powiadomienie z P24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_shipped: 'Mail o wysyłce', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24' };
+  const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+
+  const state = { status: 'paid', q: '', page: 1, pages: 1 };
+
+  async function api(path: string, body?: unknown) {
+    const res = await fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401) throw new Error('Brak dostępu. Zaloguj się ponownie (odśwież stronę).');
+    if (!res.ok) throw new Error(data.error || 'Błąd serwera.');
+    return data;
+  }
+  function toast(msg: string, bad = false) {
+    const t = $('[data-toast]');
+    t.textContent = msg; t.classList.toggle('toast--bad', bad); t.hidden = false;
+    setTimeout(() => (t.hidden = true), 4000);
+  }
+
+  // ---------- Lista zamówień ----------
+  async function loadOrders() {
+    const tbody = $('[data-rows]');
+    tbody.innerHTML = '<tr><td colspan="7" class="muted">Ładowanie…</td></tr>';
+    try {
+      const p = new URLSearchParams({ status: state.status, q: state.q, page: String(state.page) });
+      const d = await api(`/api/admin/orders?${p}`);
+      state.pages = d.pages;
+      for (const [k, v] of Object.entries(d.counts)) document.querySelectorAll(`[data-count="${k}"]`).forEach((el) => (el.textContent = v ? String(v) : ''));
+      $('[data-count-paid]').textContent = d.counts.paid ? String(d.counts.paid) : '';
+      $('[data-page]').textContent = `Strona ${d.page} z ${d.pages} · ${d.total} zamówień`;
+      $<HTMLButtonElement>('[data-prev]').disabled = d.page <= 1;
+      $<HTMLButtonElement>('[data-next]').disabled = d.page >= d.pages;
+      tbody.innerHTML = d.rows.length ? d.rows.map((o: Order) => `
+        <tr data-id="${o.id}" tabindex="0">
+          <td>${o.number}${o.source === 'woocommerce' ? ' <span class="tag">WC</span>' : ''}</td>
+          <td>${date(o.created_at)}</td>
+          <td>${esc(o.shipping_address?.name || '')}<br><span class="muted">${esc(o.email)}</span></td>
+          <td>${o.order_items.map((i: any) => `${esc(i.name)} × ${i.qty}`).join('<br>')}</td>
+          <td>${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? 'Paczkomat ' + esc(o.shipping_point) : esc(o.shipping_method || '—')}${o.tracking_number ? `<br><span class="muted">${esc(o.tracking_number)}</span>` : ''}</td>
+          <td class="r">${pln(o.total)}</td>
+          <td><span class="st st--${o.status}">${STATUS[o.status] || o.status}</span></td>
+        </tr>`).join('') : '<tr><td colspan="7" class="muted">Brak zamówień.</td></tr>';
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="7" class="err">${esc((e as Error).message)}</td></tr>`;
+    }
+  }
+
+  // ---------- Szczegóły ----------
+  async function openOrder(id: string) {
+    const drawer = $('[data-drawer]'); const body = $('[data-d-body]');
+    drawer.hidden = false; body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    try {
+      const { order: o, events } = await api(`/api/admin/order?id=${id}`);
+      $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
+      const a = o.shipping_address || {};
+      const can = (from: string[]) => from.includes(o.status);
+      body.innerHTML = `
+        <p><span class="st st--${o.status}">${STATUS[o.status]}</span> <span class="muted">${date(o.created_at)}${o.paid_at ? ' · opłacone ' + date(o.paid_at) : ''}</span></p>
+        <h3>Produkty</h3>
+        <ul class="items">${o.order_items.map((i: any) => `<li><span>${esc(i.name)} × ${i.qty}${i.discount ? ` <span class="muted">(rabat ${pln(i.discount)})</span>` : ''}</span><span>${pln(i.total)}</span></li>`).join('')}
+          <li class="sum"><span>Razem</span><span>${pln(o.total)}</span></li></ul>
+        <h3>Klient i dostawa</h3>
+        <p>${esc(a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' '))}<br>${esc(o.email)}<br>${esc(a.phone || o.customers?.phone || '')}</p>
+        <p>${o.shipping_method === 'dpd' ? `Kurier DPD: ${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat: <strong>${esc(o.shipping_point || '—')}</strong>`}</p>
+        ${o.billing ? `<h3>Faktura</h3><p>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</p>` : ''}
+        ${o.customer_note ? `<h3>Uwagi klienta</h3><p class="note">${esc(o.customer_note)}</p>` : ''}
+        ${o.tracking_number ? `<h3>Przesyłka</h3><p>${esc(o.carrier || '')} ${esc(o.tracking_number)}</p>` : ''}
+        ${can(['paid', 'on_hold']) ? `
+          <form class="ship" data-ship>
+            <h3>Wysyłka</h3>
+            <div class="row">
+              <label class="field">Przewoźnik<select name="carrier" class="input"><option value="inpost" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>DPD</option></select></label>
+              <label class="field">Numer przesyłki<input name="tracking" class="input" required /></label>
+            </div>
+            <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail z numerem</label>
+            <button class="btn">Oznacz jako wysłane</button>
+          </form>` : ''}
+        <div class="actions">
+          ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--ghost" data-act="complete">Zrealizowane</button>' : ''}
+          ${can(['paid']) ? '<button type="button" class="btn btn--ghost" data-act="hold">Wstrzymaj</button>' : ''}
+          ${can(['on_hold']) ? '<button type="button" class="btn btn--ghost" data-act="unhold">Przywróć</button>' : ''}
+          ${can(['pending_payment', 'paid', 'on_hold']) ? '<button type="button" class="btn btn--ghost danger" data-act="cancel">Anuluj</button>' : ''}
+        </div>
+        <h3>Historia</h3>
+        <ol class="events">${events.map((e: any) => `<li><span class="muted">${date(e.created_at)}</span> ${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || e.data.to}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
+        <form class="noteform" data-note><label class="field">Notatka wewnętrzna<textarea name="note" class="input" rows="2" maxlength="1000"></textarea></label><button class="btn btn--ghost">Dodaj notatkę</button></form>`;
+
+      body.querySelector<HTMLFormElement>('[data-ship]')?.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const f = new FormData(ev.target as HTMLFormElement);
+        await act({ id, action: 'ship', carrier: f.get('carrier'), tracking: f.get('tracking'), notify: f.get('notify') !== null });
+      });
+      body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
+        if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;
+        await act({ id, action: b.dataset.act });
+      }));
+      body.querySelector<HTMLFormElement>('[data-note]')!.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        await act({ id, action: 'note', note: new FormData(ev.target as HTMLFormElement).get('note') });
+      });
+    } catch (e) {
+      body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`;
+    }
+  }
+
+  async function act(payload: any) {
+    try {
+      const r = await api('/api/admin/order', payload);
+      toast(r.warning || 'Zapisano.', Boolean(r.warning));
+      await openOrder(payload.id);
+      loadOrders();
+    } catch (e) { toast((e as Error).message, true); }
+  }
+
+  // ---------- Produkty ----------
+  async function loadProducts() {
+    const tbody = $('[data-products]');
+    tbody.innerHTML = '<tr><td colspan="6" class="muted">Ładowanie…</td></tr>';
+    try {
+      const { rows } = await api('/api/admin/products');
+      tbody.innerHTML = rows.map((p: any) => `
+        <tr data-pid="${esc(p.id)}">
+          <td>${esc(p.name)}<br><span class="muted">${esc(p.id)}${p.bundles ? ' · rabaty zestawowe' : ''}</span></td>
+          <td><input class="input sm" name="price" inputmode="decimal" value="${p.price === null ? '' : (p.price / 100).toFixed(2).replace('.', ',')}" placeholder="brak ceny" /></td>
+          <td><input class="input sm" name="stock" type="number" min="0" value="${p.stock}" /></td>
+          <td><input class="input sm" name="ean" value="${esc(p.ean || '')}" /></td>
+          <td><input type="checkbox" name="active" ${p.active ? 'checked' : ''} aria-label="Aktywny" /></td>
+          <td><button type="button" class="btn btn--ghost" data-save>Zapisz</button></td>
+        </tr>`).join('');
+      tbody.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => btn.addEventListener('click', async () => {
+        const tr = btn.closest('tr')!;
+        const v = (n: string) => tr.querySelector<HTMLInputElement>(`[name="${n}"]`)!;
+        try {
+          await api('/api/admin/products', { id: tr.dataset.pid, price: v('price').value.trim() || null, stock: Number(v('stock').value), ean: v('ean').value, active: v('active').checked });
+          toast('Zapisano produkt.');
+        } catch (e) { toast((e as Error).message, true); }
+      }));
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="6" class="err">${esc((e as Error).message)}</td></tr>`;
+    }
+  }
+
+  // ---------- Zdarzenia interfejsu ----------
+  document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
+    b.setAttribute('aria-current', 'page');
+    document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== b.dataset.tab));
+    if (b.dataset.tab === 'products') loadProducts();
+  }));
+  document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-status]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true');
+    state.status = b.dataset.status || ''; state.page = 1; loadOrders();
+  }));
+  $('[data-search]').addEventListener('submit', (e) => {
+    e.preventDefault();
+    state.q = $<HTMLInputElement>('#q').value.trim(); state.page = 1;
+    if (state.q) { state.status = ''; document.querySelectorAll('[data-status]').forEach((x) => x.setAttribute('aria-pressed', String((x as HTMLElement).dataset.status === ''))); }
+    loadOrders();
+  });
+  $('[data-prev]').addEventListener('click', () => { state.page--; loadOrders(); });
+  $('[data-next]').addEventListener('click', () => { state.page++; loadOrders(); });
+  $('[data-rows]').addEventListener('click', (e) => { const tr = (e.target as HTMLElement).closest('tr[data-id]') as HTMLElement | null; if (tr) openOrder(tr.dataset.id!); });
+  $('[data-rows]').addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') { const tr = (e.target as HTMLElement).closest('tr[data-id]') as HTMLElement | null; if (tr) openOrder(tr.dataset.id!); } });
+  $('[data-close]').addEventListener('click', () => ($('[data-drawer]').hidden = true));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('[data-drawer]').hidden = true; });
+
+  loadOrders();
+</script>
+
+<style>
+  .admin { display: flex; min-height: 100vh; background: var(--c-gray-100); }
+  .side { flex: 0 0 220px; background: var(--c-ink); color: var(--c-white); padding: var(--s-2); display: flex; flex-direction: column; gap: 4px; }
+  .brand { color: var(--c-white); text-decoration: none; font-size: 1.4375rem; padding: 8px 12px 24px; }
+  .brand span { font-size: 0.8125rem; color: var(--c-white-70); }
+  .side__link { all: unset; cursor: pointer; padding: 12px; border-radius: var(--r-field); display: flex; justify-content: space-between; align-items: center; color: var(--c-white); }
+  .side__link[aria-current] { background: rgba(255, 255, 255, 0.1); }
+  .side__link--muted { color: var(--c-white-70); margin-top: auto; }
+  .side__link:focus-visible { outline: 2px solid var(--c-bright); }
+  .count:not(:empty) { min-width: 22px; height: 22px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-ink); font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; }
+
+  .main { flex: 1; min-width: 0; padding: var(--s-3); }
+  .main section { display: flex; flex-direction: column; gap: var(--s-2); }
+  .main section[hidden] { display: none; }
+  .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+  .head h1 { font-size: 2.5rem; }
+  .search .input { width: 280px; height: 44px; border-radius: var(--r-search); }
+  .filters .pill { min-height: 40px; font-size: 0.9375rem; }
+  .filters .pill span:not(:empty) { opacity: 0.7; }
+  .notice { padding: 16px 20px; background: var(--c-tint); font-size: var(--fs-small); }
+
+  .table-wrap { overflow-x: auto; background: var(--c-white); box-shadow: inset 0 0 0 1px var(--c-gray-400); }
+  .table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 0.9375rem; }
+  .table th { text-align: left; font-weight: 400; font-size: 0.8125rem; color: rgba(1, 8, 15, 0.75); padding: 14px 16px; }
+  .table td { padding: 14px 16px; border-top: 1px solid var(--c-gray-400); vertical-align: top; }
+  .table tr[data-id] { cursor: pointer; }
+  .table tr[data-id]:hover, .table tr[data-id]:focus { background: var(--c-gray-100); outline: none; }
+  .r { text-align: right; }
+  .tag { font-size: 0.6875rem; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-gray-200); }
+  .input.sm { height: 40px; width: 120px; }
+  .err { color: #D32300; }
+
+  .st { display: inline-block; padding: 3px 10px; border-radius: var(--r-pill); font-size: 0.8125rem; background: var(--c-gray-200); white-space: nowrap; }
+  .st--paid { background: var(--c-tint); }
+  .st--on_hold, .st--pending_payment { background: #FFF4D6; }
+  .st--shipped, .st--completed { background: #E3F5E8; }
+  .st--cancelled, .st--failed, .st--refunded { background: #FBE4E0; }
+
+  .pager { display: flex; align-items: center; gap: 16px; font-size: var(--fs-small); }
+  .pager .btn { min-height: 40px; }
+  .pager .btn:disabled { opacity: 0.3; cursor: default; }
+
+  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw); background: var(--c-white); box-shadow: -1px 0 0 var(--c-gray-400); display: flex; flex-direction: column; z-index: 20; }
+  .drawer[hidden] { display: none; }
+  .drawer__head { display: flex; justify-content: space-between; align-items: center; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
+  .drawer__head h2 { font-size: var(--fs-h4); font-weight: 400; }
+  .close { width: 44px; height: 44px; border: 0; background: transparent; font-size: 1.75rem; cursor: pointer; }
+  .drawer__body { overflow-y: auto; padding: var(--s-2); display: flex; flex-direction: column; gap: 12px; }
+  :global(.drawer__body h3) { font-size: 1rem; font-weight: 400; color: rgba(1, 8, 15, 0.75); margin-top: 12px; }
+  :global(.items) { list-style: none; margin: 0; padding: 0; }
+  :global(.items li) { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--c-gray-400); }
+  :global(.items .sum) { border-bottom: 0; font-size: 1.125rem; }
+  :global(.ship) { padding: 16px; background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
+  :global(.ship .row) { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
+  :global(.check) { display: flex; gap: 10px; align-items: center; font-size: var(--fs-small); }
+  :global(.actions) { display: flex; flex-wrap: wrap; gap: 8px; }
+  :global(.actions .btn), :global(.noteform .btn) { min-height: 40px; padding: 0 20px; }
+  :global(.danger) { color: #D32300 !important; }
+  :global(.events) { margin: 0; padding-left: 18px; font-size: var(--fs-small); display: flex; flex-direction: column; gap: 6px; }
+  :global(.note) { padding: 12px; background: var(--c-gray-100); }
+  :global(.noteform) { display: flex; flex-direction: column; gap: 8px; }
+  :global(.noteform textarea) { height: auto; padding: 10px 14px; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-white); z-index: 30; }
+  .toast--bad { background: #D32300; }
+  .toast[hidden] { display: none; }
+
+  @media (max-width: 800px) {
+    .admin { flex-direction: column; }
+    .side { flex: none; flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .brand { padding: 8px 12px; }
+    .side__link--muted { margin-top: 0; }
+    .main { padding: var(--s-2); }
+  }
+</style>
