@@ -1,7 +1,19 @@
 # Skopiuj ten plik jako .dev.vars (NIE wysyłaj .dev.vars do GitHuba).
-# Klucz testowy Turnstile – zawsze przepuszcza. Na produkcji ustaw prawdziwy w Cloudflare (Secrets).
+# Te same nazwy dodaj w Cloudflare: Worker can-c → Settings → Variables and Secrets (typ Secret).
+
+# Formularz kontaktowy i e-maile
 TURNSTILE_SECRET=1x0000000000000000000000000000000AA
 RESEND_API_KEY=re_TWOJ_KLUCZ
-# Do czasu weryfikacji domeny w Resend: nadawca onboarding@resend.dev, odbiorca = e-mail Twojego konta Resend
 CONTACT_FROM=Can-C <onboarding@resend.dev>
-CONTACT_TO=colderro@gmail.com
+CONTACT_TO=twoj-email@przyklad.pl
+
+# Supabase (sam adres projektu, bez /rest/v1)
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_SECRET_KEY=sb_secret_...
+
+# Przelewy24 – dane z konta SANDBOX
+P24_MERCHANT_ID=000000
+P24_POS_ID=000000
+P24_CRC=twoj_klucz_crc
+P24_API_KEY=twoj_klucz_do_raportow
+P24_SANDBOX=true

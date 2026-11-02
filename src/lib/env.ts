@@ -7,6 +7,13 @@ export type Env = {
   RESEND_API_KEY?: string;
   CONTACT_TO?: string;
   CONTACT_FROM?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_SECRET_KEY?: string;
+  P24_MERCHANT_ID?: string;
+  P24_POS_ID?: string;
+  P24_CRC?: string;
+  P24_API_KEY?: string;
+  P24_SANDBOX?: string; // 'true' = sandbox.przelewy24.pl
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {
@@ -24,3 +31,6 @@ export async function getEnv(locals: unknown): Promise<Env> {
     return {};
   }
 }
+
+export const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
