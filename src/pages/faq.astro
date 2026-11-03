@@ -2,6 +2,9 @@
 import Base from '../layouts/Base.astro';
 import { faqItems, faqCategories } from '../data/faq';
 import { site } from '../config';
+import { CONTENT_DEFAULTS } from '../lib/site-settings';
+const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+const withTokens = (t: string) => escHtml(t).replace('{shippingTime}', `<span data-site="shippingTime">${CONTENT_DEFAULTS.shippingTime}</span>`);
 
 const catLabel = Object.fromEntries(faqCategories.map((c) => [c.id, c.label]));
 const counts = Object.fromEntries(faqCategories.map((c) => [c.id, faqItems.filter((f) => f.cat === c.id).length]));
@@ -12,7 +15,7 @@ const jsonLd = {
   mainEntity: faqItems.map((f) => ({
     '@type': 'Question',
     name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/\n\n/g, ' ') },
+    acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/\n\n/g, ' ').replace('{shippingTime}', CONTENT_DEFAULTS.shippingTime) },
   })),
 };
 ---
@@ -52,7 +55,7 @@ const jsonLd = {
         {faqItems.map((f, i) => (
           <details class="acc" id={f.id} data-cat={f.cat} data-text={`${f.q} ${f.a}`.toLowerCase()} open={i === 0}>
             <summary><span class="q"><span class="q__cat">{catLabel[f.cat]}</span>{f.q}</span></summary>
-            <div class="acc__body">{f.a.split('\n\n').map((p) => <p>{p}</p>)}</div>
+            <div class="acc__body">{f.a.split('\n\n').map((p) => <p set:html={withTokens(p)} />)}</div>
           </details>
         ))}
         <p class="empty muted" data-empty hidden>Brak pytań pasujących do wyszukiwania. <a href="/kontakt/">Zapytaj nas bezpośrednio</a>.</p>

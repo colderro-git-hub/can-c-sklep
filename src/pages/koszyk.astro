@@ -9,6 +9,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   <section class="section">
     <div class="container cart-page">
       <h1>Koszyk</h1>
+      <p class="cart-notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
       <div data-empty hidden class="empty">
         <p class="lead">Koszyk jest pusty.</p>
@@ -103,6 +104,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <style>
+  .cart-notice { padding: 14px 18px; background: #FFF4D6; color: #7A4B00; }
+  .cart-notice[hidden] { display: none; }
   .cart-page { display: flex; flex-direction: column; gap: var(--s-4); }
   .empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
   .cart-layout { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }

@@ -137,9 +137,30 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <!-- USTAWIENIA SKLEPU -->
           <section data-view="settings" class="stack" hidden>
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
+            <form class="stack" data-settings-form novalidate>
+            <div class="card">
+              <div class="card__head"><h2 class="card__title">Komunikat na stronie</h2><span class="st" data-notice-state></span></div>
+              <p class="muted">Pasek nad nagłówkiem na wszystkich stronach oraz informacja w koszyku, przy zamówieniu i w mailu z potwierdzeniem. Np. „Urlop do 15 sierpnia – zamówienia wysyłamy od 16 sierpnia.”</p>
+              <div class="code-form">
+                <label class="check code-form__wide"><input type="checkbox" name="noticeEnabled" /> Pokazuj komunikat</label>
+                <label class="field code-form__wide">Treść<input class="input" name="noticeText" maxlength="300" /></label>
+                <label class="field">Pokazuj od (opcjonalnie)<input class="input" name="noticeFrom" type="datetime-local" /></label>
+                <label class="field">Pokazuj do (opcjonalnie)<input class="input" name="noticeTo" type="datetime-local" /></label>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card__head"><h2 class="card__title">Pasek promocji i wysyłka</h2></div>
+              <div class="code-form">
+                <label class="field">Pasek – tekst 1<input class="input" name="promo1" maxlength="80" /></label>
+                <label class="field">Pasek – tekst 2<input class="input" name="promo2" maxlength="80" /></label>
+                <label class="field">Pasek – tekst 3<input class="input" name="promo3" maxlength="80" /></label>
+                <label class="field">Czas wysyłki<input class="input" name="shippingTime" maxlength="80" placeholder="w ciągu 1 dnia roboczego" /></label>
+                <p class="muted code-form__wide">Puste pole paska = tekst się nie pokazuje. Czas wysyłki wstawiamy do zdania „Zamówienia wysyłamy …” w FAQ, formach dostawy, regulaminie, na karcie produktu i w mailu.</p>
+              </div>
+            </div>
             <div class="card">
               <div class="card__head"><h2 class="card__title">Kontakt</h2><span class="muted" data-settings-info></span></div>
-              <form class="code-form" data-settings-form novalidate>
+              <div class="code-form">
                 <label class="field">E-mail sklepu<input class="input" name="email" type="email" required /></label>
                 <label class="field">Telefon<input class="input" name="phone" type="tel" placeholder="puste = nie pokazuj" /></label>
                 <label class="field">Godziny obsługi<input class="input" name="hours" placeholder="pon.–pt., 9:00–17:00" /></label>
@@ -151,9 +172,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <label class="field">NIP<input class="input" name="nip" inputmode="numeric" /></label>
                 <label class="field">REGON<input class="input" name="regon" inputmode="numeric" /></label>
                 <label class="field code-form__wide">Link do szybkich zwrotów (Furgonetka)<input class="input" name="returnsUrl" type="url" /></label>
-                <div class="actions code-form__wide"><button class="btn">Zapisz ustawienia</button></div>
-              </form>
+              </div>
             </div>
+            <div class="actions"><button class="btn">Zapisz ustawienia</button></div>
+            </form>
           </section>
 
           <!-- KODY RABATOWE -->
@@ -623,13 +645,26 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   async function loadSettings() {
     try {
       const { site } = await api('/api/admin/ustawienia');
-      for (const [k, v] of Object.entries(site)) { const el = settingsForm.elements.namedItem(k) as HTMLInputElement | null; if (el) el.value = String(v ?? ''); }
+      const local = (iso: string) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
+      for (const [k, v] of Object.entries(site)) {
+        const el = settingsForm.elements.namedItem(k) as HTMLInputElement | null;
+        if (!el) continue;
+        if (el.type === 'checkbox') el.checked = v === 'true';
+        else if (el.type === 'datetime-local') el.value = local(String(v || ''));
+        else el.value = String(v ?? '');
+      }
+      const st = $('[data-notice-state]');
+      st.textContent = site.noticeActive ? 'Widoczny teraz' : 'Niewidoczny';
+      st.className = `st ${site.noticeActive ? 'st--on_hold' : 'st--pending_payment'}`;
     } catch (e) { toast((e as Error).message, true); }
   }
   settingsForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const body = Object.fromEntries([...new FormData(settingsForm).entries()].map(([k, v]) => [k, String(v)]));
-    try { await api('/api/admin/ustawienia', body); toast('Zapisano ustawienia.'); }
+    const fd = new FormData(settingsForm);
+    const body: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
+    body.noticeEnabled = fd.get('noticeEnabled') !== null;
+    for (const k of ['noticeFrom', 'noticeTo']) if (body[k]) body[k] = new Date(String(body[k])).toISOString();
+    try { await api('/api/admin/ustawienia', body); toast('Zapisano ustawienia.'); loadSettings(); }
     catch (err) { toast((err as Error).message, true); }
   });
 

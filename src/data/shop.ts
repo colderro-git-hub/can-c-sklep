@@ -66,7 +66,7 @@ export const reviews = [
   { quote: 'Bardzo dobre krople nawilżające dla osób pracujących długo przy komputerze.', author: 'Stały klient' },
 ];
 
-export const faqs = faqItems.filter((f) => f.home).map(({ q, a }) => ({ q, a }));
+export const faqs = faqItems.filter((f) => f.home).map(({ q, a }) => ({ q, a: a.replace('{shippingTime}', 'w ciągu 1 dnia roboczego') }));
 
 // Rabat zależy od liczby sztuk – ta sama funkcja posłuży później do liczenia ceny po stronie serwera
 export const discountFor = (qty: number, product: Product) =>

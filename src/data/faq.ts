@@ -30,7 +30,7 @@ export const faqItems: { id: string; cat: FaqCategory; q: string; a: string; hom
   { id: 'dostawa', cat: 'zamowienia', q: 'Ile kosztuje dostawa?',
     a: 'Dostawa w Polsce jest darmowa: do Paczkomatu InPost lub kurierem DPD.' },
   { id: 'wysylka', cat: 'zamowienia', home: true, q: 'Kiedy wyślecie moje zamówienie?',
-    a: '[Do uzupełnienia: czas realizacji]. Numer przesyłki dostaniesz e-mailem i zobaczysz w swoim koncie.' },
+    a: 'Zamówienia opłacone w dni robocze wysyłamy {shippingTime}. Numer przesyłki dostaniesz e-mailem i zobaczysz w swoim koncie.' },
   { id: 'konto', cat: 'zamowienia', q: 'Czy muszę zakładać konto?',
     a: 'Nie. Możesz zamówić jako gość. Konto pozwala śledzić zamówienia, pobierać faktury i szybciej zamawiać ponownie.' },
   { id: 'platnosci', cat: 'zwroty', q: 'Jakie są formy płatności?',

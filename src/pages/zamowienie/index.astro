@@ -21,6 +21,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       <form class="checkout" data-checkout novalidate hidden>
         <div class="checkout__main">
           <h1 class="title">Dostawa i płatność</h1>
+      <p class="cart-notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
           <fieldset class="box">
             <legend>1. Twoje dane</legend>
@@ -268,6 +269,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <style>
+  .cart-notice { padding: 14px 18px; background: #FFF4D6; color: #7A4B00; }
+  .cart-notice[hidden] { display: none; }
   .checkout-wrap { background: var(--c-gray-100); padding-top: var(--s-3); }
   .steps { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: var(--fs-small); color: var(--c-ink-70); }
   .steps [aria-current] { color: var(--c-ink); }

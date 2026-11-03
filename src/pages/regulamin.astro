@@ -1,5 +1,6 @@
 ---
 import InfoPage from '../components/InfoPage.astro';
+import { CONTENT_DEFAULTS } from '../lib/site-settings';
 import { site } from '../config';
 const toc = [
   { id: 's1', title: '§1 Postanowienia ogólne' },
@@ -92,7 +93,7 @@ const toc = [
     <h2>§8 Dostawa</h2>
     <ol>
       <li>Dostawa na terenie Polski jest bezpłatna: do Paczkomatu InPost lub kurierem DPD. Szczegóły: <a href="/formy-dostawy/">Formy dostawy</a>.</li>
-      <li>Sprzedawca wysyła zamówienie <span class="todo">[w ciągu 1 dnia roboczego]</span> od zaksięgowania płatności. Łączny termin dostawy nie przekracza <span class="todo">[5]</span> dni roboczych.</li>
+      <li>Sprzedawca wysyła zamówienie <span data-site="shippingTime">{CONTENT_DEFAULTS.shippingTime}</span> od zaksięgowania płatności. Łączny termin dostawy nie przekracza <span class="todo">[5]</span> dni roboczych.</li>
       <li>Po nadaniu Klient otrzymuje e-mail z numerem przesyłki.</li>
     </ol>
   </section>

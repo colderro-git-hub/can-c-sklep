@@ -1,5 +1,6 @@
 ---
 import InfoPage from '../components/InfoPage.astro';
+import { CONTENT_DEFAULTS } from '../lib/site-settings';
 const toc = [
   { id: 'koszty', title: 'Koszty dostawy' },
   { id: 'paczkomat', title: 'InPost Paczkomat 24/7' },
@@ -36,7 +37,7 @@ const toc = [
 
   <section id="czas">
     <h2>Czas realizacji</h2>
-    <p>Zamówienia opłacone w dni robocze wysyłamy <span class="todo">[w ciągu 1 dnia roboczego]</span>. Zamówienia złożone w weekend lub święto wysyłamy w najbliższy dzień roboczy.</p>
+    <p>Zamówienia opłacone w dni robocze wysyłamy <span data-site="shippingTime">{CONTENT_DEFAULTS.shippingTime}</span>. Zamówienia złożone w weekend lub święto wysyłamy w najbliższy dzień roboczy.</p>
     <p>Łączny czas od zamówienia do doręczenia to zwykle 2–3 dni robocze.</p>
   </section>
 

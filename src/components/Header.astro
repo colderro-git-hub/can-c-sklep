@@ -9,11 +9,14 @@ const nav = [
 ];
 const current = Astro.url.pathname;
 ---
+<div class="notice-bar" data-notice hidden role="status">
+  <div class="container"><span data-site="noticeText"></span></div>
+</div>
 <div class="promo">
   <div class="container promo__inner">
-    <span>Darmowa dostawa w Polsce</span>
-    <span>Do 10% rabatu przy 2 i 4 opakowaniach</span>
-    <span>Płatność BLIK i Przelewy24</span>
+    <span data-site="promo1" data-site-hide-empty>Darmowa dostawa w Polsce</span>
+    <span data-site="promo2" data-site-hide-empty>Do 10% rabatu przy 2 i 4 opakowaniach</span>
+    <span data-site="promo3" data-site-hide-empty>Płatność BLIK i Przelewy24</span>
   </div>
 </div>
 
@@ -57,6 +60,8 @@ const current = Astro.url.pathname;
 </script>
 
 <style>
+  .notice-bar { background: var(--c-ink); color: var(--c-white); padding: 12px 0; text-align: center; font-size: var(--fs-small); }
+  .notice-bar[hidden] { display: none; }
   .promo { background: var(--c-gray-200); font-size: var(--fs-small); color: rgba(1, 8, 15, 0.85); }
   .promo__inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 36px; padding-block: 10px; }
 

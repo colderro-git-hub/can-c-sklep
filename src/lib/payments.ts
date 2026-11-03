@@ -4,6 +4,7 @@ import type { Env } from './env';
 import type { db } from './supabase';
 import { verifyTransaction, type p24Config } from './p24';
 import { sendMail, zl } from './mail';
+import { getSite } from './site-settings';
 
 export async function finalizePayment(
   env: Env,
@@ -46,6 +47,7 @@ export async function finalizePayment(
       : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
   } catch (e) { console.error('Dane do e-maila: ' + errMsg(e)); }
   const origin = opts.origin;
+  const site = await getSite(env);
 
   try {
     await sendMail(env, {
@@ -59,7 +61,8 @@ export async function finalizePayment(
         lines, '',
         `Dostawa: ${delivery} (bezpłatna)`,
         order.wants_invoice ? 'Faktura: zostanie wysłana osobno.' : '', '',
-        'Gdy paczka zostanie nadana, wyślemy numer przesyłki.',
+        `Wysyłamy ${site.shippingTime}. Gdy paczka zostanie nadana, wyślemy numer przesyłki.`,
+        site.noticeActive ? `Uwaga: ${site.noticeText}` : '',
         `Historia zamówień: ${origin}/konto/`, '',
         'Zespół Can-C',
       ].join('\n'),

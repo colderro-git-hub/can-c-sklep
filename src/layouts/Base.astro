@@ -38,7 +38,13 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
       type SiteData = Record<string, string>;
       const KEY = 'canc-site-v1';
       const apply = (s: SiteData) => {
-        document.querySelectorAll<HTMLElement>('[data-site]').forEach((el) => { const v = s[el.dataset.site!]; if (typeof v === 'string' && v) el.textContent = v; });
+        document.querySelectorAll<HTMLElement>('[data-site]').forEach((el) => {
+          const v = s[el.dataset.site!];
+          if (typeof v !== 'string') return;
+          if (v) { el.textContent = v; el.hidden = false; }
+          else if (el.hasAttribute('data-site-hide-empty')) el.hidden = true;
+        });
+        document.querySelectorAll<HTMLElement>('[data-notice]').forEach((el) => { el.hidden = !(s as any).noticeActive; });
         document.querySelectorAll<HTMLAnchorElement>('[data-site-href]').forEach((el) => {
           const href = el.dataset.siteHref!.replace(/\{(\w+)\}/g, (_, k) => (s[k] ?? '').replace(k === 'phone' ? /\s/g : /$^/, ''));
           if (!/\{|:$/.test(href)) el.href = href;

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
-import { getSite, clearSiteCache, SITE_KEYS } from '../../../lib/site-settings';
+import { getSite, clearSiteCache, SITE_KEYS, CONTENT_KEYS } from '../../../lib/site-settings';
 
 export const prerender = false;
 
@@ -32,6 +32,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
   for (const k of ['facebook', 'returnsUrl'] as const) if (v[k] && !/^https:\/\/[^\s]+$/.test(v[k])) errors.push(`Adres ${k === 'facebook' ? 'Facebooka' : 'szybkich zwrotów'} musi zaczynać się od https://`);
   if (errors.length) return json(422, { error: errors.join(' ') });
   v.nip = v.nip.replace(/\D/g, ''); v.regon = v.regon.replace(/\D/g, '');
+
+  // Treści: pasek promocji, czas wysyłki, komunikat
+  const LIMITS: Record<string, number> = { promo1: 80, promo2: 80, promo3: 80, shippingTime: 80, noticeText: 300 };
+  for (const k of CONTENT_KEYS) v[k] = String(b[k] ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, LIMITS[k] ?? 40);
+  v.noticeEnabled = b.noticeEnabled === true || b.noticeEnabled === 'true' ? 'true' : '';
+  const toIso = (x: string) => { if (!x) return ''; const d = new Date(x); return isNaN(+d) ? 'bad' : d.toISOString(); };
+  v.noticeFrom = toIso(v.noticeFrom); v.noticeTo = toIso(v.noticeTo);
+  if (v.noticeFrom === 'bad' || v.noticeTo === 'bad') return json(422, { error: 'Nieprawidłowa data komunikatu.' });
+  if (v.noticeFrom && v.noticeTo && v.noticeFrom > v.noticeTo) return json(422, { error: 'Data końca komunikatu jest wcześniejsza niż początku.' });
+  if (v.noticeEnabled && !v.noticeText) return json(422, { error: 'Wpisz treść komunikatu albo go wyłącz.' });
+  if (!v.shippingTime) return json(422, { error: 'Podaj czas wysyłki.' });
 
   try {
     await db(env).upsert('settings', { key: 'site', value: v, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
