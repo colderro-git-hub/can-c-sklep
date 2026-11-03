@@ -18,8 +18,8 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <!-- Do startu sklepu staging nie może trafić do Google -->
-    <meta name="robots" content="noindex, nofollow" />
+    <!-- Do startu sklepu staging nie może trafić do Google. W dniu startu: zmienna builda PUBLIC_SITE_INDEXABLE=true -->
+    {import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true' && <meta name="robots" content="noindex, nofollow" />}
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
     <meta property="og:title" content={title} />

@@ -145,6 +145,21 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <p class="added" data-added role="status" hidden>Dodano do koszyka. <a href="/koszyk/">Przejdź do koszyka</a></p>
         </div>
 
+        {p.avail === 'out_of_stock' && (
+          <form class="notify" data-notify novalidate>
+            <p class="notify__title">Powiadom mnie, gdy produkt będzie dostępny</p>
+            <p class="small muted">Wyślemy jeden e-mail, gdy produkt wróci do sprzedaży. Bez newslettera.</p>
+            <span class="notify__row">
+              <label class="sr-only" for="notify-email">E-mail</label>
+              <input id="notify-email" class="input" type="email" name="email" autocomplete="email" required placeholder="jan@przyklad.pl" />
+              <button class="btn">Powiadom mnie</button>
+            </span>
+            <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl" data-size="compact"></div>}
+            <p class="msg small" role="status" data-notify-msg></p>
+          </form>
+        )}
+
         {p.highlights.length > 0 && <ul class="highlights">{p.highlights.map((h) => <li>{h}</li>)}</ul>}
 
         <ul class="perks">
@@ -290,6 +305,24 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
     (window as any).turnstile?.reset();
   });
+
+  // Powiadomienie o dostępności
+  const notify = document.querySelector<HTMLFormElement>('[data-notify]');
+  if (notify) {
+    notify.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = notify.querySelector<HTMLElement>('[data-notify-msg]')!;
+      const fd = new FormData(notify);
+      msg.textContent = 'Zapisywanie…';
+      try {
+        const res = await fetch('/api/powiadom', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: document.querySelector<HTMLElement>('[data-product]')?.dataset.product, email: fd.get('email'), website: fd.get('website'), token: fd.get('cf-turnstile-response') }) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Nie udało się zapisać.');
+        msg.textContent = 'Gotowe – napiszemy, gdy produkt wróci.'; notify.reset();
+      } catch (err) { msg.textContent = (err as Error).message; }
+      (window as any).turnstile?.reset();
+    });
+  }
 </script>
 
 <style>
@@ -323,6 +356,13 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .avail { font-size: var(--fs-small); }
   .avail--in_stock { color: var(--c-ok); }
   .avail--out_of_stock { color: #B3261E; }
+  .notify { padding: var(--s-2); background: var(--c-tint); display: flex; flex-direction: column; gap: 10px; }
+  .notify__title { font-size: 1.125rem; }
+  .notify__row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .notify__row .input { flex: 1 1 220px; }
+  .notify .msg:empty { display: none; }
+  .notify .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
   .options { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--s-1); }
   .options legend { padding-bottom: var(--s-1); }

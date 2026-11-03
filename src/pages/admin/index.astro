@@ -820,7 +820,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td class="r nowrap">${sale ? `<strong>${pln(p.sale_price)}</strong><br><s class="muted">${pln(p.price)}</s>` : `<strong>${pln(p.price)}</strong>`}</td>
           <td class="r ${low ? 'err' : ''}">${p.stock}${low ? '<br><span class="small">mało</span>' : ''}</td>
           <td>${AVAIL[p.avail] || p.avail}${p.availability ? ' <span class="muted">(ręcznie)</span>' : ''}</td>
-          <td>${p.ratingAvg ? `★ ${String(p.ratingAvg).replace('.', ',')} (${p.reviewsApproved})` : '—'}${p.reviewsPending ? ` <span class="badge-inline">${p.reviewsPending} nowe</span>` : ''}</td>
+          <td>${p.ratingAvg ? `★ ${String(p.ratingAvg).replace('.', ',')} (${p.reviewsApproved})` : '—'}${p.reviewsPending ? ` <span class="badge-inline">${p.reviewsPending} nowe</span>` : ''}${p.notifyWaiting ? `<br><span class="badge-inline" title="Osoby czekające na powiadomienie o dostępności">🔔 ${p.notifyWaiting} czeka</span>` : ''}</td>
           <td><span class="st ${p.active ? 'st--shipped' : 'st--pending_payment'}">${p.active ? 'Aktywny' : 'Ukryty'}</span></td>
         </tr>`;
       }).join('') || '<tr><td colspan="7" class="empty">Brak produktów.</td></tr>';
@@ -1014,7 +1014,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         ean: v('ean'), mpn: v('mpn'), brand: v('brand'), condition: v('condition'), google_category: v('google_category'),
         related_ids: fd.getAll('related').map(String), images,
       };
-      try { const r = await api('/api/admin/products', payload); toast('Zapisano produkt.'); loadProducts(); openProduct(r.id, false); }
+      try { const r = await api('/api/admin/products', payload); toast(r.notified ? `Zapisano produkt i wysłano ${r.notified} powiadomień o dostępności.` : 'Zapisano produkt.'); loadProducts(); openProduct(r.id, false); }
       catch (err) { toast((err as Error).message, true); }
     });
   }
@@ -1061,6 +1061,26 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <p class="stars-cell big">${starsTxt(r.rating)}</p>
       <dl class="kv"><dt>Autor</dt><dd>${esc(r.author_name)}</dd>${r.email ? `<dt>E-mail</dt><dd>${esc(r.email)}</dd>` : ''}${r.customer_id ? `<dt>Klient</dt><dd><button type="button" class="link" data-open-customer="${r.customer_id}">karta klienta</button></dd>` : ''}<dt>Produkt</dt><dd><button type="button" class="link" data-open-product="${esc(r.product_id)}">${esc(r.products?.name || r.product_id)}</button></dd></dl>
       ${r.title ? `<h3 class="sec__t">${esc(r.title)}</h3>` : ''}<p class="note">${esc(r.body)}</p>
+      ${r.edited_at ? `<p class="muted small">Edytowana ${date(r.edited_at)}${r.edited_by ? ` przez ${esc(r.edited_by)}` : ''}${r.original_body ? ' · oryginalna treść zachowana' : ''}</p>` : ''}
+      <details class="sec manual">
+        <summary>Edytuj opinię</summary>
+        <form class="sec" data-redit>
+          <div class="row2">
+            <label class="field">Autor<input class="input" name="author_name" value="${esc(r.author_name)}" maxlength="60" /></label>
+            <label class="field">Ocena<select class="input" name="rating">${[5, 4, 3, 2, 1].map((n) => `<option value="${n}" ${n === r.rating ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5 - n)} (${n})</option>`).join('')}</select></label>
+          </div>
+          <label class="field">Tytuł<input class="input" name="title" value="${esc(r.title || '')}" maxlength="120" /></label>
+          <label class="field">Treść<textarea class="input" name="body" rows="5" maxlength="3000">${esc(r.body)}</textarea></label>
+          <div class="row2">
+            <label class="field">Data opinii<input class="input" name="created_at" type="date" value="${String(r.created_at).slice(0, 10)}" /></label>
+            <label class="field">Produkt<select class="input" name="product_id" data-redit-products><option value="${esc(r.product_id)}">${esc(r.products?.name || r.product_id)}</option></select></label>
+          </div>
+          <label class="check"><input type="checkbox" name="verified_purchase" ${r.verified_purchase ? 'checked' : ''} /> Zweryfikowany zakup</label>
+          ${r.original_body ? `<details class="manual"><summary>Pokaż oryginalną treść</summary><p class="note">${esc(r.original_body)}</p></details>` : ''}
+          <p class="muted small">Poprawiaj tylko literówki i dane (np. imię). Nie zmieniaj sensu ani oceny wystawionej przez klienta – to wprowadzałoby w błąd (Omnibus, zasady Google).</p>
+          <div class="actions"><button class="btn btn--sm">Zapisz opinię</button></div>
+        </form>
+      </details>
       <form class="sec" data-reply><label class="field">Odpowiedź sklepu (publiczna)<textarea class="input" name="reply" rows="3" maxlength="1500">${esc(r.reply || '')}</textarea></label><div class="actions"><button class="btn btn--outline btn--sm">Zapisz odpowiedź</button></div></form>
       <div class="actions">
         ${r.status !== 'approved' ? '<button type="button" class="btn btn--sm" data-act-r="approve">Publikuj</button>' : ''}
@@ -1069,6 +1089,23 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </div>
       <p class="muted small">Zgodnie z dyrektywą Omnibus i zasadami Google publikuj opinie rzetelnie – także krytyczne – a odrzucaj tylko spam, treści obraźliwe albo niezwiązane z produktem.</p>`;
     bindLinks(body);
+    // Lista produktów do przeniesienia opinii (np. gdy dodano ją do złego produktu)
+    api('/api/admin/products').then(({ rows }) => {
+      const sel = body.querySelector<HTMLSelectElement>('[data-redit-products]'); if (!sel) return;
+      sel.innerHTML = rows.map((p: any) => `<option value="${esc(p.id)}" ${p.id === r.product_id ? 'selected' : ''}>${esc(p.name)}</option>`).join('');
+    }).catch(() => {});
+    body.querySelector<HTMLFormElement>('[data-redit]')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target as HTMLFormElement);
+      const p: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
+      p.verified_purchase = fd.get('verified_purchase') !== null;
+      try {
+        await api('/api/admin/opinie', { action: 'update', id: r.id, ...p });
+        toast('Zapisano opinię.');
+        Object.assign(r, { ...p, rating: Number(p.rating), edited_at: new Date().toISOString(), original_body: r.original_body || (p.body !== r.body ? r.body : null) });
+        openReview(r); loadReviews();
+      } catch (err) { toast((err as Error).message, true); }
+    });
     body.querySelector<HTMLFormElement>('[data-reply]')!.addEventListener('submit', async (e) => {
       e.preventDefault();
       try { await api('/api/admin/opinie', { action: 'reply', id: r.id, reply: new FormData(e.target as HTMLFormElement).get('reply') }); toast('Zapisano odpowiedź.'); loadReviews(); }

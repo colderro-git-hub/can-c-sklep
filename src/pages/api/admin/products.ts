@@ -4,6 +4,7 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { clearCatalogCache, PRODUCT_FIELDS } from '../../../lib/catalog';
 import { availabilityOf } from '../../../lib/pricing';
+import { sendBackInStock } from '../../../lib/stock-notify';
 
 export const prerender = false;
 
@@ -24,11 +25,12 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     }
     const rows = await sb.select<any>(`products?select=${PRODUCT_FIELDS}&order=sort_order.asc,name.asc`);
     const reviews = await sb.select<{ product_id: string; rating: number; status: string }>('reviews?select=product_id,rating,status&limit=10000');
+    const waiting = await sb.select<{ product_id: string }>('stock_notifications?select=product_id&notified_at=is.null&limit=10000').catch(() => []);
     return json(200, {
       rows: rows.map((p) => {
         const r = reviews.filter((x) => x.product_id === p.id);
         const ok = r.filter((x) => x.status === 'approved');
-        return { ...p, avail: availabilityOf(p), reviewsApproved: ok.length, reviewsPending: r.filter((x) => x.status === 'pending').length, ratingAvg: ok.length ? Math.round((ok.reduce((s, x) => s + x.rating, 0) / ok.length) * 10) / 10 : null };
+        return { ...p, avail: availabilityOf(p), reviewsApproved: ok.length, reviewsPending: r.filter((x) => x.status === 'pending').length, notifyWaiting: waiting.filter((w) => w.product_id === p.id).length, ratingAvg: ok.length ? Math.round((ok.reduce((s, x) => s + x.rating, 0) / ok.length) * 10) / 10 : null };
       }),
     });
   } catch (e) {
@@ -101,8 +103,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if ((await sb.select(`products?select=id&id=eq.${id}`)).length) return json(409, { error: 'Produkt o takim adresie już istnieje.' });
       await sb.insert('products', row, 'id');
     } else {
+      const [before] = await sb.select<any>(`products?select=availability,active&id=eq.${id}`);
       const [saved] = await sb.update(`products?id=eq.${id}`, row, 'id');
       if (!saved) return json(404, { error: 'Nie znaleziono produktu.' });
+      // Produkt wrócił do sprzedaży → wysyłamy powiadomienia czekającym klientom
+      const wasOut = before && availabilityOf(before) === 'out_of_stock';
+      if (wasOut && availabilityOf(row) !== 'out_of_stock' && row.active && row.price !== null) {
+        clearCatalogCache();
+        const r = await sendBackInStock(env, id, new URL(request.url).origin);
+        if (r.sent) { console.log(`Admin ${admin} zapisał produkt ${id}; powiadomienia: ${r.sent}`); return json(200, { id, notified: r.sent }); }
+      }
     }
     clearCatalogCache();
     console.log(`Admin ${admin} zapisał produkt ${id}`);
