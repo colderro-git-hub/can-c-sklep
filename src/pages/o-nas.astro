@@ -1,0 +1,30 @@
+---
+import InfoPage from '../components/InfoPage.astro';
+import { site } from '../config';
+---
+<InfoPage title="O nas" description="Sklep can-c.pl prowadzi firma Colderro Ewa Zimna. Sprzedajemy oryginalne krople Can-C od 2013 roku." lead="Oryginalne krople Can-C sprzedajemy od 2013 roku. Stawiamy na sprawdzone produkty, szybką wysyłkę i obsługę, z którą łatwo się porozumieć.">
+  <section>
+    <h2>Kim jesteśmy</h2>
+    <p>Sklep can-c.pl prowadzi firma <span data-site="company">{site.company}</span>. Od początku sprzedajemy wyłącznie oryginalne produkty renomowanych producentów z branży optycznej – w tym krople Can-C zatwierdzone przez Innovative Vision Products (IVP).</p>
+    <p>Wszystkie zamówienia realizujemy przez sklep internetowy. Nie prowadzimy sprzedaży stacjonarnej.</p>
+  </section>
+
+  <section>
+    <h2>Na co możesz liczyć</h2>
+    <ul>
+      <li>Oryginalne produkty z pewnego źródła.</li>
+      <li>Darmowa dostawa w Polsce i szybka wysyłka.</li>
+      <li>Rabaty przy zakupie zestawów na dłuższą kurację.</li>
+      <li>Konto z historią zamówień i ponownym zamówieniem jednym kliknięciem.</li>
+      <li>Kontakt z człowiekiem: <span data-site="hours">{site.hours}</span>.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Dane firmy</h2>
+    <div class="card">
+      <p><strong><span data-site="company">{site.company}</span></strong><br /><span data-site="address">{site.address}</span><br />NIP: <span data-site="nip">{site.nip}</span><br />REGON: <span data-site="regon">{site.regon}</span></p>
+      <p>E-mail: <a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a><br />Biuro obsługi klienta: <span data-site="hours">{site.hours}</span></p>
+    </div>
+  </section>
+</InfoPage>

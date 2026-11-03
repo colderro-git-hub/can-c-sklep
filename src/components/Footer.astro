@@ -1,4 +1,5 @@
 ---
+import { site } from '../config';
 const columns = [
   { title: 'Sklep', links: [
     { href: '/produkt/krople-can-c/', label: 'Krople Can-C' },
@@ -7,10 +8,10 @@ const columns = [
     { href: '/konto/', label: 'Moje konto' },
   ]},
   { title: 'Zakupy', links: [
-    { href: '/dostawa/', label: 'Dostawa' },
-    { href: '/platnosci/', label: 'Płatności' },
-    { href: '/zwroty/', label: 'Zwroty i reklamacje' },
-    { href: '/odstapienie-od-umowy/', label: 'Odstąpienie od umowy' },
+    { href: '/formy-dostawy/', label: 'Formy dostawy' },
+    { href: '/formy-platnosci/', label: 'Formy płatności' },
+    { href: '/odstapienie-od-umowy/', label: 'Zwroty i reklamacje' },
+    { href: '/odstapienie-od-umowy/#odstapienie', label: 'Odstąp od umowy' },
   ]},
   { title: 'Informacje', links: [
     { href: '/o-nas/', label: 'O nas' },
@@ -27,7 +28,7 @@ const year = new Date().getFullYear();
     <div class="footer__cols">
       <div class="footer__brand">
         <span class="footer__logo">Can-C</span>
-        <span class="footer__muted">[adres e-mail sklepu] · [telefon]</span>
+        <span class="footer__muted"><span data-site="email">{site.email}</span><br /><span data-site="hours">{site.hours}</span></span>
       </div>
       {columns.map((col) => (
         <nav aria-label={col.title} class="footer__col">
@@ -39,7 +40,7 @@ const year = new Date().getFullYear();
     <ul class="chips" aria-label="Metody płatności i dostawy">
       {methods.map((m) => <li>{m}</li>)}
     </ul>
-    <p class="legal">Colderro Ewa Zimna, [adres siedziby], Wysoka · NIP [NIP] · REGON [REGON] · © 2012–{year}</p>
+    <p class="legal"><span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span> · NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span> · © 2012–{year}</p>
   </div>
 </footer>
 

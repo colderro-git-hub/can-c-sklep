@@ -22,7 +22,7 @@ const quick = [
     <div class="container page-hero__inner">
       <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / Kontakt</nav>
       <h1>Kontakt</h1>
-      <p class="lead">Pytania o produkty, zamówienia i zwroty. Odpowiadamy w dni robocze {site.replyTime}.</p>
+      <p class="lead">Pytania o produkty, zamówienia i zwroty. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
     </div>
   </section>
 
@@ -43,11 +43,11 @@ const quick = [
       <div class="info">
         <h2 class="h3">Obsługa klienta</h2>
         <dl>
-          <div><dt>E-mail</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
-          <div><dt>Telefon</dt><dd><a href={`tel:${site.phone.replace(/\s/g, '')}`}>{site.phone}</a></dd></div>
-          <div><dt>Godziny</dt><dd>{site.hours}</dd></div>
-          <div><dt>Facebook</dt><dd><a href={site.facebook}>krople.canc</a></dd></div>
-          <div><dt>Sprzedawca</dt><dd class="small">{site.company}<br />{site.address}<br />NIP {site.nip} · REGON {site.regon}</dd></div>
+          <div><dt>E-mail</dt><dd><a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></dd></div>
+          <div><dt>Telefon</dt><dd><a href={`tel:${site.phone.replace(/\s/g, '')}`} data-site-href="tel:{phone}"><span data-site="phone">{site.phone}</span></a></dd></div>
+          <div><dt>Godziny</dt><dd><span data-site="hours">{site.hours}</span></dd></div>
+          <div><dt>Facebook</dt><dd><a href={site.facebook} data-site-href="{facebook}">krople.canc</a></dd></div>
+          <div><dt>Sprzedawca</dt><dd class="small"><span data-site="company">{site.company}</span><br /><span data-site="address">{site.address}</span><br />NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span></dd></div>
         </dl>
       </div>
 
@@ -83,7 +83,7 @@ const quick = [
         <!-- Pułapka na boty: pole niewidoczne dla ludzi -->
         <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
 
-        <p class="small muted">Administratorem danych jest {site.company}. Dane z formularza wykorzystamy tylko do odpowiedzi na Twoją wiadomość. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</p>
+        <p class="small muted">Administratorem danych jest <span data-site="company">{site.company}</span>. Dane z formularza wykorzystamy tylko do odpowiedzi na Twoją wiadomość. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</p>
         <label class="consent"><input type="checkbox" name="marketing" value="1" /> <span>Chcę też otrzymywać informacje o promocjach (opcjonalnie).</span></label>
 
         <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>

@@ -33,6 +33,27 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
       <slot />
     </main>
     <Footer />
+    <script>
+      // Aktualne dane sklepu z panelu admina (kontakt, firma) – podmiana w oznaczonych miejscach strony
+      type SiteData = Record<string, string>;
+      const KEY = 'canc-site-v1';
+      const apply = (s: SiteData) => {
+        document.querySelectorAll<HTMLElement>('[data-site]').forEach((el) => { const v = s[el.dataset.site!]; if (typeof v === 'string' && v) el.textContent = v; });
+        document.querySelectorAll<HTMLAnchorElement>('[data-site-href]').forEach((el) => {
+          const href = el.dataset.siteHref!.replace(/\{(\w+)\}/g, (_, k) => (s[k] ?? '').replace(k === 'phone' ? /\s/g : /$^/, ''));
+          if (!/\{|:$/.test(href)) el.href = href;
+        });
+      };
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+        if (cached && Date.now() - cached.at < 300_000) apply(cached.site);
+        else fetch('/api/ustawienia').then((r) => (r.ok ? r.json() : null)).then((site) => {
+          if (!site) return;
+          apply(site);
+          try { sessionStorage.setItem(KEY, JSON.stringify({ at: Date.now(), site })); } catch { /* tryb prywatny */ }
+        }).catch(() => {});
+      } catch { /* brak pamięci sesji – zostają dane z config.ts */ }
+    </script>
   </body>
 </html>
 

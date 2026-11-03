@@ -272,6 +272,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
             ${o.tracking_number ? ` · <a href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">Śledź przesyłkę</a>` : ''}</span>
           <span class="order__btns">
             <button type="button" class="linklike small" data-ask>Napisz w sprawie zamówienia</button>
+            ${['paid', 'shipped', 'completed'].includes(o.status) ? `<a class="small" href="/odstapienie-od-umowy/?nr=${o.number}#odstapienie">Odstąp od umowy</a>` : ''}
             ${reorderable ? '<button type="button" class="btn btn--ghost btn--sm" data-reorder>Zamów ponownie</button>' : ''}
           </span>
         </div>

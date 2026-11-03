@@ -1,0 +1,134 @@
+---
+import InfoPage from '../components/InfoPage.astro';
+import { site } from '../config';
+const toc = [
+  { id: 's1', title: '§1 Postanowienia ogólne' },
+  { id: 's2', title: '§2 Definicje' },
+  { id: 's3', title: '§3 Usługi elektroniczne' },
+  { id: 's4', title: '§4 Konto klienta' },
+  { id: 's5', title: '§5 Zamówienia i umowa' },
+  { id: 's6', title: '§6 Ceny, rabaty i kody' },
+  { id: 's7', title: '§7 Płatności' },
+  { id: 's8', title: '§8 Dostawa' },
+  { id: 's9', title: '§9 Odstąpienie od umowy' },
+  { id: 's10', title: '§10 Reklamacje' },
+  { id: 's11', title: '§11 Opinie' },
+  { id: 's12', title: '§12 Dane osobowe' },
+  { id: 's13', title: '§13 Postanowienia końcowe' },
+];
+---
+<InfoPage title="Regulamin" description="Regulamin sklepu internetowego can-c.pl: zamówienia, płatności, dostawa, zwroty, reklamacje i konto klienta." toc={toc} legal>
+  <section id="s1">
+    <h2>§1 Postanowienia ogólne</h2>
+    <ol>
+      <li>Regulamin określa zasady korzystania ze sklepu internetowego can-c.pl (dalej: Sklep) oraz zawierania umów sprzedaży.</li>
+      <li>Sklep prowadzi <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>, NIP <span data-site="nip">{site.nip}</span>, REGON <span data-site="regon">{site.regon}</span> (dalej: Sprzedawca). Kontakt: <a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a>, formularz na stronie <a href="/kontakt/">Kontakt</a>, adres pocztowy jak wyżej.</li>
+      <li>Regulamin jest udostępniony bezpłatnie na stronie Sklepu w sposób umożliwiający jego pobranie, utrwalenie i wydrukowanie.</li>
+      <li>Sklep sprzedaje produkty na terytorium Rzeczypospolitej Polskiej, konsumentom i przedsiębiorcom.</li>
+    </ol>
+  </section>
+
+  <section id="s2">
+    <h2>§2 Definicje</h2>
+    <ul>
+      <li><strong>Klient</strong> – osoba fizyczna, osoba prawna lub jednostka organizacyjna ze zdolnością prawną, która korzysta ze Sklepu.</li>
+      <li><strong>Konsument</strong> – osoba fizyczna dokonująca ze Sprzedawcą czynności prawnej niezwiązanej bezpośrednio z jej działalnością gospodarczą lub zawodową.</li>
+      <li><strong>Przedsiębiorca na prawach konsumenta</strong> – osoba fizyczna zawierająca umowę bezpośrednio związaną z jej działalnością gospodarczą, gdy z treści umowy wynika, że nie posiada ona dla niej charakteru zawodowego (w szczególności w świetle przedmiotu działalności z CEIDG); w zakresie przewidzianym w ustawie o prawach konsumenta przysługują jej uprawnienia konsumenta.</li>
+      <li><strong>Konto</strong> – usługa elektroniczna umożliwiająca dostęp do historii zamówień, danych i kodów rabatowych.</li>
+      <li><strong>Zamówienie</strong> – oświadczenie woli Klienta zmierzające do zawarcia umowy sprzedaży.</li>
+    </ul>
+  </section>
+
+  <section id="s3">
+    <h2>§3 Usługi elektroniczne</h2>
+    <ol>
+      <li>Sprzedawca świadczy nieodpłatnie: formularz zamówienia, Konto, formularz kontaktowy, formularz odstąpienia od umowy oraz – po wyrażeniu zgody – newsletter.</li>
+      <li>Do korzystania ze Sklepu potrzebne jest urządzenie z dostępem do internetu, aktualna przeglądarka internetowa z włączoną obsługą JavaScript i cookies oraz aktywny adres e-mail.</li>
+      <li>Klient nie może dostarczać treści o charakterze bezprawnym ani działać w sposób zakłócający funkcjonowanie Sklepu.</li>
+      <li>Umowy o usługi formularzy zawierane są na czas ich wypełniania; umowa o Konto i newsletter – na czas nieoznaczony. Klient może je wypowiedzieć w każdej chwili (Konto – wiadomością na adres Sprzedawcy, newsletter – linkiem w wiadomości lub w ustawieniach Konta).</li>
+      <li>Reklamacje dotyczące usług elektronicznych można składać na adres e-mail Sprzedawcy; Sprzedawca odpowiada w ciągu 14 dni.</li>
+    </ol>
+  </section>
+
+  <section id="s4">
+    <h2>§4 Konto klienta</h2>
+    <ol>
+      <li>Założenie Konta jest dobrowolne i bezpłatne. Zamówienie można złożyć także bez Konta.</li>
+      <li>Logowanie odbywa się bez hasła – Klient otrzymuje na swój adres e-mail jednorazowy kod lub link. Klient odpowiada za zabezpieczenie dostępu do swojej skrzynki e-mail.</li>
+      <li>Po pierwszym zalogowaniu Konto jest łączone z zamówieniami złożonymi wcześniej z tego samego adresu e-mail, także w poprzedniej wersji Sklepu.</li>
+    </ol>
+  </section>
+
+  <section id="s5">
+    <h2>§5 Zamówienia i zawarcie umowy</h2>
+    <ol>
+      <li>Zamówienia można składać przez całą dobę. Klient wybiera produkty, sposób dostawy, podaje dane i akceptuje Regulamin, a następnie klika przycisk „Zamawiam i płacę”, co oznacza obowiązek zapłaty.</li>
+      <li>Przed złożeniem zamówienia Klient widzi podsumowanie: produkty, cenę łączną z podatkami, koszt dostawy i rabaty.</li>
+      <li>Umowa sprzedaży zostaje zawarta z chwilą otrzymania przez Klienta wiadomości e-mail z potwierdzeniem przyjęcia zamówienia, wysyłanej po zaksięgowaniu płatności. Wiadomość ta stanowi potwierdzenie zawarcia umowy na trwałym nośniku.</li>
+      <li>Umowa zawierana jest w języku polskim.</li>
+    </ol>
+  </section>
+
+  <section id="s6">
+    <h2>§6 Ceny, rabaty i kody rabatowe</h2>
+    <ol>
+      <li>Ceny podane są w złotych polskich i zawierają podatek VAT. Wiążąca jest cena z chwili złożenia zamówienia.</li>
+      <li>Przy obniżce ceny Sklep podaje także najniższą cenę z 30 dni przed wprowadzeniem obniżki.</li>
+      <li>Rabaty za zestawy (8% od 2 opakowań, 10% od 4 opakowań kropli) naliczane są automatycznie.</li>
+      <li>Kody rabatowe mogą mieć termin ważności, minimalną wartość zamówienia, limit użyć lub być przypisane do konkretnego Klienta – warunki podawane są przy kodzie. Do jednego zamówienia można użyć jednego kodu; kod łączy się z rabatem za zestaw. Kod nie podlega wymianie na pieniądze. Kod zostaje wykorzystany z chwilą opłacenia zamówienia.</li>
+    </ol>
+  </section>
+
+  <section id="s7">
+    <h2>§7 Płatności</h2>
+    <ol>
+      <li>Płatność następuje z góry, przez serwis Przelewy24 (PayPro S.A.): BLIK, szybki przelew, karta płatnicza i inne metody dostępne w serwisie. Szczegóły: <a href="/formy-platnosci/">Formy płatności</a>.</li>
+      <li>Klient powinien opłacić zamówienie w ciągu 30 minut od jego złożenia. Zamówienie nieopłacone w ciągu 24 godzin zostaje anulowane.</li>
+      <li>Sprzedawca wystawia dowód sprzedaży; na życzenie Klienta – fakturę VAT z danymi podanymi w zamówieniu.</li>
+    </ol>
+  </section>
+
+  <section id="s8">
+    <h2>§8 Dostawa</h2>
+    <ol>
+      <li>Dostawa na terenie Polski jest bezpłatna: do Paczkomatu InPost lub kurierem DPD. Szczegóły: <a href="/formy-dostawy/">Formy dostawy</a>.</li>
+      <li>Sprzedawca wysyła zamówienie <span class="todo">[w ciągu 1 dnia roboczego]</span> od zaksięgowania płatności. Łączny termin dostawy nie przekracza <span class="todo">[5]</span> dni roboczych.</li>
+      <li>Po nadaniu Klient otrzymuje e-mail z numerem przesyłki.</li>
+    </ol>
+  </section>
+
+  <section id="s9">
+    <h2>§9 Odstąpienie od umowy</h2>
+    <ol>
+      <li>Konsument i przedsiębiorca na prawach konsumenta mogą odstąpić od umowy w terminie 14 dni bez podania przyczyny. Zasady, wyjątki (w tym produkty w zapieczętowanych opakowaniach otwartych po dostarczeniu ze względu na ochronę zdrowia), formularz online i wzór oświadczenia: <a href="/odstapienie-od-umowy/">Zwroty i reklamacje</a>.</li>
+    </ol>
+  </section>
+
+  <section id="s10">
+    <h2>§10 Reklamacje</h2>
+    <ol>
+      <li>Sprzedawca odpowiada wobec konsumenta i przedsiębiorcy na prawach konsumenta za brak zgodności towaru z umową, który ujawni się w ciągu 2 lat od dostarczenia, na zasadach ustawy o prawach konsumenta. Wobec pozostałych przedsiębiorców odpowiedzialność z tytułu rękojmi jest wyłączona w granicach dopuszczalnych przez prawo <span class="todo">[do decyzji]</span>.</li>
+      <li>Reklamację można złożyć przez Konto, e-mailem lub pocztą. Sprzedawca odpowiada w ciągu 14 dni.</li>
+      <li>Konsument może skorzystać z pozasądowych sposobów rozwiązywania sporów, m.in. pomocy rzecznika konsumentów i Wojewódzkiego Inspektoratu Inspekcji Handlowej. Informacje: <a href="https://polubowne.uokik.gov.pl" target="_blank" rel="noopener">polubowne.uokik.gov.pl</a>.</li>
+    </ol>
+  </section>
+
+  <section id="s11">
+    <h2>§11 Opinie o produktach</h2>
+    <p><span class="todo">[Do decyzji – wymóg informacyjny dyrektywy Omnibus: opisz, czy i jak opinie są weryfikowane, np. „Opinie na stronie pochodzą od klientów, którzy kupili produkt; weryfikujemy je na podstawie historii zamówień” albo „Opinie nie są weryfikowane”.]</span></p>
+  </section>
+
+  <section id="s12">
+    <h2>§12 Dane osobowe</h2>
+    <p>Administratorem danych jest Sprzedawca. Zasady przetwarzania danych i plików cookies opisuje <a href="/polityka-prywatnosci/">Polityka prywatności</a>.</p>
+  </section>
+
+  <section id="s13">
+    <h2>§13 Postanowienia końcowe</h2>
+    <ol>
+      <li>W sprawach nieuregulowanych stosuje się prawo polskie, w szczególności Kodeks cywilny, ustawę o prawach konsumenta oraz ustawę o świadczeniu usług drogą elektroniczną. Regulamin nie ogranicza praw konsumenta wynikających z bezwzględnie obowiązujących przepisów.</li>
+      <li>Sprzedawca może zmienić Regulamin z ważnych przyczyn (zmiana przepisów, zmiana sposobu płatności lub dostawy, nowe funkcje Sklepu), informując o tym na stronie z co najmniej 14-dniowym wyprzedzeniem. Do zamówień złożonych przed zmianą stosuje się dotychczasową wersję.</li>
+      <li>Poprzednie wersje Regulaminu są dostępne na życzenie Klienta.</li>
+    </ol>
+  </section>
+</InfoPage>

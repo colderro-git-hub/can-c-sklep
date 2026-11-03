@@ -1,0 +1,122 @@
+---
+import InfoPage from '../components/InfoPage.astro';
+import { site } from '../config';
+const toc = [
+  { id: 'odstapienie', title: 'Odstąp od umowy online' },
+  { id: 'zasady', title: 'Prawo odstąpienia – zasady' },
+  { id: 'wyjatki', title: 'Kiedy nie przysługuje' },
+  { id: 'zwrot', title: 'Jak odesłać produkt' },
+  { id: 'pieniadze', title: 'Zwrot pieniędzy' },
+  { id: 'reklamacje', title: 'Reklamacje' },
+  { id: 'wzor', title: 'Wzór formularza' },
+];
+---
+<InfoPage title="Zwroty i reklamacje" description="Odstąpienie od umowy w 14 dni, zwrot produktu i reklamacje w sklepie Can-C. Formularz odstąpienia online." lead="Masz 14 dni na odstąpienie od umowy bez podawania przyczyny. Najszybciej zrobisz to formularzem poniżej." toc={toc} legal>
+  <section id="odstapienie">
+    <h2>Odstąp od umowy online</h2>
+    <p>Wypełnij formularz. Potwierdzenie otrzymania oświadczenia wyślemy od razu na Twój e-mail.</p>
+    <form class="wd" data-wd novalidate>
+      <div class="grid2">
+        <label class="field">Numer zamówienia<input class="input" name="number" inputmode="numeric" required placeholder="np. 18790" /></label>
+        <label class="field">E-mail podany przy zamówieniu<input class="input" name="email" type="email" autocomplete="email" required /></label>
+      </div>
+      <label class="field">Imię i nazwisko<input class="input" name="name" autocomplete="name" required maxlength="120" /></label>
+      <fieldset class="fs">
+        <legend>Odstępuję od umowy w zakresie</legend>
+        <label class="check"><input type="radio" name="scope" value="all" checked /> całego zamówienia</label>
+        <label class="check"><input type="radio" name="scope" value="part" /> części zamówienia</label>
+        <label class="field" data-part hidden>Których produktów (i ile sztuk)?<input class="input" name="items" maxlength="300" /></label>
+      </fieldset>
+      <label class="field">Uwagi (opcjonalnie)<textarea class="input textarea" name="note" rows="3" maxlength="1000"></textarea></label>
+      <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+      <button class="btn btn--lg">Odstępuję od umowy</button>
+      <p class="msg" role="status" data-wd-msg></p>
+    </form>
+  </section>
+
+  <section id="zasady">
+    <h2>Prawo odstąpienia – zasady</h2>
+    <p>Jeśli kupujesz jako konsument (albo jako przedsiębiorca na prawach konsumenta – osoba prowadząca jednoosobową działalność, gdy zakup nie ma dla niej charakteru zawodowego), możesz odstąpić od umowy w terminie <strong>14 dni</strong> bez podawania przyczyny. Termin liczy się od dnia, w którym Ty albo wskazana przez Ciebie osoba (inna niż przewoźnik) odebraliście produkt.</p>
+    <p>Wystarczy, że przed upływem terminu wyślesz nam oświadczenie: formularzem powyżej, e-mailem na <a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a>, przez <a href="/konto/">swoje konto</a> („Napisz w sprawie zamówienia” → Zwrot) albo pocztą na adres: <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>. Możesz użyć <a href="#wzor">wzoru formularza</a>, ale nie jest to obowiązkowe.</p>
+  </section>
+
+  <section id="wyjatki">
+    <h2>Kiedy nie przysługuje</h2>
+    <p>Prawo odstąpienia nie przysługuje w przypadku produktu dostarczanego w zapieczętowanym opakowaniu, którego po otwarciu nie można zwrócić ze względu na ochronę zdrowia lub ze względów higienicznych, jeśli opakowanie zostało otwarte po dostarczeniu (art. 38 ust. 1 pkt 5 ustawy o prawach konsumenta).</p>
+    <p><strong>Dotyczy to kropli do oczu i kapsułek: zwrócić można produkty w nienaruszonym, fabrycznie zamkniętym opakowaniu.</strong> Jeśli otwarty produkt jest wadliwy, skorzystaj z <a href="#reklamacje">reklamacji</a>.</p>
+  </section>
+
+  <section id="zwrot">
+    <h2>Jak odesłać produkt</h2>
+    <ol>
+      <li>Najwygodniej: <a href={site.returnsUrl} data-site-href="{returnsUrl}" target="_blank" rel="noopener">formularz szybkich zwrotów</a> – wygenerujesz etykietę i nadasz paczkę w Paczkomacie lub punkcie.</li>
+      <li>Albo odeślij paczkę samodzielnie na adres: <strong><span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span></strong>.</li>
+    </ol>
+    <p>Produkt odeślij w ciągu 14 dni od złożenia oświadczenia. Zabezpiecz go przed uszkodzeniem. Bezpośredni koszt odesłania ponosisz Ty <span class="todo">[chyba że sklep zdecyduje się pokrywać koszt zwrotu]</span>. Nie przyjmujemy przesyłek za pobraniem.</p>
+  </section>
+
+  <section id="pieniadze">
+    <h2>Zwrot pieniędzy</h2>
+    <p>Zwrócimy wszystkie płatności, w tym koszt najtańszej oferowanej dostawy, najpóźniej w ciągu 14 dni od otrzymania oświadczenia. Pieniądze oddajemy <strong>tą samą metodą, którą zapłaciłeś</strong> (np. na konto lub kartę użytą w Przelewy24), chyba że uzgodnimy inną, bez dodatkowych kosztów dla Ciebie.</p>
+    <p>Możemy wstrzymać zwrot do czasu otrzymania produktu albo dowodu jego nadania – zależnie od tego, co nastąpi wcześniej.</p>
+  </section>
+
+  <section id="reklamacje">
+    <h2>Reklamacje</h2>
+    <p>Odpowiadamy za zgodność produktu z umową. Jeśli produkt jest wadliwy, uszkodzony albo niezgodny z zamówieniem, zgłoś to: przez <a href="/konto/">konto</a> („Napisz w sprawie zamówienia” → Reklamacja), e-mailem na <a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a> albo pocztą. Opisz problem i – jeśli możesz – dołącz zdjęcie.</p>
+    <p>Odpowiemy w ciągu <strong>14 dni</strong>. Jako konsument możesz żądać wymiany produktu albo – gdy wymiana jest niemożliwa lub nieskuteczna – obniżenia ceny lub odstąpienia od umowy. Odpowiadamy za brak zgodności, który ujawni się w ciągu 2 lat od dostarczenia produktu.</p>
+    <p>W razie sporu możesz skorzystać z pomocy miejskiego lub powiatowego rzecznika konsumentów albo Wojewódzkiego Inspektoratu Inspekcji Handlowej. Informacje o pozasądowym rozwiązywaniu sporów znajdziesz na stronie <a href="https://polubowne.uokik.gov.pl" target="_blank" rel="noopener">polubowne.uokik.gov.pl</a>.</p>
+  </section>
+
+  <section id="wzor">
+    <h2>Wzór formularza odstąpienia od umowy</h2>
+    <div class="card">
+      <p>Adresat: <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>, e-mail: <span data-site="email">{site.email}</span></p>
+      <p>Ja/My(*) niniejszym informuję/informujemy(*) o moim/naszym(*) odstąpieniu od umowy sprzedaży następujących rzeczy(*): ……………………</p>
+      <p>Data zawarcia umowy(*) / odbioru(*): ……………………<br />Numer zamówienia: ……………………<br />Imię i nazwisko konsumenta(-ów): ……………………<br />Adres konsumenta(-ów): ……………………</p>
+      <p>Podpis konsumenta(-ów) (tylko jeżeli formularz jest przesyłany w wersji papierowej): ……………………<br />Data: ……………………</p>
+      <p class="small">(*) Niepotrzebne skreślić.</p>
+    </div>
+  </section>
+</InfoPage>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-wd]');
+  if (form) {
+    const part = form.querySelector<HTMLElement>('[data-part]')!;
+    const msg = form.querySelector<HTMLElement>('[data-wd-msg]')!;
+    form.querySelectorAll<HTMLInputElement>('input[name="scope"]').forEach((r) => r.addEventListener('change', () => { part.hidden = r.value !== 'part' || !r.checked; }));
+    const nr = new URLSearchParams(location.search).get('nr');
+    if (nr) (form.elements.namedItem('number') as HTMLInputElement).value = nr.replace(/\D/g, '');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      msg.className = 'msg'; msg.textContent = 'Wysyłanie…';
+      try {
+        const res = await fetch('/api/odstapienie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.fromEntries(fd.entries())) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Nie udało się wysłać. Napisz do nas e-mail.');
+        msg.className = 'msg msg--ok';
+        msg.textContent = `Przyjęliśmy oświadczenie o odstąpieniu od zamówienia nr ${d.number}. Potwierdzenie wysłaliśmy na Twój e-mail.`;
+        form.reset(); part.hidden = true;
+      } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
+    });
+  }
+</script>
+
+<style>
+  .wd { display: flex; flex-direction: column; gap: 16px; padding: var(--s-3); background: var(--c-gray-100); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .fs { margin: 0; padding: 16px; border: 1px solid var(--c-gray-400); background: var(--c-white); display: flex; flex-direction: column; gap: 10px; }
+  .fs legend { padding: 0 6px; font-size: var(--fs-small); }
+  .fs [hidden] { display: none; }
+  .check { display: flex; gap: 10px; align-items: center; }
+  .check input { width: 18px; height: 18px; accent-color: var(--c-ink); }
+  .textarea { height: auto; padding: 12px 16px; resize: vertical; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .wd .btn { align-self: flex-start; }
+  .msg:empty { display: none; }
+  .msg--ok { color: var(--c-ok); }
+  .msg--err { color: #D32300; }
+</style>

@@ -1,0 +1,101 @@
+---
+// Wspólny układ podstron informacyjnych i dokumentów prawnych: nagłówek, spis treści, treść, boczne linki.
+import Base from '../layouts/Base.astro';
+import { site, LEGAL_DRAFT, LEGAL_EFFECTIVE_DATE } from '../config';
+
+interface Props {
+  title: string;
+  description: string;
+  lead?: string;
+  toc?: { id: string; title: string }[];
+  legal?: boolean;   // dokument prawny: data obowiązywania, informacja o projekcie, przycisk drukowania
+}
+const { title, description, lead, toc = [], legal = false } = Astro.props;
+const path = Astro.url.pathname;
+const links = [
+  { href: '/formy-dostawy/', label: 'Formy dostawy' },
+  { href: '/formy-platnosci/', label: 'Formy płatności' },
+  { href: '/odstapienie-od-umowy/', label: 'Zwroty i reklamacje' },
+  { href: '/regulamin/', label: 'Regulamin' },
+  { href: '/polityka-prywatnosci/', label: 'Polityka prywatności' },
+  { href: '/o-nas/', label: 'O nas' },
+];
+---
+<Base title={`${title} | Can-C`} description={description}>
+  <section class="page-hero">
+    <div class="container page-hero__inner">
+      <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / {title}</nav>
+      <h1>{title}</h1>
+      {lead && <p class="lead">{lead}</p>}
+      {legal && <p class="muted small">Obowiązuje od: {LEGAL_EFFECTIVE_DATE}</p>}
+      {legal && LEGAL_DRAFT && (
+        <p class="draft" role="note">Projekt dokumentu do weryfikacji przez prawnika przed startem sklepu. Treść opisuje działanie nowego sklepu, ale nie stanowi porady prawnej.</p>
+      )}
+    </div>
+  </section>
+
+  <section class="section info-section">
+    <div class="container info">
+      <aside class="info__aside">
+        {toc.length > 0 && (
+          <nav class="toc" aria-label="Spis treści">
+            <span class="toc__title">Na tej stronie</span>
+            <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.title}</a></li>)}</ol>
+          </nav>
+        )}
+        <nav class="side-links" aria-label="Informacje dla klienta">
+          <span class="toc__title">Informacje</span>
+          <ul>{links.map((l) => <li><a href={l.href} aria-current={path === l.href ? 'page' : undefined}>{l.label}</a></li>)}</ul>
+        </nav>
+        <div class="help">
+          <span class="toc__title">Masz pytanie?</span>
+          <p class="small"><span data-site="hours">{site.hours}</span><br /><a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></p>
+          <a href="/kontakt/" class="btn btn--sm">Napisz do nas</a>
+        </div>
+      </aside>
+
+      <article class="prose">
+        <slot />
+        {legal && <p class="print"><button type="button" class="linklike" onclick="window.print()">Wydrukuj albo zapisz jako PDF</button></p>}
+      </article>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .small { font-size: var(--fs-small); }
+  .draft { padding: 14px 18px; background: #FFF4D6; color: #7A4B00; font-size: var(--fs-small); max-width: 760px; }
+  .info-section { padding-top: var(--s-2); }
+  .info { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-start; }
+  .info__aside { flex: 1 1 260px; display: flex; flex-direction: column; gap: var(--s-3); position: sticky; top: 100px; }
+  .toc__title { display: block; font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-ink-70); margin-bottom: 12px; }
+  .toc ol, .side-links ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .toc a, .side-links a { color: var(--c-ink); text-decoration: none; }
+  .toc a:hover, .side-links a:hover { text-decoration: underline; }
+  .side-links a[aria-current] { box-shadow: inset 2px 0 0 var(--c-ink); padding-left: 10px; }
+  .help { display: flex; flex-direction: column; gap: 8px; padding: var(--s-2); background: var(--c-gray-100); }
+  .help .btn { align-self: flex-start; min-height: 40px; padding: 0 18px; font-size: 0.9375rem; }
+
+  .prose { flex: 3 1 560px; min-width: 0; max-width: 760px; }
+  .prose :global(section) { scroll-margin-top: 100px; padding-bottom: var(--s-3); margin-bottom: var(--s-3); border-bottom: 1px solid var(--c-ink-10); }
+  .prose :global(section:last-of-type) { border-bottom: 0; }
+  .prose :global(h2) { font-size: 1.75rem; margin-bottom: var(--s-2); }
+  .prose :global(h3) { font-size: 1.25rem; font-weight: 400; margin: var(--s-2) 0 var(--s-1); }
+  .prose :global(p), .prose :global(li) { line-height: 1.65; color: rgba(1, 8, 15, 0.85); }
+  .prose :global(p) { margin-bottom: 14px; }
+  .prose :global(ol), .prose :global(ul) { margin: 0 0 14px; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+  .prose :global(table) { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.9375rem; }
+  .prose :global(th), .prose :global(td) { text-align: left; padding: 12px; border-bottom: 1px solid var(--c-gray-400); vertical-align: top; }
+  .prose :global(th) { font-weight: 400; color: var(--c-ink-70); }
+  .prose :global(.table-wrap) { overflow-x: auto; }
+  .prose :global(.card) { background: var(--c-gray-100); padding: var(--s-2); margin-bottom: 16px; }
+  .prose :global(.todo) { background: #FFF4D6; padding: 0 4px; }
+  .linklike { border: 0; background: none; padding: 0; font: inherit; color: var(--c-link); text-decoration: underline; cursor: pointer; }
+  .print { margin-top: var(--s-2); }
+
+  @media (max-width: 900px) { .info__aside { position: static; order: 2; } }
+  @media print {
+    :global(header), :global(footer), :global(.promo), .info__aside, .crumbs, .print { display: none !important; }
+    .prose { max-width: none; }
+  }
+</style>
