@@ -9,12 +9,12 @@ import { getSite } from './site-settings';
 export async function finalizePayment(
   env: Env,
   sb: ReturnType<typeof db>,
-  p24: ReturnType<typeof p24Config>,
+  p24: ReturnType<typeof p24Config> | null,
   order: any,
-  opts: { orderId: number; methodId?: number; origin: string; skipVerify?: boolean; by?: string; from?: string[] },
+  opts: { orderId: number | null; methodId?: number; origin: string; skipVerify?: boolean; by?: string; from?: string[] },
 ): Promise<'paid' | 'already' | 'verify_failed'> {
-  if (!opts.skipVerify) {
-    const ok = await verifyTransaction(p24, { sessionId: order.id, orderId: opts.orderId, amount: order.total });
+  if (!opts.skipVerify && p24) {
+    const ok = await verifyTransaction(p24, { sessionId: order.id, orderId: opts.orderId!, amount: order.total });
     if (!ok) {
       await sb.insert('order_events', { order_id: order.id, type: 'p24_verify_failed', data: {} }, 'id');
       return 'verify_failed';
@@ -24,7 +24,7 @@ export async function finalizePayment(
   // Zmiana statusu tylko z „oczekuje” – chroni przed podwójnym przetworzeniem
   const updated = await sb.update(
     `orders?id=eq.${order.id}&status=in.(${(opts.from || ['pending_payment']).join(',')})`,
-    { status: 'paid', paid_at: new Date().toISOString(), p24_order_id: opts.orderId },
+    { status: 'paid', paid_at: new Date().toISOString(), ...(opts.orderId ? { p24_order_id: opts.orderId } : {}) },
     'id',
   );
   if (!updated.length) return 'already';

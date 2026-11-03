@@ -33,7 +33,7 @@ async function api(cfg: Cfg, method: string, path: string, body: unknown) {
 // 1. Rejestracja transakcji → adres strony płatności
 export async function registerTransaction(
   cfg: Cfg,
-  t: { sessionId: string; amount: number; description: string; email: string; client: string; phone?: string; urlReturn: string; urlStatus: string },
+  t: { sessionId: string; amount: number; description: string; email: string; client: string; phone?: string; urlReturn: string; urlStatus: string; timeLimit?: number },
 ) {
   const sign = await sha384({ sessionId: t.sessionId, merchantId: cfg.merchantId, amount: t.amount, currency: 'PLN', crc: cfg.crc });
   const data = await api(cfg, 'POST', '/transaction/register', {
@@ -50,7 +50,7 @@ export async function registerTransaction(
     language: 'pl',
     urlReturn: t.urlReturn,
     urlStatus: t.urlStatus,
-    timeLimit: 30,
+    timeLimit: t.timeLimit ?? 30, // minuty; 0 = bez limitu (link wysyłany mailem)
     encoding: 'UTF-8',
     sign,
   });

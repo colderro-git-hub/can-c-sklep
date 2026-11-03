@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Wypisano z wiadomości | Can-C" description="Rezygnacja z wiadomości marketingowych sklepu Can-C.">
+  <section class="section">
+    <div class="container" style="max-width: 640px; display: flex; flex-direction: column; gap: 24px;">
+      <h1 data-ok>Wypisano</h1>
+      <p class="lead" data-ok>Nie będziemy już wysyłać Ci przypomnień ani informacji o promocjach. Wiadomości o Twoich zamówieniach (potwierdzenia, wysyłka) będą dochodzić jak dotąd.</p>
+      <p class="muted" data-ok>Zmieniłeś zdanie? Zgodę włączysz ponownie w <a href="/konto/">swoim koncie</a>.</p>
+      <h1 data-err hidden>Link jest nieprawidłowy</h1>
+      <p class="lead" data-err hidden>Nie udało się wypisać tym linkiem. Zmień zgodę w <a href="/konto/">swoim koncie</a> albo <a href="/kontakt/">napisz do nas</a>.</p>
+    </div>
+  </section>
+</Base>
+<script>
+  if (new URLSearchParams(location.search).has('blad')) {
+    document.querySelectorAll<HTMLElement>('[data-ok]').forEach((e) => (e.hidden = true));
+    document.querySelectorAll<HTMLElement>('[data-err]').forEach((e) => (e.hidden = false));
+  }
+</script>

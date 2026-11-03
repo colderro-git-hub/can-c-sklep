@@ -6,6 +6,7 @@ import { sendMail } from '../../../lib/mail';
 import { trackingUrl } from '../../../lib/tracking';
 import { p24Config, getTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
+import { str, EMAIL_RE, POSTCODE_RE, LOCKER_RE, cleanPhone, validPhone, validNip } from '../../../lib/validate';
 
 export const prerender = false;
 
@@ -18,7 +19,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   if (!UUID.test(id)) return json(400, { error: 'Nieprawidłowy identyfikator.' });
   try {
     const sb = db(env);
-    const [order] = await sb.select(`orders?select=*,order_items(name,qty,unit_price,discount,total),customers(first_name,last_name,phone,marketing_consent)&id=eq.${id}`);
+    const [order] = await sb.select(`orders?select=*,order_items(name,qty,unit_price,discount,total,product_id),customers(id,first_name,last_name,phone,marketing_consent,admin_note)&id=eq.${id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
     const events = await sb.select(`order_events?select=type,data,created_at&order_id=eq.${id}&order=created_at.asc`);
     return json(200, { order, events });
@@ -37,6 +38,7 @@ const ALLOWED: Record<string, { from: string[]; to?: string }> = {
   cancel: { from: ['pending_payment', 'paid', 'on_hold'], to: 'cancelled' },
   note: { from: [] },
   check_payment: { from: ['pending_payment', 'cancelled'] },
+  update: { from: ['pending_payment', 'paid', 'on_hold', 'shipped', 'completed', 'cancelled'] },
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -53,6 +55,37 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const sb = db(env);
     const [order] = await sb.select<any>(`orders?select=id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice,source&id=eq.${b.id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
+
+    // Edycja danych zamówienia (kontakt, dostawa, faktura, uwagi) – kwoty i produkty bez zmian
+    if (b.action === 'update') {
+      if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return json(409, { error: 'Zamówienie z WooCommerce – edytuj je w obecnym sklepie.' });
+      const email = str(b.email, 200).toLowerCase();
+      const phone = cleanPhone(b.phone);
+      const name = str(b.name, 120);
+      const method = b.shipping_method === 'dpd' ? 'dpd' : 'inpost_locker';
+      const locker = str(b.shipping_point, 15).toUpperCase();
+      const addr = { street: str(b.street, 120), postcode: str(b.postcode, 6), city: str(b.city, 60) };
+      const inv = { company: str(b.company, 150), nip: str(b.nip, 13).replace(/\D/g, ''), street: str(b.invStreet, 120), postcode: str(b.invPostcode, 6), city: str(b.invCity, 60) };
+      const wantsInvoice = b.wants_invoice === true;
+      const errors: string[] = [];
+      if (!EMAIL_RE.test(email)) errors.push('Nieprawidłowy e-mail.');
+      if (phone && !validPhone(phone)) errors.push('Telefon: 9 cyfr.');
+      if (name.length < 3) errors.push('Podaj imię i nazwisko.');
+      if (method === 'inpost_locker' && !LOCKER_RE.test(locker)) errors.push('Podaj kod Paczkomatu.');
+      if (method === 'dpd' && (!addr.street || !POSTCODE_RE.test(addr.postcode) || !addr.city)) errors.push('Uzupełnij adres dostawy.');
+      if (wantsInvoice && (!inv.company || !validNip(inv.nip))) errors.push('Faktura: podaj firmę i poprawny NIP.');
+      if (errors.length) return json(422, { error: errors.join(' ') });
+      const [full] = await sb.select<any>(`orders?select=shipping_address&id=eq.${order.id}`);
+      const pointName = method === 'inpost_locker' && locker === order.shipping_point ? full?.shipping_address?.point_name : undefined;
+      const patch = {
+        email, shipping_method: method, shipping_point: method === 'inpost_locker' ? locker : null,
+        shipping_address: method === 'dpd' ? { name, phone, ...addr, country: 'PL' } : { name, phone, ...(pointName ? { point_name: pointName } : {}) },
+        wants_invoice: wantsInvoice, billing: wantsInvoice ? inv : null, customer_note: str(b.customer_note, 500) || null,
+      };
+      await sb.update(`orders?id=eq.${order.id}`, patch, 'id');
+      await sb.insert('order_events', { order_id: order.id, type: 'edited', data: { by: admin } }, 'id');
+      return json(200, { ok: true });
+    }
 
     // Ręczne sprawdzenie płatności w P24 (gdy powiadomienie nie dotarło)
     if (b.action === 'check_payment') {

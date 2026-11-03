@@ -19,6 +19,7 @@ export type Env = {
   ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
   ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
   FURGONETKA_API_KEY?: string; // klucz integracji własnej (ten sam wpisujesz w panelu Furgonetki)
+  CRON_SECRET?: string;        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {

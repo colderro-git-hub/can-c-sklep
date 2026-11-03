@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
 
   const since = fromWarsaw(url.searchParams.get('datetime') || '') || '2000-01-01T00:00:00Z';
   const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit')) || 100));
-  const sources = env.ALLOW_WC_ACTIONS === 'true' ? 'shop,woocommerce' : 'shop';
+  const sources = env.ALLOW_WC_ACTIONS === 'true' ? 'shop,admin,woocommerce' : 'shop,admin';
 
   try {
     const rows = await db(env).select(
