@@ -1,0 +1,86 @@
+// Wspólne zakończenie płatności: potwierdzenie w P24, status „opłacone”, stany, kod rabatowy, e-maile.
+// Używane przez powiadomienie z P24 i przez ręczne sprawdzenie płatności w panelu admina.
+import type { Env } from './env';
+import type { db } from './supabase';
+import { verifyTransaction, type p24Config } from './p24';
+import { sendMail, zl } from './mail';
+
+export async function finalizePayment(
+  env: Env,
+  sb: ReturnType<typeof db>,
+  p24: ReturnType<typeof p24Config>,
+  order: any,
+  opts: { orderId: number; methodId?: number; origin: string; skipVerify?: boolean; by?: string; from?: string[] },
+): Promise<'paid' | 'already' | 'verify_failed'> {
+  if (!opts.skipVerify) {
+    const ok = await verifyTransaction(p24, { sessionId: order.id, orderId: opts.orderId, amount: order.total });
+    if (!ok) {
+      await sb.insert('order_events', { order_id: order.id, type: 'p24_verify_failed', data: {} }, 'id');
+      return 'verify_failed';
+    }
+  }
+
+  // Zmiana statusu tylko z „oczekuje” – chroni przed podwójnym przetworzeniem
+  const updated = await sb.update(
+    `orders?id=eq.${order.id}&status=in.(${(opts.from || ['pending_payment']).join(',')})`,
+    { status: 'paid', paid_at: new Date().toISOString(), p24_order_id: opts.orderId },
+    'id',
+  );
+  if (!updated.length) return 'already';
+  await sb.insert('order_events', { order_id: order.id, type: 'p24_verified', data: { orderId: opts.orderId, methodId: opts.methodId ?? null, ...(opts.by ? { by: opts.by } : {}) } }, 'id');
+  try { await sb.rpc('redeem_discount', { p_order: order.id }); } catch (e) {
+    console.error('Kod rabatowy: ' + (e instanceof Error ? e.message : String(e)));
+  }
+  try { await sb.rpc('apply_order_stock', { p_order: order.id }); } catch (e) {
+    console.error('Stany magazynowe: ' + (e instanceof Error ? e.message : String(e)));
+  }
+
+  // ---------- E-maile (błąd wysyłki nie cofa płatności; każdy mail wysyłany niezależnie) ----------
+  const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+  let lines = '', delivery = '';
+  try {
+    const items = await sb.select<any>(`order_items?select=name,qty,total&order_id=eq.${order.id}`);
+    lines = items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
+    delivery = order.shipping_method === 'inpost_locker'
+      ? `Paczkomat InPost ${order.shipping_point}`
+      : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
+  } catch (e) { console.error('Dane do e-maila: ' + errMsg(e)); }
+  const origin = opts.origin;
+
+  try {
+    await sendMail(env, {
+      to: order.email,
+      subject: `Potwierdzenie zamówienia nr ${order.number} – Can-C`,
+      replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+      text: [
+        'Dziękujemy za zamówienie!', '',
+        `Numer zamówienia: ${order.number}`,
+        `Płatność: przyjęta (${zl(order.total)})`, '',
+        lines, '',
+        `Dostawa: ${delivery} (bezpłatna)`,
+        order.wants_invoice ? 'Faktura: zostanie wysłana osobno.' : '', '',
+        'Gdy paczka zostanie nadana, wyślemy numer przesyłki.',
+        `Historia zamówień: ${origin}/konto/`, '',
+        'Zespół Can-C',
+      ].join('\n'),
+    });
+    await sb.insert('order_events', { order_id: order.id, type: 'mail_confirmation', data: {} }, 'id');
+  } catch (e) {
+    console.error('E-mail do klienta (potwierdzenie) nie wysłany: ' + errMsg(e));
+    await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { to: 'klient', error: errMsg(e).slice(0, 300) } }, 'id').catch(() => {});
+  }
+
+  if (env.CONTACT_TO) {
+    try {
+      await sendMail(env, {
+        to: env.CONTACT_TO.split(',').map((s) => s.trim()),
+        subject: `[can-c.pl] Nowe opłacone zamówienie nr ${order.number} – ${zl(order.total)}`,
+        text: `${lines}\n\nDostawa: ${delivery}\nKlient: ${order.email}\nFaktura: ${order.wants_invoice ? 'tak' : 'nie'}\n\nPanel: ${origin}/admin/`,
+      });
+    } catch (e) {
+      console.error('E-mail do sklepu (nowe zamówienie) nie wysłany: ' + errMsg(e));
+    }
+  }
+
+  return 'paid';
+}

@@ -79,3 +79,15 @@ export async function verifyTransaction(cfg: Cfg, v: { sessionId: string; orderI
   });
   return data?.data?.status === 'success';
 }
+
+// 4. Dane transakcji po sessionId (do ręcznego sprawdzenia płatności z panelu)
+// status: 0 – brak płatności, 1 – opłacona, czeka na weryfikację, 2 – opłacona i zweryfikowana, 3 – zwrócona
+export async function getTransaction(cfg: Cfg, sessionId: string) {
+  const res = await fetch(`${cfg.host}/api/v1/transaction/by/sessionId/${encodeURIComponent(sessionId)}`, {
+    headers: { Authorization: `Basic ${btoa(`${cfg.posId}:${cfg.apiKey}`)}` },
+  });
+  if (res.status === 404) return null;
+  const data: any = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`P24 transaction/by/sessionId: ${res.status} ${JSON.stringify(data)}`);
+  return data.data as { orderId: number; sessionId: string; status: number; amount: number; currency: string; paymentMethod?: number };
+}

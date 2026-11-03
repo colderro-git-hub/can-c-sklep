@@ -4,6 +4,8 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { sendMail } from '../../../lib/mail';
 import { trackingUrl } from '../../../lib/tracking';
+import { p24Config, getTransaction } from '../../../lib/p24';
+import { finalizePayment } from '../../../lib/payments';
 
 export const prerender = false;
 
@@ -34,6 +36,7 @@ const ALLOWED: Record<string, { from: string[]; to?: string }> = {
   unhold: { from: ['on_hold'], to: 'paid' },
   cancel: { from: ['pending_payment', 'paid', 'on_hold'], to: 'cancelled' },
   note: { from: [] },
+  check_payment: { from: ['pending_payment', 'cancelled'] },
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -48,8 +51,28 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     const sb = db(env);
-    const [order] = await sb.select<any>(`orders?select=id,number,email,status,shipping_method,source&id=eq.${b.id}`);
+    const [order] = await sb.select<any>(`orders?select=id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice,source&id=eq.${b.id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
+
+    // Ręczne sprawdzenie płatności w P24 (gdy powiadomienie nie dotarło)
+    if (b.action === 'check_payment') {
+      if (!rule.from.includes(order.status)) return json(409, { error: 'Zamówienie nie czeka na płatność.' });
+      const p24 = p24Config(env);
+      const t = await getTransaction(p24, order.id);
+      await sb.insert('order_events', { order_id: order.id, type: 'p24_check', data: { by: admin, status: t?.status ?? null, amount: t?.amount ?? null } }, 'id');
+      if (!t || t.status === 0) return json(200, { ok: true, warning: 'W Przelewy24 nie ma jeszcze wpłaty dla tego zamówienia.' });
+      if (t.status === 3) return json(200, { ok: true, warning: 'Płatność w Przelewy24 została zwrócona.' });
+      if (t.amount !== order.total) {
+        await sb.insert('order_events', { order_id: order.id, type: 'amount_mismatch', data: { paid: t.amount, expected: order.total } }, 'id');
+        return json(200, { ok: true, warning: `Kwota w P24 (${(t.amount / 100).toFixed(2)} zł) nie zgadza się z zamówieniem – sprawdź ręcznie.` });
+      }
+      const r = await finalizePayment(env, sb, p24, order, {
+        orderId: t.orderId, methodId: t.paymentMethod, origin: new URL(request.url).origin,
+        skipVerify: t.status === 2, by: admin, from: rule.from,
+      });
+      if (r === 'verify_failed') return json(502, { error: 'Przelewy24 odrzuciły potwierdzenie transakcji.' });
+      return json(200, { ok: true, warning: r === 'already' ? 'Zamówienie było już opłacone.' : undefined });
+    }
 
     if (b.action === 'note') {
       const note = String(b.note || '').trim().slice(0, 1000);
