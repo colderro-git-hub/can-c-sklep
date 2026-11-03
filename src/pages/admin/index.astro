@@ -1,5 +1,5 @@
 ---
-import '../../styles/global.css';
+// Panel admina – styl z „Can - Design System” (Metrix). Niezależny od stylów sklepu.
 import { FURGONETKA_PANEL_URL } from '../../config';
 ---
 <!doctype html>
@@ -9,62 +9,133 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Panel Can-C</title>
-    <link rel="preload" href="/fonts/geomanist-regular.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
   </head>
-  <body class="admin" data-furgonetka={FURGONETKA_PANEL_URL}>
-    <nav class="side" aria-label="Panel">
-      <a href="/" class="brand">Can-C <span>admin</span></a>
-      <button type="button" class="side__link" data-tab="orders" aria-current="page">Zamówienia <span class="count" data-count-paid></span></button>
-      <button type="button" class="side__link" data-tab="products">Produkty</button>
-      <a href="/" class="side__link side__link--muted">Sklep</a>
-    </nav>
+  <body data-furgonetka={FURGONETKA_PANEL_URL}>
+    <div class="app">
+      <aside class="side" aria-label="Nawigacja panelu">
+        <a href="/admin/" class="logo" aria-label="Panel Can-C">
+          <span class="logo__mark" aria-hidden="true">C</span><span class="logo__text">Can-C</span>
+        </a>
+        <nav class="nav">
+          <button type="button" class="nav__item" data-tab="orders" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg>
+            <span>Zamówienia</span><span class="badge" data-count-paid></span>
+          </button>
+          <button type="button" class="nav__item" data-tab="products">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9ZM3.5 7.5 12 12m0 0 8.5-4.5M12 12v9" /></svg>
+            <span>Produkty</span>
+          </button>
+        </nav>
+        <div class="side__foot">
+          <a href="/" class="nav__item nav__item--muted" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z" /></svg>
+            <span>Otwórz sklep</span>
+          </a>
+          <a href="/cdn-cgi/access/logout" class="nav__item nav__item--danger">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12H4m0 0 3.5-3.5M4 12l3.5 3.5M10 7V5.5A1.5 1.5 0 0 1 11.5 4h7A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5h-7a1.5 1.5 0 0 1-1.5-1.5V17" /></svg>
+            <span>Wyloguj</span>
+          </a>
+        </div>
+      </aside>
 
-    <main class="main">
-      <!-- ZAMÓWIENIA -->
-      <section data-view="orders">
-        <div class="head">
-          <h1>Zamówienia</h1>
-          <form class="search" data-search>
-            <label class="sr-only" for="q">Szukaj</label>
-            <input id="q" name="q" type="search" class="input" placeholder="Numer lub e-mail" />
-          </form>
-        </div>
-        <div class="pill-group filters" role="tablist" aria-label="Status">
-          <button type="button" class="pill" data-status="paid" aria-pressed="true">Do wysłania <span data-count="paid"></span></button>
-          <button type="button" class="pill" data-status="on_hold" aria-pressed="false">Wstrzymane <span data-count="on_hold"></span></button>
-          <button type="button" class="pill" data-status="shipped" aria-pressed="false">Wysłane</button>
-          <button type="button" class="pill" data-status="pending_payment" aria-pressed="false">Czekają na płatność <span data-count="pending_payment"></span></button>
-          <button type="button" class="pill" data-status="completed" aria-pressed="false">Zrealizowane</button>
-          <button type="button" class="pill" data-status="cancelled" aria-pressed="false">Anulowane</button>
-          <button type="button" class="pill" data-status="" aria-pressed="false">Wszystkie</button>
-        </div>
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>Nr</th><th>Data</th><th>Klient</th><th>Produkty</th><th>Dostawa</th><th class="r">Kwota</th><th>Status</th></tr></thead>
-            <tbody data-rows></tbody>
-          </table>
-        </div>
-        <div class="pager"><button type="button" class="btn btn--ghost" data-prev>Poprzednie</button><span data-page></span><button type="button" class="btn btn--ghost" data-next>Następne</button></div>
-      </section>
+      <div class="main">
+        <header class="top">
+          <div class="top__row">
+            <h1 class="top__title" data-title>Zamówienia</h1>
+            <span class="top__user">Can-C · sklep</span>
+          </div>
+          <div class="crumbs"><span>Panel</span><span>/</span><span data-crumb>Zamówienia</span></div>
+        </header>
 
-      <!-- PRODUKTY -->
-      <section data-view="products" hidden>
-        <div class="head"><h1>Produkty</h1></div>
-        <p class="notice">Cena z panelu obowiązuje przy płatności od razu. Cena wyświetlana na stronie produktu odświeży się po najbliższym wdrożeniu sklepu – przy zmianie ceny daj znać, zaktualizujemy też stronę.</p>
-        <div class="table-wrap">
-          <table class="table">
-            <thead><tr><th>Produkt</th><th>Cena brutto (zł)</th><th>Stan</th><th>EAN</th><th>Aktywny</th><th></th></tr></thead>
-            <tbody data-products></tbody>
-          </table>
+        <div class="content">
+          <!-- ZAMÓWIENIA -->
+          <section data-view="orders" class="stack">
+            <div class="kpis">
+              <div class="kpi">
+                <span class="kpi__icon kpi__icon--amber" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg></span>
+                <div class="kpi__row">
+                  <div class="kpi__m"><span class="kpi__label">Do wysłania</span><span class="kpi__value" data-k="paid">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Wstrzymane</span><span class="kpi__value" data-k="on_hold">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">W drodze</span><span class="kpi__value" data-k="shipped">–</span></div>
+                </div>
+              </div>
+              <div class="kpi">
+                <span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15v-3m4 3V9m4 6V7" /></svg></span>
+                <div class="kpi__row">
+                  <div class="kpi__m"><span class="kpi__label">Sprzedaż dziś</span><span class="kpi__value" data-k="revenueToday">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Zamówienia dziś</span><span class="kpi__value" data-k="ordersToday">–</span></div>
+                </div>
+              </div>
+              <div class="kpi">
+                <span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></span>
+                <div class="kpi__row">
+                  <div class="kpi__m"><span class="kpi__label">Sprzedaż 30 dni</span><span class="kpi__value" data-k="revenue30">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Zamówienia</span><span class="kpi__value" data-k="orders30">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Średnio</span><span class="kpi__value" data-k="avg30">–</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Zamówienia klientów</h2>
+                <form class="search" data-search role="search">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>
+                  <label class="sr-only" for="q">Szukaj</label>
+                  <input id="q" name="q" type="search" placeholder="Numer lub e-mail" />
+                </form>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Status">
+                <button type="button" class="tab" data-status="paid" aria-pressed="true">Do wysłania <span data-count="paid"></span></button>
+                <button type="button" class="tab" data-status="on_hold" aria-pressed="false">Wstrzymane <span data-count="on_hold"></span></button>
+                <button type="button" class="tab" data-status="shipped" aria-pressed="false">Wysłane</button>
+                <button type="button" class="tab" data-status="pending_payment" aria-pressed="false">Czekają na płatność <span data-count="pending_payment"></span></button>
+                <button type="button" class="tab" data-status="completed" aria-pressed="false">Zrealizowane</button>
+                <button type="button" class="tab" data-status="cancelled" aria-pressed="false">Anulowane</button>
+                <button type="button" class="tab" data-status="" aria-pressed="false">Wszystkie</button>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead><tr><th>Nr</th><th>Data</th><th>Klient</th><th>Produkty</th><th>Dostawa</th><th class="r">Kwota</th><th>Status</th></tr></thead>
+                  <tbody data-rows></tbody>
+                </table>
+              </div>
+              <div class="pager">
+                <span class="muted" data-page></span>
+                <div class="pager__btns">
+                  <button type="button" class="icon-btn" data-prev aria-label="Poprzednia strona"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6" /></svg></button>
+                  <button type="button" class="icon-btn" data-next aria-label="Następna strona"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6" /></svg></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- PRODUKTY -->
+          <section data-view="products" class="stack" hidden>
+            <p class="notice">Cena z panelu obowiązuje przy płatności od razu. Cena wyświetlana na stronie produktu odświeży się po najbliższym wdrożeniu sklepu.</p>
+            <div class="card">
+              <div class="card__head"><h2 class="card__title">Produkty</h2></div>
+              <div class="table-wrap">
+                <table class="table table--form">
+                  <thead><tr><th>Produkt</th><th>Cena brutto (zł)</th><th>Stan</th><th>EAN</th><th>Aktywny</th><th></th></tr></thead>
+                  <tbody data-products></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
 
     <!-- SZCZEGÓŁY ZAMÓWIENIA -->
+    <div class="scrim" data-scrim hidden></div>
     <aside class="drawer" data-drawer hidden aria-label="Szczegóły zamówienia">
       <div class="drawer__head">
         <h2 data-d-title></h2>
-        <button type="button" class="close" data-close aria-label="Zamknij">×</button>
+        <button type="button" class="icon-btn" data-close aria-label="Zamknij"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
       </div>
       <div class="drawer__body" data-d-body></div>
     </aside>
@@ -72,15 +143,197 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   </body>
 </html>
 
+<style is:global>
+  :root {
+    --primary: #5570F1; --primary-ink: #3E55C9; --primary-pressed: #5B6EC6; --primary-a16: rgba(85,112,241,.16); --primary-a08: rgba(85,112,241,.08);
+    --amber: #FFCC91; --amber-bg: #FFF2E2; --amber-ink: #8A5300;
+    --success: #32936F; --success-ink: #2A7A5C; --success-a12: rgba(50,147,111,.12); --success-a24: rgba(50,147,111,.24);
+    --danger: #F57E77; --danger-ink: #B8483F; --danger-a16: rgba(245,126,119,.16);
+    --ink-100: #1C1D22; --ink-80: #2C2D33; --ink-60: #45464E; --ink-50: #53545C; --ink-40: #5E6366; --ink-30: #6E7079; --ink-10: #8B8D97; --grey-60: #A6A8B1; --grey-50: #ABAFB1;
+    --line: #E1E2E9; --line-soft: #F1F3F9; --field: #CFD3D4; --muted-bg: rgba(94,99,102,.08);
+    --bg: #F4F5FA; --card: #FFFFFF;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    --display: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    --r-sm: 4px; --r-md: 8px; --r-lg: 12px; --r-xl: 16px; --r-pill: 500px;
+    --shadow-pop: 0 4px 32px rgba(61,70,112,.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink-100); font: 400 14px/1.4 var(--font); }
+  a { color: var(--primary); text-decoration: none; }
+  a:hover { color: var(--primary-pressed); }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .muted { color: var(--ink-10); }
+  svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* Pasek boczny */
+  .side { width: 248px; flex-shrink: 0; background: var(--card); display: flex; flex-direction: column; padding: 20px 20px 28px; position: sticky; top: 0; height: 100vh; }
+  .logo { display: flex; align-items: center; gap: 12px; padding: 4px 8px 40px; color: var(--ink-100); }
+  .logo__mark { width: 40px; height: 40px; border-radius: var(--r-lg); background: var(--primary); color: #fff; display: grid; place-items: center; font: 500 20px/1 var(--display); }
+  .logo__text { font: 600 20px/1 var(--display); }
+  .nav { display: flex; flex-direction: column; gap: 8px; }
+  .nav__item { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 16px; min-height: 52px; padding: 14px 18px; border-radius: var(--r-lg); color: var(--ink-50); font: 400 14px/1 var(--font); }
+  .nav__item:hover { background: var(--primary-a08); color: var(--ink-100); }
+  .nav__item[aria-current] { background: var(--primary); color: #fff; }
+  .nav__item:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .nav__item--muted { color: var(--ink-50); }
+  .nav__item--danger { color: var(--danger-ink); }
+  .badge:not(:empty) { margin-left: auto; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-pill); background: var(--amber); color: var(--ink-100); font-size: 12px; display: inline-grid; place-items: center; }
+  .nav__item[aria-current] .badge:not(:empty) { background: #fff; color: var(--primary-ink); }
+  .side__foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+
+  /* Nagłówek */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .top { background: var(--card); border-left: 1px solid var(--line-soft); }
+  .top__row { display: flex; justify-content: space-between; align-items: center; padding: 18px 24px 8px; }
+  .top__title { margin: 0; font: 500 20px/1.2 var(--display); color: var(--ink-60); }
+  .top__user { padding: 6px 12px; border-radius: var(--r-md); background: var(--primary-a08); color: var(--primary-ink); font-size: 14px; }
+  .crumbs { display: flex; gap: 10px; padding: 0 24px 14px; font-size: 12px; color: var(--ink-10); }
+  .content { padding: 20px 24px 40px; }
+  .stack { display: flex; flex-direction: column; gap: 20px; }
+  [hidden] { display: none !important; }
+
+  /* Karty KPI */
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+  .kpi { background: var(--card); border-radius: var(--r-lg); padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 22px; }
+  .kpi__icon { width: 36px; height: 36px; border-radius: var(--r-md); background: var(--primary-a08); display: grid; place-items: center; color: var(--ink-100); }
+  .kpi__icon svg { width: 20px; height: 20px; }
+  .kpi__icon--amber { background: rgba(255,204,145,.24); }
+  .kpi__row { display: flex; gap: 24px; }
+  .kpi__m { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+  .kpi__label { color: var(--ink-10); font-size: 14px; white-space: nowrap; }
+  .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
+
+  /* Karta z tabelą */
+  .card { background: var(--card); border-radius: var(--r-lg); padding: 20px 21px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .card__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
+  .card__title { margin: 0; font: 500 16px/1.2 var(--font); color: var(--ink-60); }
+  .search { position: relative; display: flex; align-items: center; }
+  .search svg { position: absolute; left: 12px; width: 18px; height: 18px; color: var(--ink-10); pointer-events: none; }
+  .search input { width: 260px; height: 38px; padding: 0 12px 0 38px; border: 0; border-radius: var(--r-md); box-shadow: inset 0 0 0 1px var(--field); font: 400 14px var(--font); color: var(--ink-100); background: #fff; }
+  .search input:focus { outline: none; box-shadow: inset 0 0 0 1px var(--primary); background: rgba(233,236,248,.5); }
+
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tab { border: 0; cursor: pointer; height: 34px; padding: 0 14px; border-radius: var(--r-md); background: var(--muted-bg); color: var(--ink-50); font: 400 13px var(--font); display: inline-flex; align-items: center; gap: 6px; }
+  .tab:hover { background: var(--primary-a08); }
+  .tab[aria-pressed='true'] { background: var(--primary); color: #fff; }
+  .tab span:not(:empty) { min-width: 20px; height: 20px; padding: 0 6px; border-radius: var(--r-pill); background: rgba(255,255,255,.25); display: inline-grid; place-items: center; font-size: 12px; }
+  .tab[aria-pressed='false'] span:not(:empty) { background: var(--amber); color: var(--ink-100); }
+
+  .table-wrap { overflow-x: auto; }
+  .table { width: 100%; min-width: 880px; border-collapse: collapse; }
+  .table thead tr { box-shadow: inset 0 0 0 1px var(--line); }
+  .table th { text-align: left; font-weight: 400; font-size: 13px; color: var(--ink-80); padding: 14px 12px; white-space: nowrap; }
+  .table td { padding: 12px; color: var(--ink-30); vertical-align: top; border-bottom: 1px solid var(--line-soft); }
+  .table td strong { color: var(--ink-100); font-weight: 500; }
+  .table tr[data-id] { cursor: pointer; }
+  .table tr[data-id]:hover td, .table tr[data-id]:focus td { background: #FAFAFD; }
+  .table tr[data-id]:focus { outline: none; }
+  .table .r { text-align: right; }
+  .table .nowrap { white-space: nowrap; }
+  .table--form td { vertical-align: middle; }
+  .wc { margin-left: 6px; padding: 2px 6px; border-radius: var(--r-sm); background: var(--muted-bg); color: var(--ink-40); font-size: 11px; }
+  .empty { text-align: center; padding: 40px 12px !important; color: var(--ink-10) !important; }
+  .err { color: var(--danger-ink) !important; }
+
+  .st { display: inline-flex; padding: 4px 11px; border-radius: var(--r-md); font-size: 12px; line-height: 1.2; white-space: nowrap; }
+  .st--pending_payment { background: var(--muted-bg); color: var(--ink-50); }
+  .st--paid { background: var(--primary-a16); color: var(--primary-ink); }
+  .st--on_hold { background: var(--amber-bg); color: var(--amber-ink); }
+  .st--shipped { background: var(--success-a12); color: var(--success-ink); }
+  .st--completed { background: var(--success-a24); color: #1F5E46; }
+  .st--cancelled, .st--failed, .st--refunded { background: var(--danger-a16); color: var(--danger-ink); }
+
+  .pager { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-top: 4px; font-size: 13px; }
+  .pager__btns { display: flex; gap: 8px; }
+  .icon-btn { width: 36px; height: 36px; border: 0; border-radius: var(--r-md); background: var(--muted-bg); color: var(--ink-100); display: grid; place-items: center; cursor: pointer; }
+  .icon-btn svg { width: 18px; height: 18px; }
+  .icon-btn:disabled { opacity: .35; cursor: default; }
+
+  /* Przyciski i pola */
+  .btn { border: 0; cursor: pointer; height: 44px; padding: 0 20px; border-radius: var(--r-lg); background: var(--primary); color: #fff; font: 400 14px var(--font); display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .btn:hover { background: var(--primary-pressed); color: #fff; }
+  .btn--outline { background: transparent; color: var(--primary); box-shadow: inset 0 0 0 2px var(--primary); }
+  .btn--outline:hover { background: var(--primary-a08); color: var(--primary); }
+  .btn--danger { background: transparent; color: var(--danger-ink); box-shadow: inset 0 0 0 2px var(--danger); }
+  .btn--danger:hover { background: var(--danger-a16); color: var(--danger-ink); }
+  .btn--sm { height: 36px; padding: 0 14px; border-radius: var(--r-md); font-size: 13px; }
+  .field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: var(--ink-40); }
+  .input { height: 44px; padding: 0 14px; border: 0; border-radius: var(--r-md); box-shadow: inset 0 0 0 1px var(--field); font: 400 14px var(--font); color: var(--ink-100); background: #fff; width: 100%; }
+  .input:focus { outline: none; box-shadow: inset 0 0 0 1px var(--primary); background: rgba(233,236,248,.5); }
+  .input.sm { height: 38px; width: 120px; }
+  textarea.input { height: auto; padding: 10px 14px; resize: vertical; }
+  .check { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-50); }
+  .check input, .table input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--primary); }
+  .notice { margin: 0; padding: 14px 16px; border-radius: var(--r-lg); background: var(--amber-bg); color: var(--amber-ink); font-size: 13px; }
+
+  /* Panel szczegółów */
+  .scrim { position: fixed; inset: 0; background: rgba(28,29,34,.25); z-index: 19; }
+  .drawer { position: fixed; top: 12px; right: 12px; bottom: 12px; width: min(520px, calc(100vw - 24px)); background: var(--card); border-radius: var(--r-xl); box-shadow: var(--shadow-pop); display: flex; flex-direction: column; z-index: 20; overflow: hidden; }
+  .drawer__head { display: flex; justify-content: space-between; align-items: center; padding: 18px 20px; border-bottom: 1px solid var(--line-soft); }
+  .drawer__head h2 { margin: 0; font: 500 20px/1.2 var(--display); color: var(--ink-60); }
+  .drawer__body { overflow-y: auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+  .sec { display: flex; flex-direction: column; gap: 10px; }
+  .sec__t { margin: 0; font: 500 13px var(--font); color: var(--ink-10); text-transform: none; }
+  .box { border-radius: var(--r-lg); background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .box--blue { background: var(--primary-a08); box-shadow: none; }
+  .box--amber { background: var(--amber-bg); box-shadow: none; color: var(--amber-ink); font-size: 13px; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--ink-10); font-size: 13px; }
+  .items { list-style: none; margin: 0; padding: 0; }
+  .items li { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); color: var(--ink-50); }
+  .items li.sum { border-bottom: 0; color: var(--ink-100); font: 500 16px var(--display); }
+  .kv { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; font-size: 13px; }
+  .kv dt { color: var(--ink-10); }
+  .kv dd { margin: 0; color: var(--ink-100); }
+  .row2 { display: grid; grid-template-columns: 130px 1fr; gap: 12px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .manual summary { cursor: pointer; font-size: 13px; color: var(--primary); padding: 4px 0; }
+  .manual[open] summary { margin-bottom: 8px; }
+  .events { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--line); display: flex; flex-direction: column; gap: 10px; font-size: 13px; color: var(--ink-50); }
+  .events li { position: relative; }
+  .events li::before { content: ''; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2px var(--primary); }
+  .events li.bad::before { box-shadow: inset 0 0 0 2px var(--danger); }
+  .events time { display: block; font-size: 12px; color: var(--ink-10); }
+  .note { padding: 10px 12px; border-radius: var(--r-md); background: #FAFAFD; color: var(--ink-50); white-space: pre-wrap; }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); margin: 0; padding: 12px 20px; border-radius: var(--r-lg); background: var(--ink-100); color: #fff; z-index: 30; box-shadow: var(--shadow-pop); }
+  .toast--bad { background: var(--danger-ink); }
+
+  @media (max-width: 900px) {
+    .app { flex-direction: column; }
+    .side { position: sticky; top: 0; z-index: 10; width: auto; height: auto; flex-direction: row; align-items: center; gap: 4px; padding: 8px 10px; box-shadow: 0 1px 0 var(--line-soft); }
+    .logo { padding: 0 6px 0 0; }
+    .logo__text { display: none; }
+    .nav { flex-direction: row; gap: 4px; }
+    .nav__item { min-height: 44px; padding: 10px 12px; gap: 8px; }
+    .side__foot { margin: 0 0 0 auto; flex-direction: row; gap: 0; border: 0; padding: 0; }
+    .side__foot .nav__item span { display: none; }
+    .top__user { display: none; }
+    .kpi__row { flex-wrap: wrap; gap: 16px 24px; }
+    .kpi__m { flex: 1 1 40%; }
+    .content { padding: 16px 12px 32px; }
+    .search input { width: 100%; }
+    .search { flex: 1; }
+  }
+  @media (max-width: 520px) {
+    .nav .nav__item > span:not(.badge) { display: none; }
+    .nav__item .badge:not(:empty) { margin-left: 0; }
+  }
+</style>
+
 <script>
   type Order = any;
-  const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
-  const date = (s: string) => new Date(s).toLocaleString('pl-PL', { dateStyle: 'short', timeStyle: 'short' });
-  const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Opłacone', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { mail_confirmation: 'Mail z potwierdzeniem', mail_failed: 'Mail NIE wysłany', furgonetka_tracking: 'Numer przesyłki z Furgonetki', auto_completed: 'Zrealizowane automatycznie', created: 'Utworzone', p24_registered: 'Przekierowanie do P24', p24_notification: 'Powiadomienie z P24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_shipped: 'Mail o wysyłce', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24' };
+  const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+  const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
+  const EVENT: Record<string, string> = { created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki' };
+  const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed']);
   const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const FURG = document.body.dataset.furgonetka || 'https://furgonetka.pl/konto';
+
   const track = (carrier: string, nr: string) => {
     const c = (carrier || '').toLowerCase(), n = encodeURIComponent(nr);
     if (c.includes('dpd')) return `https://tracktrace.dpd.com.pl/parcelDetails?typ=1&p1=${n}`;
@@ -90,97 +343,125 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     if (c.includes('orlen')) return `https://www.orlenpaczka.pl/sledz-paczke/?numer=${n}`;
     return 'https://furgonetka.pl/zlokalizuj';
   };
-  const trackLink = (carrier: string, nr: string) => `<a href="${track(carrier, nr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${esc(nr)}</a>`;
+  const trackLink = (carrier: string, nr: string) => `<a href="${track(carrier, nr)}" target="_blank" rel="noopener" data-stop>${esc(nr)}</a>`;
+  const delivery = (o: Order) => o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '—');
 
   const state = { status: 'paid', q: '', page: 1, pages: 1 };
 
   async function api(path: string, body?: unknown) {
     const res = await fetch(path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : {});
     const data = await res.json().catch(() => ({}));
-    if (res.status === 401) throw new Error('Brak dostępu. Zaloguj się ponownie (odśwież stronę).');
+    if (res.status === 401) throw new Error('Brak dostępu. Odśwież stronę i zaloguj się ponownie.');
     if (!res.ok) throw new Error(data.error || 'Błąd serwera.');
     return data;
   }
+  let toastTimer = 0;
   function toast(msg: string, bad = false) {
     const t = $('[data-toast]');
     t.textContent = msg; t.classList.toggle('toast--bad', bad); t.hidden = false;
-    setTimeout(() => (t.hidden = true), 4000);
+    clearTimeout(toastTimer); toastTimer = window.setTimeout(() => (t.hidden = true), 4000);
   }
 
   // ---------- Lista zamówień ----------
   async function loadOrders() {
     const tbody = $('[data-rows]');
-    tbody.innerHTML = '<tr><td colspan="7" class="muted">Ładowanie…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Ładowanie…</td></tr>';
     try {
       const p = new URLSearchParams({ status: state.status, q: state.q, page: String(state.page) });
       const d = await api(`/api/admin/orders?${p}`);
       state.pages = d.pages;
       for (const [k, v] of Object.entries(d.counts)) document.querySelectorAll(`[data-count="${k}"]`).forEach((el) => (el.textContent = v ? String(v) : ''));
       $('[data-count-paid]').textContent = d.counts.paid ? String(d.counts.paid) : '';
+      const k = (key: string, v: string) => { const el = document.querySelector(`[data-k="${key}"]`); if (el) el.textContent = v; };
+      k('paid', String(d.counts.paid ?? 0)); k('on_hold', String(d.counts.on_hold ?? 0)); k('shipped', String(d.counts.shipped ?? 0));
+      if (d.stats) {
+        k('revenueToday', pln(d.stats.revenueToday)); k('ordersToday', String(d.stats.ordersToday));
+        k('revenue30', pln(d.stats.revenue30)); k('orders30', String(d.stats.orders30)); k('avg30', pln(d.stats.avg30));
+      }
       $('[data-page]').textContent = `Strona ${d.page} z ${d.pages} · ${d.total} zamówień`;
       $<HTMLButtonElement>('[data-prev]').disabled = d.page <= 1;
       $<HTMLButtonElement>('[data-next]').disabled = d.page >= d.pages;
       tbody.innerHTML = d.rows.length ? d.rows.map((o: Order) => `
         <tr data-id="${o.id}" tabindex="0">
-          <td>${o.number}${o.source === 'woocommerce' ? ' <span class="tag">WC</span>' : ''}</td>
-          <td>${date(o.created_at)}</td>
-          <td>${esc(o.shipping_address?.name || '')}<br><span class="muted">${esc(o.email)}</span></td>
-          <td>${o.order_items.map((i: any) => `${esc(i.name)} × ${i.qty}`).join('<br>')}</td>
-          <td>${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? 'Paczkomat ' + esc(o.shipping_point) : esc(o.shipping_method || '—')}${o.tracking_number ? `<br>${trackLink(o.carrier || o.shipping_method, o.tracking_number)}` : ''}</td>
-          <td class="r">${pln(o.total)}</td>
-          <td><span class="st st--${o.status}">${STATUS[o.status] || o.status}</span></td>
-        </tr>`).join('') : '<tr><td colspan="7" class="muted">Brak zamówień.</td></tr>';
+          <td class="nowrap"><strong>${o.number}</strong>${o.source === 'woocommerce' ? '<span class="wc">WC</span>' : ''}</td>
+          <td class="nowrap">${date(o.created_at)}</td>
+          <td><strong>${esc(o.shipping_address?.name || '—')}</strong><br>${esc(o.email)}</td>
+          <td>${o.order_items.map((i: any) => `${esc(i.name)} <span class="muted">× ${i.qty}</span>`).join('<br>')}</td>
+          <td>${delivery(o)}${o.tracking_number ? `<br>${trackLink(o.carrier || o.shipping_method, o.tracking_number)}` : ''}</td>
+          <td class="r nowrap"><strong>${pln(o.total)}</strong></td>
+          <td><span class="st st--${o.status}">${STATUS[o.status] || esc(o.status)}</span></td>
+        </tr>`).join('') : '<tr><td colspan="7" class="empty">Brak zamówień w tym widoku.</td></tr>';
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="7" class="err">${esc((e as Error).message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`;
     }
   }
 
   // ---------- Szczegóły ----------
+  function openDrawer(show: boolean) { $('[data-drawer]').hidden = !show; $('[data-scrim]').hidden = !show; }
+
   async function openOrder(id: string) {
-    const drawer = $('[data-drawer]'); const body = $('[data-d-body]');
-    drawer.hidden = false; body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    const body = $('[data-d-body]');
+    openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try {
       const { order: o, events } = await api(`/api/admin/order?id=${id}`);
       $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
       const a = o.shipping_address || {};
       const wc = o.source === 'woocommerce';
       const can = (from: string[]) => !wc && from.includes(o.status);
+      const name = a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' ');
       body.innerHTML = `
-        ${wc ? '<p class="wc-note">Zamówienie z WooCommerce (import). Do dnia startu obsługuj je w obecnym sklepie – tu tylko podgląd i notatki.</p>' : ''}
-        <p><span class="st st--${o.status}">${STATUS[o.status]}</span> <span class="muted">${date(o.created_at)}${o.paid_at ? ' · opłacone ' + date(o.paid_at) : ''}</span></p>
-        <h3>Produkty</h3>
-        <ul class="items">${o.order_items.map((i: any) => `<li><span>${esc(i.name)} × ${i.qty}${i.discount ? ` <span class="muted">(rabat ${pln(i.discount)})</span>` : ''}</span><span>${pln(i.total)}</span></li>`).join('')}
-          <li class="sum"><span>Razem</span><span>${pln(o.total)}</span></li></ul>
-        <h3>Klient i dostawa</h3>
-        <p>${esc(a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' '))}<br>${esc(o.email)}<br>${esc(a.phone || o.customers?.phone || '')}</p>
-        <p>${o.shipping_method === 'dpd' ? `Kurier DPD: ${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat: <strong>${esc(o.shipping_point || '—')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</p>
-        ${o.billing ? `<h3>Faktura</h3><p>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</p>` : ''}
-        ${o.customer_note ? `<h3>Uwagi klienta</h3><p class="note">${esc(o.customer_note)}</p>` : ''}
-        ${o.tracking_number ? `<h3>Przesyłka</h3><p>${esc(o.carrier || '')} ${trackLink(o.carrier || o.shipping_method, o.tracking_number)}</p>` : ''}
-        ${can(['paid', 'on_hold']) ? `
-          <div class="furg">
-            <h3>Wysyłka</h3>
-            <p class="muted">Zamówienie jest już w Furgonetce (pobiera je co kilka minut). Po nadaniu numer przesyłki wróci tu sam, status zmieni się na „Wysłane”, a klient dostanie e-mail.</p>
-            <a class="btn" href="${FURG}" target="_blank" rel="noopener">Nadaj w Furgonetce (nr ${o.number})</a>
-          </div>
-          <details class="manual"><summary>Wpisz numer przesyłki ręcznie</summary>
-          <form class="ship" data-ship>
-            <div class="row">
-              <label class="field">Przewoźnik<select name="carrier" class="input"><option value="inpost" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>DPD</option></select></label>
-              <label class="field">Numer przesyłki<input name="tracking" class="input" required /></label>
-            </div>
-            <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail z numerem</label>
-            <button class="btn">Oznacz jako wysłane</button>
-          </form></details>` : ''}
-        <div class="actions">
-          ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--ghost" data-act="complete">Zrealizowane</button>' : ''}
-          ${can(['paid']) ? '<button type="button" class="btn btn--ghost" data-act="hold">Wstrzymaj</button>' : ''}
-          ${can(['on_hold']) ? '<button type="button" class="btn btn--ghost" data-act="unhold">Przywróć</button>' : ''}
-          ${can(['pending_payment', 'paid', 'on_hold']) ? '<button type="button" class="btn btn--ghost danger" data-act="cancel">Anuluj</button>' : ''}
+        ${wc ? '<div class="box box--amber">Zamówienie z WooCommerce (import). Do dnia startu obsługuj je w obecnym sklepie – tu tylko podgląd i notatki.</div>' : ''}
+        <div class="meta"><span class="st st--${o.status}">${STATUS[o.status] || esc(o.status)}</span><span>${date(o.created_at)}</span>${o.paid_at ? `<span>· opłacone ${date(o.paid_at)}</span>` : ''}</div>
+
+        <div class="sec"><h3 class="sec__t">Produkty</h3>
+          <ul class="items">${o.order_items.map((i: any) => `<li><span>${esc(i.name)} × ${i.qty}${i.discount ? ` <span class="muted">(rabat ${pln(i.discount)})</span>` : ''}</span><span>${pln(i.total)}</span></li>`).join('')}
+            <li class="sum"><span>Razem</span><span>${pln(o.total)}</span></li></ul>
         </div>
-        <h3>Historia</h3>
-        <ol class="events">${events.map((e: any) => `<li><span class="muted">${date(e.created_at)}</span> ${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || e.data.to}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
-        <form class="noteform" data-note><label class="field">Notatka wewnętrzna<textarea name="note" class="input" rows="2" maxlength="1000"></textarea></label><button class="btn btn--ghost">Dodaj notatkę</button></form>`;
+
+        <div class="sec"><h3 class="sec__t">Klient i dostawa</h3>
+          <dl class="kv">
+            <dt>Klient</dt><dd>${esc(name || '—')}</dd>
+            <dt>E-mail</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd>
+            <dt>Telefon</dt><dd>${esc(a.phone || o.customers?.phone || '—')}</dd>
+            <dt>Dostawa</dt><dd>${o.shipping_method === 'dpd' ? `Kurier DPD<br>${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat <strong>${esc(o.shipping_point || '—')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</dd>
+            ${o.tracking_number ? `<dt>Przesyłka</dt><dd>${esc(o.carrier || '')} ${trackLink(o.carrier || o.shipping_method, o.tracking_number)}</dd>` : ''}
+            ${o.billing ? `<dt>Faktura</dt><dd>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</dd>` : ''}
+          </dl>
+          ${o.customer_note ? `<div class="note">${esc(o.customer_note)}</div>` : ''}
+        </div>
+
+        ${can(['paid', 'on_hold']) ? `
+          <div class="box box--blue">
+            <strong>Wysyłka</strong>
+            <span class="muted">Zamówienie trafia do Furgonetki automatycznie. Po nadaniu numer przesyłki wróci tu sam, status zmieni się na „Wysłane”, a klient dostanie e-mail.</span>
+            <div class="actions"><a class="btn btn--sm" href="${FURG}" target="_blank" rel="noopener">Nadaj w Furgonetce</a></div>
+            <details class="manual"><summary>Wpisz numer przesyłki ręcznie</summary>
+              <form data-ship class="sec">
+                <div class="row2">
+                  <label class="field">Przewoźnik<select name="carrier" class="input"><option value="inpost" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>DPD</option></select></label>
+                  <label class="field">Numer przesyłki<input name="tracking" class="input" required /></label>
+                </div>
+                <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail z numerem</label>
+                <div class="actions"><button class="btn btn--sm">Oznacz jako wysłane</button></div>
+              </form>
+            </details>
+          </div>` : ''}
+
+        <div class="actions">
+          ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="complete">Zrealizowane</button>' : ''}
+          ${can(['paid']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="hold">Wstrzymaj</button>' : ''}
+          ${can(['on_hold']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="unhold">Przywróć</button>' : ''}
+          ${can(['pending_payment', 'paid', 'on_hold']) ? '<button type="button" class="btn btn--danger btn--sm" data-act="cancel">Anuluj</button>' : ''}
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Historia</h3>
+          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
+        </div>
+
+        <form class="sec" data-note>
+          <label class="field">Notatka wewnętrzna<textarea name="note" class="input" rows="2" maxlength="1000"></textarea></label>
+          <div class="actions"><button class="btn btn--outline btn--sm">Dodaj notatkę</button></div>
+        </form>`;
 
       body.querySelector<HTMLFormElement>('[data-ship]')?.addEventListener('submit', async (ev) => {
         ev.preventDefault();
@@ -212,17 +493,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   // ---------- Produkty ----------
   async function loadProducts() {
     const tbody = $('[data-products]');
-    tbody.innerHTML = '<tr><td colspan="6" class="muted">Ładowanie…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ładowanie…</td></tr>';
     try {
       const { rows } = await api('/api/admin/products');
       tbody.innerHTML = rows.map((p: any) => `
         <tr data-pid="${esc(p.id)}">
-          <td>${esc(p.name)}<br><span class="muted">${esc(p.id)}${p.bundles ? ' · rabaty zestawowe' : ''}</span></td>
-          <td><input class="input sm" name="price" inputmode="decimal" value="${p.price === null ? '' : (p.price / 100).toFixed(2).replace('.', ',')}" placeholder="brak ceny" /></td>
-          <td><input class="input sm" name="stock" type="number" min="0" value="${p.stock}" /></td>
-          <td><input class="input sm" name="ean" value="${esc(p.ean || '')}" /></td>
+          <td><strong>${esc(p.name)}</strong><br><span class="muted">${esc(p.id)}${p.bundles ? ' · rabaty zestawowe' : ''}</span></td>
+          <td><input class="input sm" name="price" inputmode="decimal" value="${p.price === null ? '' : (p.price / 100).toFixed(2).replace('.', ',')}" placeholder="brak ceny" aria-label="Cena" /></td>
+          <td><input class="input sm" name="stock" type="number" min="0" value="${p.stock}" aria-label="Stan" /></td>
+          <td><input class="input sm" name="ean" value="${esc(p.ean || '')}" aria-label="EAN" /></td>
           <td><input type="checkbox" name="active" ${p.active ? 'checked' : ''} aria-label="Aktywny" /></td>
-          <td><button type="button" class="btn btn--ghost" data-save>Zapisz</button></td>
+          <td class="r"><button type="button" class="btn btn--outline btn--sm" data-save>Zapisz</button></td>
         </tr>`).join('');
       tbody.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => btn.addEventListener('click', async () => {
         const tr = btn.closest('tr')!;
@@ -233,15 +514,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         } catch (e) { toast((e as Error).message, true); }
       }));
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" class="err">${esc((e as Error).message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="empty err">${esc((e as Error).message)}</td></tr>`;
     }
   }
 
   // ---------- Zdarzenia interfejsu ----------
+  const TITLES: Record<string, string> = { orders: 'Zamówienia', products: 'Produkty' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
     document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== b.dataset.tab));
+    $('[data-title]').textContent = TITLES[b.dataset.tab!]; $('[data-crumb]').textContent = TITLES[b.dataset.tab!];
     if (b.dataset.tab === 'products') loadProducts();
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
@@ -257,90 +540,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
   $('[data-prev]').addEventListener('click', () => { state.page--; loadOrders(); });
   $('[data-next]').addEventListener('click', () => { state.page++; loadOrders(); });
-  $('[data-rows]').addEventListener('click', (e) => { const tr = (e.target as HTMLElement).closest('tr[data-id]') as HTMLElement | null; if (tr) openOrder(tr.dataset.id!); });
-  $('[data-rows]').addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') { const tr = (e.target as HTMLElement).closest('tr[data-id]') as HTMLElement | null; if (tr) openOrder(tr.dataset.id!); } });
-  $('[data-close]').addEventListener('click', () => ($('[data-drawer]').hidden = true));
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('[data-drawer]').hidden = true; });
+  const rowOpen = (e: Event) => {
+    const t = e.target as HTMLElement;
+    if (t.closest('[data-stop]')) return;
+    const tr = t.closest('tr[data-id]') as HTMLElement | null;
+    if (tr) openOrder(tr.dataset.id!);
+  };
+  $('[data-rows]').addEventListener('click', rowOpen);
+  $('[data-rows]').addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') rowOpen(e); });
+  $('[data-close]').addEventListener('click', () => openDrawer(false));
+  $('[data-scrim]').addEventListener('click', () => openDrawer(false));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') openDrawer(false); });
 
   loadOrders();
 </script>
-
-<style>
-  .admin { display: flex; min-height: 100vh; background: var(--c-gray-100); }
-  .side { flex: 0 0 220px; background: var(--c-ink); color: var(--c-white); padding: var(--s-2); display: flex; flex-direction: column; gap: 4px; }
-  .brand { color: var(--c-white); text-decoration: none; font-size: 1.4375rem; padding: 8px 12px 24px; }
-  .brand span { font-size: 0.8125rem; color: var(--c-white-70); }
-  .side__link { all: unset; cursor: pointer; padding: 12px; border-radius: var(--r-field); display: flex; justify-content: space-between; align-items: center; color: var(--c-white); }
-  .side__link[aria-current] { background: rgba(255, 255, 255, 0.1); }
-  .side__link--muted { color: var(--c-white-70); margin-top: auto; }
-  .side__link:focus-visible { outline: 2px solid var(--c-bright); }
-  .count:not(:empty) { min-width: 22px; height: 22px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-ink); font-size: 0.75rem; display: inline-flex; align-items: center; justify-content: center; }
-
-  .main { flex: 1; min-width: 0; padding: var(--s-3); }
-  .main section { display: flex; flex-direction: column; gap: var(--s-2); }
-  .main section[hidden] { display: none; }
-  .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
-  .head h1 { font-size: 2.5rem; }
-  .search .input { width: 280px; height: 44px; border-radius: var(--r-search); }
-  .filters .pill { min-height: 40px; font-size: 0.9375rem; }
-  .filters .pill span:not(:empty) { opacity: 0.7; }
-  .notice { padding: 16px 20px; background: var(--c-tint); font-size: var(--fs-small); }
-
-  .table-wrap { overflow-x: auto; background: var(--c-white); box-shadow: inset 0 0 0 1px var(--c-gray-400); }
-  .table { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 0.9375rem; }
-  .table th { text-align: left; font-weight: 400; font-size: 0.8125rem; color: rgba(1, 8, 15, 0.75); padding: 14px 16px; }
-  .table td { padding: 14px 16px; border-top: 1px solid var(--c-gray-400); vertical-align: top; }
-  .table tr[data-id] { cursor: pointer; }
-  .table tr[data-id]:hover, .table tr[data-id]:focus { background: var(--c-gray-100); outline: none; }
-  .r { text-align: right; }
-  .tag { font-size: 0.6875rem; padding: 2px 6px; border-radius: var(--r-pill); background: var(--c-gray-200); }
-  .input.sm { height: 40px; width: 120px; }
-  .err { color: #D32300; }
-
-  .st { display: inline-block; padding: 3px 10px; border-radius: var(--r-pill); font-size: 0.8125rem; background: var(--c-gray-200); white-space: nowrap; }
-  .st--paid { background: var(--c-tint); }
-  .st--on_hold, .st--pending_payment { background: #FFF4D6; }
-  .st--shipped, .st--completed { background: #E3F5E8; }
-  .st--cancelled, .st--failed, .st--refunded { background: #FBE4E0; }
-
-  .pager { display: flex; align-items: center; gap: 16px; font-size: var(--fs-small); }
-  .pager .btn { min-height: 40px; }
-  .pager .btn:disabled { opacity: 0.3; cursor: default; }
-
-  .drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(520px, 100vw); background: var(--c-white); box-shadow: -1px 0 0 var(--c-gray-400); display: flex; flex-direction: column; z-index: 20; }
-  .drawer[hidden] { display: none; }
-  .drawer__head { display: flex; justify-content: space-between; align-items: center; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
-  .drawer__head h2 { font-size: var(--fs-h4); font-weight: 400; }
-  .close { width: 44px; height: 44px; border: 0; background: transparent; font-size: 1.75rem; cursor: pointer; }
-  .drawer__body { overflow-y: auto; padding: var(--s-2); display: flex; flex-direction: column; gap: 12px; }
-  :global(.drawer__body h3) { font-size: 1rem; font-weight: 400; color: rgba(1, 8, 15, 0.75); margin-top: 12px; }
-  :global(.items) { list-style: none; margin: 0; padding: 0; }
-  :global(.items li) { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--c-gray-400); }
-  :global(.items .sum) { border-bottom: 0; font-size: 1.125rem; }
-  :global(.furg) { padding: 16px; background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
-  :global(.furg .btn) { align-self: flex-start; }
-  :global(.manual summary) { cursor: pointer; font-size: var(--fs-small); color: var(--c-link); padding: 8px 0; }
-  :global(.ship) { padding: 16px; background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
-  :global(.ship .row) { display: grid; grid-template-columns: 140px 1fr; gap: 12px; }
-  :global(.check) { display: flex; gap: 10px; align-items: center; font-size: var(--fs-small); }
-  :global(.actions) { display: flex; flex-wrap: wrap; gap: 8px; }
-  :global(.actions .btn), :global(.noteform .btn) { min-height: 40px; padding: 0 20px; }
-  :global(.danger) { color: #D32300 !important; }
-  :global(.events) { margin: 0; padding-left: 18px; font-size: var(--fs-small); display: flex; flex-direction: column; gap: 6px; }
-  :global(.note) { padding: 12px; background: var(--c-gray-100); }
-  :global(.wc-note) { padding: 12px 16px; background: #FFF4D6; font-size: var(--fs-small); }
-  :global(.noteform) { display: flex; flex-direction: column; gap: 8px; }
-  :global(.noteform textarea) { height: auto; padding: 10px 14px; }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); padding: 12px 24px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-white); z-index: 30; }
-  .toast--bad { background: #D32300; }
-  .toast[hidden] { display: none; }
-
-  @media (max-width: 800px) {
-    .admin { flex-direction: column; }
-    .side { flex: none; flex-direction: row; flex-wrap: wrap; align-items: center; }
-    .brand { padding: 8px 12px; }
-    .side__link--muted { margin-top: 0; }
-    .main { padding: var(--s-2); }
-  }
-</style>

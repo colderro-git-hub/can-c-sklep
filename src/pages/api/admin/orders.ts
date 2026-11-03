@@ -31,10 +31,27 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     );
     // Liczniki do zakładek (tylko statusy wymagające działania)
     const counts: Record<string, number> = {};
-    for (const s of ['paid', 'on_hold', 'pending_payment']) {
+    for (const s of ['paid', 'on_hold', 'pending_payment', 'shipped']) {
       counts[s] = (await sb.selectCount(`orders?select=id&status=eq.${s}&limit=1`)).total;
     }
-    return json(200, { rows, total, page, pages: Math.max(1, Math.ceil(total / PAGE)), counts });
+    // Sprzedaż: ostatnie 30 dni i dzisiaj (opłacone, wysłane, zrealizowane)
+    const day = 24 * 60 * 60 * 1000;
+    const since30 = new Date(Date.now() - 30 * day).toISOString();
+    const paidRows = await sb.select<{ total: number; paid_at: string }>(
+      `orders?select=total,paid_at&status=in.(paid,shipped,completed)&paid_at=gte.${encodeURIComponent(since30)}&limit=5000`,
+    );
+    const todayStart = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
+    todayStart.setHours(0, 0, 0, 0);
+    const offset = Date.now() - new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Warsaw' })).getTime();
+    const todayUtc = todayStart.getTime() + offset;
+    const sum = (rs: { total: number }[]) => rs.reduce((a, r) => a + r.total, 0);
+    const today = paidRows.filter((r) => new Date(r.paid_at).getTime() >= todayUtc);
+    const stats = {
+      revenue30: sum(paidRows), orders30: paidRows.length,
+      avg30: paidRows.length ? Math.round(sum(paidRows) / paidRows.length) : 0,
+      revenueToday: sum(today), ordersToday: today.length,
+    };
+    return json(200, { rows, total, page, pages: Math.max(1, Math.ceil(total / PAGE)), counts, stats });
   } catch (e) {
     console.error('Admin orders: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Błąd pobierania zamówień.' });
