@@ -10,8 +10,19 @@ export const GET: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   try {
-    const rows = await db(env).select('discount_codes?select=*,customers(email)&order=created_at.desc&limit=200');
-    return json(200, { rows });
+    const sb = db(env);
+    const rows = await sb.select<any>('discount_codes?select=*,customers(email)&order=created_at.desc&limit=200');
+    // Skuteczność kodów: opłacone zamówienia z kodem
+    const used = await sb.select<{ discount_code: string; total: number; discount_code_amount: number; created_at: string }>(
+      'orders?select=discount_code,total,discount_code_amount,created_at&discount_code=not.is.null&status=in.(paid,shipped,completed)&limit=10000',
+    );
+    const stats: Record<string, { orders: number; revenue: number; discount: number; last: string | null }> = {};
+    for (const o of used) {
+      const s = (stats[o.discount_code] ??= { orders: 0, revenue: 0, discount: 0, last: null });
+      s.orders++; s.revenue += o.total; s.discount += o.discount_code_amount;
+      if (!s.last || o.created_at > s.last) s.last = o.created_at;
+    }
+    return json(200, { rows: rows.map((r) => ({ ...r, stats: stats[r.code] ?? { orders: 0, revenue: 0, discount: 0, last: null } })) });
   } catch (e) {
     console.error('Admin kody: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Błąd pobierania kodów.' });

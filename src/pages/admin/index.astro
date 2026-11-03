@@ -24,6 +24,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg>
             <span>Zamówienia</span><span class="badge" data-count-paid></span>
           </button>
+          <button type="button" class="nav__item" data-tab="customers">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.8 2.7 2.6 3 5.2" /></svg>
+            <span>Klienci</span>
+          </button>
           <button type="button" class="nav__item" data-tab="products">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9ZM3.5 7.5 12 12m0 0 8.5-4.5M12 12v9" /></svg>
             <span>Produkty</span>
@@ -121,6 +125,48 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </div>
           </section>
 
+          <!-- KLIENCI -->
+          <section data-view="customers" class="stack" hidden>
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Klienci <span class="muted" data-c-total></span></h2>
+                <div class="actions">
+                  <a class="btn btn--outline btn--sm" data-c-csv href="/api/admin/klienci?format=csv">Pobierz CSV</a>
+                </div>
+              </div>
+              <form class="c-tools" data-c-search role="search">
+                <span class="search search--wide">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m20 20-4.2-4.2" /></svg>
+                  <label class="sr-only" for="cq">Szukaj klienta</label>
+                  <input id="cq" type="search" placeholder="Imię i nazwisko, e-mail, telefon, miejscowość" />
+                </span>
+                <label class="field field--inline">Sortuj
+                  <select class="input sm" data-c-sort>
+                    <option value="last_active">Ostatnio aktywni</option>
+                    <option value="created">Najnowsi</option>
+                    <option value="spent">Najwięcej wydali</option>
+                    <option value="orders">Najwięcej zamówień</option>
+                    <option value="name">Nazwisko A–Z</option>
+                  </select>
+                </label>
+                <label class="check"><input type="checkbox" data-c-buyers /> Tylko kupujący</label>
+              </form>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead><tr><th>Imię i nazwisko</th><th>Ostatnio aktywny</th><th>Data rejestracji</th><th>E-mail</th><th class="r">Zamówienia</th><th class="r">Suma wydatków</th><th class="r">Średnia wartość</th><th>Kraj</th><th>Miejscowość</th><th>Kod pocztowy</th><th>Telefon</th></tr></thead>
+                  <tbody data-c-rows></tbody>
+                </table>
+              </div>
+              <div class="pager">
+                <span class="muted" data-c-page></span>
+                <div class="pager__btns">
+                  <button type="button" class="icon-btn" data-c-prev aria-label="Poprzednia strona"><svg viewBox="0 0 24 24"><path d="m14.5 6-6 6 6 6" /></svg></button>
+                  <button type="button" class="icon-btn" data-c-next aria-label="Następna strona"><svg viewBox="0 0 24 24"><path d="m9.5 6 6 6-6 6" /></svg></button>
+                </div>
+              </div>
+            </div>
+          </section>
+
           <!-- PRODUKTY -->
           <section data-view="products" class="stack" hidden>
             <p class="notice">Cena z panelu obowiązuje przy płatności od razu. Cena wyświetlana na stronie produktu odświeży się po najbliższym wdrożeniu sklepu.</p>
@@ -200,7 +246,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <div class="card__head"><h2 class="card__title">Kody</h2></div>
               <div class="table-wrap">
                 <table class="table table--form">
-                  <thead><tr><th>Kod</th><th>Rabat</th><th>Warunki</th><th>Ważność</th><th>Użycia</th><th>Dla</th><th>Aktywny</th></tr></thead>
+                  <thead><tr><th>Kod</th><th>Rabat</th><th>Warunki</th><th>Ważność</th><th>Użycia</th><th class="r">Zamówienia</th><th class="r">Przychód</th><th class="r">Udzielony rabat</th><th>Dla</th><th>Aktywny</th></tr></thead>
                   <tbody data-codes></tbody>
                 </table>
               </div>
@@ -347,6 +393,19 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   textarea.input { height: auto; padding: 10px 14px; resize: vertical; }
   .check { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-50); }
   .check input, .table input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--primary); }
+  .c-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 20px; }
+  .search--wide { flex: 1 1 360px; }
+  .search--wide input { width: 100%; }
+  .field--inline { flex-direction: row; align-items: center; gap: 8px; }
+  .field--inline .input.sm { width: auto; }
+  .table tr[data-cid] { cursor: pointer; }
+  .table tr[data-cid]:hover td { background: #FAFAFD; }
+  .kpis--mini { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .kpis--mini .kpi { padding: 12px; gap: 8px; background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); }
+  .kpis--mini .kpi__value { font-size: 16px; }
+  .items li.clickable { cursor: pointer; }
+  .items li.clickable:hover { background: #FAFAFD; }
+  .items .r { text-align: right; }
   .code-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 16px; align-items: end; }
   .code-form__wide { grid-column: 1 / -1; }
   .code-form h3.card__title { margin: 8px 0 0; }
@@ -617,9 +676,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td>${c.min_total ? `od ${pln(c.min_total)}` : '—'}${c.once_per_customer ? '<br><span class="muted">1× na klienta</span>' : ''}</td>
           <td class="nowrap">${c.starts_at || c.ends_at ? `${d(c.starts_at) || '…'} – ${d(c.ends_at) || '…'}` : 'bezterminowo'}</td>
           <td>${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}</td>
+          <td class="r">${c.stats.orders}${c.stats.last ? `<br><span class="muted">ost. ${new Date(c.stats.last).toLocaleDateString('pl-PL')}</span>` : ''}</td>
+          <td class="r nowrap"><strong>${pln(c.stats.revenue)}</strong>${c.stats.orders ? `<br><span class="muted">śr. ${pln(Math.round(c.stats.revenue / c.stats.orders))}</span>` : ''}</td>
+          <td class="r nowrap">${pln(c.stats.discount)}</td>
           <td>${c.customers?.email ? esc(c.customers.email) : 'wszyscy'}</td>
           <td><input type="checkbox" data-toggle="${c.id}" ${c.active ? 'checked' : ''} aria-label="Aktywny" /></td>
-        </tr>`).join('') : '<tr><td colspan="7" class="empty">Brak kodów. Utwórz pierwszy powyżej.</td></tr>';
+        </tr>`).join('') : '<tr><td colspan="10" class="empty">Brak kodów. Utwórz pierwszy powyżej.</td></tr>';
       tbody.querySelectorAll<HTMLInputElement>('[data-toggle]').forEach((cb) => cb.addEventListener('change', async () => {
         try { await api('/api/admin/kody', { action: 'toggle', id: cb.dataset.toggle, active: cb.checked }); toast(cb.checked ? 'Kod włączony.' : 'Kod wyłączony.'); }
         catch (e) { cb.checked = !cb.checked; toast((e as Error).message, true); }
@@ -639,6 +701,82 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     try { await api('/api/admin/kody', body); toast('Kod utworzony.'); f.reset(); loadCodes(); }
     catch (err) { toast((err as Error).message, true); }
   });
+
+  // ---------- Klienci ----------
+  const cState = { q: '', sort: 'last_active', buyers: false, page: 1 };
+  const dshort = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
+  const dnum = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL') : '—');
+  const cParams = (extra: Record<string, string> = {}) => new URLSearchParams({ q: cState.q, sort: cState.sort, ...(cState.buyers ? { buyers: '1' } : {}), ...extra });
+  async function loadCustomers() {
+    const tbody = $('[data-c-rows]');
+    tbody.innerHTML = '<tr><td colspan="11" class="empty">Ładowanie…</td></tr>';
+    $<HTMLAnchorElement>('[data-c-csv]').href = `/api/admin/klienci?${cParams({ format: 'csv' })}`;
+    try {
+      const d = await api(`/api/admin/klienci?${cParams({ page: String(cState.page) })}`);
+      $('[data-c-total]').textContent = `(${d.total})`;
+      $('[data-c-page]').textContent = `Strona ${d.page} z ${d.pages} · ${d.total} klientów`;
+      $<HTMLButtonElement>('[data-c-prev]').disabled = d.page <= 1;
+      $<HTMLButtonElement>('[data-c-next]').disabled = d.page >= d.pages;
+      tbody.innerHTML = d.rows.length ? d.rows.map((c: any) => `
+        <tr data-cid="${c.id}" tabindex="0">
+          <td><strong>${esc(c.full_name || '—')}</strong>${c.has_account ? ' <span class="wc">konto</span>' : ''}</td>
+          <td class="nowrap">${dnum(c.last_active_at)}</td>
+          <td class="nowrap">${dnum(c.created_at)}</td>
+          <td><a href="mailto:${esc(c.email)}" data-stop>${esc(c.email)}</a></td>
+          <td class="r">${c.orders_count}</td>
+          <td class="r nowrap"><strong>${pln(c.total_spent)}</strong></td>
+          <td class="r nowrap">${pln(c.orders_count ? Math.round(c.total_spent / c.orders_count) : 0)}</td>
+          <td>${esc(c.country || '')}</td>
+          <td>${esc(c.city || '')}</td>
+          <td class="nowrap">${esc(c.postcode || '')}</td>
+          <td class="nowrap">${c.phone ? `<a href="tel:${esc(c.phone)}" data-stop>${esc(c.phone)}</a>` : ''}</td>
+        </tr>`).join('') : '<tr><td colspan="11" class="empty">Brak klientów dla tych kryteriów.</td></tr>';
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="11" class="empty err">${esc((e as Error).message)}</td></tr>`;
+    }
+  }
+  async function openCustomer(id: string) {
+    const body = $('[data-d-body]');
+    openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    try {
+      const { customer: c, orders } = await api(`/api/admin/klienci?id=${id}`);
+      $('[data-d-title]').textContent = c.full_name || c.email;
+      const a = c.default_address || {};
+      body.innerHTML = `
+        <div class="meta">${c.has_account ? '<span class="st st--paid">Ma konto</span>' : '<span class="st st--pending_payment">Bez konta</span>'}${c.marketing_consent ? '<span class="st st--shipped">Zgoda marketingowa</span>' : ''}${c.source === 'woocommerce' ? '<span class="wc">WC</span>' : ''}</div>
+        <div class="kpis kpis--mini">
+          <div class="kpi"><span class="kpi__label">Zamówienia</span><span class="kpi__value">${c.orders_count}</span></div>
+          <div class="kpi"><span class="kpi__label">Suma</span><span class="kpi__value">${pln(c.total_spent)}</span></div>
+          <div class="kpi"><span class="kpi__label">Średnio</span><span class="kpi__value">${pln(c.orders_count ? Math.round(c.total_spent / c.orders_count) : 0)}</span></div>
+        </div>
+        <div class="sec"><h3 class="sec__t">Dane</h3>
+          <dl class="kv">
+            <dt>E-mail</dt><dd><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></dd>
+            <dt>Telefon</dt><dd>${esc(c.phone || '—')}</dd>
+            <dt>Adres</dt><dd>${a.street ? `${esc(a.street)}<br>` : ''}${esc([c.postcode, c.city].filter(Boolean).join(' ') || '—')}${c.country ? `, ${esc(c.country)}` : ''}</dd>
+            <dt>Paczkomat</dt><dd>${esc(c.default_locker || '—')}</dd>
+            ${c.billing?.nip ? `<dt>Faktura</dt><dd>${esc(c.billing.company || '')}<br>NIP ${esc(c.billing.nip)}</dd>` : ''}
+            <dt>Rejestracja</dt><dd>${dshort(c.created_at)}</dd>
+            <dt>Ostatnio aktywny</dt><dd>${dshort(c.last_active_at)}</dd>
+            ${c.marketing_consent ? `<dt>Zgoda</dt><dd>${dshort(c.consent_at)}${c.consent_source ? ` <span class="muted">(${esc(c.consent_source)})</span>` : ''}</dd>` : ''}
+          </dl>
+        </div>
+        <div class="sec"><h3 class="sec__t">Zamówienia</h3>
+          <ul class="items">${orders.length ? orders.map((o: any) => `<li class="clickable" data-oid="${o.id}"><span><strong>${o.number}</strong> · ${dshort(o.created_at)}<br><span class="muted">${o.order_items.map((i: any) => `${esc(i.name)} × ${i.qty}`).join(', ')}${o.discount_code ? ` · kod ${esc(o.discount_code)}` : ''}</span></span><span class="r">${pln(o.total)}<br><span class="st st--${o.status}">${STATUS[o.status] || esc(o.status)}</span></span></li>`).join('') : '<li class="muted">Brak zamówień.</li>'}</ul>
+        </div>`;
+      body.querySelectorAll<HTMLElement>('[data-oid]').forEach((li) => li.addEventListener('click', () => openOrder(li.dataset.oid!)));
+    } catch (e) { body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; }
+  }
+  $('[data-c-search]').addEventListener('submit', (e) => { e.preventDefault(); cState.q = $<HTMLInputElement>('#cq').value.trim(); cState.page = 1; loadCustomers(); });
+  let cTimer = 0;
+  $<HTMLInputElement>('#cq').addEventListener('input', () => { clearTimeout(cTimer); cTimer = window.setTimeout(() => { cState.q = $<HTMLInputElement>('#cq').value.trim(); cState.page = 1; loadCustomers(); }, 400); });
+  $<HTMLSelectElement>('[data-c-sort]').addEventListener('change', (e) => { cState.sort = (e.target as HTMLSelectElement).value; cState.page = 1; loadCustomers(); });
+  $<HTMLInputElement>('[data-c-buyers]').addEventListener('change', (e) => { cState.buyers = (e.target as HTMLInputElement).checked; cState.page = 1; loadCustomers(); });
+  $('[data-c-prev]').addEventListener('click', () => { cState.page--; loadCustomers(); });
+  $('[data-c-next]').addEventListener('click', () => { cState.page++; loadCustomers(); });
+  const cRowOpen = (e: Event) => { const t = e.target as HTMLElement; if (t.closest('[data-stop]')) return; const tr = t.closest('tr[data-cid]') as HTMLElement | null; if (tr) openCustomer(tr.dataset.cid!); };
+  $('[data-c-rows]').addEventListener('click', cRowOpen);
+  $('[data-c-rows]').addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') cRowOpen(e); });
 
   // ---------- Ustawienia sklepu ----------
   const settingsForm = $<HTMLFormElement>('[data-settings-form]');
@@ -669,7 +807,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
 
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { orders: 'Zamówienia', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu' };
+  const TITLES: Record<string, string> = { orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
@@ -677,6 +815,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     $('[data-title]').textContent = TITLES[b.dataset.tab!]; $('[data-crumb]').textContent = TITLES[b.dataset.tab!];
     if (b.dataset.tab === 'products') loadProducts();
     if (b.dataset.tab === 'codes') loadCodes();
+    if (b.dataset.tab === 'customers') loadCustomers();
     if (b.dataset.tab === 'settings') loadSettings();
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
