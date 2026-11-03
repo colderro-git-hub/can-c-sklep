@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
-import { priceCart, type DbProduct } from '../../../lib/pricing';
+import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../../lib/pricing';
 import { p24Config, registerTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
 import { sendMail, zl } from '../../../lib/mail';
@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Łączymy pozycje tego samego produktu (rabat zestawowy liczy się od łącznej liczby sztuk)
     const merged = Object.values(lines.reduce((acc: Record<string, any>, l: any) => { (acc[l.slug] ??= { slug: l.slug, qty: 0 }).qty += l.qty; return acc; }, {}));
     const ids = merged.map((l: any) => `"${l.slug.replace(/"/g, '')}"`).join(',');
-    const products = await sb.select<DbProduct>(`products?select=id,name,price,bundles,active&id=in.(${ids})`);
+    const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     let priced;
     try { priced = priceCart(merged as any, products); } catch { return json(409, { error: 'Któryś z produktów jest nieaktywny albo nie ma ceny.' }); }
     if (extraDiscount > priced.total) return json(422, { error: 'Rabat jest większy niż wartość zamówienia.' });

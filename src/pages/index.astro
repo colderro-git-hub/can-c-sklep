@@ -1,9 +1,28 @@
 ---
 import Base from '../layouts/Base.astro';
 import Arrow from '../components/Arrow.astro';
-import { products, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
+import { products as fallback, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
+import { getEnv } from '../lib/env';
+import { getCatalog } from '../lib/catalog';
 
-const dropsPrice = products[0].price ?? 0;
+// Strona główna z aktualnymi produktami z bazy; przy awarii bazy – dane zapasowe z kodu
+export const prerender = false;
+type Card = { slug: string; tag: string; name: string; desc: string; price: number | null; regular: number | null; onSale: boolean; image?: string; alt?: string; rating: number; reviews: number };
+let products: Card[];
+try {
+  const list = await getCatalog(await getEnv(Astro.locals));
+  products = list.map((p) => ({
+    slug: p.id, tag: (p.tags[0] || 'Produkt').toUpperCase(), name: p.name, desc: p.short_description || '',
+    price: p.current === null ? null : p.current / 100, regular: p.price === null ? null : p.price / 100, onSale: p.onSale,
+    image: p.images[0]?.url, alt: p.images[0]?.alt || p.name, rating: p.rating.avg, reviews: p.rating.count,
+  }));
+} catch (e) {
+  console.error('Strona główna – katalog: ' + (e instanceof Error ? e.message : String(e)));
+  products = fallback.map((p) => ({ slug: p.slug, tag: p.tag, name: p.name, desc: p.desc, price: p.price, regular: p.price, onSale: false, image: p.image, alt: p.name, rating: 0, reviews: 0 }));
+}
+Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+
+const dropsPrice = products.find((p) => p.slug === 'krople-can-c')?.price ?? fallback[0].price ?? 0;
 const bundleRows = bundles.map((b) => {
   const total = dropsPrice * b.qty * (1 - b.discount);
   return {
@@ -50,14 +69,14 @@ const bundleRows = bundles.map((b) => {
         {products.map((p) => (
           <article class="card">
             {p.image
-              ? <img src={p.image} alt={p.name} width="400" height="300" loading="lazy" class="card__img" />
+              ? <img src={p.image} alt={p.alt} width="400" height="300" loading="lazy" class="card__img" />
               : <div class="ph card__img">[Packshot: {p.name}]</div>}
             <div class="card__body">
               <span class="card__tag">{p.tag}</span>
               <h3><a href={`/produkt/${p.slug}/`} class="card__link">{p.name}</a></h3>
               <p class="muted card__desc">{p.desc}</p>
               <div class="card__foot">
-                <span class="card__price">{formatPrice(p.price)}</span>
+                <span class="card__price">{formatPrice(p.price)}{p.onSale && <s class="muted card__regular"> {formatPrice(p.regular)}</s>}{p.reviews > 0 && <span class="card__rating" aria-label={`Ocena ${p.rating} na 5`}> ★ {p.rating.toLocaleString('pl-PL')}</span>}</span>
                 <a href={`/produkt/${p.slug}/`} class="round-btn" aria-label={`Dodaj do koszyka: ${p.name}`}>
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.4" /></svg>
                 </a>
@@ -222,6 +241,8 @@ const bundleRows = bundles.map((b) => {
   .card__desc { flex-grow: 1; }
   .card__foot { display: flex; justify-content: space-between; align-items: center; padding-top: var(--s-1); }
   .card__price { font-size: 1.25rem; }
+  .card__regular { font-size: 0.9375rem; }
+  .card__rating { font-size: 0.875rem; color: #B07D00; }
   .round-btn { width: 48px; height: 48px; border-radius: 24px; background: var(--c-ink); color: var(--c-white); display: flex; align-items: center; justify-content: center; }
 
   /* Zestawy */

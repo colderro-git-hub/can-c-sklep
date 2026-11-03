@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
-import { priceCart, type DbProduct } from '../../../lib/pricing';
+import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../../lib/pricing';
 import { p24Config, registerTransaction } from '../../../lib/p24';
 import { checkCode } from '../../../lib/discounts';
 
@@ -72,7 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     // ---------- Cena z bazy ----------
     const ids = [...new Set(lines.map((l: any) => l.slug))].map((s) => `"${String(s).replace(/"/g, '')}"`).join(',');
-    const products = await sb.select<DbProduct>(`products?select=id,name,price,bundles,active&id=in.(${ids})`);
+    const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     let priced;
     try { priced = priceCart(lines, products); } catch (e) {
       return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' });

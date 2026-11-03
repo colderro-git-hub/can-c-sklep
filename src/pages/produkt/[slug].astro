@@ -1,117 +1,157 @@
 ---
+// Karta produktu generowana z bazy przy każdym wejściu (zmiany z panelu widać od razu)
 import Base from '../../layouts/Base.astro';
 import Arrow from '../../components/Arrow.astro';
-import { products, discountFor, lineTotal, formatPrice, reviews } from '../../data/shop';
-import { CONTENT_DEFAULTS } from '../../lib/site-settings';
+import { getEnv } from '../../lib/env';
+import { getProductPage, AVAIL_LABEL } from '../../lib/catalog';
+import { discountRate } from '../../lib/pricing';
+import { markdown, plainText } from '../../lib/markdown';
+import { getSite } from '../../lib/site-settings';
+import { TURNSTILE_SITE_KEY } from '../../config';
 
-export function getStaticPaths() {
-  return products.map((product) => ({ params: { slug: product.slug }, props: { product } }));
-}
+export const prerender = false;
 
-const { product } = Astro.props;
-const related = product.related ? products.find((p) => p.slug === product.related) : undefined;
+const env = await getEnv(Astro.locals);
+const slug = Astro.params.slug || '';
+const data = await getProductPage(env, slug).catch((e) => { console.error('Karta produktu: ' + (e instanceof Error ? e.message : String(e))); return null; });
+if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono' });
+const { product: p, reviews, related } = data;
+const site = await getSite(env);
 
-// Warianty wyboru: zestawy dla kropli, zwykła liczba sztuk dla pozostałych
-const options = product.bundles
-  ? [1, 2, 4].map((qty) => ({
-      qty,
-      label: qty === 1 ? '1 opakowanie' : `${qty} opakowania`,
-      sub: `${qty} ${qty === 1 ? 'miesiąc' : 'miesiące'} kuracji${qty === 2 ? ' · polecany' : ''}`,
-      total: lineTotal(product, qty),
-      discount: discountFor(qty, product),
-    }))
-  : [1, 2, 3].map((qty) => ({
-      qty,
-      label: `${qty} szt.`,
-      sub: product.size,
-      total: lineTotal(product, qty),
-      discount: 0,
-    }));
-
-const defaultQty = product.bundles ? 2 : 1;
+const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+const buyable = p.current !== null && p.avail !== 'out_of_stock';
+const options = (p.bundles ? [1, 2, 4] : [1, 2, 3]).map((qty) => {
+  const rate = discountRate(qty, p.bundles);
+  const total = p.current === null ? null : Math.round(p.current * qty * (1 - rate));
+  return {
+    qty, rate, total,
+    label: p.bundles ? (qty === 1 ? '1 opakowanie' : `${qty} opakowania`) : `${qty} szt.`,
+    sub: p.bundles ? `${qty} ${qty === 1 ? 'miesiąc' : 'miesiące'} kuracji${qty === 2 ? ' · polecany' : ''}` : (p.subtitle || ''),
+  };
+});
+const defaultQty = p.bundles ? 2 : 1;
 const def = options.find((o) => o.qty === defaultQty)!;
+const salePct = p.onSale && p.price ? Math.round((1 - p.current! / p.price) * 100) : 0;
+const images = p.images.length ? p.images : [];
+const url = new URL(`/produkt/${p.id}/`, Astro.url.origin).toString();
+const stars = (n: number) => '★★★★★'.slice(0, Math.round(n)) + '☆☆☆☆☆'.slice(0, 5 - Math.round(n));
 
-// Dane strukturalne dla Google (wyniki z ceną, Merchant Center)
-const jsonLd = {
+// Dane strukturalne Google: produkt, oferta, dostawa, zwroty, oceny
+const gtin = (p.ean || '').replace(/\D/g, '');
+const jsonLd: Record<string, unknown> = {
   '@context': 'https://schema.org',
   '@type': 'Product',
-  name: product.name,
-  description: product.desc,
-  brand: { '@type': 'Brand', name: 'Can-C' },
-  sku: product.slug,
-  ...(product.price !== null && {
+  name: p.name,
+  description: p.seo_description || p.short_description || plainText(p.description).slice(0, 500),
+  sku: p.id,
+  ...(gtin ? { [`gtin${gtin.length === 13 ? '13' : gtin.length === 8 ? '8' : gtin.length === 12 ? '12' : '14'}`]: gtin } : {}),
+  ...(p.mpn ? { mpn: p.mpn } : {}),
+  brand: { '@type': 'Brand', name: p.brand },
+  ...(images.length ? { image: images.map((i) => i.url) } : {}),
+  ...(p.current !== null && {
     offers: {
-      '@type': 'Offer',
-      price: product.price.toFixed(2),
-      priceCurrency: 'PLN',
-      availability: 'https://schema.org/InStock',
-      url: `https://can-c.pl/produkt/${product.slug}/`,
+      '@type': 'Offer', url, priceCurrency: 'PLN', price: (p.current / 100).toFixed(2),
+      ...(p.onSale && p.sale_end ? { priceValidUntil: p.sale_end.slice(0, 10) } : {}),
+      itemCondition: `https://schema.org/${p.condition === 'new' ? 'NewCondition' : p.condition === 'used' ? 'UsedCondition' : 'RefurbishedCondition'}`,
+      availability: `https://schema.org/${p.avail === 'in_stock' ? 'InStock' : p.avail === 'preorder' ? 'PreOrder' : p.avail === 'backorder' ? 'BackOrder' : 'OutOfStock'}`,
       shippingDetails: {
         '@type': 'OfferShippingDetails',
         shippingRate: { '@type': 'MonetaryAmount', value: '0', currency: 'PLN' },
         shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'PL' },
+        deliveryTime: { '@type': 'ShippingDeliveryTime', handlingTime: { '@type': 'QuantitativeValue', minValue: 0, maxValue: 1, unitCode: 'DAY' }, transitTime: { '@type': 'QuantitativeValue', minValue: 1, maxValue: 2, unitCode: 'DAY' } },
+      },
+      hasMerchantReturnPolicy: {
+        '@type': 'MerchantReturnPolicy', applicableCountry: 'PL', returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+        merchantReturnDays: 14, returnMethod: 'https://schema.org/ReturnByMail', returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
       },
     },
   }),
+  ...(p.rating.count ? {
+    aggregateRating: { '@type': 'AggregateRating', ratingValue: p.rating.avg, reviewCount: p.rating.count, bestRating: 5, worstRating: 1 },
+    review: reviews.slice(0, 5).map((r) => ({ '@type': 'Review', author: { '@type': 'Person', name: r.author_name }, datePublished: r.created_at.slice(0, 10), reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 }, ...(r.title ? { name: r.title } : {}), reviewBody: r.body })),
+  } : {}),
 };
+Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 ---
-<Base title={`${product.name} | Can-C`} description={product.desc}>
+<Base title={p.seo_title || `${p.name} | Can-C`} description={p.seo_description || p.short_description || p.name}>
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  {TURNSTILE_SITE_KEY && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <nav class="container crumbs" aria-label="Ścieżka">
-    <a href="/">Strona główna</a> / <a href="/#produkty">Sklep</a> / <span aria-current="page">{product.name}</span>
+    <a href="/">Strona główna</a> / <a href="/sklep/">Sklep</a> / <span aria-current="page">{p.name}</span>
   </nav>
 
   <section class="section product-top">
     <div class="container product">
-      <div class="gallery">
-        {product.image
-          ? <img src={product.image} alt={product.name} width="800" height="800" class="gallery__main" />
-          : <div class="ph gallery__main">[Zdjęcie główne: {product.name}]</div>}
-        <div class="gallery__thumbs" aria-hidden="true">
-          <div class="ph">Przód</div><div class="ph">Tył</div><div class="ph">Ulotka</div><div class="ph">Znak IVP</div>
-        </div>
+      <div class="gallery" data-gallery>
+        {images.length
+          ? <img src={images[0].url} alt={images[0].alt || p.name} width="800" height="800" class="gallery__main" data-main fetchpriority="high" />
+          : <div class="ph gallery__main">[Zdjęcie produktu – dodaj w panelu]</div>}
+        {images.length > 1 && (
+          <div class="gallery__thumbs">
+            {images.map((im, i) => (
+              <button type="button" class="thumb" aria-label={`Zdjęcie ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'} data-src={im.url} data-alt={im.alt || p.name}>
+                <img src={im.url} alt="" width="160" height="160" loading="lazy" />
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div class="buy" data-product={product.slug}>
-        <span class="tag">{product.tag} · {product.size}</span>
-        <h1>{product.name}</h1>
-        <p class="lead">{product.desc}</p>
+      <div class="buy" data-product={p.id}>
+        <span class="tag">{(p.tags[0] || 'Produkt').toUpperCase()}{p.subtitle && ` · ${p.subtitle}`}</span>
+        <h1>{p.name}</h1>
+        {p.rating.count > 0 && (
+          <a href="#opinie" class="rating-link" aria-label={`Ocena ${p.rating.avg} na 5, ${p.rating.count} opinii`}>
+            <span class="stars" aria-hidden="true">{stars(p.rating.avg)}</span> {p.rating.avg.toLocaleString('pl-PL')} · {p.rating.count} {p.rating.count === 1 ? 'opinia' : p.rating.count < 5 ? 'opinie' : 'opinii'}
+          </a>
+        )}
+        {p.short_description && <p class="lead">{p.short_description}</p>}
 
-        <div class="price-row" aria-live="polite">
-          <span class="price" data-price>{formatPrice(def.total)}</span>
-          <span class="muted" data-unit>{def.total !== null ? `${formatPrice(def.total / def.qty)} / szt.` : ''}</span>
-          <span class="save" data-save hidden={!def.discount}>−{Math.round(def.discount * 100)}%</span>
+        <div class="price-box">
+          <div class="price-row" aria-live="polite">
+            <span class="price" data-price>{pln(def.total)}</span>
+            {p.onSale && <s class="muted regular" data-regular>{pln(p.price === null ? null : p.price * def.qty)}</s>}
+            <span class="save" data-save hidden={!def.rate && !salePct}>{salePct ? `−${salePct}%` : ''}{def.rate ? ` −${Math.round(def.rate * 100)}% za zestaw` : ''}</span>
+          </div>
+          <p class="price-meta">
+            <span data-unit>{def.total !== null ? `${pln(Math.round(def.total / def.qty))} / szt.` : ''}</span>
+            {p.unitPrice && <span> · cena za jednostkę: {p.unitPrice}</span>}
+          </p>
+          {p.lowest30 !== null && (
+            <p class="price-meta">{p.onSale ? 'Najniższa cena z 30 dni przed obniżką' : 'Najniższa cena z ostatnich 30 dni'}: {pln(p.lowest30)}</p>
+          )}
+          <p class={`avail avail--${p.avail}`}>{AVAIL_LABEL[p.avail] || p.avail}</p>
         </div>
 
-        <fieldset class="options">
-          <legend>{product.bundles ? 'Wybierz zestaw' : 'Ilość'}</legend>
-          {options.map((o) => (
-            <label class="option">
-              <input
-                type="radio" name="qty" value={o.qty} checked={o.qty === defaultQty}
-                data-total={formatPrice(o.total)}
-                data-unit={o.total !== null ? `${formatPrice(o.total / o.qty)} / szt.` : ''}
-                data-save={o.discount ? `−${Math.round(o.discount * 100)}%` : ''}
-              />
-              <span class="option__text"><span class="option__label">{o.label}</span><span class="muted option__sub">{o.sub}</span></span>
-              <span class="option__total">{formatPrice(o.total)}</span>
-            </label>
-          ))}
-        </fieldset>
+        {buyable && (
+          <fieldset class="options">
+            <legend>{p.bundles ? 'Wybierz zestaw' : 'Ilość'}</legend>
+            {options.map((o) => (
+              <label class="option">
+                <input type="radio" name="qty" value={o.qty} checked={o.qty === defaultQty}
+                  data-total={pln(o.total)} data-regular={p.onSale && p.price ? pln(p.price * o.qty) : ''}
+                  data-unit={o.total !== null ? `${pln(Math.round(o.total / o.qty))} / szt.` : ''}
+                  data-save={[salePct ? `−${salePct}%` : '', o.rate ? `−${Math.round(o.rate * 100)}% za zestaw` : ''].filter(Boolean).join(' ')} />
+                <span class="option__text"><span class="option__label">{o.label}</span><span class="muted option__sub">{o.sub}</span></span>
+                <span class="option__total">{pln(o.total)}</span>
+              </label>
+            ))}
+          </fieldset>
+        )}
 
         <div class="buy__cta">
-          <button type="button" class="btn btn--lg" data-add disabled={product.price === null}>Dodaj do koszyka</button>
-          <p class="added" data-added role="status" hidden>
-            Dodano do koszyka. <a href="/koszyk/">Przejdź do koszyka</a>
-          </p>
+          <button type="button" class="btn btn--lg" data-add disabled={!buyable}>{buyable ? 'Dodaj do koszyka' : AVAIL_LABEL[p.avail]}</button>
+          <p class="added" data-added role="status" hidden>Dodano do koszyka. <a href="/koszyk/">Przejdź do koszyka</a></p>
         </div>
+
+        {p.highlights.length > 0 && <ul class="highlights">{p.highlights.map((h) => <li>{h}</li>)}</ul>}
 
         <ul class="perks">
           <li><span>InPost Paczkomat 24/7</span><span class="ok">Darmowa</span></li>
           <li><span>Kurier DPD</span><span class="ok">Darmowa</span></li>
-          <li><span>Wysyłka</span><span data-site="shippingTime">{CONTENT_DEFAULTS.shippingTime}</span></li>
-          <li><span>Zwrot</span><span>14 dni na odstąpienie</span></li>
+          <li><span>Wysyłka</span><span data-site="shippingTime">{site.shippingTime}</span></li>
+          <li><span>Zwrot</span><span>14 dni (nieotwarte opakowanie)</span></li>
         </ul>
       </div>
     </div>
@@ -120,28 +160,72 @@ const jsonLd = {
   <section class="section section--tint">
     <div class="container details">
       <nav class="pills" aria-label="Sekcje opisu">
-        <a href="#opis">Opis</a><a href="#stosowanie">Stosowanie</a><a href="#sklad">Skład</a><a href="#opinie">Opinie</a>
+        {p.description && <a href="#opis">Opis</a>}<a href="#specyfikacja">Specyfikacja</a><a href="#opinie">Opinie ({p.rating.count})</a>
       </nav>
       <div class="details__body">
         <article class="details__text">
-          <section id="opis"><h2>O produkcie</h2><p>{product.about}</p></section>
-          <section id="stosowanie"><h2>Jak stosować</h2><p>{product.usage}</p></section>
-          <section id="sklad"><h2>Skład</h2><p>{product.ingredients}</p></section>
-          <section id="opinie">
+          {p.description && <section id="opis" class="md" set:html={markdown(p.description)} />}
+          <section id="specyfikacja">
+            <h2>Specyfikacja</h2>
+            <dl class="spec">
+              <div><dt>Marka</dt><dd>{p.brand}</dd></div>
+              {p.subtitle && <div><dt>Opakowanie</dt><dd>{p.subtitle}</dd></div>}
+              {p.unit_value && p.unit_measure && <div><dt>Zawartość</dt><dd>{p.unit_value.toLocaleString('pl-PL')} {p.unit_measure === 'szt' ? 'szt.' : p.unit_measure}</dd></div>}
+              {p.ean && <div><dt>EAN</dt><dd>{p.ean}</dd></div>}
+              {p.mpn && <div><dt>Kod producenta</dt><dd>{p.mpn}</dd></div>}
+              <div><dt>Dostępność</dt><dd>{AVAIL_LABEL[p.avail]}</dd></div>
+            </dl>
+          </section>
+
+          <section id="opinie" class="reviews">
             <h2>Opinie klientów</h2>
-            {reviews.slice(0, 2).map((r) => <blockquote><p>„{r.quote}”</p><footer class="muted">{r.author}</footer></blockquote>)}
+            {p.rating.count > 0 ? (
+              <div class="summary"><span class="summary__avg">{p.rating.avg.toLocaleString('pl-PL')}</span><span class="stars stars--lg" aria-hidden="true">{stars(p.rating.avg)}</span><span class="muted">na podstawie {p.rating.count} {p.rating.count === 1 ? 'opinii' : 'opinii'}</span></div>
+            ) : <p class="muted">Ten produkt nie ma jeszcze opinii. Bądź pierwszą osobą, która ją doda.</p>}
+            <ul class="review-list">
+              {reviews.map((r) => (
+                <li class="review">
+                  <div class="review__head"><span class="stars" aria-label={`${r.rating} na 5`}>{stars(r.rating)}</span><strong>{r.author_name}</strong>{r.verified_purchase && <span class="badge-ok">Zweryfikowany zakup</span>}<span class="muted small">{new Date(r.created_at).toLocaleDateString('pl-PL')}</span></div>
+                  {r.title && <p class="review__title">{r.title}</p>}
+                  <p>{r.body}</p>
+                  {r.reply && <p class="review__reply"><strong>Odpowiedź sklepu:</strong> {r.reply}</p>}
+                </li>
+              ))}
+            </ul>
+            <p class="small muted">Opinie publikujemy po sprawdzeniu przez moderatora. Oznaczenie „Zweryfikowany zakup” mają opinie osób, które kupiły produkt w naszym sklepie (sprawdzamy to po adresie e-mail).</p>
+
+            <details class="review-form-wrap">
+              <summary class="btn btn--ghost">Napisz opinię</summary>
+              <form class="review-form" data-review novalidate>
+                <fieldset class="rate"><legend>Twoja ocena</legend>
+                  {[5, 4, 3, 2, 1].map((n) => <><input type="radio" id={`r${n}`} name="rating" value={n} /><label for={`r${n}`} title={`${n} na 5`}>★</label></>)}
+                </fieldset>
+                <div class="grid2">
+                  <label class="field">Imię lub pseudonim (widoczne)<input class="input" name="name" maxlength="60" required /></label>
+                  <label class="field">E-mail (niewidoczny, do weryfikacji zakupu)<input class="input" name="email" type="email" maxlength="200" /></label>
+                </div>
+                <label class="field">Tytuł (opcjonalnie)<input class="input" name="title" maxlength="120" /></label>
+                <label class="field">Opinia<textarea class="input textarea" name="body" rows="4" minlength="10" maxlength="3000" required></textarea></label>
+                <label class="check"><input type="checkbox" name="consent" required /> <span>Akceptuję publikację opinii z podanym imieniem. Opinia trafi na stronę po moderacji. Zasady przetwarzania danych: <a href="/polityka-prywatnosci/">polityka prywatności</a>.</span></label>
+                <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+                {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>}
+                <button class="btn">Wyślij opinię</button>
+                <p class="msg" role="status" data-review-msg></p>
+              </form>
+            </details>
           </section>
         </article>
 
-        {related && (
+        {related.length > 0 && (
           <aside class="related">
             <span class="tag">Często kupowane razem</span>
-            <div class="ph related__img">[Packshot: {related.name}]</div>
-            <h3>{related.name}</h3>
-            <div class="related__foot">
-              <span class="price-sm">{formatPrice(related.price)}</span>
-              <a href={`/produkt/${related.slug}/`} class="link-arrow">Zobacz <Arrow /></a>
-            </div>
+            {related.map((r) => (
+              <a class="related__item" href={`/produkt/${r.id}/`}>
+                {r.images[0] ? <img src={r.images[0].url} alt={r.images[0].alt || r.name} width="400" height="300" loading="lazy" /> : <div class="ph related__img">[{r.name}]</div>}
+                <span class="related__name">{r.name}</span>
+                <span class="related__foot"><span>{pln(r.current)}</span><span class="link-arrow">Zobacz <Arrow /></span></span>
+              </a>
+            ))}
           </aside>
         )}
       </div>
@@ -152,37 +236,60 @@ const jsonLd = {
 <script>
   import { addItem } from '../../lib/cart';
 
+  // Galeria
+  const gallery = document.querySelector<HTMLElement>('[data-gallery]');
+  const main = gallery?.querySelector<HTMLImageElement>('[data-main]');
+  gallery?.querySelectorAll<HTMLButtonElement>('.thumb').forEach((t) => t.addEventListener('click', () => {
+    if (!main) return;
+    main.src = t.dataset.src!; main.alt = t.dataset.alt || '';
+    gallery.querySelectorAll('.thumb').forEach((x) => x.setAttribute('aria-pressed', String(x === t)));
+  }));
+
+  // Wybór zestawu i koszyk
   const root = document.querySelector<HTMLElement>('[data-product]');
   if (root) {
     const slug = root.dataset.product!;
     const radios = root.querySelectorAll<HTMLInputElement>('input[name="qty"]');
-    const price = root.querySelector<HTMLElement>('[data-price]')!;
-    const unit = root.querySelector<HTMLElement>('[data-unit]')!;
-    const save = root.querySelector<HTMLElement>('[data-save]')!;
-    const added = root.querySelector<HTMLElement>('[data-added]')!;
-
+    const q = (s: string) => root.querySelector<HTMLElement>(s);
     const render = (r: HTMLInputElement) => {
-      price.textContent = r.dataset.total ?? '';
-      unit.textContent = r.dataset.unit ?? '';
-      save.textContent = r.dataset.save ?? '';
-      save.hidden = !r.dataset.save;
+      q('[data-price]')!.textContent = r.dataset.total ?? '';
+      q('[data-unit]')!.textContent = r.dataset.unit ?? '';
+      const reg = q('[data-regular]'); if (reg) reg.textContent = r.dataset.regular ?? '';
+      const save = q('[data-save]')!; save.textContent = r.dataset.save ?? ''; save.hidden = !r.dataset.save;
     };
-
-    // Link ze strony głównej: /produkt/krople-can-c/?zestaw=4
     const wanted = new URLSearchParams(location.search).get('zestaw');
-    radios.forEach((r) => {
-      if (wanted && r.value === wanted) r.checked = true;
-      r.addEventListener('change', () => render(r));
-    });
+    radios.forEach((r) => { if (wanted && r.value === wanted) r.checked = true; r.addEventListener('change', () => render(r)); });
     const checked = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
     if (checked) render(checked);
-
     root.querySelector('[data-add]')?.addEventListener('click', () => {
-      const current = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
-      addItem(slug, Number(current?.value ?? 1));
-      added.hidden = false;
+      const cur = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
+      addItem(slug, Number(cur?.value ?? 1));
+      q('[data-added]')!.hidden = false;
     });
   }
+
+  // Opinia
+  const form = document.querySelector<HTMLFormElement>('[data-review]');
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = form.querySelector<HTMLElement>('[data-review-msg]')!;
+    const fd = new FormData(form);
+    const body = {
+      product: root?.dataset.product, rating: Number(fd.get('rating')), name: fd.get('name'), email: fd.get('email'),
+      title: fd.get('title'), body: fd.get('body'), consent: fd.get('consent') !== null, website: fd.get('website'),
+      token: fd.get('cf-turnstile-response'),
+    };
+    msg.className = 'msg'; msg.textContent = 'Wysyłanie…';
+    try {
+      const res = await fetch('/api/opinie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const d = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(d.error || 'Nie udało się wysłać opinii.');
+      msg.className = 'msg msg--ok';
+      msg.textContent = `Dziękujemy! Opinia pojawi się po moderacji.${d.verified ? ' Potwierdziliśmy zakup – dostanie oznaczenie „Zweryfikowany zakup”.' : ''}`;
+      form.reset();
+    } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
+    (window as any).turnstile?.reset();
+  });
 </script>
 
 <style>
@@ -190,19 +297,32 @@ const jsonLd = {
   .crumbs a { color: rgba(1, 8, 15, 0.75); }
   .product-top { padding-top: var(--s-3); }
   .product { display: flex; flex-wrap: wrap; gap: var(--s-6); align-items: flex-start; }
+  .small { font-size: var(--fs-small); }
 
   .gallery { flex: 1 1 480px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-1); }
-  .gallery__main { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; background: var(--c-gray-200); }
-  .gallery__thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s-1); }
-  .gallery__thumbs .ph { aspect-ratio: 1 / 1; padding: 4px; background: var(--c-gray-200); font-size: 0.75rem; }
+  .gallery__main { aspect-ratio: 1 / 1; width: 100%; object-fit: contain; background: var(--c-gray-200); }
+  .gallery__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--s-1); }
+  .thumb { padding: 0; border: 0; background: var(--c-gray-200); cursor: pointer; aspect-ratio: 1 / 1; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+  .thumb[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--c-ink); }
+  .thumb[aria-pressed='true'] img, .thumb:hover img { opacity: 1; }
 
   .buy { flex: 1 1 420px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
   .buy h1 { font-size: var(--fs-h2); }
   .tag { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--c-ink-70); }
+  .rating-link { color: var(--c-ink); text-decoration: none; font-size: var(--fs-small); display: inline-flex; gap: 8px; align-items: center; }
+  .stars { color: #E0A100; letter-spacing: 2px; }
+  .stars--lg { font-size: 1.5rem; }
 
-  .price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 16px; padding-block: var(--s-2); border-block: 1px solid var(--c-ink-10); }
+  .price-box { padding-block: var(--s-2); border-block: 1px solid var(--c-ink-10); display: flex; flex-direction: column; gap: 6px; }
+  .price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 16px; }
   .price { font-size: 2.5rem; font-weight: 300; line-height: 1.15; }
+  .regular { font-size: 1.125rem; }
   .save { font-size: 0.8125rem; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-tint); }
+  .price-meta { font-size: var(--fs-small); color: var(--c-ink-70); }
+  .avail { font-size: var(--fs-small); }
+  .avail--in_stock { color: var(--c-ok); }
+  .avail--out_of_stock { color: #B3261E; }
 
   .options { margin: 0; padding: 0; border: 0; display: flex; flex-direction: column; gap: var(--s-1); }
   .options legend { padding-bottom: var(--s-1); }
@@ -213,14 +333,14 @@ const jsonLd = {
   .option__text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
   .option__label, .option__total { font-size: 1.125rem; }
   .option__sub { font-size: var(--fs-small); }
-
   .buy__cta { display: flex; flex-direction: column; gap: var(--s-1); }
   .buy__cta .btn { width: 100%; }
   .buy__cta .btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .added { font-size: var(--fs-small); }
+  .highlights { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 
   .perks { list-style: none; margin: 0; padding: 0; }
-  .perks li { display: flex; justify-content: space-between; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--c-ink-10); }
+  .perks li { display: flex; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--c-ink-10); }
   .perks li:last-child { border-bottom: 0; }
   .ok { color: var(--c-ok); }
 
@@ -228,14 +348,48 @@ const jsonLd = {
   .pills { display: flex; flex-wrap: wrap; gap: 10px; }
   .pills a { min-height: 44px; padding: 0 24px; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--c-ink); display: inline-flex; align-items: center; color: var(--c-ink); text-decoration: none; }
   .details__body { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-start; }
-  .details__text { flex: 2 1 520px; max-width: 720px; display: flex; flex-direction: column; gap: var(--s-4); }
-  .details__text section { display: flex; flex-direction: column; gap: var(--s-1); scroll-margin-top: 100px; }
+  .details__text { flex: 2 1 520px; max-width: 760px; display: flex; flex-direction: column; gap: var(--s-4); }
+  .details__text section { scroll-margin-top: 100px; display: flex; flex-direction: column; gap: var(--s-1); }
   .details__text h2 { font-size: 2.125rem; }
-  .details__text p { font-size: 1.125rem; color: rgba(1, 8, 15, 0.75); }
-  .details__text blockquote { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+  .md :global(h2), .md :global(h3) { font-weight: 300; margin-top: var(--s-2); }
+  .md :global(h3) { font-size: 1.5rem; }
+  .md :global(p), .md :global(li) { font-size: 1.0625rem; line-height: 1.65; color: rgba(1, 8, 15, 0.8); }
+  .md :global(ul), .md :global(ol) { padding-left: 22px; display: flex; flex-direction: column; gap: 6px; margin: 0; }
+  .spec { margin: 0; }
+  .spec div { display: flex; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--c-ink-10); }
+  .spec dt { flex: 0 0 160px; color: var(--c-ink-70); }
+  .spec dd { margin: 0; }
+
+  .summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .summary__avg { font-size: 2.5rem; font-weight: 300; }
+  .review-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .review { padding: var(--s-2) 0; border-bottom: 1px solid var(--c-ink-10); display: flex; flex-direction: column; gap: 8px; }
+  .review__head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .review__title { font-size: 1.125rem; }
+  .review__reply { padding: 12px 16px; background: var(--c-white); font-size: 0.9375rem; }
+  .badge-ok { font-size: 0.75rem; padding: 3px 10px; border-radius: var(--r-pill); background: #E3F5E8; color: var(--c-ok); }
+  .review-form-wrap > summary { list-style: none; display: inline-flex; width: auto; }
+  .review-form-wrap > summary::-webkit-details-marker { display: none; }
+  .review-form { margin-top: var(--s-2); padding: var(--s-3); background: var(--c-white); display: flex; flex-direction: column; gap: 14px; }
+  .rate { margin: 0; padding: 0; border: 0; display: inline-flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
+  .rate legend { width: 100%; margin-bottom: 6px; font-size: var(--fs-small); }
+  .rate input { position: absolute; opacity: 0; }
+  .rate label { font-size: 2rem; color: var(--c-gray-300); cursor: pointer; line-height: 1; }
+  .rate input:checked ~ label, .rate label:hover, .rate label:hover ~ label { color: #E0A100; }
+  .rate input:focus-visible + label { outline: 2px solid var(--c-link); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .textarea { height: auto; padding: 12px 16px; resize: vertical; }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: var(--fs-small); }
+  .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .review-form .btn { align-self: flex-start; }
+  .msg:empty { display: none; }
+  .msg--ok { color: var(--c-ok); }
+  .msg--err { color: #D32300; }
 
   .related { flex: 1 1 280px; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: 16px; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
-  .related__img { aspect-ratio: 4 / 3; background: var(--c-gray-200); }
+  .related__item { display: flex; flex-direction: column; gap: 10px; color: var(--c-ink); text-decoration: none; }
+  .related__item img, .related__img { aspect-ratio: 4 / 3; width: 100%; object-fit: cover; background: var(--c-gray-200); }
+  .related__name { font-size: 1.25rem; }
   .related__foot { display: flex; justify-content: space-between; align-items: center; }
-  .price-sm { font-size: 1.25rem; }
 </style>

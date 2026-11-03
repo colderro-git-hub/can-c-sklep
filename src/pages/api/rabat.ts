@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../lib/env';
 import { db } from '../../lib/supabase';
-import { priceCart, type DbProduct } from '../../lib/pricing';
+import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../lib/pricing';
 import { checkCode } from '../../lib/discounts';
 
 export const prerender = false;
@@ -17,8 +17,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const sb = db(await getEnv(locals));
     const ids = [...new Set(lines.map((l: any) => `"${String(l.slug).replace(/"/g, '')}"`))].join(',');
-    const products = await sb.select<DbProduct>(`products?select=id,name,price,bundles,active&id=in.(${ids})`);
-    const priced = priceCart(lines, products);
+    const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
+    let priced;
+    try { priced = priceCart(lines, products); } catch { return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' }); }
     const email = typeof b.email === 'string' && b.email.includes('@') ? b.email.trim().toLowerCase().slice(0, 200) : null;
     const r = await checkCode(sb, b.code, priced.total, email);
     if (!r.ok) return json(422, { error: r.error });

@@ -126,12 +126,20 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 </Base>
 
 <script define:vars={{ catalog }}>
+  // Dane z chwili budowania jako zapas; aktualne ceny i dostępność z bazy
   window.__CANC_CATALOG__ = catalog;
+  window.__CANC_READY__ = fetch('/api/produkty')
+    .then((r) => (r.ok ? r.json() : null))
+    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.filter((p) => p.avail !== 'out_of_stock' || false).concat(list.filter((p) => p.avail === 'out_of_stock').map((p) => ({ ...p, price: null }))); })
+    .catch(() => {});
 </script>
 
 <script>
   import { sb } from '../../lib/sb-client';
   import { addItem } from '../../lib/cart';
+
+  (async () => {
+  await (window as any).__CANC_READY__;
 
   const root = document.querySelector<HTMLElement>('[data-account]')!;
   const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -407,6 +415,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     showError('Link logowania wygasł albo został już użyty. Wyślij nowy.');
     history.replaceState(null, '', location.pathname);
   }
+  })();
 </script>
 
 <style>

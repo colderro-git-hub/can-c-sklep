@@ -32,6 +32,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9ZM3.5 7.5 12 12m0 0 8.5-4.5M12 12v9" /></svg>
             <span>Produkty</span>
           </button>
+          <button type="button" class="nav__item" data-tab="reviews">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7L12 3Z" /></svg>
+            <span>Opinie</span><span class="badge" data-count-reviews></span>
+          </button>
           <button type="button" class="nav__item" data-tab="codes">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7.4 7.4a1.5 1.5 0 0 1-2.1 0l-7.6-7.6Z" /><circle cx="8" cy="8" r="1.4" /></svg>
             <span>Kody rabatowe</span>
@@ -183,13 +187,43 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
           <!-- PRODUKTY -->
           <section data-view="products" class="stack" hidden>
-            <p class="notice">Cena z panelu obowiązuje przy płatności od razu. Cena wyświetlana na stronie produktu odświeży się po najbliższym wdrożeniu sklepu.</p>
             <div class="card">
-              <div class="card__head"><h2 class="card__title">Produkty</h2></div>
+              <div class="card__head">
+                <h2 class="card__title">Produkty</h2>
+                <div class="actions">
+                  <a class="btn btn--outline btn--sm" href="/feed/google.xml" target="_blank" rel="noopener">Feed Google Merchant</a>
+                  <button type="button" class="btn btn--sm" data-new-product>+ Nowy produkt</button>
+                </div>
+              </div>
               <div class="table-wrap">
-                <table class="table table--form">
-                  <thead><tr><th>Produkt</th><th>Cena brutto (zł)</th><th>Stan</th><th>EAN</th><th>Aktywny</th><th></th></tr></thead>
+                <table class="table">
+                  <thead><tr><th></th><th>Produkt</th><th class="r">Cena</th><th class="r">Stan</th><th>Dostępność</th><th>Opinie</th><th>Status</th></tr></thead>
                   <tbody data-products></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- OPINIE -->
+          <section data-view="reviews" class="stack" hidden>
+            <div class="card">
+              <div class="card__head">
+                <h2 class="card__title">Opinie o produktach</h2>
+                <div class="actions">
+                  <a class="btn btn--outline btn--sm" href="/feed/opinie.xml" target="_blank" rel="noopener">Feed opinii Google</a>
+                  <button type="button" class="btn btn--sm" data-new-review>+ Dodaj opinię</button>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Status opinii">
+                <button type="button" class="tab" data-rstatus="pending" aria-pressed="true">Do moderacji <span data-rcount></span></button>
+                <button type="button" class="tab" data-rstatus="approved" aria-pressed="false">Opublikowane</button>
+                <button type="button" class="tab" data-rstatus="rejected" aria-pressed="false">Odrzucone</button>
+                <button type="button" class="tab" data-rstatus="" aria-pressed="false">Wszystkie</button>
+              </div>
+              <div class="table-wrap">
+                <table class="table">
+                  <thead><tr><th>Data</th><th>Produkt</th><th>Autor</th><th>Ocena</th><th>Treść</th><th>Status</th><th></th></tr></thead>
+                  <tbody data-reviews></tbody>
                 </table>
               </div>
             </div>
@@ -436,6 +470,35 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   textarea.input { height: auto; padding: 10px 14px; resize: vertical; }
   .check { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-50); }
   .check input, .table input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--primary); }
+  .drawer.drawer--wide { width: min(900px, calc(100vw - 24px)); }
+  .thumb-sm { width: 48px; height: 48px; object-fit: cover; border-radius: var(--r-md); background: var(--line-soft); display: block; }
+  .thumb-sm--empty { box-shadow: inset 0 0 0 1px var(--line); }
+  .clickrow { cursor: pointer; }
+  .clickrow:hover td { background: #FAFAFD; }
+  .badge-inline { display: inline-block; padding: 2px 8px; border-radius: var(--r-pill); background: var(--amber-bg); color: var(--amber-ink); font-size: 11px; }
+  .badge-inline--ok { background: var(--success-a12); color: var(--success-ink); }
+  .stars-cell { color: #D9A100; letter-spacing: 1px; }
+  .stars-cell.big { font-size: 22px; }
+  .small { font-size: 12px; }
+  .pe__bar { position: sticky; top: -16px; z-index: 2; background: var(--card); padding: 8px 0 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; border-bottom: 1px solid var(--line-soft); }
+  .row3c { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; align-items: end; }
+  .pe__bundle { padding-bottom: 12px; }
+  .pe__low { font: 500 16px var(--display); color: var(--ink-60); padding: 10px 0; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+  .imgs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .img-item { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: var(--r-lg); box-shadow: inset 0 0 0 1px var(--line); }
+  .img-item img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--r-md); background: var(--line-soft); }
+  .img-item .input.sm { width: 100%; }
+  .img-item__btns { display: flex; gap: 4px; }
+  .img-item__btns .icon-btn { width: 30px; height: 30px; }
+  .img-item .badge-inline { position: absolute; top: 14px; left: 14px; }
+  .upload { align-self: flex-start; cursor: pointer; }
+  .serp { padding: 14px 16px; border-radius: var(--r-lg); box-shadow: inset 0 0 0 1px var(--line); display: flex; flex-direction: column; gap: 4px; font-family: Arial, sans-serif; }
+  .serp__url { font-size: 12px; color: #202124; }
+  .serp__title { font-size: 18px; color: #1A0DAB; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .serp__desc { font-size: 13px; color: #4D5156; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .rel { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  @media (max-width: 700px) { .row3c { grid-template-columns: 1fr; } }
   .link { border: 0; background: none; padding: 0; font: inherit; color: var(--primary); cursor: pointer; text-align: left; }
   .link:hover { text-decoration: underline; }
   .row3 { display: grid; grid-template-columns: 1fr 80px 36px; gap: 8px; margin-bottom: 8px; align-items: center; }
@@ -600,6 +663,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   let dCurrent: (() => void) | null = null;
   function openDrawer(show: boolean) {
     $('[data-drawer]').hidden = !show; $('[data-scrim]').hidden = !show;
+    $('[data-drawer]').classList.remove('drawer--wide');
     if (!show) { dHistory.length = 0; dCurrent = null; $('[data-back]').hidden = true; }
   }
   function drawerNav(fn: () => void, push = true) {
@@ -609,6 +673,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }
 
   async function openOrder(id: string, push = true) {
+    $('[data-drawer]').classList.toggle('drawer--wide', false);
     drawerNav(() => openOrder(id, false), push);
     const body = $('[data-d-body]');
     openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
@@ -736,32 +801,313 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }
 
   // ---------- Produkty ----------
+  const AVAIL: Record<string, string> = { in_stock: 'Dostępny', out_of_stock: 'Niedostępny', preorder: 'Przedsprzedaż', backorder: 'Na zamówienie' };
+  let productsList: any[] = [];
   async function loadProducts() {
     const tbody = $('[data-products]');
-    tbody.innerHTML = '<tr><td colspan="6" class="empty">Ładowanie…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Ładowanie…</td></tr>';
     try {
       const { rows } = await api('/api/admin/products');
-      tbody.innerHTML = rows.map((p: any) => `
-        <tr data-pid="${esc(p.id)}">
-          <td><strong>${esc(p.name)}</strong><br><span class="muted">${esc(p.id)}${p.bundles ? ' · rabaty zestawowe' : ''}</span></td>
-          <td><input class="input sm" name="price" inputmode="decimal" value="${p.price === null ? '' : (p.price / 100).toFixed(2).replace('.', ',')}" placeholder="brak ceny" aria-label="Cena" /></td>
-          <td><input class="input sm" name="stock" type="number" min="0" value="${p.stock}" aria-label="Stan" /></td>
-          <td><input class="input sm" name="ean" value="${esc(p.ean || '')}" aria-label="EAN" /></td>
-          <td><input type="checkbox" name="active" ${p.active ? 'checked' : ''} aria-label="Aktywny" /></td>
-          <td class="r"><button type="button" class="btn btn--outline btn--sm" data-save>Zapisz</button></td>
-        </tr>`).join('');
-      tbody.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) => btn.addEventListener('click', async () => {
-        const tr = btn.closest('tr')!;
-        const v = (n: string) => tr.querySelector<HTMLInputElement>(`[name="${n}"]`)!;
-        try {
-          await api('/api/admin/products', { id: tr.dataset.pid, price: v('price').value.trim() || null, stock: Number(v('stock').value), ean: v('ean').value, active: v('active').checked });
-          toast('Zapisano produkt.');
-        } catch (e) { toast((e as Error).message, true); }
-      }));
+      productsList = rows;
+      const pend = rows.reduce((s: number, r: any) => s + r.reviewsPending, 0);
+      $('[data-count-reviews]').textContent = pend ? String(pend) : '';
+      tbody.innerHTML = rows.map((p: any) => {
+        const sale = p.sale_price !== null && p.sale_price < p.price;
+        const low = p.stock <= p.low_stock_alert && !p.availability;
+        return `<tr data-pid="${esc(p.id)}" tabindex="0" class="clickrow">
+          <td>${p.images?.[0] ? `<img class="thumb-sm" src="${esc(p.images[0].url)}" alt="" />` : '<span class="thumb-sm thumb-sm--empty"></span>'}</td>
+          <td><strong>${esc(p.name)}</strong><br><span class="muted">/${esc(p.id)}/${p.subtitle ? ` · ${esc(p.subtitle)}` : ''}</span></td>
+          <td class="r nowrap">${sale ? `<strong>${pln(p.sale_price)}</strong><br><s class="muted">${pln(p.price)}</s>` : `<strong>${pln(p.price)}</strong>`}</td>
+          <td class="r ${low ? 'err' : ''}">${p.stock}${low ? '<br><span class="small">mało</span>' : ''}</td>
+          <td>${AVAIL[p.avail] || p.avail}${p.availability ? ' <span class="muted">(ręcznie)</span>' : ''}</td>
+          <td>${p.ratingAvg ? `★ ${String(p.ratingAvg).replace('.', ',')} (${p.reviewsApproved})` : '—'}${p.reviewsPending ? ` <span class="badge-inline">${p.reviewsPending} nowe</span>` : ''}</td>
+          <td><span class="st ${p.active ? 'st--shipped' : 'st--pending_payment'}">${p.active ? 'Aktywny' : 'Ukryty'}</span></td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="7" class="empty">Brak produktów.</td></tr>';
+      tbody.querySelectorAll<HTMLElement>('tr[data-pid]').forEach((tr) => {
+        const go = () => openProduct(tr.dataset.pid!);
+        tr.addEventListener('click', go); tr.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') go(); });
+      });
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty err">${esc((e as Error).message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`;
     }
   }
+
+  // Zmniejszenie zdjęcia w przeglądarce (maks. 1600 px, WebP) przed wysłaniem
+  async function shrink(file: File): Promise<Blob> {
+    const img = await createImageBitmap(file);
+    const scale = Math.min(1, 1600 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * scale); c.height = Math.round(img.height * scale);
+    c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height);
+    return await new Promise((res) => c.toBlob((b) => res(b || file), 'image/webp', 0.86));
+  }
+
+  async function openProduct(id: string | null, push = true) {
+    $('[data-drawer]').classList.toggle('drawer--wide', true);
+    openDrawer(true); drawerNav(() => openProduct(id, false), push);
+    $('[data-drawer]').classList.add('drawer--wide');
+    const body = $('[data-d-body]');
+    body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    let p: any = { id: '', name: '', subtitle: '', active: false, price: null, sale_price: null, vat_rate: 23, bundles: false, stock: 0, low_stock_alert: 5, availability: null, short_description: '', description: '', highlights: [], seo_title: '', seo_description: '', tags: [], images: [], brand: 'Can-C', ean: '', mpn: '', google_category: '', condition: 'new', unit_value: null, unit_measure: null, weight_g: null, related_ids: [], sort_order: 0 };
+    let history: any[] = [], lowest30: number | null = null;
+    if (id) {
+      try { const d = await api(`/api/admin/products?id=${encodeURIComponent(id)}`); p = d.product; history = d.history; lowest30 = d.lowest30; }
+      catch (e) { body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+    }
+    if (!productsList.length) { try { productsList = (await api('/api/admin/products')).rows; } catch { /* lista do powiązań */ } }
+    $('[data-d-title]').textContent = id ? p.name : 'Nowy produkt';
+    const zl = (g: number | null) => (g === null || g === undefined ? '' : (g / 100).toFixed(2).replace('.', ','));
+    const loc = (iso: string | null) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
+    const images: { url: string; alt: string }[] = (p.images || []).map((i: any) => ({ url: i.url, alt: i.alt || '' }));
+    body.innerHTML = `
+      <form class="sec pe" data-pe novalidate>
+        <div class="pe__bar">
+          <label class="check"><input type="checkbox" name="active" ${p.active ? 'checked' : ''} /> Widoczny w sklepie</label>
+          <div class="actions">${id ? `<a class="btn btn--outline btn--sm" href="/produkt/${esc(p.id)}/" target="_blank" rel="noopener">Podgląd</a><button type="button" class="btn btn--outline btn--sm" data-dup>Duplikuj</button>` : ''}<button class="btn btn--sm">Zapisz produkt</button></div>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Podstawowe</h3>
+          <label class="field">Nazwa<input class="input" name="name" value="${esc(p.name)}" maxlength="150" required /></label>
+          <div class="row2">
+            <label class="field">Adres strony (slug)<input class="input" name="id" value="${esc(p.id)}" ${id ? 'readonly' : ''} placeholder="np. krople-can-c-k9" /></label>
+            <label class="field">Opakowanie / wariant<input class="input" name="subtitle" value="${esc(p.subtitle || '')}" placeholder="np. 2 × 5 ml" /></label>
+          </div>
+          <div class="row2">
+            <label class="field">Tagi (po przecinku; pierwszy = etykieta na karcie)<input class="input" name="tags" value="${esc((p.tags || []).join(', '))}" placeholder="krople, oczy" /></label>
+            <label class="field">Kolejność na liście<input class="input" name="sort_order" type="number" value="${p.sort_order || 0}" /></label>
+          </div>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Zdjęcia <span class="muted">(pierwsze = główne)</span></h3>
+          <div class="imgs" data-imgs></div>
+          <label class="btn btn--outline btn--sm upload">+ Dodaj zdjęcia<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload hidden /></label>
+          <p class="muted small">Zdjęcia zmniejszamy automatycznie do 1600 px (WebP). Google Merchant wymaga min. 100 × 100 px, zaleca 800 × 800 px, bez napisów i znaków wodnych.</p>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Cena</h3>
+          <div class="row3c">
+            <label class="field">Cena brutto (zł)<input class="input" name="price" value="${zl(p.price)}" inputmode="decimal" /></label>
+            <label class="field">Stawka VAT<select class="input" name="vat_rate">${[23, 8, 5, 0].map((v) => `<option value="${v}" ${p.vat_rate === v ? 'selected' : ''}>${v}%</option>`).join('')}</select></label>
+            <label class="check pe__bundle"><input type="checkbox" name="bundles" ${p.bundles ? 'checked' : ''} /> Rabaty za zestaw (−8% / −10%)</label>
+          </div>
+          <div class="row3c">
+            <label class="field">Cena promocyjna (zł)<input class="input" name="sale_price" value="${zl(p.sale_price)}" inputmode="decimal" placeholder="brak" /></label>
+            <label class="field">Promocja od<input class="input" name="sale_start" type="datetime-local" value="${loc(p.sale_start)}" /></label>
+            <label class="field">Promocja do<input class="input" name="sale_end" type="datetime-local" value="${loc(p.sale_end)}" /></label>
+          </div>
+          <div class="row3c">
+            <label class="field">Ilość w opakowaniu (do ceny jednostkowej)<input class="input" name="unit_value" value="${p.unit_value ?? ''}" inputmode="decimal" placeholder="np. 10" /></label>
+            <label class="field">Jednostka<select class="input" name="unit_measure"><option value="">—</option>${['ml', 'l', 'g', 'kg', 'szt'].map((u) => `<option ${p.unit_measure === u ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+            <div class="field"><span>Najniższa cena z 30 dni</span><strong class="pe__low">${lowest30 !== null ? pln(lowest30) : '—'}</strong></div>
+          </div>
+          ${history.length ? `<details class="manual"><summary>Historia cen (${history.length})</summary><ul class="items">${history.map((h: any) => `<li><span>${date(h.changed_at)}</span><span>${pln(h.price)}${h.sale_price !== null ? ` → promocja ${pln(h.sale_price)}` : ''}</span></li>`).join('')}</ul></details>` : ''}
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Opisy</h3>
+          <label class="field">Opis krótki (przy cenie, na listach)<textarea class="input" name="short_description" rows="2" maxlength="300">${esc(p.short_description || '')}</textarea></label>
+          <label class="field">Wyróżniki (każdy w nowej linii, maks. 10)<textarea class="input" name="highlights" rows="3">${esc((p.highlights || []).join('\n'))}</textarea></label>
+          <label class="field">Opis długi <span class="muted">(## nagłówek, **pogrubienie**, - lista, [link](https://…))</span><textarea class="input mono" name="description" rows="10">${esc(p.description || '')}</textarea></label>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">SEO</h3>
+          <label class="field">Tytuł strony (title) <span class="muted" data-cnt="seo_title">0/60</span><input class="input" name="seo_title" value="${esc(p.seo_title || '')}" maxlength="70" placeholder="${esc(p.name)} | Can-C" /></label>
+          <label class="field">Opis (meta description) <span class="muted" data-cnt="seo_description">0/155</span><textarea class="input" name="seo_description" rows="2" maxlength="170">${esc(p.seo_description || '')}</textarea></label>
+          <div class="serp"><span class="serp__url">can-c.pl › produkt › ${esc(p.id || 'adres')}</span><span class="serp__title" data-serp-t></span><span class="serp__desc" data-serp-d></span></div>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Magazyn i wysyłka</h3>
+          <div class="row3c">
+            <label class="field">Stan magazynowy<input class="input" name="stock" type="number" min="0" value="${p.stock}" /></label>
+            <label class="field">Alert przy stanie ≤<input class="input" name="low_stock_alert" type="number" min="0" value="${p.low_stock_alert ?? 5}" /></label>
+            <label class="field">Waga z opakowaniem (g)<input class="input" name="weight_g" type="number" min="0" value="${p.weight_g ?? ''}" /></label>
+          </div>
+          <label class="field">Dostępność<select class="input" name="availability">
+            <option value="" ${!p.availability ? 'selected' : ''}>Według stanu (0 = niedostępny)</option>
+            ${Object.entries(AVAIL).map(([k, v]) => `<option value="${k}" ${p.availability === k ? 'selected' : ''}>${v} – ustawione ręcznie</option>`).join('')}
+          </select></label>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Google Merchant Center</h3>
+          <div class="row2">
+            <label class="field">EAN / GTIN<input class="input" name="ean" value="${esc(p.ean || '')}" inputmode="numeric" /></label>
+            <label class="field">MPN (kod producenta)<input class="input" name="mpn" value="${esc(p.mpn || '')}" /></label>
+          </div>
+          <div class="row2">
+            <label class="field">Marka<input class="input" name="brand" value="${esc(p.brand || 'Can-C')}" /></label>
+            <label class="field">Stan produktu<select class="input" name="condition"><option value="new" ${p.condition === 'new' ? 'selected' : ''}>Nowy</option><option value="refurbished" ${p.condition === 'refurbished' ? 'selected' : ''}>Odnowiony</option><option value="used" ${p.condition === 'used' ? 'selected' : ''}>Używany</option></select></label>
+          </div>
+          <label class="field">Kategoria Google (ID lub ścieżka)<input class="input" name="google_category" value="${esc(p.google_category || '')}" placeholder="np. 491 – Zdrowie i uroda > Opieka zdrowotna" /></label>
+          <p class="muted small">Wymagane przez Google: nazwa, opis, zdjęcie, cena, dostępność, marka oraz GTIN (albo MPN). Bez GTIN i MPN feed wyśle „identifier_exists: no”.</p>
+        </div>
+
+        <div class="sec"><h3 class="sec__t">Często kupowane razem</h3>
+          <div class="rel">${productsList.filter((x) => x.id !== p.id).map((x) => `<label class="check"><input type="checkbox" name="related" value="${esc(x.id)}" ${(p.related_ids || []).includes(x.id) ? 'checked' : ''} /> ${esc(x.name)}</label>`).join('') || '<span class="muted">Brak innych produktów.</span>'}</div>
+        </div>
+
+        <div class="actions"><button class="btn">Zapisz produkt</button></div>
+      </form>`;
+
+    const f = body.querySelector<HTMLFormElement>('[data-pe]')!;
+    const imgsEl = f.querySelector<HTMLElement>('[data-imgs]')!;
+    const renderImgs = () => {
+      imgsEl.innerHTML = images.map((im, i) => `
+        <div class="img-item">
+          <img src="${esc(im.url)}" alt="" />
+          <input class="input sm" data-alt="${i}" value="${esc(im.alt)}" placeholder="opis zdjęcia (alt)" />
+          <div class="img-item__btns">
+            <button type="button" class="icon-btn" data-up="${i}" aria-label="W górę" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24"><path d="m6 14 6-6 6 6" /></svg></button>
+            <button type="button" class="icon-btn" data-down="${i}" aria-label="W dół" ${i === images.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24"><path d="m6 10 6 6 6-6" /></svg></button>
+            <button type="button" class="icon-btn" data-del="${i}" aria-label="Usuń"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+          </div>
+          ${i === 0 ? '<span class="badge-inline">główne</span>' : ''}
+        </div>`).join('') || '<p class="muted">Brak zdjęć.</p>';
+      imgsEl.querySelectorAll<HTMLInputElement>('[data-alt]').forEach((el) => el.addEventListener('input', () => { images[Number(el.dataset.alt)].alt = el.value; }));
+      imgsEl.querySelectorAll<HTMLButtonElement>('[data-up]').forEach((b) => b.addEventListener('click', () => { const i = Number(b.dataset.up); [images[i - 1], images[i]] = [images[i], images[i - 1]]; renderImgs(); }));
+      imgsEl.querySelectorAll<HTMLButtonElement>('[data-down]').forEach((b) => b.addEventListener('click', () => { const i = Number(b.dataset.down); [images[i + 1], images[i]] = [images[i], images[i + 1]]; renderImgs(); }));
+      imgsEl.querySelectorAll<HTMLButtonElement>('[data-del]').forEach((b) => b.addEventListener('click', () => { images.splice(Number(b.dataset.del), 1); renderImgs(); }));
+    };
+    renderImgs();
+    f.querySelector<HTMLInputElement>('[data-upload]')!.addEventListener('change', async (e) => {
+      const files = [...((e.target as HTMLInputElement).files || [])];
+      const slug = (f.elements.namedItem('id') as HTMLInputElement).value || 'produkt';
+      for (const file of files) {
+        try {
+          toast(`Wysyłanie ${file.name}…`);
+          const fd = new FormData(); fd.append('file', new File([await shrink(file)], 'img.webp', { type: 'image/webp' })); fd.append('product', slug);
+          const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(d.error || 'Błąd wysyłania zdjęcia.');
+          images.push({ url: d.url, alt: (f.elements.namedItem('name') as HTMLInputElement).value });
+          renderImgs();
+        } catch (err) { toast((err as Error).message, true); }
+      }
+      toast('Zdjęcia dodane – pamiętaj o zapisaniu produktu.');
+      (e.target as HTMLInputElement).value = '';
+    });
+
+    // Liczniki SEO i podgląd w Google
+    const seo = () => {
+      const t = (f.elements.namedItem('seo_title') as HTMLInputElement).value || `${(f.elements.namedItem('name') as HTMLInputElement).value} | Can-C`;
+      const d = (f.elements.namedItem('seo_description') as HTMLTextAreaElement).value || (f.elements.namedItem('short_description') as HTMLTextAreaElement).value;
+      f.querySelector('[data-serp-t]')!.textContent = t; f.querySelector('[data-serp-d]')!.textContent = d;
+      const c1 = f.querySelector('[data-cnt="seo_title"]')!, c2 = f.querySelector('[data-cnt="seo_description"]')!;
+      const l1 = (f.elements.namedItem('seo_title') as HTMLInputElement).value.length, l2 = (f.elements.namedItem('seo_description') as HTMLTextAreaElement).value.length;
+      c1.textContent = `${l1}/60`; c1.classList.toggle('err', l1 > 60); c2.textContent = `${l2}/155`; c2.classList.toggle('err', l2 > 155);
+    };
+    ['seo_title', 'seo_description', 'name', 'short_description'].forEach((n) => (f.elements.namedItem(n) as HTMLElement).addEventListener('input', seo));
+    seo();
+
+    f.querySelector('[data-dup]')?.addEventListener('click', async () => {
+      try { const r = await api('/api/admin/products', { action: 'duplicate', id: p.id }); toast('Utworzono kopię (ukrytą).'); loadProducts(); openProduct(r.id); }
+      catch (err) { toast((err as Error).message, true); }
+    });
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(f);
+      const v = (n: string) => String(fd.get(n) ?? '');
+      const toIso = (x: string) => (x ? new Date(x).toISOString() : '');
+      const payload = {
+        action: 'save', isNew: !id, id: v('id'), name: v('name'), subtitle: v('subtitle'), active: fd.get('active') !== null, tags: v('tags'), sort_order: v('sort_order'),
+        price: v('price'), vat_rate: Number(v('vat_rate')), bundles: fd.get('bundles') !== null, sale_price: v('sale_price'), sale_start: toIso(v('sale_start')), sale_end: toIso(v('sale_end')),
+        unit_value: v('unit_value'), unit_measure: v('unit_measure'), short_description: v('short_description'), highlights: v('highlights').split('\n'), description: v('description'),
+        seo_title: v('seo_title'), seo_description: v('seo_description'), stock: Number(v('stock')), low_stock_alert: v('low_stock_alert'), weight_g: v('weight_g'), availability: v('availability'),
+        ean: v('ean'), mpn: v('mpn'), brand: v('brand'), condition: v('condition'), google_category: v('google_category'),
+        related_ids: fd.getAll('related').map(String), images,
+      };
+      try { const r = await api('/api/admin/products', payload); toast('Zapisano produkt.'); loadProducts(); openProduct(r.id, false); }
+      catch (err) { toast((err as Error).message, true); }
+    });
+  }
+  $('[data-new-product]').addEventListener('click', () => openProduct(null));
+
+  // ---------- Opinie ----------
+  let rStatus = 'pending';
+  const starsTxt = (n: number) => '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n);
+  const RST: Record<string, string> = { pending: 'Do moderacji', approved: 'Opublikowana', rejected: 'Odrzucona' };
+  async function loadReviews() {
+    const tbody = $('[data-reviews]');
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Ładowanie…</td></tr>';
+    try {
+      const d = await api(`/api/admin/opinie?status=${rStatus}`);
+      $('[data-rcount]').textContent = d.pending ? String(d.pending) : '';
+      $('[data-count-reviews]').textContent = d.pending ? String(d.pending) : '';
+      tbody.innerHTML = d.rows.length ? d.rows.map((r: any) => `
+        <tr data-rid="${r.id}" class="clickrow">
+          <td class="nowrap">${dnum(r.created_at)}</td>
+          <td>${esc(r.products?.name || r.product_id)}</td>
+          <td>${esc(r.author_name)}${r.verified_purchase ? '<br><span class="badge-inline badge-inline--ok">zakup</span>' : ''}</td>
+          <td class="nowrap stars-cell">${starsTxt(r.rating)}</td>
+          <td>${r.title ? `<strong>${esc(r.title)}</strong><br>` : ''}<span class="muted">${esc(r.body.slice(0, 140))}${r.body.length > 140 ? '…' : ''}</span></td>
+          <td><span class="st ${r.status === 'approved' ? 'st--shipped' : r.status === 'rejected' ? 'st--cancelled' : 'st--on_hold'}">${RST[r.status]}</span></td>
+          <td class="nowrap" data-stop>${r.status !== 'approved' ? `<button type="button" class="btn btn--sm" data-ra="approve" data-id="${r.id}">Publikuj</button>` : ''} ${r.status !== 'rejected' ? `<button type="button" class="btn btn--outline btn--sm" data-ra="reject" data-id="${r.id}">Odrzuć</button>` : ''}</td>
+        </tr>`).join('') : '<tr><td colspan="7" class="empty">Brak opinii w tym widoku.</td></tr>';
+      tbody.querySelectorAll<HTMLButtonElement>('[data-ra]').forEach((b) => b.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        try { await api('/api/admin/opinie', { action: b.dataset.ra, id: b.dataset.id }); toast(b.dataset.ra === 'approve' ? 'Opublikowano.' : 'Odrzucono.'); loadReviews(); }
+        catch (err) { toast((err as Error).message, true); }
+      }));
+      tbody.querySelectorAll<HTMLElement>('tr[data-rid]').forEach((tr) => tr.addEventListener('click', (e) => {
+        if ((e.target as HTMLElement).closest('[data-stop]')) return;
+        const r = d.rows.find((x: any) => x.id === tr.dataset.rid); if (r) openReview(r);
+      }));
+    } catch (e) { tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`; }
+  }
+  function openReview(r: any) {
+    openDrawer(true); drawerNav(() => openReview(r), false);
+    $('[data-d-title]').textContent = `Opinia: ${r.products?.name || r.product_id}`;
+    const body = $('[data-d-body]');
+    body.innerHTML = `
+      <div class="meta"><span class="st ${r.status === 'approved' ? 'st--shipped' : r.status === 'rejected' ? 'st--cancelled' : 'st--on_hold'}">${RST[r.status]}</span><span>${date(r.created_at)}</span>${r.verified_purchase ? '<span class="badge-inline badge-inline--ok">Zweryfikowany zakup</span>' : ''}${r.source === 'import' ? '<span class="wc">dodana w panelu</span>' : ''}</div>
+      <p class="stars-cell big">${starsTxt(r.rating)}</p>
+      <dl class="kv"><dt>Autor</dt><dd>${esc(r.author_name)}</dd>${r.email ? `<dt>E-mail</dt><dd>${esc(r.email)}</dd>` : ''}${r.customer_id ? `<dt>Klient</dt><dd><button type="button" class="link" data-open-customer="${r.customer_id}">karta klienta</button></dd>` : ''}<dt>Produkt</dt><dd><button type="button" class="link" data-open-product="${esc(r.product_id)}">${esc(r.products?.name || r.product_id)}</button></dd></dl>
+      ${r.title ? `<h3 class="sec__t">${esc(r.title)}</h3>` : ''}<p class="note">${esc(r.body)}</p>
+      <form class="sec" data-reply><label class="field">Odpowiedź sklepu (publiczna)<textarea class="input" name="reply" rows="3" maxlength="1500">${esc(r.reply || '')}</textarea></label><div class="actions"><button class="btn btn--outline btn--sm">Zapisz odpowiedź</button></div></form>
+      <div class="actions">
+        ${r.status !== 'approved' ? '<button type="button" class="btn btn--sm" data-act-r="approve">Publikuj</button>' : ''}
+        ${r.status !== 'rejected' ? '<button type="button" class="btn btn--outline btn--sm" data-act-r="reject">Odrzuć</button>' : ''}
+        <button type="button" class="btn btn--danger btn--sm" data-act-r="delete">Usuń</button>
+      </div>
+      <p class="muted small">Zgodnie z dyrektywą Omnibus i zasadami Google publikuj opinie rzetelnie – także krytyczne – a odrzucaj tylko spam, treści obraźliwe albo niezwiązane z produktem.</p>`;
+    bindLinks(body);
+    body.querySelector<HTMLFormElement>('[data-reply]')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try { await api('/api/admin/opinie', { action: 'reply', id: r.id, reply: new FormData(e.target as HTMLFormElement).get('reply') }); toast('Zapisano odpowiedź.'); loadReviews(); }
+      catch (err) { toast((err as Error).message, true); }
+    });
+    body.querySelectorAll<HTMLButtonElement>('[data-act-r]').forEach((b) => b.addEventListener('click', async () => {
+      if (b.dataset.actR === 'delete' && !confirm('Usunąć opinię na stałe?')) return;
+      try { await api('/api/admin/opinie', { action: b.dataset.actR, id: r.id }); toast('Zapisano.'); openDrawer(false); loadReviews(); }
+      catch (err) { toast((err as Error).message, true); }
+    }));
+  }
+  async function newReview() {
+    openDrawer(true); drawerNav(newReview, false);
+    $('[data-d-title]').textContent = 'Dodaj opinię';
+    if (!productsList.length) { try { productsList = (await api('/api/admin/products')).rows; } catch { /* */ } }
+    const body = $('[data-d-body]');
+    body.innerHTML = `<form class="sec" data-nr>
+      <p class="muted">Np. przeniesienie prawdziwych opinii z poprzedniego sklepu albo opinia przekazana mailowo. Publikuje się od razu.</p>
+      <label class="field">Produkt<select class="input" name="product_id">${productsList.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join('')}</select></label>
+      <div class="row2"><label class="field">Autor<input class="input" name="author_name" required /></label><label class="field">Ocena<select class="input" name="rating">${[5, 4, 3, 2, 1].map((n) => `<option value="${n}">${starsTxt(n)} (${n})</option>`).join('')}</select></label></div>
+      <label class="field">Data opinii<input class="input" name="created_at" type="date" /></label>
+      <label class="field">Tytuł<input class="input" name="title" /></label>
+      <label class="field">Treść<textarea class="input" name="body" rows="4" required></textarea></label>
+      <label class="check"><input type="checkbox" name="verified_purchase" /> Zweryfikowany zakup (autor kupił produkt)</label>
+      <div class="actions"><button class="btn btn--sm">Dodaj opinię</button></div></form>`;
+    body.querySelector<HTMLFormElement>('[data-nr]')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target as HTMLFormElement);
+      try {
+        await api('/api/admin/opinie', { action: 'create', product_id: fd.get('product_id'), author_name: fd.get('author_name'), rating: Number(fd.get('rating')), created_at: fd.get('created_at'), title: fd.get('title'), body: fd.get('body'), verified_purchase: fd.get('verified_purchase') !== null });
+        toast('Dodano opinię.'); openDrawer(false); rStatus = 'approved'; document.querySelectorAll<HTMLElement>('[data-rstatus]').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.rstatus === 'approved'))); loadReviews();
+      } catch (err) { toast((err as Error).message, true); }
+    });
+  }
+  document.querySelectorAll<HTMLButtonElement>('[data-rstatus]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-rstatus]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    b.setAttribute('aria-pressed', 'true'); rStatus = b.dataset.rstatus || ''; loadReviews();
+  }));
+  $('[data-new-review]').addEventListener('click', newReview);
 
   // ---------- Kody rabatowe ----------
   async function loadCodes() {
@@ -849,6 +1195,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     }
   }
   async function openCustomer(id: string, push = true) {
+    $('[data-drawer]').classList.toggle('drawer--wide', false);
     drawerNav(() => openCustomer(id, false), push);
     const body = $('[data-d-body]');
     openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
@@ -981,17 +1328,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   function switchTab(tab: string) { (document.querySelector(`[data-tab="${tab}"]`) as HTMLButtonElement)?.click(); }
   function bindLinks(root: HTMLElement) {
     root.querySelectorAll<HTMLButtonElement>('[data-open-customer]').forEach((b) => b.addEventListener('click', () => openCustomer(b.dataset.openCustomer!)));
-    root.querySelectorAll<HTMLButtonElement>('[data-open-product]').forEach((b) => b.addEventListener('click', async () => {
-      openDrawer(false); switchTab('products');
-      await loadProducts();
-      const tr = document.querySelector<HTMLElement>(`tr[data-pid="${CSS.escape(b.dataset.openProduct!)}"]`);
-      if (tr) { tr.scrollIntoView({ block: 'center' }); tr.classList.add('flash'); setTimeout(() => tr.classList.remove('flash'), 2000); }
-    }));
+    root.querySelectorAll<HTMLButtonElement>('[data-open-product]').forEach((b) => b.addEventListener('click', () => openProduct(b.dataset.openProduct!)));
   }
 
   // ---------- Nowe zamówienie (ręcznie) ----------
   let productCache: any[] = [];
   async function openNewOrder() {
+    $('[data-drawer]').classList.toggle('drawer--wide', false);
     openDrawer(true); drawerNav(openNewOrder, false);
     $('[data-d-title]').textContent = 'Nowe zamówienie';
     const body = $('[data-d-body]');
@@ -1172,7 +1515,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
 
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu' };
+  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
@@ -1182,6 +1525,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     if (b.dataset.tab === 'codes') loadCodes();
     if (b.dataset.tab === 'customers') loadCustomers();
     if (b.dataset.tab === 'automations') loadAutomations();
+    if (b.dataset.tab === 'reviews') loadReviews();
     if (b.dataset.tab === 'settings') loadSettings();
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {

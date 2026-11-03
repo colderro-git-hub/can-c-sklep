@@ -53,11 +53,19 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </Base>
 
 <script define:vars={{ catalog }}>
+  // Dane z chwili budowania jako zapas; aktualne ceny i dostępność z bazy
   window.__CANC_CATALOG__ = catalog;
+  window.__CANC_READY__ = fetch('/api/produkty')
+    .then((r) => (r.ok ? r.json() : null))
+    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.filter((p) => p.avail !== 'out_of_stock' || false).concat(list.filter((p) => p.avail === 'out_of_stock').map((p) => ({ ...p, price: null }))); })
+    .catch(() => {});
 </script>
 
 <script>
   import { getCart, setQty, onCartChange } from '../lib/cart';
+
+  (async () => {
+  await (window as any).__CANC_READY__;
 
   type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string };
   const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
@@ -101,6 +109,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
   render();
   onCartChange(render);
+  })();
 </script>
 
 <style>
