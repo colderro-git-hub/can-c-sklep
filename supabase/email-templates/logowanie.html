@@ -1,0 +1,14 @@
+<!-- Supabase → Authentication → Email Templates → „Magic Link” ORAZ „Confirm signup”
+     Temat: Twój kod logowania do Can-C: {{ .Token }} -->
+<div style="font-family: Arial, sans-serif; color: #01080F; max-width: 520px; margin: 0 auto; padding: 24px;">
+  <p style="font-size: 22px; margin: 0 0 24px;">Can-C</p>
+  <p style="font-size: 16px; line-height: 1.5;">Dzień dobry,</p>
+  <p style="font-size: 16px; line-height: 1.5;">Twój kod logowania do konta w sklepie Can-C:</p>
+  <p style="font-size: 32px; letter-spacing: 6px; font-weight: bold; margin: 16px 0;">{{ .Token }}</p>
+  <p style="font-size: 16px; line-height: 1.5;">Możesz też kliknąć przycisk:</p>
+  <p style="margin: 24px 0;">
+    <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: #01080F; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 300px; font-size: 16px;">Zaloguj się do konta</a>
+  </p>
+  <p style="font-size: 14px; line-height: 1.5; color: #555;">Kod i link są ważne przez godzinę i działają jednorazowo. Jeśli to nie Ty prosiłeś o logowanie, zignoruj tę wiadomość.</p>
+  <p style="font-size: 14px; color: #555;">Zespół Can-C</p>
+</div>

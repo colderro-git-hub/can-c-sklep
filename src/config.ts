@@ -31,3 +31,6 @@ export const PRODUCT_VAT_RATE = 23;
 export const PRODUCT_NUMERIC_ID: Record<string, number> = {
   'krople-can-c': 1, 'krople-can-c-k9': 2, 'kapsulki-can-c-60': 3, 'kapsulki-can-c-90': 4,
 };
+
+export const SUPABASE_PUBLIC_URL = 'https://TWOJ-PROJEKT.supabase.co';
+export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_4p0DWSrJeiV76iQpiNGOwQ_heZXZ1-I';

@@ -1,0 +1,314 @@
+---
+import Base from '../../layouts/Base.astro';
+import { products } from '../../data/shop';
+
+const catalog = products.map(({ slug, price }) => ({ slug, price }));
+---
+<Base title="Moje konto | Can-C" description="Historia zamówień, przesyłki i ponowne zamówienia w sklepie Can-C.">
+  <section class="section account-wrap">
+    <div class="container account" data-account>
+
+      <!-- Ładowanie sesji -->
+      <p class="muted" data-state="loading">Ładowanie…</p>
+
+      <!-- Logowanie -->
+      <div class="login" data-state="login" hidden>
+        <h1>Moje konto</h1>
+        <p class="lead">Zaloguj się adresem e-mail użytym przy zamówieniu. Wyślemy link i kod – bez hasła.</p>
+
+        <form class="login__card" data-login-form novalidate>
+          <label class="field">E-mail
+            <input class="input" type="email" name="email" autocomplete="email" required placeholder="jan@przyklad.pl" />
+          </label>
+          <button class="btn btn--lg" data-send>Wyślij link i kod</button>
+          <p class="msg" role="status" data-login-msg></p>
+        </form>
+
+        <form class="login__card" data-code-form hidden novalidate>
+          <p>Wysłaliśmy wiadomość na <strong data-sent-to></strong>. Kliknij link w mailu albo wpisz kod:</p>
+          <label class="field">Kod z maila
+            <input class="input code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" required placeholder="000000" />
+          </label>
+          <button class="btn btn--lg">Zaloguj się</button>
+          <p class="msg" role="status" data-code-msg></p>
+          <p class="small muted">Nie widzisz maila? Sprawdź folder Spam albo <button type="button" class="linklike" data-resend disabled>wyślij ponownie</button>.</p>
+          <button type="button" class="linklike small" data-change-email>Zmień adres e-mail</button>
+        </form>
+
+        <ul class="perks">
+          <li>Historia wszystkich zamówień, także z poprzedniej wersji sklepu</li>
+          <li>Śledzenie przesyłek</li>
+          <li>Ponowne zamówienie jednym kliknięciem</li>
+        </ul>
+      </div>
+
+      <!-- Zalogowany -->
+      <div class="dash" data-state="dash" hidden>
+        <div class="dash__head">
+          <div>
+            <h1 data-hello>Moje konto</h1>
+            <p class="muted" data-email></p>
+          </div>
+          <button type="button" class="btn btn--ghost" data-logout>Wyloguj</button>
+        </div>
+
+        <div class="reminder" data-reminder hidden>
+          <div class="reminder__text">
+            <span class="reminder__label">Przypomnienie o kuracji</span>
+            <span class="reminder__title" data-rem-title></span>
+            <span class="reminder__sub" data-rem-sub></span>
+          </div>
+          <a class="btn btn--accent" data-rem-cta href="/produkt/krople-can-c/">Zamów ponownie</a>
+        </div>
+
+        <div class="dash__grid">
+          <div class="orders">
+            <h2 class="h4">Zamówienia</h2>
+            <ul class="order-list" data-orders></ul>
+            <p class="muted" data-orders-empty hidden>Nie masz jeszcze zamówień. <a href="/#produkty">Przejdź do sklepu</a>.</p>
+            <button type="button" class="btn btn--ghost" data-more hidden>Pokaż starsze</button>
+          </div>
+
+          <aside class="profile">
+            <h2 class="h4">Twoje dane</h2>
+            <dl data-profile></dl>
+            <p class="small muted">Chcesz zmienić dane albo usunąć konto? <a href="/kontakt/">Napisz do nas</a>.</p>
+          </aside>
+        </div>
+      </div>
+
+      <p class="msg msg--err" role="alert" data-error hidden></p>
+    </div>
+  </section>
+</Base>
+
+<script define:vars={{ catalog }}>
+  window.__CANC_CATALOG__ = catalog;
+</script>
+
+<script>
+  import { sb } from '../../lib/sb-client';
+  import { addItem } from '../../lib/cart';
+
+  const root = document.querySelector<HTMLElement>('[data-account]')!;
+  const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const show = (state: string) => root.querySelectorAll<HTMLElement>('[data-state]').forEach((el) => (el.hidden = el.dataset.state !== state));
+  const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
+  const day = (s: string) => new Date(s).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const catalog: { slug: string; price: number | null }[] = (window as any).__CANC_CATALOG__ ?? [];
+
+  const STATUS: Record<string, [string, string]> = {
+    pending_payment: ['Oczekuje na płatność', 'wait'], paid: ['Przyjęte do realizacji', 'info'], on_hold: ['W trakcie wyjaśniania', 'wait'],
+    shipped: ['Wysłane', 'ok'], completed: ['Zrealizowane', 'ok'], cancelled: ['Anulowane', 'bad'], refunded: ['Zwrócone', 'bad'], failed: ['Nieudane', 'bad'],
+  };
+  const track = (carrier: string, nr: string) => {
+    const c = (carrier || '').toLowerCase(), n = encodeURIComponent(nr);
+    if (c.includes('dpd')) return `https://tracktrace.dpd.com.pl/parcelDetails?typ=1&p1=${n}`;
+    if (c.includes('inpost') || c.includes('paczkomat') || c.includes('easypack')) return `https://inpost.pl/sledzenie-przesylek?number=${n}`;
+    return 'https://furgonetka.pl/zlokalizuj';
+  };
+  const showError = (m: string) => { const e = $('[data-error]'); e.textContent = m; e.hidden = !m; };
+
+  // ---------- Logowanie ----------
+  let email = '';
+  let cooldown = 0;
+  const startCooldown = () => {
+    const btn = $<HTMLButtonElement>('[data-resend]');
+    cooldown = 60; btn.disabled = true;
+    const t = setInterval(() => {
+      cooldown--; btn.textContent = cooldown > 0 ? `wyślij ponownie (${cooldown} s)` : 'wyślij ponownie';
+      if (cooldown <= 0) { btn.disabled = false; clearInterval(t); }
+    }, 1000);
+  };
+
+  async function sendLink() {
+    const { error } = await sb().auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${location.origin}/konto/`, shouldCreateUser: true },
+    });
+    if (error) throw error;
+  }
+
+  $('[data-login-form]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target as HTMLFormElement;
+    const msg = $('[data-login-msg]');
+    email = String(new FormData(f).get('email') || '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = 'Podaj poprawny adres e-mail.'; return; }
+    const btn = $<HTMLButtonElement>('[data-send]'); btn.disabled = true; msg.textContent = 'Wysyłanie…';
+    try {
+      await sendLink();
+      f.hidden = true; $('[data-code-form]').hidden = false; $('[data-sent-to]').textContent = email;
+      $<HTMLInputElement>('input[name="code"]').focus();
+      startCooldown(); msg.textContent = '';
+    } catch (err: any) {
+      msg.textContent = /rate|limit|seconds/i.test(err?.message || '') ? 'Zbyt wiele prób. Odczekaj minutę i spróbuj ponownie.' : 'Nie udało się wysłać maila. Spróbuj ponownie za chwilę.';
+      console.error(err);
+    } finally { btn.disabled = false; }
+  });
+
+  $('[data-code-form]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('[data-code-msg]');
+    const token = String(new FormData(e.target as HTMLFormElement).get('code') || '').replace(/\D/g, '');
+    if (token.length < 6 || token.length > 8) { msg.textContent = 'Wpisz kod z maila (same cyfry).'; return; }
+    msg.textContent = 'Sprawdzanie…';
+    const { error } = await sb().auth.verifyOtp({ email, token, type: 'email' });
+    msg.textContent = error ? 'Kod jest nieprawidłowy albo wygasł. Wyślij nowy.' : '';
+  });
+
+  $('[data-resend]').addEventListener('click', async () => {
+    try { await sendLink(); startCooldown(); $('[data-code-msg]').textContent = 'Wysłaliśmy nowy kod.'; }
+    catch { $('[data-code-msg]').textContent = 'Nie udało się wysłać. Spróbuj za chwilę.'; }
+  });
+  $('[data-change-email]').addEventListener('click', () => { $('[data-code-form]').hidden = true; $('[data-login-form]').hidden = false; });
+  $('[data-logout]').addEventListener('click', async () => { await sb().auth.signOut(); show('login'); });
+
+  // ---------- Panel klienta ----------
+  let page = 0;
+  const PAGE = 20;
+
+  async function loadDashboard(userEmail: string) {
+    show('dash');
+    $('[data-email]').textContent = userEmail;
+
+    // Profil (rekord klienta łączy się z kontem automatycznie po potwierdzeniu e-maila)
+    const { data: cust } = await sb().from('customers').select('first_name,last_name,phone,default_locker,default_address').maybeSingle();
+    if (cust?.first_name) $('[data-hello]').textContent = `Dzień dobry, ${cust.first_name}`;
+    const addr = cust?.default_address;
+    $('[data-profile]').innerHTML = [
+      ['Imię i nazwisko', [cust?.first_name, cust?.last_name].filter(Boolean).join(' ') || '—'],
+      ['E-mail', userEmail],
+      ['Telefon', cust?.phone || '—'],
+      ['Paczkomat', cust?.default_locker || '—'],
+      ['Adres', addr?.street ? `${addr.street}, ${addr.postcode || ''} ${addr.city || ''}` : '—'],
+    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('');
+
+    page = 0;
+    $('[data-orders]').innerHTML = '';
+    await loadOrders(true);
+  }
+
+  async function loadOrders(first = false) {
+    const from = page * PAGE;
+    const { data, error } = await sb()
+      .from('orders')
+      .select('number,created_at,paid_at,shipped_at,status,total,shipping_method,shipping_point,tracking_number,carrier,source,order_items(name,qty,product_id)')
+      .order('created_at', { ascending: false })
+      .range(from, from + PAGE - 1);
+    if (error) { showError('Nie udało się pobrać zamówień. Odśwież stronę.'); console.error(error); return; }
+
+    const list = $('[data-orders]');
+    $('[data-orders-empty]').hidden = !(first && data.length === 0);
+    $('[data-more]').hidden = data.length < PAGE;
+    if (first) renderReminder(data);
+
+    for (const o of data) {
+      const [label, tone] = STATUS[o.status] || [o.status, 'info'];
+      const reorderable = o.order_items.some((i: any) => catalog.some((c) => c.slug === i.product_id && c.price !== null));
+      const li = document.createElement('li');
+      li.className = 'order';
+      li.innerHTML = `
+        <div class="order__top">
+          <span class="order__nr">Zamówienie ${o.number}</span>
+          <span class="st st--${tone}">${esc(label)}</span>
+        </div>
+        <span class="muted small">${day(o.created_at)}</span>
+        <ul class="order__items">${o.order_items.map((i: any) => `<li>${esc(i.name)} × ${i.qty}</li>`).join('')}</ul>
+        <div class="order__foot">
+          <span class="order__total">${pln(o.total)}</span>
+          <span class="small">${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '')}
+            ${o.tracking_number ? ` · <a href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">Śledź przesyłkę</a>` : ''}</span>
+          ${reorderable ? '<button type="button" class="btn btn--ghost btn--sm" data-reorder>Zamów ponownie</button>' : ''}
+        </div>`;
+      li.querySelector('[data-reorder]')?.addEventListener('click', () => {
+        for (const i of o.order_items) {
+          if (catalog.some((c) => c.slug === i.product_id && c.price !== null)) addItem(i.product_id, i.qty);
+        }
+        location.href = '/koszyk/';
+      });
+      list.append(li);
+    }
+  }
+  $('[data-more]').addEventListener('click', () => { page++; loadOrders(); });
+
+  // Przypomnienie: jedno opakowanie kropli ≈ 30 dni kuracji
+  function renderReminder(orders: any[]) {
+    const last = orders.find((o) => ['paid', 'shipped', 'completed'].includes(o.status) && o.order_items.some((i: any) => i.product_id === 'krople-can-c'));
+    if (!last) return;
+    const packs = last.order_items.filter((i: any) => i.product_id === 'krople-can-c').reduce((s: number, i: any) => s + i.qty, 0);
+    const start = new Date(last.shipped_at || last.paid_at || last.created_at).getTime() + 3 * 864e5; // ok. 3 dni na dostawę
+    const end = start + packs * 30 * 864e5;
+    const left = Math.round((end - Date.now()) / 864e5);
+    if (left > 21) return; // przypominamy na 3 tygodnie przed końcem
+    const rem = $('[data-reminder]');
+    rem.hidden = false;
+    $('[data-rem-title]').textContent = left > 0 ? `Zapas kropli kończy się za około ${left} ${left === 1 ? 'dzień' : 'dni'}` : 'Zapas kropli prawdopodobnie się skończył';
+    $('[data-rem-sub]').textContent = `Na podstawie zamówienia nr ${last.number} (${packs} ${packs === 1 ? 'opakowanie' : packs < 5 ? 'opakowania' : 'opakowań'}).`;
+    const qty = packs >= 4 ? 4 : packs >= 2 ? 2 : 2;
+    $<HTMLAnchorElement>('[data-rem-cta]').href = `/produkt/krople-can-c/?zestaw=${qty}`;
+  }
+
+  // ---------- Start ----------
+  sb().auth.onAuthStateChange((event, session) => {
+    if (session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION')) {
+      if (location.hash.includes('access_token')) history.replaceState(null, '', location.pathname);
+      loadDashboard(session.user.email || '');
+    } else if (event === 'SIGNED_OUT' || (event === 'INITIAL_SESSION' && !session)) {
+      show('login');
+    }
+  });
+  // Błąd z linku (np. wygasły)
+  if (/error_description=/.test(location.hash)) {
+    showError('Link logowania wygasł albo został już użyty. Wyślij nowy.');
+    history.replaceState(null, '', location.pathname);
+  }
+</script>
+
+<style>
+  .account-wrap { background: var(--c-gray-100); min-height: 70vh; }
+  .account > [hidden], .account [hidden] { display: none !important; }
+  .login { max-width: 560px; display: flex; flex-direction: column; gap: var(--s-2); }
+  .login__card { background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: 16px; }
+  .code { font-size: 1.5rem; letter-spacing: 0.3em; max-width: 220px; }
+  .msg { font-size: var(--fs-small); min-height: 1em; }
+  .msg:empty { display: none; }
+  .msg--err { color: #D32300; }
+  .small { font-size: var(--fs-small); }
+  .linklike { border: 0; background: none; padding: 0; font: inherit; color: var(--c-link); text-decoration: underline; cursor: pointer; }
+  .linklike:disabled { color: var(--c-ink-70); text-decoration: none; cursor: default; }
+  .perks { margin: 0; padding-left: 20px; color: var(--c-ink-70); display: flex; flex-direction: column; gap: 6px; }
+
+  .dash { display: flex; flex-direction: column; gap: var(--s-3); }
+  .dash__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 16px; }
+  .dash__head h1 { font-size: var(--fs-h2); }
+  .h4 { font-size: var(--fs-h4); font-weight: 400; }
+  .reminder { background: var(--c-ink); color: var(--c-white); padding: var(--s-3); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-2); }
+  .reminder__text { display: flex; flex-direction: column; gap: 6px; }
+  .reminder__label { font-size: 0.8125rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--c-white-70); }
+  .reminder__title { font-size: var(--fs-h4); }
+  .reminder__sub { color: var(--c-white-70); }
+
+  .dash__grid { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }
+  .orders { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+  .order-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--s-1); }
+  :global(.order) { background: var(--c-white); padding: var(--s-2); display: flex; flex-direction: column; gap: 8px; }
+  :global(.order__top) { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  :global(.order__nr) { font-size: 1.125rem; }
+  :global(.order__items) { margin: 0; padding: 0; list-style: none; color: rgba(1, 8, 15, 0.75); }
+  :global(.order__foot) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-top: 8px; border-top: 1px solid var(--c-ink-10); }
+  :global(.order__total) { font-size: 1.125rem; }
+  :global(.order__foot .btn) { margin-left: auto; }
+  :global(.btn--sm) { min-height: 40px; padding: 0 18px; font-size: 0.9375rem; }
+  :global(.st) { display: inline-flex; padding: 4px 12px; border-radius: var(--r-pill); font-size: 0.8125rem; white-space: nowrap; }
+  :global(.st--info) { background: var(--c-tint); }
+  :global(.st--ok) { background: #E3F5E8; color: var(--c-ok); }
+  :global(.st--wait) { background: #FFF4D6; color: #7A4B00; }
+  :global(.st--bad) { background: #FBE4E0; color: #B3261E; }
+
+  .profile { flex: 1 1 300px; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); }
+  .profile :global(dl) { margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  .profile :global(dt) { font-size: var(--fs-small); color: var(--c-ink-70); }
+  .profile :global(dd) { margin: 0; }
+</style>
