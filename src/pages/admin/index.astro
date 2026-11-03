@@ -28,6 +28,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5v-9ZM3.5 7.5 12 12m0 0 8.5-4.5M12 12v9" /></svg>
             <span>Produkty</span>
           </button>
+          <button type="button" class="nav__item" data-tab="codes">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12.6V5a1.5 1.5 0 0 1 1.5-1.5h7.6l8 8a1.5 1.5 0 0 1 0 2.1l-7.4 7.4a1.5 1.5 0 0 1-2.1 0l-7.6-7.6Z" /><circle cx="8" cy="8" r="1.4" /></svg>
+            <span>Kody rabatowe</span>
+          </button>
         </nav>
         <div class="side__foot">
           <a href="/" class="nav__item nav__item--muted" target="_blank" rel="noopener">
@@ -122,6 +126,34 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <table class="table table--form">
                   <thead><tr><th>Produkt</th><th>Cena brutto (zł)</th><th>Stan</th><th>EAN</th><th>Aktywny</th><th></th></tr></thead>
                   <tbody data-products></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+          <!-- KODY RABATOWE -->
+          <section data-view="codes" class="stack" hidden>
+            <div class="card">
+              <div class="card__head"><h2 class="card__title">Nowy kod</h2></div>
+              <form class="code-form" data-code-form novalidate>
+                <label class="field">Kod<input class="input" name="code" required maxlength="30" placeholder="np. WIOSNA10" style="text-transform:uppercase" /></label>
+                <label class="field">Rodzaj<select class="input" name="type"><option value="percent">Procent (%)</option><option value="amount">Kwota (zł)</option></select></label>
+                <label class="field">Wartość<input class="input" name="value" required inputmode="decimal" placeholder="10" /></label>
+                <label class="field">Minimalna kwota (zł)<input class="input" name="min_total" inputmode="decimal" placeholder="0" /></label>
+                <label class="field">Ważny od<input class="input" name="starts_at" type="date" /></label>
+                <label class="field">Ważny do<input class="input" name="ends_at" type="date" /></label>
+                <label class="field">Limit użyć (łącznie)<input class="input" name="max_uses" type="number" min="1" placeholder="bez limitu" /></label>
+                <label class="field">Tylko dla klienta (e-mail)<input class="input" name="email" type="email" placeholder="puste = dla wszystkich" /></label>
+                <label class="field code-form__wide">Opis widoczny na koncie klienta<input class="input" name="description" maxlength="200" placeholder="puste = kod nie jest pokazywany na kontach" /></label>
+                <label class="check code-form__wide"><input type="checkbox" name="once_per_customer" checked /> Jeden raz na klienta</label>
+                <div class="actions code-form__wide"><button class="btn">Utwórz kod</button></div>
+              </form>
+            </div>
+            <div class="card">
+              <div class="card__head"><h2 class="card__title">Kody</h2></div>
+              <div class="table-wrap">
+                <table class="table table--form">
+                  <thead><tr><th>Kod</th><th>Rabat</th><th>Warunki</th><th>Ważność</th><th>Użycia</th><th>Dla</th><th>Aktywny</th></tr></thead>
+                  <tbody data-codes></tbody>
                 </table>
               </div>
             </div>
@@ -267,6 +299,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   textarea.input { height: auto; padding: 10px 14px; resize: vertical; }
   .check { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--ink-50); }
   .check input, .table input[type='checkbox'] { width: 18px; height: 18px; accent-color: var(--primary); }
+  .code-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 16px; align-items: end; }
+  .code-form__wide { grid-column: 1 / -1; }
   .notice { margin: 0; padding: 14px 16px; border-radius: var(--r-lg); background: var(--amber-bg); color: var(--amber-ink); font-size: 13px; }
 
   /* Panel szczegółów */
@@ -328,7 +362,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki' };
+  const EVENT: Record<string, string> = { customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki' };
   const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed']);
   const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
@@ -415,6 +449,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
         <div class="sec"><h3 class="sec__t">Produkty</h3>
           <ul class="items">${o.order_items.map((i: any) => `<li><span>${esc(i.name)} × ${i.qty}${i.discount ? ` <span class="muted">(rabat ${pln(i.discount)})</span>` : ''}</span><span>${pln(i.total)}</span></li>`).join('')}
+            ${o.discount_code ? `<li><span>Kod ${esc(o.discount_code)}</span><span>−${pln(o.discount_code_amount)}</span></li>` : ''}
             <li class="sum"><span>Razem</span><span>${pln(o.total)}</span></li></ul>
         </div>
 
@@ -455,7 +490,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         </div>
 
         <div class="sec"><h3 class="sec__t">Historia</h3>
-          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
+          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.message ? ` (${esc(e.data.topic || '')}): <span class="note">${esc(e.data.message)}</span>` : ''}${e.data?.code ? ` · kod ${esc(e.data.code)}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
         </div>
 
         <form class="sec" data-note>
@@ -518,14 +553,52 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     }
   }
 
+  // ---------- Kody rabatowe ----------
+  async function loadCodes() {
+    const tbody = $('[data-codes]');
+    tbody.innerHTML = '<tr><td colspan="7" class="empty">Ładowanie…</td></tr>';
+    try {
+      const { rows } = await api('/api/admin/kody');
+      const d = (s: string | null) => (s ? new Date(s).toLocaleDateString('pl-PL') : '');
+      tbody.innerHTML = rows.length ? rows.map((c: any) => `
+        <tr>
+          <td><strong>${esc(c.code)}</strong>${c.description ? `<br><span class="muted">${esc(c.description)}</span>` : ''}</td>
+          <td class="nowrap">${c.type === 'percent' ? `${c.value}%` : pln(c.value)}</td>
+          <td>${c.min_total ? `od ${pln(c.min_total)}` : '—'}${c.once_per_customer ? '<br><span class="muted">1× na klienta</span>' : ''}</td>
+          <td class="nowrap">${c.starts_at || c.ends_at ? `${d(c.starts_at) || '…'} – ${d(c.ends_at) || '…'}` : 'bezterminowo'}</td>
+          <td>${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}</td>
+          <td>${c.customers?.email ? esc(c.customers.email) : 'wszyscy'}</td>
+          <td><input type="checkbox" data-toggle="${c.id}" ${c.active ? 'checked' : ''} aria-label="Aktywny" /></td>
+        </tr>`).join('') : '<tr><td colspan="7" class="empty">Brak kodów. Utwórz pierwszy powyżej.</td></tr>';
+      tbody.querySelectorAll<HTMLInputElement>('[data-toggle]').forEach((cb) => cb.addEventListener('change', async () => {
+        try { await api('/api/admin/kody', { action: 'toggle', id: cb.dataset.toggle, active: cb.checked }); toast(cb.checked ? 'Kod włączony.' : 'Kod wyłączony.'); }
+        catch (e) { cb.checked = !cb.checked; toast((e as Error).message, true); }
+      }));
+    } catch (e) {
+      tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`;
+    }
+  }
+  $<HTMLFormElement>('[data-code-form]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target as HTMLFormElement;
+    const fd = new FormData(f);
+    const body: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
+    body.action = 'create';
+    body.once_per_customer = fd.get('once_per_customer') !== null;
+    if (body.ends_at) body.ends_at = `${body.ends_at}T23:59:59`;
+    try { await api('/api/admin/kody', body); toast('Kod utworzony.'); f.reset(); loadCodes(); }
+    catch (err) { toast((err as Error).message, true); }
+  });
+
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { orders: 'Zamówienia', products: 'Produkty' };
+  const TITLES: Record<string, string> = { orders: 'Zamówienia', products: 'Produkty', codes: 'Kody rabatowe' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
     document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== b.dataset.tab));
     $('[data-title]').textContent = TITLES[b.dataset.tab!]; $('[data-crumb]').textContent = TITLES[b.dataset.tab!];
     if (b.dataset.tab === 'products') loadProducts();
+    if (b.dataset.tab === 'codes') loadCodes();
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-status]').forEach((x) => x.setAttribute('aria-pressed', 'false'));

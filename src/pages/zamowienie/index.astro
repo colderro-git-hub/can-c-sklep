@@ -76,9 +76,16 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         <aside class="summary">
           <h2>Podsumowanie</h2>
           <ul class="lines" data-lines></ul>
+          <div class="promo" data-promo>
+            <label class="field">Kod rabatowy
+              <span class="promo__row"><input class="input" type="text" name="discountCode" autocomplete="off" maxlength="30" /><button type="button" class="btn btn--ghost" data-apply-code>Użyj</button></span>
+            </label>
+            <p class="promo__msg small" role="status" data-code-msg></p>
+          </div>
           <dl>
             <div><dt>Produkty</dt><dd data-subtotal></dd></div>
             <div><dt>Rabat za zestaw</dt><dd data-discount></dd></div>
+            <div data-code-line hidden><dt data-code-name>Kod rabatowy</dt><dd data-code-amount></dd></div>
             <div><dt>Dostawa</dt><dd class="ok">0,00 zł</dd></div>
             <div class="total"><dt>Razem</dt><dd data-total></dd></div>
           </dl>
@@ -130,6 +137,54 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     form.querySelector('[data-subtotal]')!.textContent = pln.format(subtotal);
     form.querySelector('[data-discount]')!.textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
     form.querySelector('[data-total]')!.textContent = pln.format(subtotal - discount);
+
+    // ---------- Kod rabatowy (podgląd liczy serwer) ----------
+    let appliedCode = '';
+    const codeInput = form.querySelector<HTMLInputElement>('input[name="discountCode"]')!;
+    const codeMsg = form.querySelector<HTMLElement>('[data-code-msg]')!;
+    const codeLine = form.querySelector<HTMLElement>('[data-code-line]')!;
+    const resetCode = () => { appliedCode = ''; codeLine.hidden = true; form.querySelector('[data-total]')!.textContent = pln.format(subtotal - discount); };
+    form.querySelector('[data-apply-code]')!.addEventListener('click', async () => {
+      const code = codeInput.value.trim();
+      if (!code) { resetCode(); codeMsg.textContent = ''; return; }
+      codeMsg.textContent = 'Sprawdzanie…';
+      try {
+        const res = await fetch('/api/rabat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, email: String(new FormData(form).get('email') || ''), items }) });
+        const d = await res.json();
+        if (!res.ok) { resetCode(); codeMsg.textContent = d.error || 'Nie udało się sprawdzić kodu.'; return; }
+        appliedCode = d.code;
+        codeLine.hidden = false;
+        form.querySelector('[data-code-name]')!.textContent = `Kod ${d.code}`;
+        form.querySelector('[data-code-amount]')!.textContent = `−${pln.format(d.amount / 100)}`;
+        form.querySelector('[data-total]')!.textContent = pln.format(d.total / 100);
+        codeMsg.textContent = 'Kod dodany.';
+      } catch { codeMsg.textContent = 'Nie udało się sprawdzić kodu.'; }
+    });
+    codeInput.addEventListener('input', () => { if (appliedCode && codeInput.value.trim().toUpperCase() !== appliedCode) { resetCode(); codeMsg.textContent = ''; } });
+    (window as any).__cancCode = () => appliedCode;
+
+    // ---------- Uzupełnienie danych zalogowanego klienta ----------
+    (async () => {
+      try {
+        const { sb } = await import('../../lib/sb-client');
+        const { data } = await sb().auth.getSession();
+        const session = data.session;
+        if (!session) return;
+        const res = await fetch('/api/konto/profil', { headers: { Authorization: `Bearer ${session.access_token}` } });
+        if (!res.ok) return;
+        const p = await res.json();
+        const fill = (n: string, v: unknown) => { const el = form.elements.namedItem(n) as HTMLInputElement | null; if (el && !el.value && v) el.value = String(v); };
+        fill('email', session.user.email); fill('phone', p.phone); fill('firstName', p.first_name); fill('lastName', p.last_name);
+        fill('locker', p.default_locker); fill('street', p.default_address?.street); fill('postcode', p.default_address?.postcode); fill('city', p.default_address?.city);
+        if (p.default_locker) {
+          const label = form.querySelector('[data-locker-label]'); if (label) label.textContent = `Paczkomat ${p.default_locker}`;
+        }
+        if (p.billing?.nip) {
+          const t = form.querySelector<HTMLInputElement>('[data-invoice-toggle]')!; t.checked = true; t.dispatchEvent(new Event('change'));
+          fill('company', p.billing.company); fill('nip', p.billing.nip); fill('invStreet', p.billing.street); fill('invPostcode', p.billing.postcode); fill('invCity', p.billing.city);
+        }
+      } catch { /* niezalogowany albo brak konfiguracji – formularz działa normalnie */ }
+    })();
 
     // Pola zależne od wyboru
     const locker = form.querySelector<HTMLElement>('[data-locker]')!;
@@ -197,6 +252,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             invoice: fd.get('invoice') !== null,
             company: val('company'), nip: val('nip'), invStreet: val('invStreet'), invPostcode: val('invPostcode'), invCity: val('invCity'),
             note: val('note'), terms: true, marketing: fd.get('marketing') !== null, website: val('website'),
+            discountCode: (window as any).__cancCode?.() || '',
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -255,6 +311,12 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .summary .total { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
   .summary .btn:disabled { opacity: 0.5; cursor: wait; }
   .error { color: #D32300; }
+  .promo { padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); display: flex; flex-direction: column; gap: 6px; }
+  .promo__row { display: flex; gap: 8px; }
+  .promo__row .input { flex: 1; min-width: 0; text-transform: uppercase; }
+  .promo__row .btn { min-height: 52px; padding: 0 18px; }
+  .promo__msg:empty { display: none; }
+  [data-code-line][hidden] { display: none !important; }
   .error:empty { display: none; }
   .note { font-size: 0.8125rem; }
 </style>

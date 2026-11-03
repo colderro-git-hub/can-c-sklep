@@ -3,6 +3,7 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { priceCart, type DbProduct } from '../../../lib/pricing';
 import { p24Config, registerTransaction } from '../../../lib/p24';
+import { checkCode } from '../../../lib/discounts';
 
 export const prerender = false;
 
@@ -77,10 +78,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' });
     }
 
+    // ---------- Kod rabatowy (sprawdzany ponownie po stronie serwera) ----------
+    let codeName: string | null = null;
+    let codeAmount = 0;
+    if (str(body.discountCode, 30)) {
+      const r = await checkCode(sb, body.discountCode, priced.total, email);
+      if (!r.ok) return json(422, { error: r.error });
+      codeName = r.code.code;
+      codeAmount = r.amount;
+    }
+    const discountTotal = priced.discount + codeAmount;
+    const total = priced.total - codeAmount;
+    if (total < 100) return json(422, { error: 'Kwota zamówienia po rabacie jest za niska.' });
+
     // ---------- Klient (bez nadpisywania istniejącej zgody marketingowej) ----------
     const customerRow: Record<string, unknown> = { email, first_name: firstName, last_name: lastName, phone };
     if (method === 'inpost_locker') customerRow.default_locker = locker;
     else customerRow.default_address = addr;
+    if (wantsInvoice) customerRow.billing = inv;
     if (body.marketing === true) Object.assign(customerRow, { marketing_consent: true, consent_at: new Date().toISOString(), consent_source: 'checkout' });
     const [customer] = await sb.upsert<{ id: string }>('customers', customerRow, 'email', 'id');
 
@@ -91,9 +106,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       email,
       status: 'pending_payment',
       subtotal: priced.subtotal,
-      discount: priced.discount,
+      discount: discountTotal,
       shipping_cost: priced.shipping_cost,
-      total: priced.total,
+      total,
+      discount_code: codeName,
+      discount_code_amount: codeAmount,
       shipping_method: method,
       shipping_point: method === 'inpost_locker' ? locker : null,
       shipping_address: method === 'dpd' ? { name, phone, ...addr, country: 'PL' } : { name, phone, ...(lockerName ? { point_name: lockerName } : {}) },
@@ -105,12 +122,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }, 'id,number');
 
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
-    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total: priced.total } }, 'id');
+    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total, ...(codeName ? { code: codeName, codeAmount } : {}) } }, 'id');
 
     // ---------- Płatność ----------
     const redirect = await registerTransaction(p24, {
       sessionId: order.id,
-      amount: priced.total,
+      amount: total,
       description: `Zamówienie nr ${order.number} – can-c.pl`,
       email,
       client: name,

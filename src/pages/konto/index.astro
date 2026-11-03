@@ -61,6 +61,20 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
           <a class="btn btn--accent" data-rem-cta href="/produkt/krople-can-c/">Zamów ponownie</a>
         </div>
 
+        <section class="stats" data-stats hidden>
+          <div class="stats__nums">
+            <div><span class="muted">Łącznie</span><strong data-s-total></strong></div>
+            <div><span class="muted">Zamówienia</span><strong data-s-count></strong></div>
+            <div><span class="muted">Opakowania kropli</span><strong data-s-packs></strong></div>
+          </div>
+          <div class="chart" role="img" data-chart aria-label="Wydatki w ostatnich 12 miesiącach"></div>
+        </section>
+
+        <section class="codes" data-codes hidden>
+          <h2 class="h4">Twoje kody rabatowe</h2>
+          <ul class="codes__list" data-codes-list></ul>
+        </section>
+
         <div class="dash__grid">
           <div class="orders">
             <h2 class="h4">Zamówienia</h2>
@@ -71,8 +85,37 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 
           <aside class="profile">
             <h2 class="h4">Twoje dane</h2>
-            <dl data-profile></dl>
-            <p class="small muted">Chcesz zmienić dane albo usunąć konto? <a href="/kontakt/">Napisz do nas</a>.</p>
+            <form class="profile__form" data-profile-form novalidate>
+              <div class="grid2">
+                <label class="field">Imię<input class="input" name="first_name" autocomplete="given-name" maxlength="60" /></label>
+                <label class="field">Nazwisko<input class="input" name="last_name" autocomplete="family-name" maxlength="60" /></label>
+              </div>
+              <label class="field">Telefon<input class="input" name="phone" type="tel" autocomplete="tel" maxlength="20" /></label>
+              <label class="field">Domyślny Paczkomat<input class="input" name="default_locker" maxlength="15" placeholder="np. WRO01M" /></label>
+              <fieldset class="fs">
+                <legend>Adres dla kuriera</legend>
+                <label class="field">Ulica i numer<input class="input" name="street" autocomplete="street-address" maxlength="120" /></label>
+                <div class="grid2">
+                  <label class="field">Kod pocztowy<input class="input" name="postcode" maxlength="6" placeholder="00-000" /></label>
+                  <label class="field">Miejscowość<input class="input" name="city" maxlength="60" /></label>
+                </div>
+              </fieldset>
+              <fieldset class="fs">
+                <legend>Dane do faktury</legend>
+                <label class="field">Nazwa firmy<input class="input" name="company" autocomplete="organization" maxlength="150" /></label>
+                <label class="field">NIP<input class="input" name="nip" inputmode="numeric" maxlength="13" /></label>
+                <label class="field">Ulica i numer<input class="input" name="invStreet" maxlength="120" /></label>
+                <div class="grid2">
+                  <label class="field">Kod pocztowy<input class="input" name="invPostcode" maxlength="6" placeholder="00-000" /></label>
+                  <label class="field">Miejscowość<input class="input" name="invCity" maxlength="60" /></label>
+                </div>
+                <p class="small muted">Dane uzupełnią się same przy zamówieniu z fakturą.</p>
+              </fieldset>
+              <label class="check"><input type="checkbox" name="marketing_consent" /> <span>Chcę otrzymywać informacje o promocjach i kodach rabatowych.</span></label>
+              <button class="btn">Zapisz dane</button>
+              <p class="msg" role="status" data-profile-msg></p>
+            </form>
+            <p class="small muted">E-mail <strong data-email-2></strong> służy do logowania. Zmiana adresu lub usunięcie konta: <a href="/kontakt/">napisz do nas</a>.</p>
           </aside>
         </div>
       </div>
@@ -165,6 +208,20 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   $('[data-change-email]').addEventListener('click', () => { $('[data-code-form]').hidden = true; $('[data-login-form]').hidden = false; });
   $('[data-logout]').addEventListener('click', async () => { await sb().auth.signOut(); show('login'); });
 
+  // ---------- Wywołania API z tokenem sesji ----------
+  async function apiUser(path: string, body?: unknown) {
+    const { data } = await sb().auth.getSession();
+    const token = data.session?.access_token;
+    const res = await fetch(path, {
+      method: body ? 'POST' : 'GET',
+      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || 'Błąd serwera.');
+    return out;
+  }
+
   // ---------- Panel klienta ----------
   let page = 0;
   const PAGE = 20;
@@ -173,17 +230,10 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     show('dash');
     $('[data-email]').textContent = userEmail;
 
-    // Profil (rekord klienta łączy się z kontem automatycznie po potwierdzeniu e-maila)
-    const { data: cust } = await sb().from('customers').select('first_name,last_name,phone,default_locker,default_address').maybeSingle();
-    if (cust?.first_name) $('[data-hello]').textContent = `Dzień dobry, ${cust.first_name}`;
-    const addr = cust?.default_address;
-    $('[data-profile]').innerHTML = [
-      ['Imię i nazwisko', [cust?.first_name, cust?.last_name].filter(Boolean).join(' ') || '—'],
-      ['E-mail', userEmail],
-      ['Telefon', cust?.phone || '—'],
-      ['Paczkomat', cust?.default_locker || '—'],
-      ['Adres', addr?.street ? `${addr.street}, ${addr.postcode || ''} ${addr.city || ''}` : '—'],
-    ].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('');
+    $('[data-email-2]').textContent = userEmail;
+    loadProfile();
+    loadCodes();
+    loadStats();
 
     page = 0;
     $('[data-orders]').innerHTML = '';
@@ -220,8 +270,30 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
           <span class="order__total">${pln(o.total)}</span>
           <span class="small">${o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '')}
             ${o.tracking_number ? ` · <a href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">Śledź przesyłkę</a>` : ''}</span>
-          ${reorderable ? '<button type="button" class="btn btn--ghost btn--sm" data-reorder>Zamów ponownie</button>' : ''}
-        </div>`;
+          <span class="order__btns">
+            <button type="button" class="linklike small" data-ask>Napisz w sprawie zamówienia</button>
+            ${reorderable ? '<button type="button" class="btn btn--ghost btn--sm" data-reorder>Zamów ponownie</button>' : ''}
+          </span>
+        </div>
+        <form class="ask" data-ask-form hidden>
+          <label class="field">Temat
+            <select class="input" name="topic"><option value="pytanie">Pytanie</option><option value="dostawa">Dostawa</option><option value="zwrot">Zwrot</option><option value="reklamacja">Reklamacja</option><option value="faktura">Faktura</option><option value="inne">Inne</option></select>
+          </label>
+          <label class="field">Wiadomość<textarea class="input textarea" name="message" rows="3" maxlength="3000" required></textarea></label>
+          <div class="ask__row"><button class="btn btn--sm">Wyślij</button><span class="msg small" role="status" data-ask-msg></span></div>
+        </form>`;
+      const askForm = li.querySelector<HTMLFormElement>('[data-ask-form]')!;
+      li.querySelector('[data-ask]')!.addEventListener('click', () => { askForm.hidden = !askForm.hidden; if (!askForm.hidden) askForm.querySelector('textarea')!.focus(); });
+      askForm.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const m = askForm.querySelector<HTMLElement>('[data-ask-msg]')!;
+        const fd = new FormData(askForm);
+        m.textContent = 'Wysyłanie…';
+        try {
+          await apiUser('/api/konto/wiadomosc', { number: o.number, topic: fd.get('topic'), message: fd.get('message') });
+          m.textContent = 'Wysłano. Odpowiemy na Twój e-mail.'; askForm.reset();
+        } catch (err) { m.textContent = (err as Error).message; }
+      });
       li.querySelector('[data-reorder]')?.addEventListener('click', () => {
         for (const i of o.order_items) {
           if (catalog.some((c) => c.slug === i.product_id && c.price !== null)) addItem(i.product_id, i.qty);
@@ -232,6 +304,76 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     }
   }
   $('[data-more]').addEventListener('click', () => { page++; loadOrders(); });
+
+  // ---------- Profil ----------
+  const form = $<HTMLFormElement>('[data-profile-form]');
+  const setVal = (n: string, v: unknown) => { const el = form.elements.namedItem(n) as HTMLInputElement | null; if (el) el.type === 'checkbox' ? (el.checked = Boolean(v)) : (el.value = String(v ?? '')); };
+  async function loadProfile() {
+    try {
+      const p = await apiUser('/api/konto/profil');
+      if (p.first_name) $('[data-hello]').textContent = `Dzień dobry, ${p.first_name}`;
+      setVal('first_name', p.first_name); setVal('last_name', p.last_name); setVal('phone', p.phone); setVal('default_locker', p.default_locker);
+      setVal('street', p.default_address?.street); setVal('postcode', p.default_address?.postcode); setVal('city', p.default_address?.city);
+      setVal('company', p.billing?.company); setVal('nip', p.billing?.nip); setVal('invStreet', p.billing?.street); setVal('invPostcode', p.billing?.postcode); setVal('invCity', p.billing?.city);
+      setVal('marketing_consent', p.marketing_consent);
+    } catch (e) { console.error(e); }
+  }
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('[data-profile-msg]');
+    const fd = new FormData(form);
+    const body: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
+    body.marketing_consent = fd.get('marketing_consent') !== null;
+    msg.textContent = 'Zapisywanie…'; msg.classList.remove('msg--err');
+    try { await apiUser('/api/konto/profil', body); msg.textContent = 'Zapisano.'; }
+    catch (err) { msg.textContent = (err as Error).message; msg.classList.add('msg--err'); }
+  });
+
+  // ---------- Kody rabatowe ----------
+  async function loadCodes() {
+    try {
+      const { codes } = await apiUser('/api/konto/kody');
+      if (!codes.length) return;
+      $('[data-codes]').hidden = false;
+      $('[data-codes-list]').innerHTML = codes.map((c: any) => `
+        <li class="code-card">
+          <div><span class="code-card__value">${c.type === 'percent' ? `−${c.value}%` : `−${pln(c.value)}`}</span>
+            <span class="small muted">${esc(c.description || '')}${c.min_total ? ` · od ${pln(c.min_total)}` : ''}${c.ends_at ? ` · ważny do ${day(c.ends_at)}` : ''}</span></div>
+          <button type="button" class="code-card__code" data-copy="${esc(c.code)}" aria-label="Skopiuj kod ${esc(c.code)}">${esc(c.code)} <span class="small">kopiuj</span></button>
+        </li>`).join('');
+      $('[data-codes-list]').querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(b.dataset.copy!); b.querySelector('span')!.textContent = 'skopiowano'; } catch { /* brak dostępu do schowka */ }
+      }));
+    } catch (e) { console.error(e); }
+  }
+
+  // ---------- Statystyki i wykres (12 miesięcy) ----------
+  async function loadStats() {
+    const { data, error } = await sb().from('orders').select('created_at,total,status,order_items(qty,product_id)').in('status', ['paid', 'shipped', 'completed']).limit(1000);
+    if (error || !data?.length) return;
+    $('[data-stats]').hidden = false;
+    const total = data.reduce((s: number, o: any) => s + o.total, 0);
+    const packs = data.reduce((s: number, o: any) => s + o.order_items.filter((i: any) => i.product_id === 'krople-can-c').reduce((a: number, i: any) => a + i.qty, 0), 0);
+    $('[data-s-total]').textContent = pln(total);
+    $('[data-s-count]').textContent = String(data.length);
+    $('[data-s-packs]').textContent = String(packs);
+
+    const now = new Date();
+    const months = Array.from({ length: 12 }, (_, k) => { const d = new Date(now.getFullYear(), now.getMonth() - 11 + k, 1); return { y: d.getFullYear(), m: d.getMonth(), sum: 0 }; });
+    for (const o of data) {
+      const d = new Date(o.created_at);
+      const b = months.find((x) => x.y === d.getFullYear() && x.m === d.getMonth());
+      if (b) b.sum += o.total;
+    }
+    const max = Math.max(...months.map((x) => x.sum), 1);
+    const names = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
+    $('[data-chart]').innerHTML = months.map((x) => `
+      <div class="bar" title="${names[x.m]} ${x.y}: ${pln(x.sum)}">
+        <span class="bar__val">${x.sum ? Math.round(x.sum / 100) + ' zł' : ''}</span>
+        <span class="bar__col" style="height:${Math.max(2, Math.round((x.sum / max) * 100))}%"></span>
+        <span class="bar__lbl">${names[x.m]}</span>
+      </div>`).join('');
+  }
 
   // Przypomnienie: jedno opakowanie kropli ≈ 30 dni kuracji
   function renderReminder(orders: any[]) {
@@ -275,9 +417,9 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   .msg { font-size: var(--fs-small); min-height: 1em; }
   .msg:empty { display: none; }
   .msg--err { color: #D32300; }
-  .small { font-size: var(--fs-small); }
-  .linklike { border: 0; background: none; padding: 0; font: inherit; color: var(--c-link); text-decoration: underline; cursor: pointer; }
-  .linklike:disabled { color: var(--c-ink-70); text-decoration: none; cursor: default; }
+  :global(.small) { font-size: var(--fs-small); }
+  :global(.linklike) { border: 0; background: none; padding: 0; font: inherit; color: var(--c-link); text-decoration: underline; cursor: pointer; }
+  :global(.linklike:disabled) { color: var(--c-ink-70); text-decoration: none; cursor: default; }
   .perks { margin: 0; padding-left: 20px; color: var(--c-ink-70); display: flex; flex-direction: column; gap: 6px; }
 
   .dash { display: flex; flex-direction: column; gap: var(--s-3); }
@@ -299,7 +441,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.order__items) { margin: 0; padding: 0; list-style: none; color: rgba(1, 8, 15, 0.75); }
   :global(.order__foot) { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; padding-top: 8px; border-top: 1px solid var(--c-ink-10); }
   :global(.order__total) { font-size: 1.125rem; }
-  :global(.order__foot .btn) { margin-left: auto; }
+
   :global(.btn--sm) { min-height: 40px; padding: 0 18px; font-size: 0.9375rem; }
   :global(.st) { display: inline-flex; padding: 4px 12px; border-radius: var(--r-pill); font-size: 0.8125rem; white-space: nowrap; }
   :global(.st--info) { background: var(--c-tint); }
@@ -307,6 +449,33 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.st--wait) { background: #FFF4D6; color: #7A4B00; }
   :global(.st--bad) { background: #FBE4E0; color: #B3261E; }
 
+  .stats { background: var(--c-white); padding: var(--s-3); display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-end; }
+  .stats__nums { display: flex; flex-direction: column; gap: 16px; flex: 0 0 200px; }
+  .stats__nums div { display: flex; flex-direction: column; gap: 4px; }
+  .stats__nums strong { font-size: 1.5rem; font-weight: 300; }
+  .chart { flex: 1 1 420px; height: 180px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: end; }
+  :global(.bar) { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; min-width: 0; }
+  :global(.bar__col) { width: 100%; max-width: 36px; background: var(--c-ink); }
+  :global(.bar__val) { font-size: 0.6875rem; color: var(--c-ink-70); white-space: nowrap; }
+  :global(.bar__lbl) { font-size: 0.75rem; color: var(--c-ink-70); }
+  .codes { display: flex; flex-direction: column; gap: var(--s-1); }
+  .codes__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--s-1); }
+  :global(.code-card) { background: var(--c-tint); padding: 20px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  :global(.code-card > div) { display: flex; flex-direction: column; gap: 4px; }
+  :global(.code-card__value) { font-size: 1.5rem; font-weight: 300; }
+  :global(.code-card__code) { border: 1px dashed var(--c-ink); background: var(--c-white); padding: 10px 14px; font: inherit; letter-spacing: 0.08em; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  :global(.order__btns) { margin-left: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  :global(.order__btns .btn) { margin-left: 0; }
+  :global(.ask) { display: flex; flex-direction: column; gap: 12px; padding-top: 12px; border-top: 1px solid var(--c-ink-10); }
+  :global(.ask[hidden]) { display: none; }
+  :global(.ask .textarea), .profile .textarea { height: auto; padding: 12px 16px; resize: vertical; }
+  :global(.ask__row) { display: flex; align-items: center; gap: 16px; }
+  .profile__form { display: flex; flex-direction: column; gap: 14px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .fs { margin: 0; padding: 16px; border: 1px solid var(--c-gray-400); display: flex; flex-direction: column; gap: 12px; }
+  .fs legend { padding: 0 6px; font-size: var(--fs-small); }
+  .check { display: flex; gap: 10px; align-items: flex-start; font-size: var(--fs-small); }
+  .check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
   .profile { flex: 1 1 300px; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); }
   .profile :global(dl) { margin: 0; display: flex; flex-direction: column; gap: 12px; }
   .profile :global(dt) { font-size: var(--fs-small); color: var(--c-ink-70); }

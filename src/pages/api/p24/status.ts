@@ -51,6 +51,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   );
   if (!updated.length) return json(200, { ok: true });
   await sb.insert('order_events', { order_id: order.id, type: 'p24_verified', data: { orderId: n.orderId, methodId: n.methodId } }, 'id');
+  try { await sb.rpc('redeem_discount', { p_order: order.id }); } catch (e) {
+    console.error('Kod rabatowy: ' + (e instanceof Error ? e.message : String(e)));
+  }
   try { await sb.rpc('apply_order_stock', { p_order: order.id }); } catch (e) {
     console.error('Stany magazynowe: ' + (e instanceof Error ? e.message : String(e)));
   }
