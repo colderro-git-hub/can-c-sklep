@@ -1,14 +1,14 @@
 // Dane publiczne sklepu – jedno miejsce do uzupełnienia.
 export const site = {
-  email: '[adres e-mail sklepu]',
+  email: 'kontakt@can-c.pl',
   phone: '[numer telefonu]',
-  hours: '[pon.–pt., 9:00–16:00]',
-  replyTime: '[w ciągu 24 h]',
+  hours: 'pon.–pt., 9:00–16:00',
+  replyTime: 'w ciągu 24 h',
   facebook: 'https://www.facebook.com/krople.canc',
   company: 'Colderro Ewa Zimna',
-  address: '[adres siedziby], Wysoka',
-  nip: '[NIP]',
-  regon: '[REGON]',
+  address: 'ul. Parkowa 31B, 52-200 Wysoka',
+  nip: '6121705889',
+  regon: '022025260',
   returnsUrl: 'https://furgonetka.pl/zwroty/8bed000b-1a32-4f06-a0d7-70626a8be40d',
 };
 
@@ -34,3 +34,5 @@ export const PRODUCT_NUMERIC_ID: Record<string, number> = {
 
 export const SUPABASE_PUBLIC_URL = 'https://bdwwjkudostdongrbhxq.supabase.co';
 export const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_4p0DWSrJeiV76iQpiNGOwQ_heZXZ1-I';
+export const LEGAL_DRAFT = true;
+export const LEGAL_EFFECTIVE_DATE = '06.12.2012';
