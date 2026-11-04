@@ -156,7 +156,6 @@ const bundleRows = bundles.map((b) => {
           : <div class="ph benefits__ph">[Zdjęcie: {benefits.image_alt}]</div>}
       </div>
       <div class="benefits__body">
-        {benefits.kicker && <p class="benefits__kicker">{benefits.kicker}</p>}
         <h2 class="benefits__h2">{benefits.h2}</h2>
         <ul class="benefits__list">
           {(benefits.items as string[]).map((item: string) => (
@@ -368,12 +367,9 @@ const bundleRows = bundles.map((b) => {
   .benefits__img img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
   .benefits__ph { width: 100%; height: 100%; min-height: 480px; background: var(--c-gray-300); display: flex; align-items: center; justify-content: center; color: var(--c-ink-70); font-size: var(--fs-small); }
   .benefits__body { flex: 1 1 480px; padding: 72px 64px; display: flex; flex-direction: column; gap: var(--s-3); justify-content: center; background: var(--c-white); border-top: 1px solid var(--c-ink-10); }
-  .benefits__kicker { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--c-ink-70); font-weight: 500; }
-  .benefits__h2 { font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 300; line-height: 1.12; letter-spacing: -0.01em; color: var(--c-link); font-style: italic; max-width: 520px; }
-  .benefits__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
-  .benefits__list li { padding: 10px 0; border-bottom: 1px solid var(--c-ink-10); font-size: 0.9375rem; line-height: 1.55; color: var(--c-ink-75); display: flex; gap: 10px; align-items: flex-start; }
-  .benefits__list li::before { content: ''; flex-shrink: 0; width: 6px; height: 6px; border-radius: 50%; background: var(--c-link); margin-top: 7px; }
-  .benefits__list li:first-child { border-top: 1px solid var(--c-ink-10); }
+  .benefits__h2 { font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 300; line-height: 1.12; letter-spacing: -0.01em; color: var(--c-ink); }
+  .benefits__list { list-style: disc; padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .benefits__list li { font-size: 0.9375rem; line-height: 1.55; color: var(--c-ink-75); }
   .benefits__list strong { color: var(--c-ink); font-weight: 600; }
   .benefits__cta { margin-top: 8px; }
   @media (max-width: 900px) {
