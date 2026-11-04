@@ -685,10 +685,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }
 
   async function openOrder(id: string, push = true) {
-    $('[data-drawer]').classList.toggle('drawer--wide', true);
     drawerNav(() => openOrder(id, false), push);
     const body = $('[data-d-body]');
-    openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    openDrawer(true); $('[data-drawer]').classList.add('drawer--wide');
+    body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try {
       const { order: o, events } = await api(`/api/admin/order?id=${id}`);
       $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
@@ -1396,10 +1396,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     }
   }
   async function openCustomer(id: string, push = true) {
-    $('[data-drawer]').classList.toggle('drawer--wide', true);
     drawerNav(() => openCustomer(id, false), push);
     const body = $('[data-d-body]');
-    openDrawer(true); body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    openDrawer(true); $('[data-drawer]').classList.add('drawer--wide');
+    body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try {
       const { customer: c, orders, codes } = await api(`/api/admin/klienci?id=${id}`);
       $('[data-d-title]').textContent = c.full_name || c.email;
