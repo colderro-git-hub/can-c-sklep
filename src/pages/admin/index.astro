@@ -1765,8 +1765,18 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     how_to_use: { label: 'Stosowanie', previewHref: '/stosowanie/', sections: [
       { key: 'how_to_use.intro', label: 'Nagłówek strony', schema: { h1: { type: 'text', label: 'Nagłówek H1' }, lead: { type: 'textarea', label: 'Tekst lead' } } },
       { key: 'how_to_use.dosage', label: 'Dawkowanie', schema: { h2: { type: 'text', label: 'Nagłówek' }, note: { type: 'textarea', label: 'Notatka ostrzegawcza' }, doses: { type: 'array', label: 'Dawki JSON [{num, title, desc}]' } } },
-      { key: 'how_to_use.opening', label: 'Otwieranie fiolki', schema: { h2: { type: 'text', label: 'Nagłówek' }, lead: { type: 'textarea', label: 'Lead' }, steps: { type: 'list', label: 'Kroki (jedna linia = jeden krok)' } } },
-      { key: 'how_to_use.applying', label: 'Zakraplanie', schema: { h2: { type: 'text', label: 'Nagłówek' }, steps: { type: 'array', label: 'Kroki JSON [{title, desc}]' } } },
+      { key: 'how_to_use.opening', label: 'Otwieranie fiolki', schema: {
+        h2: { type: 'text', label: 'Nagłówek' },
+        lead: { type: 'textarea', label: 'Lead' },
+        steps: { type: 'list', label: 'Kroki (jedna linia = jeden krok)' },
+        step_images: { type: 'array', label: 'Zdjęcia kroków JSON (tablica 4 URLi)', hint: 'Format: ["https://…krok1.jpg", "https://…krok2.jpg", null, null] – null = placeholder' },
+      },},
+      { key: 'how_to_use.applying', label: 'Zakraplanie', schema: {
+        h2: { type: 'text', label: 'Nagłówek' },
+        steps: { type: 'array', label: 'Kroki JSON [{title, desc}]' },
+        image_url: { type: 'image', label: 'Zdjęcie przy sekcji zakraplania (URL z Supabase Storage)' },
+        image_alt: { type: 'text', label: 'Alt zdjęcia' },
+      },},
     ]},
     footer: { label: 'Stopka', previewHref: '/', sections: [
       { key: 'footer.columns', label: 'Kolumny linków', schema: { columns: { type: 'array', label: 'Kolumny JSON [{title, links:[{href,label}]}]' } } },

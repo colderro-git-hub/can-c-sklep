@@ -27,8 +27,8 @@ const rows = await getPageContent(env, 'how_to_use').catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
 const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1–2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });
-const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolka jest fabrycznie zamknięta.', steps: ['Zdejmij dolny pierścień.', 'Dokręć nakrętkę.', 'Odkręć nakrętkę.', 'Naciśnij fiolkę.'] });
-const applying = at('how_to_use.applying', { h2: 'Zakraplanie', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }] });
+const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolka jest fabrycznie zamknięta.', steps: ['Zdejmij dolny pierścień.', 'Dokręć nakrętkę.', 'Odkręć nakrętkę.', 'Naciśnij fiolkę.'], step_images: [null, null, null, null] as (string|null)[] });
+const applying = at('how_to_use.applying', { h2: 'Zakraplanie', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }], image_url: null as string|null, image_alt: 'Zakraplanie kropli Can-C' });
 const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.h1, step: (applying.steps as {title:string;desc:string}[]).map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.desc })) };
 ---
 <Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację.">
@@ -70,7 +70,9 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       <ol class="open-steps">
         {(opening.steps as string[]).map((t, i) => (
           <li>
-            <div class="ph open-steps__img">[Ilustracja {i + 1}]</div>
+            {(opening.step_images as (string|null)[])?.[i]
+              ? <img src={(opening.step_images as (string|null)[])[i]!} alt={`Krok ${i + 1}: ${t}`} class="open-steps__img" width="400" height="400" loading="lazy" />
+              : <div class="ph open-steps__img">[Ilustracja {i + 1}]</div>}
             <span class="open-steps__n">{i + 1}</span>
             <span class="open-steps__t">{t}</span>
           </li>
@@ -84,7 +86,9 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       <div class="split__aside">
         <h2>{applying.h2}</h2>
         <p class="lead">Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.</p>
-        <div class="ph apply-img">[Ilustracja: odchylona głowa, zakraplanie]</div>
+        {applying.image_url
+          ? <img src={applying.image_url} alt={applying.image_alt || 'Zakraplanie'} class="apply-img" width="600" height="450" loading="lazy" />
+          : <div class="ph apply-img">[Ilustracja: odchylona głowa, zakraplanie]</div>}
       </div>
       <ol class="apply split__main">
         {(applying.steps as {title:string;desc:string}[]).map((s, i) => (
@@ -166,11 +170,11 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
 
   .open-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-2); }
   .open-steps li { display: flex; flex-direction: column; gap: 16px; }
-  .open-steps__img { aspect-ratio: 1 / 1; background: var(--c-gray-200); }
+  .open-steps__img { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; background: var(--c-gray-200); }
   .open-steps__n { font-size: 2.125rem; line-height: 1; font-weight: 300; color: var(--c-link); }
   .open-steps__t { font-size: 1.125rem; }
 
-  .apply-img { aspect-ratio: 4 / 3; }
+  .apply-img { aspect-ratio: 4 / 3; width: 100%; object-fit: cover; background: var(--c-gray-200); }
   .apply { list-style: none; margin: 0; padding: 0; }
   .apply li { display: flex; gap: var(--s-2); padding: var(--s-2) 0; border-top: 1px solid var(--c-ink-10); }
   .apply__n { flex: 0 0 48px; height: 48px; border-radius: 24px; background: var(--c-white); box-shadow: inset 0 0 0 1px var(--c-gray-400); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; }
