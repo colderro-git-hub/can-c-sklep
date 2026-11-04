@@ -60,7 +60,18 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           </fieldset>
 
           <fieldset class="box">
-            <legend>3. Faktura i uwagi</legend>
+            <legend>3. Płatność</legend>
+            <label class="choice"><input type="radio" name="paymentMethod" value="p24" checked />
+              <span class="choice__text"><span>Przelewy24</span><span class="muted">BLIK, karta, przelew online – ponad 150 metod</span></span></label>
+            <label class="choice"><input type="radio" name="paymentMethod" value="bank_transfer" />
+              <span class="choice__text"><span>Przelew bankowy</span><span class="muted">Realizacja po zaksięgowaniu wpłaty</span></span></label>
+            <div class="sub" data-bank hidden>
+              <p class="bank-info">Prosimy o wpłatę bezpośrednio na nasze konto bankowe. Prosimy podać numer zamówienia w tytule płatności. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.<br><br><strong>Numer rachunku:</strong><br><span class="bank-nr" data-bank-nr></span></p>
+            </div>
+          </fieldset>
+
+          <fieldset class="box">
+            <legend>4. Faktura i uwagi</legend>
             <label class="check"><input type="checkbox" name="invoice" data-invoice-toggle /> Chcę fakturę na firmę</label>
             <div class="sub grid2" data-invoice hidden>
               <label class="field">Nazwa firmy<input class="input" type="text" name="company" autocomplete="organization" /></label>
@@ -72,6 +83,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             <label class="field">Uwagi do zamówienia (opcjonalnie)<textarea class="input textarea" name="note" rows="3" maxlength="500"></textarea></label>
           </fieldset>
           <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+          <style>
+            .bank-info { line-height: 1.6; }
+            .bank-nr { font-size: 1.0625rem; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; color: var(--c-ink); }
+          </style>
         </div>
 
         <aside class="summary">
@@ -94,7 +109,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           <label class="check small"><input type="checkbox" name="marketing" /> <span>Chcę otrzymywać informacje o promocjach (opcjonalnie).</span></label>
           <button type="submit" class="btn btn--lg" data-submit>Zamawiam i płacę</button>
           <p class="error" role="alert" data-error></p>
-          <p class="muted note">Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.</p>
+          <p class="muted note" data-pay-note>Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.</p>
         </aside>
       </form>
     </div>
@@ -113,6 +128,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
 <script>
   import { getCart } from '../../lib/cart';
+  import { BANK_ACCOUNT, BANK_PROVIDER, bankTitle } from '../../lib/bank-transfer';
 
   (async () => {
   await (window as any).__CANC_READY__;
@@ -202,6 +218,22 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     form.querySelectorAll<HTMLInputElement>('input[name="shippingMethod"]').forEach((r) =>
       r.addEventListener('change', () => { locker.hidden = r.value !== 'inpost_locker'; address.hidden = r.value !== 'dpd'; }),
     );
+
+    // Przelew bankowy: pokaż numer konta, zmień opis przycisku i noty
+    const bankPanel = form.querySelector<HTMLElement>('[data-bank]')!;
+    const bankNr = form.querySelector<HTMLElement>('[data-bank-nr]')!;
+    bankNr.textContent = BANK_ACCOUNT;
+    const payNote = form.querySelector<HTMLElement>('[data-pay-note]')!;
+    form.querySelectorAll<HTMLInputElement>('input[name="paymentMethod"]').forEach((r) =>
+      r.addEventListener('change', () => {
+        const bank = r.value === 'bank_transfer';
+        bankPanel.hidden = !bank;
+        submit.textContent = bank ? 'Złóż zamówienie' : 'Zamawiam i płacę';
+        payNote.textContent = bank
+          ? 'Po złożeniu zamówienia wyślemy e-mail z numerem konta i kwotą do przelania. Realizacja po zaksięgowaniu wpłaty.'
+          : 'Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.';
+      }),
+    );
     const invoice = form.querySelector<HTMLElement>('[data-invoice]')!;
     form.querySelector<HTMLInputElement>('[data-invoice-toggle]')!.addEventListener('change', (e) => {
       invoice.hidden = !(e.target as HTMLInputElement).checked;
@@ -248,8 +280,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const val = (k: string) => String(fd.get(k) ?? '');
       if (!fd.get('terms')) { error.textContent = 'Zaakceptuj regulamin, aby złożyć zamówienie.'; return; }
 
+      const paymentMethod = val('paymentMethod') === 'bank_transfer' ? BANK_PROVIDER : 'p24';
       submit.disabled = true;
-      submit.textContent = 'Przekierowanie do płatności…';
+      submit.textContent = paymentMethod === BANK_PROVIDER ? 'Składanie zamówienia…' : 'Przekierowanie do płatności…';
       try {
         const res = await fetch('/api/zamowienie', {
           method: 'POST',
@@ -263,15 +296,22 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             company: val('company'), nip: val('nip'), invStreet: val('invStreet'), invPostcode: val('invPostcode'), invCity: val('invCity'),
             note: val('note'), terms: true, marketing: fd.get('marketing') !== null, website: val('website'),
             discountCode: (window as any).__cancCode?.() || '',
+            paymentMethod,
           }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.redirect) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
-        location.href = data.redirect;
+        if (!res.ok) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+        if (paymentMethod === BANK_PROVIDER) {
+          // Przelew bankowy: bez przekierowania do P24 → prosto na stronę podziękowania
+          location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`;
+        } else {
+          if (!data.redirect) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+          location.href = data.redirect;
+        }
       } catch (err) {
         error.textContent = (err as Error).message;
         submit.disabled = false;
-        submit.textContent = 'Zamawiam i płacę';
+        submit.textContent = paymentMethod === BANK_PROVIDER ? 'Złóż zamówienie' : 'Zamawiam i płacę';
       }
     });
   }

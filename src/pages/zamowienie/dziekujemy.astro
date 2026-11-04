@@ -18,9 +18,8 @@ import Base from '../../layouts/Base.astro';
 
       <div class="state" data-state="pending" hidden>
         <p class="badge badge--wait">Czekamy na płatność</p>
-        <h1>Zamówienie jest zapisane</h1>
-        <p class="lead">Zamówienie nr <strong data-number></strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.</p>
-        <p class="muted">Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.</p>
+        <h1 data-pending-title></h1>
+        <div data-pending-body></div>
       </div>
 
       <div class="state" data-state="error" hidden>
@@ -148,6 +147,17 @@ import Base from '../../layouts/Base.astro';
     mail.textContent = d.contact.email; mail.href = `mailto:${d.contact.email}?subject=${encodeURIComponent(`Zamówienie nr ${o.number}`)}`;
   }
 
+  const fillPending = (o: Status | undefined, el: HTMLElement, bodyEl: HTMLElement) => {
+    const bank = o?.details?.payment?.provider?.toLowerCase().includes('przelew');
+    if (bank) {
+      el.textContent = 'Zamówienie przyjęte – czekamy na przelew';
+      bodyEl.innerHTML = `<p>Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu.</p><p>Wysłaliśmy e-mail z danymi do przelewu. Sprawdź też folder spam.</p>`;
+    } else {
+      el.textContent = 'Zamówienie jest zapisane';
+      bodyEl.innerHTML = `<p>Zamówienie nr <strong>${o?.number}</strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.</p><p class="muted">Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.</p>`;
+    }
+  };
+
   const show = (state: string, o?: Status) => {
     root.querySelectorAll<HTMLElement>('[data-state]').forEach((el) => { el.hidden = el.dataset.state !== state; });
     if (o) root.querySelectorAll('[data-number]').forEach((el) => { el.textContent = String(o.number); });
@@ -156,6 +166,9 @@ import Base from '../../layouts/Base.astro';
     root.querySelector<HTMLElement>('[data-act="cart"]')!.hidden = state !== 'pending';
     root.querySelector<HTMLElement>('[data-act="account"]')!.hidden = state !== 'paid';
     if (o && ok) renderDetails(o, state === 'paid');
+    const pendingTitle = document.querySelector<HTMLElement>('[data-pending-title]');
+    const pendingBody = document.querySelector<HTMLElement>('[data-pending-body]');
+    if (state === 'pending' && pendingTitle && pendingBody) fillPending(o, pendingTitle, pendingBody);
     else { q('[data-order]').hidden = true; q('[data-no-details]').hidden = true; }
   };
 

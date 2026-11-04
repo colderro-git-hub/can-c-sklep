@@ -117,6 +117,40 @@ export function orderConfirmationHtml(o: Base & {
   });
 }
 
+export function orderConfirmationBankHtml(o: Base & {
+  number: number; total: number; items: Line[]; delivery: string; invoice: boolean; pointName?: string;
+}) {
+  // Importujemy tutaj, żeby uniknąć circular import (email-templates ← bank-transfer)
+  const { BANK_ACCOUNT, bankTitle } = require('./bank-transfer') as typeof import('./bank-transfer');
+  const sum = o.items.reduce((s, i) => s + i.total, 0);
+  const codeDiscount = Math.max(0, sum - o.total);
+  return layout({
+    ...o, preheader: `Zamówienie nr ${o.number} czeka na Twój przelew: ${zl(o.total)}.`,
+    body: [
+      h1('Dziękujemy za zamówienie!'),
+      p(`Zamówienie <strong>nr ${o.number}</strong> zostało przyjęte. Wyślemy je do realizacji po zaksięgowaniu przelewu.`),
+      o.site.noticeActive ? box(esc(o.site.noticeText), 'warn') : '',
+      rows([
+        ...o.items.map((i) => ({ label: `${i.name} × ${i.qty}`, value: zl(i.total) })),
+        ...(codeDiscount ? [{ label: 'Kod rabatowy', value: `−${zl(codeDiscount)}`, muted: true }] : []),
+        { label: 'Dostawa', value: '0,00 zł', muted: true },
+        { label: 'Do zapłaty przelewem', value: zl(o.total), strong: true },
+      ]),
+      box([
+        `<strong style="font-size:15px">Dane do przelewu</strong>`,
+        `Tytuł: <strong>${esc(bankTitle(o.number))}</strong>`,
+        `Numer rachunku:<br><strong style="font-size:17px;letter-spacing:0.5px;font-variant-numeric:tabular-nums">${esc(BANK_ACCOUNT)}</strong>`,
+        `<span style="font-size:13px;color:${MUTED}">Prosimy o wpłatę bezpośrednio na powyższy numer. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.</span>`,
+      ].join('<br><br>')),
+      kv([
+        ['Dostawa', esc(o.delivery) + (o.pointName ? `<br><span style="color:${MUTED};font-size:13px;">${esc(o.pointName)}</span>` : '')],
+        ...(o.invoice ? [['Faktura', 'wyślemy osobno na ten adres e-mail'] as [string, string]] : []),
+      ]),
+      p('Masz pytania? Napisz do nas – odpiszemy na ten adres.', { muted: true, size: 14 }),
+    ].join(''),
+  });
+}
+
 export function orderShippedHtml(o: Base & { number: number; carrier: string; tracking: string; trackingUrl: string }) {
   return layout({
     ...o, preheader: `Zamówienie nr ${o.number} jest w drodze. Numer przesyłki: ${o.tracking}`,

@@ -549,6 +549,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .sec__t { margin: 0; font: 500 13px var(--font); color: var(--ink-10); text-transform: none; }
   .box { border-radius: var(--r-lg); background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .box--blue { background: var(--primary-a08); box-shadow: none; }
+  .box--warn { background: var(--amber-bg); box-shadow: none; }
   .box--amber { background: var(--amber-bg); box-shadow: none; color: var(--amber-ink); font-size: 13px; }
   .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; color: var(--ink-10); font-size: 13px; }
   .items { list-style: none; margin: 0; padding: 0; }
@@ -599,6 +600,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
   const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki' };
+  const BANK_ACCOUNT = '39 2490 0005 0000 4600 5185 0492';
+  const BANK_PROVIDER = 'bank_transfer';
   const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed', 'withdrawal']);
   const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
@@ -733,11 +736,19 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </details>
           </div>` : ''}
 
+        ${o.payment_provider === BANK_PROVIDER ? `<div class="box box--warn">
+          <strong>Przelew bankowy</strong>
+          <span>Prosimy o wpłatę bezpośrednio na nasze konto bankowe. Prosimy podać numer zamówienia w tytule płatności. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.</span>
+          <span><strong>Numer rachunku:</strong> <span style="letter-spacing:0.5px;font-variant-numeric:tabular-nums">${BANK_ACCOUNT}</span></span>
+          <span class="muted small">Tytuł przelewu: <strong>Zamówienie nr ${o.number} – can-c.pl</strong></span>
+        </div>` : ''}
+
         <div class="actions">
           ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="complete">Zrealizowane</button>' : ''}
           ${can(['paid']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="hold">Wstrzymaj</button>' : ''}
           ${can(['on_hold']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="unhold">Przywróć</button>' : ''}
-          ${can(['pending_payment', 'cancelled']) ? '<button type="button" class="btn btn--sm" data-act="check_payment">Sprawdź płatność w P24</button>' : ''}
+          ${can(['pending_payment', 'cancelled']) && o.payment_provider !== BANK_PROVIDER ? '<button type="button" class="btn btn--sm" data-act="check_payment">Sprawdź płatność w P24</button>' : ''}
+          ${o.payment_provider === BANK_PROVIDER && o.status === 'pending_payment' ? '<button type="button" class="btn btn--sm" data-act="finalize_bank">Oznacz jako opłacone</button>' : ''}
           ${can(['pending_payment', 'paid', 'on_hold']) ? '<button type="button" class="btn btn--danger btn--sm" data-act="cancel">Anuluj</button>' : ''}
         </div>
 
@@ -789,6 +800,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       });
       body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
         if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;
+        if (b.dataset.act === 'finalize_bank') { if (!confirm('Oznacz zamówienie jako opłacone? Użyj po zaksięgowaniu przelewu na koncie.')) return; await act({ id, action: 'complete' }); return; }
         await act({ id, action: b.dataset.act });
       }));
       body.querySelector<HTMLFormElement>('[data-note]')!.addEventListener('submit', async (ev) => {

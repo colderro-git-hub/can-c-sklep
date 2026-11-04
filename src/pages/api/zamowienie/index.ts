@@ -3,6 +3,10 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../../lib/pricing';
 import { p24Config, registerTransaction } from '../../../lib/p24';
+import { BANK_PROVIDER, BANK_ACCOUNT, BANK_INFO_TEXT, bankTitle } from '../../../lib/bank-transfer';
+import { sendMail } from '../../../lib/mail';
+import { getSite } from '../../../lib/site-settings';
+import { orderConfirmationBankHtml } from '../../../lib/email-templates';
 import { checkCode } from '../../../lib/discounts';
 
 export const prerender = false;
@@ -62,9 +66,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (errors.length) return json(422, { error: errors.join(' ') });
 
   const env = await getEnv(locals);
+  const paymentMethod = body.paymentMethod === BANK_PROVIDER ? BANK_PROVIDER : 'p24';
   let sb: ReturnType<typeof db>;
-  let p24: ReturnType<typeof p24Config>;
-  try { sb = db(env); p24 = p24Config(env); } catch (e) {
+  let p24: ReturnType<typeof p24Config> | null = null;
+  try {
+    sb = db(env);
+    if (paymentMethod === 'p24') p24 = p24Config(env);
+  } catch (e) {
     console.error('Konfiguracja: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Sklep jest chwilowo niedostępny. Spróbuj za kilka minut.' });
   }
@@ -117,15 +125,45 @@ export const POST: APIRoute = async ({ request, locals }) => {
       billing: wantsInvoice ? inv : null,
       wants_invoice: wantsInvoice,
       customer_note: note || null,
-      payment_provider: 'przelewy24',
+      payment_provider: paymentMethod === BANK_PROVIDER ? BANK_PROVIDER : 'przelewy24',
       source: 'shop',
     }, 'id,number');
 
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
-    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total, ...(codeName ? { code: codeName, codeAmount } : {}) } }, 'id');
+    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total, paymentMethod, ...(codeName ? { code: codeName, codeAmount } : {}) } }, 'id');
 
     // ---------- Płatność ----------
-    const redirect = await registerTransaction(p24, {
+    if (paymentMethod === BANK_PROVIDER) {
+      // Przelew bankowy: zamówienie od razu w statusie „czeka na płatność", bez rejestracji w P24.
+      // Wyślij mail z danymi do przelewu (jak mail potwierdzenia, ale z numerem konta zamiast przycisku płać).
+      try {
+        const site = await getSite(env);
+        const delivery = method === 'inpost_locker' ? `InPost Paczkomat ${locker}` : `Kurier DPD, ${addr.street}, ${addr.postcode} ${addr.city}`;
+        const itemRows = priced.items.map((i) => ({ name: i.name, qty: i.qty, total: i.total }));
+        const mailHtml = orderConfirmationBankHtml({ site, origin: self.origin, number: order.number, total, items: itemRows, delivery, invoice: wantsInvoice, pointName: undefined, bankAccount: BANK_ACCOUNT, bankTitle: bankTitle(order.number) });
+        await sendMail(env, {
+          to: email,
+          subject: `Zamówienie nr ${order.number} – dane do przelewu`,
+          text: `Dziękujemy za zamówienie nr ${order.number}.
+
+Tytuł przelewu: ${bankTitle(order.number)}
+Kwota: ${(total / 100).toFixed(2).replace('.', ',')} zł
+
+${BANK_INFO_TEXT}
+
+W razie pytań odpiszemy na ten adres.`,
+          html: mailHtml,
+          replyTo: env.CONTACT_TO,
+        });
+        await sb.insert('order_events', { order_id: order.id, type: 'mail_confirmation', data: { bank: true } }, 'id');
+      } catch (mailErr) {
+        console.error('Mail przelew bankowy: ' + (mailErr instanceof Error ? mailErr.message : String(mailErr)));
+        await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { bank: true, err: String(mailErr) } }, 'id');
+      }
+      return json(200, { id: order.id, number: order.number });
+    }
+
+    const redirect = await registerTransaction(p24!, {
       sessionId: order.id,
       amount: total,
       description: `Zamówienie nr ${order.number} – can-c.pl`,
