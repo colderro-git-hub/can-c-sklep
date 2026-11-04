@@ -5,7 +5,7 @@ import Arrow from '../../components/Arrow.astro';
 import AvailBadge from '../../components/AvailBadge.astro';
 import ProductTags from '../../components/ProductTags.astro';
 import { getEnv } from '../../lib/env';
-import { getProductPage, AVAIL_LABEL } from '../../lib/catalog';
+import { getProductPage, AVAIL_LABEL, leadTimeText } from '../../lib/catalog';
 import { discountRate } from '../../lib/pricing';
 import { markdown, plainText } from '../../lib/markdown';
 import { getSite } from '../../lib/site-settings';
@@ -22,8 +22,8 @@ const site = await getSite(env);
 
 const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
 const buyable = p.current !== null && p.avail !== 'out_of_stock';
-// Termin realizacji: z produktu, a gdy pusty – czas wysyłki z ustawień sklepu
-const leadTime = p.lead_time || site.shippingTime;
+// Termin realizacji: zdanie z produktu, a gdy puste – czas wysyłki z ustawień sklepu
+const leadTime = p.lead_time ? leadTimeText(p.lead_time, site.shippingTime) : site.shippingTime;
 const options = (p.bundles ? [1, 2, 4] : [1, 2, 3]).map((qty) => {
   const rate = discountRate(qty, p.bundles);
   const total = p.current === null ? null : Math.round(p.current * qty * (1 - rate));
@@ -150,7 +150,6 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
         <div class="buy__cta">
           <button type="button" class="btn btn--lg" data-add disabled={!buyable}>{buyable ? 'Dodaj do koszyka' : AVAIL_LABEL[p.avail]}</button>
-          {p.avail !== 'out_of_stock' && <p class="lead-time"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M2.5 6.5h9v7h-9zM11.5 9h3l2.5 2.5v2h-5.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /><circle cx="6" cy="14.5" r="1.4" fill="var(--c-white)" stroke="currentColor" stroke-width="1.2" /><circle cx="14.5" cy="14.5" r="1.4" fill="var(--c-white)" stroke="currentColor" stroke-width="1.2" /></svg><span>Wysyłamy {p.lead_time ? <span>{leadTime}</span> : <span data-site="shippingTime">{leadTime}</span>}</span></p>}
           <p class="added" data-added role="status" hidden>Dodano do koszyka. <a href="/koszyk/">Przejdź do koszyka</a></p>
         </div>
 
@@ -268,6 +267,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
 <script>
   import { addItem } from '../../lib/cart';
+  import { flyToCart, announceAdded } from '../../lib/cart-fx';
 
   // Galeria
   const gallery = document.querySelector<HTMLElement>('[data-gallery]');
@@ -294,10 +294,20 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     radios.forEach((r) => { if (wanted && r.value === wanted) r.checked = true; r.addEventListener('change', () => render(r)); });
     const checked = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
     if (checked) render(checked);
-    root.querySelector('[data-add]')?.addEventListener('click', () => {
+    const addBtn = root.querySelector<HTMLButtonElement>('[data-add]');
+    let resetTimer = 0;
+    addBtn?.addEventListener('click', () => {
       const cur = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
-      addItem(slug, Number(cur?.value ?? 1));
+      const qty = Number(cur?.value ?? 1);
+      addItem(slug, qty);
       q('[data-added]')!.hidden = false;
+      // Potwierdzenie na przycisku + miniatura leci do koszyka, potem nagłówek pokazuje zawartość koszyka
+      const label = 'Dodaj do koszyka';
+      addBtn.textContent = 'Dodano ✓'; addBtn.classList.add('is-added');
+      clearTimeout(resetTimer);
+      resetTimer = window.setTimeout(() => { addBtn.textContent = label; addBtn.classList.remove('is-added'); }, 1800);
+      const img = document.querySelector<HTMLImageElement>('[data-main]');
+      flyToCart(img || addBtn, img?.src).then(() => announceAdded({ slug, qty }));
     });
   }
 
@@ -355,7 +365,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .gallery .p-badge { top: 16px; left: 16px; font-size: var(--fs-small); padding: 8px 16px; }
   .gallery__thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); gap: var(--s-1); }
   .thumb { padding: 0; border: 0; background: var(--c-photo-bg); cursor: pointer; aspect-ratio: 1 / 1; }
-  .thumb img { width: 100%; height: 100%; object-fit: cover; opacity: 0.7; }
+  .thumb img { width: 100%; height: 100%; object-fit: contain; padding: 4px; opacity: 0.7; }
   .thumb[aria-pressed='true'] { box-shadow: inset 0 0 0 2px var(--c-ink); }
   .thumb[aria-pressed='true'] img, .thumb:hover img { opacity: 1; }
 
@@ -395,12 +405,12 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .buy__cta { display: flex; flex-direction: column; gap: var(--s-1); }
   .buy__cta .btn { width: 100%; }
   .buy__cta .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .lead-time { display: flex; align-items: center; gap: 8px; font-size: var(--fs-small); color: var(--c-ink-75); }
-  .lead-time svg { flex-shrink: 0; }
+  .buy__cta .btn.is-added { background: var(--c-ok); color: var(--c-paper); opacity: 1; }
   .added { font-size: var(--fs-small); }
   .highlights { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
 
   .perks { list-style: none; margin: 0; padding: 0; }
+  .perks li span:last-child { text-align: right; }
   .perks li { display: flex; justify-content: space-between; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--c-ink-10); }
   .perks li:last-child { border-bottom: 0; }
   .ok { color: var(--c-ok); }
@@ -450,7 +460,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
   .related { flex: 1 1 280px; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: 16px; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
   .related__item { display: flex; flex-direction: column; gap: 10px; color: var(--c-ink); text-decoration: none; }
-  .related__item img, .related__img { aspect-ratio: 4 / 3; width: 100%; object-fit: cover; }
+  .related__item img, .related__img { aspect-ratio: 4 / 3; width: 100%; }
+  .related__item img { object-fit: contain; padding: 12px; background: var(--c-photo-bg); }
   .related__img { background: var(--c-gray-200); }
   .related__name { font-size: 1.25rem; }
   .related__foot { display: flex; justify-content: space-between; align-items: center; }

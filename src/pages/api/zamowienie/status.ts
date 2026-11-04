@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
-import { getCatalog } from '../../../lib/catalog';
+import { getCatalog, leadTimeText } from '../../../lib/catalog';
 import { getSite } from '../../../lib/site-settings';
 import { p24Config, paymentMethodName } from '../../../lib/p24';
 
@@ -48,7 +48,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       const p = catalog.find((c) => c.id === i.product_id);
       return {
         slug: i.product_id, name: i.name, qty: i.qty, unitPrice: i.unit_price, discount: i.discount, total: i.total,
-        image: p?.images[0]?.url || null, leadTime: p?.lead_time || site.shippingTime,
+        image: p?.images[0]?.url || null, leadTime: leadTimeText(p?.lead_time, site.shippingTime),
       };
     });
     const leadTimes = [...new Set(lines.map((l) => l.leadTime))];

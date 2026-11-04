@@ -29,6 +29,13 @@ export const AVAIL_BADGE: Partial<Record<Availability, string>> = {
   out_of_stock: 'Brak w magazynie', preorder: 'Przedsprzedaż', backorder: 'Na zamówienie',
 };
 
+// Termin realizacji jako pełne zdanie: tekst z produktu (wpisany w panelu) albo „Wysyłamy <czas wysyłki ze sklepu>.”
+export function leadTimeText(productLeadTime: string | null | undefined, shippingTime: string) {
+  const own = String(productLeadTime || '').trim().replace(/^[\s:;,.–—-]+/, '');
+  if (own) return own.charAt(0).toUpperCase() + own.slice(1);
+  return `Wysyłamy ${shippingTime}.`;
+}
+
 const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
 
 // Cena jednostkowa (ustawa o informowaniu o cenach): np. „36,90 zł / 1 ml”

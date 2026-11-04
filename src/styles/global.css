@@ -32,7 +32,7 @@
   /* Kolory stałe – nie zmieniają się w trybie ciemnym (tekst na akcencie, etykiety na zdjęciach) */
   --c-black: #01080F;
   --c-paper: #FFFFFF;
-  --c-photo-bg: #F1F1F1;       /* tło pod zdjęciem produktu – packshoty są robione na jasnym tle */
+  --c-photo-bg: #F1F1F1;       /* tło pod zdjęciem produktu; najlepiej wyglądają zdjęcia z przezroczystym tłem */
 
   /* Stany i komunikaty */
   --c-warn-bg: #FFF4D6;
@@ -87,7 +87,7 @@
   --c-ink-75: rgba(234, 241, 247, 0.75);
   --c-ink-80: rgba(234, 241, 247, 0.8);
   --c-ink-85: rgba(234, 241, 247, 0.85);
-  --c-photo-bg: #E6EAEE;
+  --c-photo-bg: #0E1A26;       /* zdjęcia z przezroczystym tłem (PNG/WebP) leżą na ciemnej karcie */
   --c-warn-bg: #2B2211;
   --c-warn-ink: #F2C46B;
   --c-ok-bg: #0F2A1A;
@@ -119,7 +119,8 @@ h1 { font-size: var(--fs-h1); letter-spacing: -0.015em; }
 h2 { font-size: var(--fs-h2); }
 h3 { font-size: var(--fs-h4); font-weight: 400; }
 p { margin: 0; }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }  /* height: auto – aspect-ratio z CSS wygrywa z atrybutem height */
+[hidden] { display: none !important; }
 
 a { color: var(--c-link); transition: opacity 150ms ease; }
 a:hover { opacity: 0.7; }
@@ -203,3 +204,7 @@ a:hover { opacity: 0.7; }
 /* Tagi produktu */
 .p-tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .p-tag { display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px; border-radius: var(--r-pill); background: var(--c-tint); color: var(--c-ink); font-size: 0.8125rem; line-height: 1.2; }
+
+/* Animacja „leci do koszyka” (lib/cart-fx.ts) */
+.fly { border-radius: 50%; overflow: hidden; background: var(--c-photo-bg); box-shadow: 0 6px 24px rgba(1, 8, 15, 0.25), 0 0 0 2px var(--c-accent); }
+.fly img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }

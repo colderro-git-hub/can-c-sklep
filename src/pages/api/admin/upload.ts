@@ -6,6 +6,26 @@ export const prerender = false;
 
 const TYPES: Record<string, string> = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
 
+// Pobranie istniejącego zdjęcia (do usuwania tła w przeglądarce) – omija CORS obcych serwerów.
+// Tylko admin, tylko https i tylko obrazy do 8 MB; Worker i tak nie sięga do sieci prywatnych (global_fetch_strictly_public).
+export const GET: APIRoute = async ({ request, url, locals }) => {
+  const env = await getEnv(locals);
+  if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
+  const src = url.searchParams.get('src') || '';
+  if (!/^https:\/\/[^\s]+$/.test(src)) return json(400, { error: 'Nieprawidłowy adres zdjęcia.' });
+  try {
+    const res = await fetch(src, { redirect: 'follow' });
+    const type = (res.headers.get('Content-Type') || '').split(';')[0].trim();
+    if (!res.ok || !/^image\/(png|jpeg|webp|gif)$/.test(type)) return json(422, { error: 'Pod tym adresem nie ma zdjęcia.' });
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > 8 * 1024 * 1024) return json(413, { error: 'Zdjęcie jest większe niż 8 MB.' });
+    return new Response(buf, { headers: { 'Content-Type': type, 'Cache-Control': 'no-store' } });
+  } catch (e) {
+    console.error('Pobranie zdjęcia: ' + (e instanceof Error ? e.message : String(e)));
+    return json(502, { error: 'Nie udało się pobrać zdjęcia.' });
+  }
+};
+
 // Wysyłka zdjęcia produktu do Supabase Storage (publiczny bucket „products”)
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);

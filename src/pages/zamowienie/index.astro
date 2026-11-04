@@ -106,7 +106,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   window.__CANC_CATALOG__ = catalog;
   window.__CANC_READY__ = fetch('/api/produkty')
     .then((r) => (r.ok ? r.json() : null))
-    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.filter((p) => p.avail !== 'out_of_stock' || false).concat(list.filter((p) => p.avail === 'out_of_stock').map((p) => ({ ...p, price: null }))); })
+    // API podaje ceny w groszach, a ta strona liczy w złotych; niedostępne produkty bez ceny
+    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.map((p) => ({ ...p, price: p.price === null || p.avail === 'out_of_stock' ? null : p.price / 100 })); })
     .catch(() => {});
 </script>
 
