@@ -1,0 +1,7 @@
+---
+// Tagi produktu z panelu (pole „Tagi”), np. „Krople”, „Bez konserwantów”
+interface Props { tags: string[]; max?: number; label?: string }
+const { tags, max = 6, label = 'Cechy produktu' } = Astro.props;
+const list = tags.filter(Boolean).slice(0, max).map((t) => t.charAt(0).toUpperCase() + t.slice(1));
+---
+{list.length > 0 && <ul class="p-tags" aria-label={label}>{list.map((t) => <li class="p-tag">{t}</li>)}</ul>}

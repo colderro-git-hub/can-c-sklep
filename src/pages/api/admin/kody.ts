@@ -9,11 +9,29 @@ import { personalCodeHtml } from '../../../lib/email-templates';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, locals }) => {
+export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   try {
     const sb = db(env);
+    // Kto użył kodu: wszystkie zamówienia z tym kodem (też nieopłacone i anulowane – status w kolumnie)
+    const usesId = url.searchParams.get('uses');
+    if (usesId) {
+      if (!/^[0-9a-f-]{36}$/i.test(usesId)) return json(400, { error: 'Nieprawidłowy kod.' });
+      const [c] = await sb.select<any>(`discount_codes?select=*,customers(email,first_name,last_name)&id=eq.${usesId}`);
+      if (!c) return json(404, { error: 'Nie znaleziono kodu.' });
+      const orders = await sb.select<any>(
+        `orders?select=id,number,created_at,status,email,total,discount_code_amount,source,shipping_address,customer_id,customers(first_name,last_name)&discount_code=eq.${encodeURIComponent(c.code)}&order=created_at.desc&limit=500`,
+      );
+      return json(200, {
+        code: c,
+        uses: orders.map((o) => ({
+          id: o.id, number: o.number, created_at: o.created_at, status: o.status, email: o.email, total: o.total,
+          amount: o.discount_code_amount, source: o.source, customer_id: o.customer_id,
+          name: [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' ') || o.shipping_address?.name || '',
+        })),
+      });
+    }
     const rows = await sb.select<any>('discount_codes?select=*,customers(email)&order=created_at.desc&limit=200');
     // Skuteczność kodów: opłacone zamówienia z kodem
     const used = await sb.select<{ discount_code: string; total: number; discount_code_amount: number; created_at: string }>(
@@ -32,7 +50,44 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 };
 
+type Sb = ReturnType<typeof db>;
+
+// Pola kodu z formularza (tworzenie i edycja) → wiersz do zapisu albo komunikat błędu
+async function parseCodeFields(sb: Sb, b: any) {
+  const code = normalizeCode(b.code);
+  const type = b.type === 'amount' ? 'amount' : 'percent';
+  const raw = String(b.value ?? '').replace(',', '.');
+  const value = type === 'percent' ? Math.round(Number(raw)) : Math.round(Number(raw) * 100);
+  const min_total = Math.round(Number(String(b.min_total || 0).replace(',', '.')) * 100);
+  const max_uses = b.max_uses ? Math.round(Number(b.max_uses)) : null;
+  const toIso = (d: unknown) => (typeof d === 'string' && d ? new Date(d).toISOString() : null);
+  const starts_at = toIso(b.starts_at), ends_at = toIso(b.ends_at);
+
+  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' };
+  if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 100)) return { error: 'Nieprawidłowa wartość rabatu.' };
+  if (!Number.isFinite(min_total) || min_total < 0) return { error: 'Nieprawidłowa minimalna kwota.' };
+  if (max_uses !== null && (!Number.isInteger(max_uses) || max_uses < 1)) return { error: 'Nieprawidłowy limit użyć.' };
+  if ((starts_at && isNaN(+new Date(starts_at))) || (ends_at && isNaN(+new Date(ends_at)))) return { error: 'Nieprawidłowa data.' };
+  if (starts_at && ends_at && starts_at > ends_at) return { error: 'Data końca jest wcześniejsza niż początku.' };
+
+  let customer_id: string | null = null;
+  const email = String(b.email || '').trim().toLowerCase();
+  if (email) {
+    const [c] = await sb.select<{ id: string }>(`customers?select=id&email=eq.${encodeURIComponent(email)}`);
+    if (!c) return { error: 'Nie ma klienta z takim e-mailem.' };
+    customer_id = c.id;
+  }
+  return {
+    row: {
+      code, type, value, min_total, max_uses, customer_id, starts_at, ends_at,
+      once_per_customer: b.once_per_customer !== false,
+      description: String(b.description || '').trim().slice(0, 200) || null,
+    },
+  };
+}
+
 // { action: 'create', code, type, value, min_total, starts_at, ends_at, max_uses, once_per_customer, email, description }
+// { action: 'update', id, ...te same pola }
 // { action: 'toggle', id, active }
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
@@ -102,36 +157,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(200, { code, mailed });
     }
 
-    if (b.action !== 'create') return json(400, { error: 'Nieznana akcja.' });
-
-    const code = normalizeCode(b.code);
-    const type = b.type === 'amount' ? 'amount' : 'percent';
-    const raw = String(b.value ?? '').replace(',', '.');
-    const value = type === 'percent' ? Math.round(Number(raw)) : Math.round(Number(raw) * 100);
-    const min_total = Math.round(Number(String(b.min_total || 0).replace(',', '.')) * 100);
-    const max_uses = b.max_uses ? Math.round(Number(b.max_uses)) : null;
-    const toIso = (d: unknown) => (typeof d === 'string' && d ? new Date(d).toISOString() : null);
-
-    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return json(422, { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' });
-    if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 100)) return json(422, { error: 'Nieprawidłowa wartość rabatu.' });
-    if (!Number.isFinite(min_total) || min_total < 0) return json(422, { error: 'Nieprawidłowa minimalna kwota.' });
-    if (max_uses !== null && (!Number.isInteger(max_uses) || max_uses < 1)) return json(422, { error: 'Nieprawidłowy limit użyć.' });
-
-    let customer_id: string | null = null;
-    const email = String(b.email || '').trim().toLowerCase();
-    if (email) {
-      const [c] = await sb.select<{ id: string }>(`customers?select=id&email=eq.${encodeURIComponent(email)}`);
-      if (!c) return json(422, { error: 'Nie ma klienta z takim e-mailem.' });
-      customer_id = c.id;
+    if (b.action === 'update') {
+      if (!/^[0-9a-f-]{36}$/i.test(b.id || '')) return json(400, { error: 'Nieprawidłowy kod.' });
+      const [cur] = await sb.select<any>(`discount_codes?select=id,code,used_count&id=eq.${b.id}`);
+      if (!cur) return json(404, { error: 'Nie znaleziono kodu.' });
+      const parsed = await parseCodeFields(sb, b);
+      if ('error' in parsed) return json(422, { error: parsed.error });
+      const row = parsed.row;
+      // Zamówienia trzymają tekst kodu – po pierwszym użyciu nazwy nie zmieniamy, żeby nie zgubić historii i statystyk
+      if (row.code !== cur.code) {
+        const used = await sb.select(`orders?select=id&discount_code=eq.${encodeURIComponent(cur.code)}&limit=1`);
+        if (cur.used_count > 0 || used.length) return json(422, { error: 'Kod był już użyty w zamówieniu – nie można zmienić jego nazwy. Wyłącz go i utwórz nowy.' });
+      }
+      if (row.max_uses !== null && row.max_uses < cur.used_count) return json(422, { error: `Limit nie może być mniejszy niż liczba dotychczasowych użyć (${cur.used_count}).` });
+      const [saved] = await sb.update(`discount_codes?id=eq.${b.id}`, row, 'id,code');
+      console.log(`Admin ${admin} zmienił kod ${cur.code}${row.code !== cur.code ? ` → ${row.code}` : ''}`);
+      return json(200, { row: saved });
     }
 
-    const [row] = await sb.insert('discount_codes', {
-      code, type, value, min_total, max_uses, customer_id,
-      starts_at: toIso(b.starts_at), ends_at: toIso(b.ends_at),
-      once_per_customer: b.once_per_customer !== false,
-      description: String(b.description || '').trim().slice(0, 200) || null,
-    }, 'id,code');
-    console.log(`Admin ${admin} utworzył kod ${code}`);
+    if (b.action !== 'create') return json(400, { error: 'Nieznana akcja.' });
+
+    const parsed = await parseCodeFields(sb, b);
+    if ('error' in parsed) return json(422, { error: parsed.error });
+    const [row] = await sb.insert('discount_codes', parsed.row, 'id,code');
+    console.log(`Admin ${admin} utworzył kod ${parsed.row.code}`);
     return json(200, { row });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

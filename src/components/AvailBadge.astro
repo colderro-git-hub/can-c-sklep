@@ -1,0 +1,8 @@
+---
+// Etykieta dostępności na zdjęciu produktu. Rodzic musi mieć klasę .media (position: relative).
+import { AVAIL_BADGE } from '../lib/catalog';
+import type { Availability } from '../lib/pricing';
+interface Props { avail: Availability }
+const label = AVAIL_BADGE[Astro.props.avail];
+---
+{label && <span class={`p-badge p-badge--${Astro.props.avail}`}>{label}</span>}

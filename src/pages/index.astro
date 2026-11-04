@@ -4,21 +4,24 @@ import Arrow from '../components/Arrow.astro';
 import { products as fallback, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
+import type { Availability } from '../lib/pricing';
+import AvailBadge from '../components/AvailBadge.astro';
+import ProductTags from '../components/ProductTags.astro';
 
 // Strona główna z aktualnymi produktami z bazy; przy awarii bazy – dane zapasowe z kodu
 export const prerender = false;
-type Card = { slug: string; tag: string; name: string; desc: string; price: number | null; regular: number | null; onSale: boolean; image?: string; alt?: string; rating: number; reviews: number };
+type Card = { slug: string; tag: string; tags: string[]; avail: Availability; name: string; desc: string; price: number | null; regular: number | null; onSale: boolean; image?: string; alt?: string; rating: number; reviews: number };
 let products: Card[];
 try {
   const list = await getCatalog(await getEnv(Astro.locals));
   products = list.map((p) => ({
-    slug: p.id, tag: (p.tags[0] || 'Produkt').toUpperCase(), name: p.name, desc: p.short_description || '',
+    slug: p.id, tag: p.subtitle || '', tags: p.tags, avail: p.avail, name: p.name, desc: p.short_description || '',
     price: p.current === null ? null : p.current / 100, regular: p.price === null ? null : p.price / 100, onSale: p.onSale,
     image: p.images[0]?.url, alt: p.images[0]?.alt || p.name, rating: p.rating.avg, reviews: p.rating.count,
   }));
 } catch (e) {
   console.error('Strona główna – katalog: ' + (e instanceof Error ? e.message : String(e)));
-  products = fallback.map((p) => ({ slug: p.slug, tag: p.tag, name: p.name, desc: p.desc, price: p.price, regular: p.price, onSale: false, image: p.image, alt: p.name, rating: 0, reviews: 0 }));
+  products = fallback.map((p) => ({ slug: p.slug, tag: p.tag, tags: [], avail: 'in_stock' as Availability, name: p.name, desc: p.desc, price: p.price, regular: p.price, onSale: false, image: p.image, alt: p.name, rating: 0, reviews: 0 }));
 }
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
@@ -68,12 +71,16 @@ const bundleRows = bundles.map((b) => {
       <div class="grid grid--4">
         {products.map((p) => (
           <article class="card">
-            {p.image
-              ? <img src={p.image} alt={p.alt} width="400" height="300" loading="lazy" class="card__img" />
-              : <div class="ph card__img">[Packshot: {p.name}]</div>}
+            <div class={`media media--${p.avail}`}>
+              {p.image
+                ? <img src={p.image} alt={p.alt} width="400" height="300" loading="lazy" class="card__img" />
+                : <div class="ph card__img">[Packshot: {p.name}]</div>}
+              <AvailBadge avail={p.avail} />
+            </div>
             <div class="card__body">
-              <span class="card__tag">{p.tag}</span>
+              {p.tag && <span class="card__tag">{p.tag}</span>}
               <h3><a href={`/produkt/${p.slug}/`} class="card__link">{p.name}</a></h3>
+              <ProductTags tags={p.tags} max={3} />
               <p class="muted card__desc">{p.desc}</p>
               <div class="card__foot">
                 <span class="card__price">{formatPrice(p.price)}{p.onSale && <s class="muted card__regular"> {formatPrice(p.regular)}</s>}{p.reviews > 0 && <span class="card__rating" aria-label={`Ocena ${p.rating} na 5`}> ★ {p.rating.toLocaleString('pl-PL')}</span>}</span>
@@ -144,7 +151,7 @@ const bundleRows = bundles.map((b) => {
       <div class="grid grid--3">
         {reviews.map((r) => (
           <figure class="review">
-            <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true"><path d="M0 24V13C0 5 4 1 12 0v5c-4 1-6 4-6 8h6v11H0zm18 0V13c0-8 4-12 12-13v5c-4 1-6 4-6 8h6v11H18z" fill="#0066CC" /></svg>
+            <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true" class="quote-mark"><path d="M0 24V13C0 5 4 1 12 0v5c-4 1-6 4-6 8h6v11H0zm18 0V13c0-8 4-12 12-13v5c-4 1-6 4-6 8h6v11H18z" fill="currentColor" /></svg>
             <blockquote>{r.quote}</blockquote>
             <figcaption class="muted">{r.author}</figcaption>
           </figure>
@@ -242,7 +249,7 @@ const bundleRows = bundles.map((b) => {
   .card__foot { display: flex; justify-content: space-between; align-items: center; padding-top: var(--s-1); }
   .card__price { font-size: 1.25rem; }
   .card__regular { font-size: 0.9375rem; }
-  .card__rating { font-size: 0.875rem; color: #B07D00; }
+  .card__rating { font-size: 0.875rem; color: var(--c-star-ink); }
   .round-btn { width: 48px; height: 48px; border-radius: 24px; background: var(--c-ink); color: var(--c-white); display: flex; align-items: center; justify-content: center; }
 
   /* Zestawy */
@@ -250,7 +257,7 @@ const bundleRows = bundles.map((b) => {
   .bundle--featured { box-shadow: inset 0 0 0 1px var(--c-ink); }
   .bundle__top { display: flex; justify-content: space-between; align-items: center; min-height: 32px; }
   .bundle__qty { font-size: 1.125rem; }
-  .badge { font-size: 0.8125rem; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-ink); }
+  .badge { font-size: 0.8125rem; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-black); }
   .bundle__total { font-size: 2.5rem; font-weight: 300; line-height: 1.15; letter-spacing: -0.01em; }
   .bundle__list { list-style: none; margin: 0; padding: var(--s-2) 0 0; display: flex; flex-direction: column; gap: var(--s-1); border-top: 1px solid var(--c-ink-10); }
 
@@ -258,6 +265,7 @@ const bundleRows = bundles.map((b) => {
 
   .reviews { background: var(--c-tint); }
   .review { margin: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+  .quote-mark { color: var(--c-link); }
   .review blockquote { margin: 0; font-size: 1.25rem; }
 
   .k9__img { flex: 1 1 420px; aspect-ratio: 4 / 3; }
@@ -275,6 +283,6 @@ const bundleRows = bundles.map((b) => {
   .newsletter { display: flex; flex-direction: column; gap: 16px; }
   .newsletter__row { display: flex; flex-wrap: wrap; gap: var(--s-1); }
   .newsletter__row .input { flex: 1 1 240px; }
-  .consent { display: flex; gap: 12px; align-items: flex-start; font-size: var(--fs-small); line-height: 24px; color: rgba(1, 8, 15, 0.75); }
+  .consent { display: flex; gap: 12px; align-items: flex-start; font-size: var(--fs-small); line-height: 24px; color: var(--c-ink-75); }
   .consent input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
 </style>

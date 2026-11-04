@@ -45,6 +45,10 @@ const current = Astro.url.pathname;
       <a href="/konto/" class="icon-btn" aria-label="Twoje konto">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="6.5" r="3.5" stroke="currentColor" stroke-width="1.2" /><path d="M3 18c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5" stroke="currentColor" stroke-width="1.2" /></svg>
       </a>
+      <button type="button" class="icon-btn theme-btn" data-theme-toggle aria-pressed="false" aria-label="Tryb ciemny" title="Włącz tryb ciemny">
+        <svg class="theme-btn__moon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 12.3A7 7 0 0 1 7.7 3.5a7 7 0 1 0 8.8 8.8Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /></svg>
+        <svg class="theme-btn__sun" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.6" stroke="currentColor" stroke-width="1.2" /><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg>
+      </button>
       <a href="/koszyk/" class="cart">Koszyk <span class="cart__count" data-cart-count aria-label="liczba produktów w koszyku">0</span></a>
       <a href="https://can-c.store/" class="lang" hreflang="en">EN</a>
     </div>
@@ -57,15 +61,36 @@ const current = Astro.url.pathname;
   const update = () => { if (badge) badge.textContent = String(cartCount()); };
   update();
   onCartChange(update);
+
+  // Tryb jasny/ciemny: zapamiętany wybór klienta; bez wyboru strona idzie za ustawieniem systemu
+  const root = document.documentElement;
+  const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const sync = () => {
+    const dark = root.dataset.theme === 'dark';
+    toggle?.setAttribute('aria-pressed', String(dark));
+    toggle?.setAttribute('title', dark ? 'Włącz tryb jasny' : 'Włącz tryb ciemny');
+  };
+  sync();
+  toggle?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try { localStorage.setItem('canc-theme', next); } catch { /* tryb prywatny – wybór działa do zamknięcia karty */ }
+    sync();
+  });
+  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
+    let saved: string | null = null;
+    try { saved = localStorage.getItem('canc-theme'); } catch { /* */ }
+    if (!saved) { root.dataset.theme = e.matches ? 'dark' : 'light'; sync(); }
+  });
 </script>
 
 <style>
   .notice-bar { background: var(--c-ink); color: var(--c-white); padding: 12px 0; text-align: center; font-size: var(--fs-small); }
   .notice-bar[hidden] { display: none; }
-  .promo { background: var(--c-gray-200); font-size: var(--fs-small); color: rgba(1, 8, 15, 0.85); }
+  .promo { background: var(--c-gray-200); font-size: var(--fs-small); color: var(--c-ink-85); }
   .promo__inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 36px; padding-block: 10px; }
 
-  .header { position: sticky; top: 0; z-index: 10; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(32px); border-bottom: 1px solid var(--c-ink-10); }
+  .header { position: sticky; top: 0; z-index: 10; background: var(--c-header-bg); backdrop-filter: blur(32px); border-bottom: 1px solid var(--c-ink-10); }
   .header__inner { min-height: 72px; display: flex; align-items: center; gap: var(--s-2); }
   .logo { font-size: 1.75rem; line-height: 1; color: var(--c-ink); text-decoration: none; margin-right: auto; }
 
@@ -77,8 +102,13 @@ const current = Astro.url.pathname;
 
   .actions { order: 3; display: flex; align-items: center; gap: 8px; }
   .icon-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--c-ink); }
+  .theme-btn { padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: var(--r-pill); }
+  .theme-btn:hover { opacity: 0.7; }
+  .theme-btn__sun { display: none; }
+  :global(:root[data-theme='dark']) .theme-btn__sun { display: block; }
+  :global(:root[data-theme='dark']) .theme-btn__moon { display: none; }
   .cart { height: 44px; padding: 0 20px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-white); text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.9375rem; }
-  .cart__count { min-width: 22px; height: 22px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-ink); font-size: 0.8125rem; display: inline-flex; align-items: center; justify-content: center; }
+  .cart__count { min-width: 22px; height: 22px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-black); font-size: 0.8125rem; display: inline-flex; align-items: center; justify-content: center; }
   .lang { color: var(--c-ink); text-decoration: none; font-size: var(--fs-small); padding: 12px 8px; }
 
   /* Desktop: menu w linii; telefon: menu zwijane */

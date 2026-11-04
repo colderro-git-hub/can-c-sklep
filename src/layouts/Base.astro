@@ -6,8 +6,10 @@ import Footer from '../components/Footer.astro';
 interface Props {
   title: string;
   description: string;
+  noindex?: boolean;     // strony z danymi zamówienia – zawsze poza Google
+  noReferrer?: boolean;  // adres strony zawiera identyfikator zamówienia – nie przekazujemy go dalej
 }
-const { title, description } = Astro.props;
+const { title, description, noindex = false, noReferrer = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
 ---
 <!doctype html>
@@ -15,11 +17,22 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Motyw przed pierwszym malowaniem strony (bez mignięcia jasnego tła): wybór klienta albo ustawienie systemu -->
+    <script is:inline>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem('canc-theme'); } catch (e) {}
+        var dark = t ? t === 'dark' : window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+      })();
+    </script>
+    <meta name="color-scheme" content="light dark" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <!-- Do startu sklepu staging nie może trafić do Google. W dniu startu: zmienna builda PUBLIC_SITE_INDEXABLE=true -->
-    {import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true' && <meta name="robots" content="noindex, nofollow" />}
+    {(noindex || import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true') && <meta name="robots" content="noindex, nofollow" />}
+    {noReferrer && <meta name="referrer" content="no-referrer" />}
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="pl_PL" />
     <meta property="og:title" content={title} />

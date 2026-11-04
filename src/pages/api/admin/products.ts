@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     });
   } catch (e) {
     console.error('Admin products: ' + (e instanceof Error ? e.message : String(e)));
-    return json(500, { error: 'Błąd pobierania produktów. Czy uruchomiono skrypt 010_produkty_opinie.sql?' });
+    return json(500, { error: 'Błąd pobierania produktów. Czy uruchomiono skrypty 010–012 w Supabase?' });
   }
 };
 
@@ -89,6 +89,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       id, name: line(b.name, 150), subtitle: line(b.subtitle, 60) || null, active: b.active === true,
       price, sale_price: sale, sale_start, sale_end, vat_rate: Number(b.vat_rate), bundles: b.bundles === true,
       short_description: txt(b.short_description, 300) || null, description: txt(b.description, 20000) || null,
+      how_to_use: txt(b.how_to_use, 20000) || null, lead_time: line(b.lead_time, 120) || null,
+      how_to_use: txt(b.how_to_use, 10000) || null, lead_time: line(b.lead_time, 120) || null,
       highlights: list(b.highlights, 10, 150), seo_title: line(b.seo_title, 70) || null, seo_description: line(b.seo_description, 170) || null,
       tags: list(b.tags, 20, 40), images, stock: Number(b.stock), low_stock_alert: Math.max(0, Math.round(Number(b.low_stock_alert) || 0)),
       availability: ['in_stock', 'out_of_stock', 'preorder', 'backorder'].includes(b.availability) ? b.availability : null,
@@ -119,6 +121,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json(200, { id });
   } catch (e) {
     console.error('Admin product save: ' + (e instanceof Error ? e.message : String(e)));
-    return json(500, { error: 'Błąd zapisu.' });
+    return json(500, { error: 'Błąd zapisu. Czy uruchomiono skrypt 012_stosowanie_termin_kody.sql?' });
   }
 };

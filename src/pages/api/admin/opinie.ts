@@ -45,9 +45,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Edycja opinii: zachowujemy oryginalną treść przy pierwszej zmianie
     if (b.action === 'update') {
-      const [cur] = await sb.select<any>(`reviews?select=id,body,original_body&id=eq.${b.id}`);
+      const [cur] = await sb.select<any>(`reviews?select=id,body,original_body,rating,source,created_at&id=eq.${b.id}`);
       if (!cur) return json(404, { error: 'Nie znaleziono opinii.' });
-      const rating = Number(b.rating);
+      // Opinia klienta ze sklepu: ocena i data są nienaruszalne (zakaz zniekształcania opinii konsumentów,
+      // art. 7 pkt 23c ustawy o przeciwdziałaniu nieuczciwym praktykom rynkowym). Treść można poprawić – oryginał zostaje.
+      const fromCustomer = cur.source === 'shop';
+      if (fromCustomer && b.rating !== undefined && Number(b.rating) !== cur.rating) return json(422, { error: 'Nie można zmienić oceny wystawionej przez klienta.' });
+      const rating = fromCustomer ? cur.rating : Number(b.rating);
       const body = String(b.body || '').replace(/\r/g, '').trim().slice(0, 3000);
       const name = String(b.author_name || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 60);
       if (!Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 10 || name.length < 2) return json(422, { error: 'Uzupełnij autora, ocenę 1–5 i treść (min. 10 znaków).' });
@@ -57,7 +61,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         title: String(b.title || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 120) || null,
         verified_purchase: b.verified_purchase === true,
         edited_at: new Date().toISOString(), edited_by: admin,
-        ...(created && !isNaN(+created) ? { created_at: created.toISOString() } : {}),
+        ...(!fromCustomer && created && !isNaN(+created) ? { created_at: created.toISOString() } : {}),
         ...(body !== cur.body && !cur.original_body ? { original_body: cur.body } : {}),
       };
       if (/^[a-z0-9-]{2,60}$/.test(b.product_id || '')) upd.product_id = b.product_id;

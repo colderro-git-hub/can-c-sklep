@@ -27,17 +27,24 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             <div><dt>Dostawa</dt><dd class="ok">0,00 zł</dd></div>
             <div class="total"><dt>Razem</dt><dd data-total></dd></div>
           </dl>
-          <a href="/zamowienie/" class="btn btn--lg">Przejdź do dostawy i płatności</a>
+          <a href="/zamowienie/" class="btn btn--lg" data-checkout>Przejdź do dostawy i płatności</a>
+          <p class="blocked" data-blocked hidden role="status">Usuń z koszyka produkty oznaczone jako niedostępne, aby przejść dalej.</p>
           <p class="muted note">Ostateczną kwotę potwierdzimy w kolejnym kroku.</p>
         </aside>
       </div>
 
       <template data-line-tpl>
         <li class="line">
-          <div class="ph line__img" aria-hidden="true">[foto]</div>
+          <a class="media line__media" data-link>
+            <img class="line__img" alt="" width="72" height="72" loading="lazy" hidden />
+            <span class="ph line__img line__ph" aria-hidden="true">[foto]</span>
+            <span class="p-badge p-badge--out_of_stock line__badge" hidden>Brak</span>
+          </a>
           <div class="line__info">
-            <span class="line__name"></span>
+            <a class="line__name" data-link></a>
             <span class="muted line__meta"></span>
+            <span class="line__lead" hidden></span>
+            <span class="line__out" hidden>Chwilowo niedostępny – usuń z koszyka</span>
           </div>
           <div class="qty">
             <button type="button" class="qty__btn" data-dec aria-label="Zmniejsz ilość">−</button>
@@ -57,7 +64,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   window.__CANC_CATALOG__ = catalog;
   window.__CANC_READY__ = fetch('/api/produkty')
     .then((r) => (r.ok ? r.json() : null))
-    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.filter((p) => p.avail !== 'out_of_stock' || false).concat(list.filter((p) => p.avail === 'out_of_stock').map((p) => ({ ...p, price: null }))); })
+    .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list; })
     .catch(() => {});
 </script>
 
@@ -67,7 +74,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   (async () => {
   await (window as any).__CANC_READY__;
 
-  type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string };
+  type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string; image?: string | null; imageAlt?: string; avail?: string; leadTime?: string };
   const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
   const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
   const discountFor = (qty: number, p: P) => (!p.bundles ? 0 : qty >= 4 ? 0.1 : qty >= 2 ? 0.08 : 0);
@@ -84,18 +91,38 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
     let subtotal = 0;
     let discount = 0;
+    let blocked = false;
     for (const item of items) {
       const p = catalog.find((c) => c.slug === item.slug)!;
-      const base = (p.price ?? 0) * item.qty;
-      const d = discountFor(item.qty, p);
+      // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy – serwer i tak by go odrzucił
+      const out = p.price === null || p.avail === 'out_of_stock';
+      if (out) blocked = true;
+      const base = out ? 0 : (p.price as number) * item.qty;
+      const d = out ? 0 : discountFor(item.qty, p);
       subtotal += base;
       discount += base * d;
 
       const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
+      const url = `/produkt/${p.slug}/`;
+      li.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = url; });
+      li.querySelector<HTMLAnchorElement>('.line__media')!.tabIndex = -1;
+      li.querySelector<HTMLAnchorElement>('.line__media')!.setAttribute('aria-hidden', 'true');
+      if (p.image) {
+        const img = li.querySelector<HTMLImageElement>('img.line__img')!;
+        img.src = p.image; img.hidden = false;
+        li.querySelector<HTMLElement>('.line__ph')!.hidden = true;
+      }
       li.querySelector('.line__name')!.textContent = p.name;
       li.querySelector('.line__meta')!.textContent = d ? `${p.size} · rabat ${Math.round(d * 100)}%` : p.size;
+      if (p.leadTime && !out) { const lt = li.querySelector<HTMLElement>('.line__lead')!; lt.textContent = `Wysyłamy ${p.leadTime}`; lt.hidden = false; }
+      if (out) {
+        li.classList.add('line--out');
+        li.querySelector<HTMLElement>('.line__out')!.hidden = false;
+        li.querySelector<HTMLElement>('.line__badge')!.hidden = false;
+      }
       li.querySelector('.qty__val')!.textContent = String(item.qty);
-      li.querySelector('.line__total')!.textContent = p.price === null ? '[CENA]' : pln.format(base * (1 - d));
+      li.querySelector('.line__total')!.textContent = out ? '—' : pln.format(base * (1 - d));
+      if (out) li.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
       li.querySelector('[data-dec]')!.addEventListener('click', () => setQty(p.slug, item.qty - 1));
       li.querySelector('[data-inc]')!.addEventListener('click', () => setQty(p.slug, item.qty + 1));
       li.querySelector('[data-remove]')!.addEventListener('click', () => setQty(p.slug, 0));
@@ -105,7 +132,14 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     $<HTMLElement>('[data-subtotal]').textContent = pln.format(subtotal);
     $<HTMLElement>('[data-discount]').textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
     $<HTMLElement>('[data-total]').textContent = pln.format(subtotal - discount);
+    const cta = $<HTMLAnchorElement>('[data-checkout]');
+    cta.classList.toggle('btn--off', blocked);
+    if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
+    $<HTMLElement>('[data-blocked]').hidden = !blocked;
   }
+  $<HTMLAnchorElement>('[data-checkout]').addEventListener('click', (e) => {
+    if ((e.currentTarget as HTMLElement).getAttribute('aria-disabled') === 'true') e.preventDefault();
+  });
 
   render();
   onCartChange(render);
@@ -113,7 +147,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <style>
-  .cart-notice { padding: 14px 18px; background: #FFF4D6; color: #7A4B00; }
+  .cart-notice { padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); }
   .cart-notice[hidden] { display: none; }
   .cart-page { display: flex; flex-direction: column; gap: var(--s-4); }
   .empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
@@ -123,12 +157,20 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .lines { flex: 999 1 560px; min-width: 0; list-style: none; margin: 0; padding: 0; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
   :global(.line) { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
   :global(.line:last-child) { border-bottom: 0; }
-  :global(.line__img) { width: 72px; height: 72px; padding: 4px; background: var(--c-gray-200); font-size: 0.6875rem; }
+  :global(.line__media) { flex-shrink: 0; width: 72px; height: 72px; }
+  :global(.line__img) { width: 72px; height: 72px; object-fit: contain; }
+  :global(.line__ph) { padding: 4px; background: var(--c-gray-200); font-size: 0.6875rem; }
+  :global(.line__badge) { top: 4px; left: 4px; max-width: calc(100% - 8px); padding: 2px 8px; font-size: 0.6875rem; }
+  :global(.line--out .line__img) { filter: grayscale(1); opacity: 0.6; }
+  :global(.line__lead) { font-size: var(--fs-small); color: var(--c-ink-75); }
+  :global(.line__out) { font-size: var(--fs-small); color: var(--c-err); }
+  :global(.line__name) { color: var(--c-ink); text-decoration: none; }
   :global(.line__info) { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
   :global(.line__name) { font-size: 1.125rem; }
   :global(.line__meta) { font-size: var(--fs-small); }
   :global(.qty) { display: flex; align-items: center; gap: 4px; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--c-gray-300); }
-  :global(.qty__btn) { width: 44px; height: 44px; border: 0; background: transparent; font: inherit; font-size: 1.25rem; cursor: pointer; border-radius: var(--r-pill); }
+  :global(.qty__btn) { width: 44px; height: 44px; border: 0; background: transparent; color: var(--c-ink); font: inherit; font-size: 1.25rem; cursor: pointer; border-radius: var(--r-pill); }
+  :global(.qty__btn:disabled) { opacity: 0.3; cursor: not-allowed; }
   :global(.qty__val) { min-width: 24px; text-align: center; }
   :global(.line__total) { min-width: 110px; text-align: right; font-size: 1.125rem; }
   :global(.line__remove) { border: 0; background: transparent; padding: 12px 0; font: inherit; font-size: var(--fs-small); color: var(--c-link); text-decoration: underline; cursor: pointer; }
@@ -141,4 +183,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .summary .total { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
   .ok { color: var(--c-ok); }
   .note { font-size: 0.8125rem; }
+  .btn--off { opacity: 0.4; cursor: not-allowed; }
+  .btn--off:hover { opacity: 0.4; }
+  .blocked { font-size: var(--fs-small); color: var(--c-err); }
+  .blocked[hidden] { display: none; }
 </style>

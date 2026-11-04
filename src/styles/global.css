@@ -24,6 +24,28 @@
   --c-ink-10: rgba(1, 8, 15, 0.1);
   --c-white-70: rgba(255, 255, 255, 0.7);
   --c-white-20: rgba(255, 255, 255, 0.2);
+  --c-ink-20: rgba(1, 8, 15, 0.2);
+  --c-ink-75: rgba(1, 8, 15, 0.75);
+  --c-ink-80: rgba(1, 8, 15, 0.8);
+  --c-ink-85: rgba(1, 8, 15, 0.85);
+
+  /* Kolory stałe – nie zmieniają się w trybie ciemnym (tekst na akcencie, etykiety na zdjęciach) */
+  --c-black: #01080F;
+  --c-paper: #FFFFFF;
+  --c-photo-bg: #F1F1F1;       /* tło pod zdjęciem produktu – packshoty są robione na jasnym tle */
+
+  /* Stany i komunikaty */
+  --c-warn-bg: #FFF4D6;
+  --c-warn-ink: #7A4B00;
+  --c-ok-bg: #E3F5E8;
+  --c-err: #B3261E;
+  --c-err-bg: #FBE4E0;
+  --c-star: #E0A100;
+  --c-star-ink: #B07D00;
+  --c-header-bg: rgba(255, 255, 255, 0.92);
+  --c-dark-section: var(--c-ink);
+
+  color-scheme: light;
 
   /* Typografia */
   --font: 'Geomanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
@@ -44,6 +66,37 @@
   --r-field: 8px;
   --r-search: 4px;
   --r-pill: 300px;
+}
+
+/* Tryb ciemny: atrybut data-theme ustawia skrypt w <head> (wybór klienta albo ustawienie systemu).
+   Ink i white zamieniają się rolami: ink = kolor tekstu, white = tło strony. */
+:root[data-theme='dark'] {
+  --c-ink: #EAF1F7;
+  --c-white: #01080F;
+  --c-link: #6CC0FF;
+  --c-bright: #66CCFF;
+  --c-tint: #0B2236;
+  --c-gray-100: #08121C;
+  --c-gray-200: #0E1A26;
+  --c-gray-300: #2A3846;
+  --c-gray-400: #1E2B37;
+  --c-ok: #4CC27A;
+  --c-ink-70: rgba(234, 241, 247, 0.7);
+  --c-ink-10: rgba(234, 241, 247, 0.12);
+  --c-ink-20: rgba(234, 241, 247, 0.22);
+  --c-ink-75: rgba(234, 241, 247, 0.75);
+  --c-ink-80: rgba(234, 241, 247, 0.8);
+  --c-ink-85: rgba(234, 241, 247, 0.85);
+  --c-photo-bg: #E6EAEE;
+  --c-warn-bg: #2B2211;
+  --c-warn-ink: #F2C46B;
+  --c-ok-bg: #0F2A1A;
+  --c-err: #FF8A7A;
+  --c-err-bg: #33120D;
+  --c-star-ink: #E8B23A;
+  --c-header-bg: rgba(1, 8, 15, 0.88);
+  --c-dark-section: #0B1824;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -75,7 +128,7 @@ a:hover { opacity: 0.7; }
 .container { max-width: var(--container); margin: 0 auto; padding-inline: var(--s-2); }
 .section { padding-block: var(--section-y); }
 .section--tint { background: var(--c-gray-100); }
-.section--dark { background: var(--c-ink); color: var(--c-white); }
+.section--dark { background: var(--c-dark-section); color: var(--c-paper); }
 .lead { font-size: var(--fs-lead); color: var(--c-ink-70); max-width: 34rem; }
 .section--dark .lead { color: var(--c-white-70); }
 .muted { color: var(--c-ink-70); }
@@ -89,7 +142,7 @@ a:hover { opacity: 0.7; }
   transition: opacity 150ms ease;
 }
 .btn:hover { opacity: 0.7; }
-.btn--accent { background: var(--c-accent); color: var(--c-ink); }
+.btn--accent { background: var(--c-accent); color: var(--c-black); }
 .btn--ghost { background: transparent; color: inherit; box-shadow: inset 0 0 0 1px currentColor; }
 .btn--lg { min-height: 56px; padding: 0 32px; font-size: 1.125rem; }
 
@@ -99,7 +152,7 @@ a:hover { opacity: 0.7; }
 .field { display: flex; flex-direction: column; gap: 8px; font-size: var(--fs-small); }
 .input {
   height: 52px; padding: 0 16px; border: 0; border-radius: var(--r-field);
-  box-shadow: inset 0 0 0 1px var(--c-gray-300); font: inherit; font-size: 1rem; background: var(--c-white);
+  box-shadow: inset 0 0 0 1px var(--c-gray-300); font: inherit; font-size: 1rem; background: var(--c-white); color: var(--c-ink);
 }
 .input:focus { box-shadow: inset 0 0 0 1px var(--c-ink); outline: none; }
 
@@ -115,7 +168,7 @@ a:hover { opacity: 0.7; }
 .page-hero { padding-block: var(--s-6) var(--s-4); }
 .page-hero__inner { display: flex; flex-direction: column; gap: var(--s-2); }
 .crumbs { font-size: var(--fs-small); color: var(--c-ink-70); }
-.crumbs a { color: rgba(1, 8, 15, 0.75); }
+.crumbs a { color: var(--c-ink-75); }
 
 /* Przełączniki w formie pigułek (filtry, wybór tematu) */
 .pill-group { display: flex; flex-wrap: wrap; gap: 10px; }
@@ -134,4 +187,19 @@ a:hover { opacity: 0.7; }
 .acc summary::-webkit-details-marker { display: none; }
 .acc summary::after { content: '+'; font-size: 1.75rem; font-weight: 300; flex-shrink: 0; }
 .acc[open] summary::after { content: '−'; }
-.acc__body { padding: 0 32px 32px; max-width: 640px; color: rgba(1, 8, 15, 0.75); font-size: 1.0625rem; line-height: 1.6; display: flex; flex-direction: column; gap: var(--s-1); }
+.acc__body { padding: 0 32px 32px; max-width: 640px; color: var(--c-ink-75); font-size: 1.0625rem; line-height: 1.6; display: flex; flex-direction: column; gap: var(--s-1); }
+
+/* Zdjęcie produktu z etykietą dostępności (karty, strona produktu, koszyk) */
+.media { position: relative; display: block; }
+.media img { background: var(--c-photo-bg); }
+.media--out_of_stock img { filter: grayscale(1); opacity: 0.6; }
+.p-badge {
+  position: absolute; top: 12px; left: 12px; z-index: 1; max-width: calc(100% - 24px);
+  padding: 6px 12px; border-radius: var(--r-pill); font-size: 0.8125rem; line-height: 1.2;
+  background: var(--c-accent); color: var(--c-black);
+}
+.p-badge--out_of_stock { background: var(--c-black); color: var(--c-paper); }
+
+/* Tagi produktu */
+.p-tags { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.p-tag { display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px; border-radius: var(--r-pill); background: var(--c-tint); color: var(--c-ink); font-size: 0.8125rem; line-height: 1.2; }

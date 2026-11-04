@@ -9,6 +9,7 @@ export type Product = DbProduct & {
   images: { url: string; alt?: string }[]; ean: string | null; brand: string; mpn: string | null;
   google_category: string | null; condition: string; unit_value: number | null; unit_measure: string | null;
   weight_g: number | null; related_ids: string[]; sort_order: number; stock: number; low_stock_alert: number; updated_at: string;
+  how_to_use: string | null; lead_time: string | null;
 };
 export type CatalogItem = Product & {
   current: number | null; onSale: boolean; avail: Availability; lowest30: number | null; unitPrice: string | null;
@@ -16,11 +17,16 @@ export type CatalogItem = Product & {
 };
 export type Review = { id: string; product_id: string; author_name: string; rating: number; title: string | null; body: string; verified_purchase: boolean; reply: string | null; created_at: string };
 
-export const PRODUCT_FIELDS = 'id,name,subtitle,price,bundles,active,stock,low_stock_alert,ean,sale_price,sale_start,sale_end,vat_rate,short_description,description,highlights,seo_title,seo_description,tags,images,brand,mpn,google_category,condition,availability,unit_value,unit_measure,weight_g,related_ids,sort_order,updated_at';
+export const PRODUCT_FIELDS = 'id,name,subtitle,price,bundles,active,stock,low_stock_alert,ean,sale_price,sale_start,sale_end,vat_rate,short_description,description,highlights,seo_title,seo_description,tags,images,brand,mpn,google_category,condition,availability,unit_value,unit_measure,weight_g,related_ids,sort_order,updated_at,how_to_use,lead_time';
 export const PRODUCT_COLS = PRODUCT_FIELDS;
 
 export const AVAIL_LABEL: Record<Availability, string> = {
   in_stock: 'Dostępny', out_of_stock: 'Chwilowo niedostępny', preorder: 'Przedsprzedaż', backorder: 'Na zamówienie',
+};
+
+// Etykieta na zdjęciu produktu (karty, strona produktu). „Dostępny” nie dostaje etykiety.
+export const AVAIL_BADGE: Partial<Record<Availability, string>> = {
+  out_of_stock: 'Brak w magazynie', preorder: 'Przedsprzedaż', backorder: 'Na zamówienie',
 };
 
 const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
@@ -47,7 +53,7 @@ async function build(env: Env, products: Product[]): Promise<CatalogItem[]> {
     const r = reviews.filter((x) => x.product_id === p.id);
     const current = effectivePrice(p);
     return {
-      ...p, images: Array.isArray(p.images) ? p.images : [], tags: p.tags || [], highlights: p.highlights || [], related_ids: p.related_ids || [],
+      ...p, images: Array.isArray(p.images) ? p.images : [], tags: (p.tags || []).filter(Boolean), highlights: p.highlights || [], related_ids: p.related_ids || [],
       current, onSale: saleActive(p), avail: availabilityOf(p), lowest30, unitPrice: unitPriceLabel(p, current),
       rating: { avg: r.length ? Math.round((r.reduce((s, x) => s + x.rating, 0) / r.length) * 10) / 10 : 0, count: r.length },
     };

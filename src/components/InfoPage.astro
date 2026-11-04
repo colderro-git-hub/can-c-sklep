@@ -64,7 +64,7 @@ const links = [
 
 <style>
   .small { font-size: var(--fs-small); }
-  .draft { padding: 14px 18px; background: #FFF4D6; color: #7A4B00; font-size: var(--fs-small); max-width: 760px; }
+  .draft { padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); font-size: var(--fs-small); max-width: 760px; }
   .info-section { padding-top: var(--s-2); }
   .info { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-start; }
   .info__aside { flex: 1 1 260px; display: flex; flex-direction: column; gap: var(--s-3); position: sticky; top: 100px; }
@@ -81,7 +81,7 @@ const links = [
   .prose :global(section:last-of-type) { border-bottom: 0; }
   .prose :global(h2) { font-size: 1.75rem; margin-bottom: var(--s-2); }
   .prose :global(h3) { font-size: 1.25rem; font-weight: 400; margin: var(--s-2) 0 var(--s-1); }
-  .prose :global(p), .prose :global(li) { line-height: 1.65; color: rgba(1, 8, 15, 0.85); }
+  .prose :global(p), .prose :global(li) { line-height: 1.65; color: var(--c-ink-85); }
   .prose :global(p) { margin-bottom: 14px; }
   .prose :global(ol), .prose :global(ul) { margin: 0 0 14px; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
   .prose :global(table) { width: 100%; border-collapse: collapse; margin-bottom: 16px; font-size: 0.9375rem; }
@@ -89,7 +89,7 @@ const links = [
   .prose :global(th) { font-weight: 400; color: var(--c-ink-70); }
   .prose :global(.table-wrap) { overflow-x: auto; }
   .prose :global(.card) { background: var(--c-gray-100); padding: var(--s-2); margin-bottom: 16px; }
-  .prose :global(.todo) { background: #FFF4D6; padding: 0 4px; }
+  .prose :global(.todo) { background: var(--c-warn-bg); padding: 0 4px; }
   .linklike { border: 0; background: none; padding: 0; font: inherit; color: var(--c-link); text-decoration: underline; cursor: pointer; }
   .print { margin-top: var(--s-2); }
 

@@ -91,3 +91,19 @@ export async function getTransaction(cfg: Cfg, sessionId: string) {
   if (!res.ok) throw new Error(`P24 transaction/by/sessionId: ${res.status} ${JSON.stringify(data)}`);
   return data.data as { orderId: number; sessionId: string; status: number; amount: number; currency: string; paymentMethod?: number };
 }
+
+// 5. Nazwy metod płatności (BLIK, karta, banki) – do podsumowania zamówienia.
+// Lista zmienia się rzadko, więc trzymamy ją w pamięci izolatu przez 12 godzin.
+let methodsCache: { at: number; host: string; map: Map<number, string> } | null = null;
+export async function paymentMethodName(cfg: Cfg, methodId: number): Promise<string | null> {
+  if (!Number.isInteger(methodId) || methodId <= 0) return null;
+  if (!methodsCache || methodsCache.host !== cfg.host || Date.now() - methodsCache.at > 12 * 3600_000) {
+    const res = await fetch(`${cfg.host}/api/v1/payment/methods/pl`, {
+      headers: { Authorization: `Basic ${btoa(`${cfg.posId}:${cfg.apiKey}`)}` },
+    });
+    const data: any = await res.json().catch(() => ({}));
+    if (!res.ok || !Array.isArray(data?.data)) throw new Error(`P24 payment/methods: ${res.status}`);
+    methodsCache = { at: Date.now(), host: cfg.host, map: new Map(data.data.map((m: any) => [Number(m.id), String(m.name || '').trim()])) };
+  }
+  return methodsCache.map.get(methodId) || null;
+}

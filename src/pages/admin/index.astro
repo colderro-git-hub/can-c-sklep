@@ -298,6 +298,14 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </div>
             <div class="actions"><button class="btn">Zapisz ustawienia</button></div>
             </form>
+            <form class="card" data-robots-form novalidate>
+              <div class="card__head"><h2 class="card__title">robots.txt</h2><a class="btn btn--outline btn--sm" href="/robots.txt" target="_blank" rel="noopener">Otwórz robots.txt</a></div>
+              <p class="muted">Instrukcje dla robotów wyszukiwarek na can-c.pl. Puste pole = treść domyślna. Linię „Sitemap:” dopisujemy automatycznie, jeśli jej nie ma. Staging zawsze blokuje indeksowanie, niezależnie od tej treści.</p>
+              <label class="field">Treść<textarea class="input mono" name="robots" rows="10" maxlength="5000" spellcheck="false" data-robots-text></textarea></label>
+              <p class="notice" data-robots-warn hidden>Ta treść blokuje całą stronę dla wszystkich robotów („Disallow: /”). Po starcie sklepu zniknie on z Google.</p>
+              <details class="manual"><summary>Co zobaczy Google</summary><pre class="note mono" data-robots-preview></pre></details>
+              <div class="actions"><button class="btn">Zapisz robots.txt</button><button type="button" class="btn btn--outline" data-robots-default>Wstaw treść domyślną</button></div>
+            </form>
           </section>
 
           <!-- KODY RABATOWE -->
@@ -848,7 +856,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     $('[data-drawer]').classList.add('drawer--wide');
     const body = $('[data-d-body]');
     body.innerHTML = '<p class="muted">Ładowanie…</p>';
-    let p: any = { id: '', name: '', subtitle: '', active: false, price: null, sale_price: null, vat_rate: 23, bundles: false, stock: 0, low_stock_alert: 5, availability: null, short_description: '', description: '', highlights: [], seo_title: '', seo_description: '', tags: [], images: [], brand: 'Can-C', ean: '', mpn: '', google_category: '', condition: 'new', unit_value: null, unit_measure: null, weight_g: null, related_ids: [], sort_order: 0 };
+    let p: any = { id: '', name: '', subtitle: '', active: false, price: null, sale_price: null, vat_rate: 23, bundles: false, stock: 0, low_stock_alert: 5, availability: null, short_description: '', description: '', how_to_use: '', lead_time: '', highlights: [], seo_title: '', seo_description: '', tags: [], images: [], brand: 'Can-C', ean: '', mpn: '', google_category: '', condition: 'new', unit_value: null, unit_measure: null, weight_g: null, related_ids: [], sort_order: 0 };
     let history: any[] = [], lowest30: number | null = null;
     if (id) {
       try { const d = await api(`/api/admin/products?id=${encodeURIComponent(id)}`); p = d.product; history = d.history; lowest30 = d.lowest30; }
@@ -873,7 +881,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <label class="field">Opakowanie / wariant<input class="input" name="subtitle" value="${esc(p.subtitle || '')}" placeholder="np. 2 × 5 ml" /></label>
           </div>
           <div class="row2">
-            <label class="field">Tagi (po przecinku; pierwszy = etykieta na karcie)<input class="input" name="tags" value="${esc((p.tags || []).join(', '))}" placeholder="krople, oczy" /></label>
+            <label class="field">Tagi (po przecinku; etykiety na stronie produktu, na kartach pierwsze 3)<input class="input" name="tags" value="${esc((p.tags || []).join(', '))}" placeholder="Bez konserwantów, Przy soczewkach" /></label>
             <label class="field">Kolejność na liście<input class="input" name="sort_order" type="number" value="${p.sort_order || 0}" /></label>
           </div>
         </div>
@@ -907,6 +915,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <label class="field">Opis krótki (przy cenie, na listach)<textarea class="input" name="short_description" rows="2" maxlength="300">${esc(p.short_description || '')}</textarea></label>
           <label class="field">Wyróżniki (każdy w nowej linii, maks. 10)<textarea class="input" name="highlights" rows="3">${esc((p.highlights || []).join('\n'))}</textarea></label>
           <label class="field">Opis długi <span class="muted">(## nagłówek, **pogrubienie**, - lista, [link](https://…))</span><textarea class="input mono" name="description" rows="10">${esc(p.description || '')}</textarea></label>
+          <label class="field">Stosowanie <span class="muted">(osobna sekcja na stronie produktu; formatowanie jak w opisie; puste = sekcja ukryta)</span><textarea class="input mono" name="how_to_use" rows="6" placeholder="- 1–2 krople do każdego oka, 2 razy dziennie&#10;- Po otwarciu zużyj w ciągu 30 dni">${esc(p.how_to_use || '')}</textarea></label>
         </div>
 
         <div class="sec"><h3 class="sec__t">SEO</h3>
@@ -921,6 +930,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <label class="field">Alert przy stanie ≤<input class="input" name="low_stock_alert" type="number" min="0" value="${p.low_stock_alert ?? 5}" /></label>
             <label class="field">Waga z opakowaniem (g)<input class="input" name="weight_g" type="number" min="0" value="${p.weight_g ?? ''}" /></label>
           </div>
+          <label class="field">Termin realizacji <span class="muted">(dokończ zdanie „Wysyłamy …”; puste = czas wysyłki z ustawień sklepu)</span><input class="input" name="lead_time" value="${esc(p.lead_time || '')}" maxlength="120" placeholder="np. w ciągu 3 dni roboczych" /></label>
           <label class="field">Dostępność<select class="input" name="availability">
             <option value="" ${!p.availability ? 'selected' : ''}>Według stanu (0 = niedostępny)</option>
             ${Object.entries(AVAIL).map(([k, v]) => `<option value="${k}" ${p.availability === k ? 'selected' : ''}>${v} – ustawione ręcznie</option>`).join('')}
@@ -1010,6 +1020,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         action: 'save', isNew: !id, id: v('id'), name: v('name'), subtitle: v('subtitle'), active: fd.get('active') !== null, tags: v('tags'), sort_order: v('sort_order'),
         price: v('price'), vat_rate: Number(v('vat_rate')), bundles: fd.get('bundles') !== null, sale_price: v('sale_price'), sale_start: toIso(v('sale_start')), sale_end: toIso(v('sale_end')),
         unit_value: v('unit_value'), unit_measure: v('unit_measure'), short_description: v('short_description'), highlights: v('highlights').split('\n'), description: v('description'),
+        how_to_use: v('how_to_use'), lead_time: v('lead_time'),
         seo_title: v('seo_title'), seo_description: v('seo_description'), stock: Number(v('stock')), low_stock_alert: v('low_stock_alert'), weight_g: v('weight_g'), availability: v('availability'),
         ean: v('ean'), mpn: v('mpn'), brand: v('brand'), condition: v('condition'), google_category: v('google_category'),
         related_ids: fd.getAll('related').map(String), images,
@@ -1054,6 +1065,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }
   function openReview(r: any) {
     openDrawer(true); drawerNav(() => openReview(r), false);
+    const locked = r.source === 'shop'; // ocenę i datę zmienia tylko opinia dodana w panelu
     $('[data-d-title]').textContent = `Opinia: ${r.products?.name || r.product_id}`;
     const body = $('[data-d-body]');
     body.innerHTML = `
@@ -1067,17 +1079,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         <form class="sec" data-redit>
           <div class="row2">
             <label class="field">Autor<input class="input" name="author_name" value="${esc(r.author_name)}" maxlength="60" /></label>
-            <label class="field">Ocena<select class="input" name="rating">${[5, 4, 3, 2, 1].map((n) => `<option value="${n}" ${n === r.rating ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5 - n)} (${n})</option>`).join('')}</select></label>
+            <label class="field">Ocena<select class="input" name="rating" ${locked ? 'disabled' : ''}>${[5, 4, 3, 2, 1].map((n) => `<option value="${n}" ${n === r.rating ? 'selected' : ''}>${'★'.repeat(n)}${'☆'.repeat(5 - n)} (${n})</option>`).join('')}</select></label>
           </div>
           <label class="field">Tytuł<input class="input" name="title" value="${esc(r.title || '')}" maxlength="120" /></label>
           <label class="field">Treść<textarea class="input" name="body" rows="5" maxlength="3000">${esc(r.body)}</textarea></label>
           <div class="row2">
-            <label class="field">Data opinii<input class="input" name="created_at" type="date" value="${String(r.created_at).slice(0, 10)}" /></label>
+            <label class="field">Data opinii<input class="input" name="created_at" type="date" value="${String(r.created_at).slice(0, 10)}" ${locked ? 'disabled' : ''} /></label>
             <label class="field">Produkt<select class="input" name="product_id" data-redit-products><option value="${esc(r.product_id)}">${esc(r.products?.name || r.product_id)}</option></select></label>
           </div>
           <label class="check"><input type="checkbox" name="verified_purchase" ${r.verified_purchase ? 'checked' : ''} /> Zweryfikowany zakup</label>
           ${r.original_body ? `<details class="manual"><summary>Pokaż oryginalną treść</summary><p class="note">${esc(r.original_body)}</p></details>` : ''}
-          <p class="muted small">Poprawiaj tylko literówki i dane (np. imię). Nie zmieniaj sensu ani oceny wystawionej przez klienta – to wprowadzałoby w błąd (Omnibus, zasady Google).</p>
+          <p class="muted small">${locked ? 'Opinia klienta ze sklepu: ocena i data są zablokowane. ' : ''}Poprawiaj tylko literówki i dane (np. imię). Nie zmieniaj sensu ani oceny wystawionej przez klienta – to wprowadzałoby w błąd (Omnibus, zasady Google).</p>
           <div class="actions"><button class="btn btn--sm">Zapisz opinię</button></div>
         </form>
       </details>
@@ -1102,7 +1114,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       try {
         await api('/api/admin/opinie', { action: 'update', id: r.id, ...p });
         toast('Zapisano opinię.');
-        Object.assign(r, { ...p, rating: Number(p.rating), edited_at: new Date().toISOString(), original_body: r.original_body || (p.body !== r.body ? r.body : null) });
+        Object.assign(r, { ...p, rating: locked ? r.rating : Number(p.rating), created_at: locked ? r.created_at : (p.created_at || r.created_at), edited_at: new Date().toISOString(), original_body: r.original_body || (p.body !== r.body ? r.body : null) });
         openReview(r); loadReviews();
       } catch (err) { toast((err as Error).message, true); }
     });
@@ -1154,7 +1166,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       const { rows } = await api('/api/admin/kody');
       const d = (s: string | null) => (s ? new Date(s).toLocaleDateString('pl-PL') : '');
       tbody.innerHTML = rows.length ? rows.map((c: any) => `
-        <tr>
+        <tr data-cid="${c.id}" tabindex="0" class="clickrow" title="Edytuj kod i zobacz, kto go użył">
           <td><strong>${esc(c.code)}</strong>${c.description ? `<br><span class="muted">${esc(c.description)}</span>` : ''}</td>
           <td class="nowrap">${c.type === 'percent' ? `${c.value}%` : pln(c.value)}</td>
           <td>${c.min_total ? `od ${pln(c.min_total)}` : '—'}${c.once_per_customer ? '<br><span class="muted">1× na klienta</span>' : ''}</td>
@@ -1164,16 +1176,89 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td class="r nowrap"><strong>${pln(c.stats.revenue)}</strong>${c.stats.orders ? `<br><span class="muted">śr. ${pln(Math.round(c.stats.revenue / c.stats.orders))}</span>` : ''}</td>
           <td class="r nowrap">${pln(c.stats.discount)}</td>
           <td>${c.customers?.email ? esc(c.customers.email) : 'wszyscy'}</td>
-          <td><input type="checkbox" data-toggle="${c.id}" ${c.active ? 'checked' : ''} aria-label="Aktywny" /></td>
+          <td data-stop><input type="checkbox" data-toggle="${c.id}" ${c.active ? 'checked' : ''} aria-label="Aktywny" /></td>
         </tr>`).join('') : '<tr><td colspan="10" class="empty">Brak kodów. Utwórz pierwszy powyżej.</td></tr>';
       tbody.querySelectorAll<HTMLInputElement>('[data-toggle]').forEach((cb) => cb.addEventListener('change', async () => {
         try { await api('/api/admin/kody', { action: 'toggle', id: cb.dataset.toggle, active: cb.checked }); toast(cb.checked ? 'Kod włączony.' : 'Kod wyłączony.'); }
         catch (e) { cb.checked = !cb.checked; toast((e as Error).message, true); }
       }));
+      tbody.querySelectorAll<HTMLElement>('tr[data-cid]').forEach((tr) => {
+        const go = (e: Event) => { if ((e.target as HTMLElement).closest('[data-stop]')) return; openCode(tr.dataset.cid!); };
+        tr.addEventListener('click', go); tr.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') go(e); });
+      });
     } catch (e) {
       tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`;
     }
   }
+  // Szczegóły kodu: edycja + lista zamówień, w których go użyto
+  async function openCode(id: string, push = true) {
+    $('[data-drawer]').classList.toggle('drawer--wide', true);
+    openDrawer(true); drawerNav(() => openCode(id, false), push);
+    $('[data-drawer]').classList.add('drawer--wide');
+    const body = $('[data-d-body]');
+    body.innerHTML = '<p class="muted">Ładowanie…</p>';
+    let d: any;
+    try { d = await api(`/api/admin/kody?uses=${encodeURIComponent(id)}`); }
+    catch (e) { body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+    const c = d.code;
+    const uses: any[] = d.uses;
+    $('[data-d-title]').textContent = `Kod ${c.code}`;
+    const day = (iso: string | null) => (iso ? new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '');
+    const val = c.type === 'percent' ? String(c.value) : (c.value / 100).toFixed(2).replace('.', ',');
+    const paidSt = new Set(['paid', 'shipped', 'completed']);
+    const paidUses = uses.filter((u) => paidSt.has(u.status));
+    const nameLocked = c.used_count > 0 || uses.length > 0;
+    body.innerHTML = `
+      <div class="meta"><span class="st ${c.active ? 'st--shipped' : 'st--pending_payment'}">${c.active ? 'Aktywny' : 'Wyłączony'}</span><span>Użycia: ${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}</span><span>Opłacone zamówienia: ${paidUses.length}</span><span>Udzielony rabat: ${pln(paidUses.reduce((s2, u) => s2 + (u.amount || 0), 0))}</span></div>
+      <form class="sec" data-code-edit novalidate>
+        <h3 class="sec__t">Ustawienia kodu</h3>
+        <div class="code-form">
+          <label class="field">Kod<input class="input" name="code" value="${esc(c.code)}" maxlength="30" style="text-transform:uppercase" ${nameLocked ? 'readonly title="Kod był użyty – nazwy nie można zmienić"' : ''} /></label>
+          <label class="field">Rodzaj<select class="input" name="type"><option value="percent" ${c.type === 'percent' ? 'selected' : ''}>Procent (%)</option><option value="amount" ${c.type === 'amount' ? 'selected' : ''}>Kwota (zł)</option></select></label>
+          <label class="field">Wartość<input class="input" name="value" value="${esc(val)}" inputmode="decimal" /></label>
+          <label class="field">Minimalna kwota (zł)<input class="input" name="min_total" value="${c.min_total ? (c.min_total / 100).toFixed(2).replace('.', ',') : ''}" inputmode="decimal" placeholder="0" /></label>
+          <label class="field">Ważny od<input class="input" name="starts_at" type="date" value="${day(c.starts_at)}" /></label>
+          <label class="field">Ważny do<input class="input" name="ends_at" type="date" value="${day(c.ends_at)}" /></label>
+          <label class="field">Limit użyć (łącznie)<input class="input" name="max_uses" type="number" min="${Math.max(1, c.used_count)}" value="${c.max_uses ?? ''}" placeholder="bez limitu" /></label>
+          <label class="field">Tylko dla klienta (e-mail)<input class="input" name="email" type="email" value="${esc(c.customers?.email || '')}" placeholder="puste = dla wszystkich" /></label>
+          <label class="field code-form__wide">Opis widoczny na koncie klienta<input class="input" name="description" value="${esc(c.description || '')}" maxlength="200" placeholder="puste = kod nie jest pokazywany na kontach" /></label>
+          <label class="check code-form__wide"><input type="checkbox" name="once_per_customer" ${c.once_per_customer ? 'checked' : ''} /> Jeden raz na klienta</label>
+        </div>
+        <p class="muted small">${nameLocked ? 'Kod był już użyty, więc jego nazwa jest zablokowana. ' : ''}Zmiany działają na nowe zamówienia. Zamówienia złożone wcześniej zachowują naliczony rabat.</p>
+        <div class="actions"><button class="btn btn--sm">Zapisz kod</button></div>
+      </form>
+      <div class="sec">
+        <h3 class="sec__t">Kto użył kodu <span class="muted">(${uses.length})</span></h3>
+        ${uses.length ? `<div class="table-wrap"><table class="table">
+          <thead><tr><th>Zamówienie</th><th>Data</th><th>Klient</th><th class="r">Rabat</th><th class="r">Kwota</th><th>Status</th></tr></thead>
+          <tbody>${uses.map((u) => `<tr data-uo="${u.id}" class="clickrow" tabindex="0">
+            <td class="nowrap"><strong>${u.number}</strong>${u.source === 'woocommerce' ? '<span class="wc">WC</span>' : u.source === 'admin' ? '<span class="wc">panel</span>' : ''}</td>
+            <td class="nowrap">${date(u.created_at)}</td>
+            <td>${u.name ? `<strong>${esc(u.name)}</strong><br>` : ''}${u.customer_id ? `<button type="button" class="link" data-open-customer="${u.customer_id}" data-stop>${esc(u.email)}</button>` : esc(u.email)}</td>
+            <td class="r nowrap">${pln(u.amount)}</td>
+            <td class="r nowrap">${pln(u.total)}</td>
+            <td><span class="st st--${u.status}">${STATUS[u.status] || esc(u.status)}</span></td>
+          </tr>`).join('')}</tbody></table></div>
+          <p class="muted small">Licznik „Użycia” rośnie dopiero po opłaceniu zamówienia. Na liście są też zamówienia nieopłacone i anulowane – patrz status.</p>`
+        : '<p class="muted">Nikt jeszcze nie użył tego kodu.</p>'}
+      </div>`;
+    bindLinks(body);
+    body.querySelectorAll<HTMLElement>('tr[data-uo]').forEach((tr) => {
+      const go = (e: Event) => { if ((e.target as HTMLElement).closest('[data-stop]')) return; openOrder(tr.dataset.uo!); };
+      tr.addEventListener('click', go); tr.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') go(e); });
+    });
+    body.querySelector<HTMLFormElement>('[data-code-edit]')!.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target as HTMLFormElement);
+      const p: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
+      p.once_per_customer = fd.get('once_per_customer') !== null;
+      if (p.starts_at) p.starts_at = `${p.starts_at}T00:00:00`;
+      if (p.ends_at) p.ends_at = `${p.ends_at}T23:59:59`;
+      try { await api('/api/admin/kody', { action: 'update', id, ...p }); toast('Zapisano kod.'); loadCodes(); openCode(id, false); }
+      catch (err) { toast((err as Error).message, true); }
+    });
+  }
+
   $<HTMLFormElement>('[data-code-form]').addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = e.target as HTMLFormElement;
@@ -1527,7 +1612,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const settingsForm = $<HTMLFormElement>('[data-settings-form]');
   async function loadSettings() {
     try {
-      const { site } = await api('/api/admin/ustawienia');
+      const { site, robots } = await api('/api/admin/ustawienia');
+      if (robots) fillRobots(robots);
       const local = (iso: string) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
       for (const [k, v] of Object.entries(site)) {
         const el = settingsForm.elements.namedItem(k) as HTMLInputElement | null;
@@ -1541,6 +1627,32 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       st.className = `st ${site.noticeActive ? 'st--on_hold' : 'st--pending_payment'}`;
     } catch (e) { toast((e as Error).message, true); }
   }
+  // robots.txt
+  const robotsForm = $<HTMLFormElement>('[data-robots-form]');
+  const robotsText = $<HTMLTextAreaElement>('[data-robots-text]');
+  let robotsDefault = '';
+  const robotsWarn = () => {
+    // Ostrzeżenie: „Disallow: /” (cała strona) w grupie dla wszystkich robotów
+    const lines = robotsText.value.split('\n').map((l) => l.replace(/#.*/, '').trim().toLowerCase());
+    let all = false, blocked = false;
+    for (const l of lines) {
+      if (l.startsWith('user-agent:')) all = l.replace('user-agent:', '').trim() === '*';
+      else if (all && /^disallow:\s*\/\s*$/.test(l)) blocked = true;
+    }
+    $('[data-robots-warn]').hidden = !blocked;
+  };
+  const fillRobots = (r: any) => {
+    robotsDefault = r.default; robotsText.value = r.text; robotsText.placeholder = r.default;
+    $('[data-robots-preview]').textContent = r.preview; robotsWarn();
+  };
+  robotsText.addEventListener('input', robotsWarn);
+  $('[data-robots-default]').addEventListener('click', () => { robotsText.value = robotsDefault; robotsWarn(); });
+  robotsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try { const r = await api('/api/admin/ustawienia', { action: 'robots', text: robotsText.value }); fillRobots(r.robots); toast('Zapisano robots.txt. Google pobierze go przy najbliższej wizycie.'); }
+    catch (err) { toast((err as Error).message, true); }
+  });
+
   settingsForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(settingsForm);

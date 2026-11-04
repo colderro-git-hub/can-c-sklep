@@ -1,32 +1,76 @@
 ---
 import Base from '../../layouts/Base.astro';
 ---
-<Base title="Dziękujemy za zamówienie | Can-C" description="Potwierdzenie zamówienia w sklepie Can-C.">
+<Base title="Dziękujemy za zamówienie | Can-C" description="Potwierdzenie zamówienia w sklepie Can-C." noindex noReferrer>
   <section class="section">
     <div class="container thanks" data-thanks>
-      <div data-state="checking">
+      <div class="state" data-state="checking">
         <h1>Sprawdzamy płatność…</h1>
         <p class="lead">To zwykle trwa kilka sekund. Nie zamykaj tej strony.</p>
       </div>
 
-      <div data-state="paid" hidden>
+      <div class="state" data-state="paid" hidden>
         <p class="badge">Płatność przyjęta</p>
         <h1>Dziękujemy za zamówienie</h1>
-        <p class="lead">Numer zamówienia: <strong data-number></strong>. Potwierdzenie wysłaliśmy e-mailem.</p>
-        <p class="muted">Gdy paczka zostanie nadana, wyślemy numer przesyłki.</p>
-        <div class="actions"><a href="/" class="btn">Wróć do sklepu</a><a href="/konto/" class="btn btn--ghost">Moje zamówienia</a></div>
+        <p class="lead">Numer zamówienia: <strong data-number></strong>. Potwierdzenie wysłaliśmy na <strong data-email>Twój e-mail</strong>.</p>
+        <p class="muted">Gdy paczka zostanie nadana, wyślemy e-mail z numerem przesyłki.</p>
       </div>
 
-      <div data-state="pending" hidden>
-        <h1>Czekamy na potwierdzenie płatności</h1>
-        <p class="lead">Zamówienie nr <strong data-number></strong> jest zapisane. Gdy Przelewy24 potwierdzi wpłatę, wyślemy e-mail.</p>
-        <p class="muted">Jeśli płatność została przerwana, możesz złożyć zamówienie ponownie albo <a href="/kontakt/">napisać do nas</a>.</p>
-        <div class="actions"><a href="/koszyk/" class="btn">Wróć do koszyka</a></div>
+      <div class="state" data-state="pending" hidden>
+        <p class="badge badge--wait">Czekamy na płatność</p>
+        <h1>Zamówienie jest zapisane</h1>
+        <p class="lead">Zamówienie nr <strong data-number></strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.</p>
+        <p class="muted">Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.</p>
       </div>
 
-      <div data-state="error" hidden>
+      <div class="state" data-state="error" hidden>
         <h1>Nie znaleźliśmy zamówienia</h1>
         <p class="lead">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> – wyjaśnimy to od razu.</p>
+      </div>
+
+      <p class="notice" data-notice-box hidden role="status"></p>
+
+      <div class="order" data-order hidden>
+        <div class="order__main">
+          <div class="order__head">
+            <h2>Twoje zamówienie</h2>
+            <p class="muted" data-meta></p>
+          </div>
+          <ul class="items" data-items aria-label="Zamówione produkty"></ul>
+          <dl class="totals" data-totals></dl>
+        </div>
+
+        <div class="order__side">
+          <section class="box">
+            <h3>Dostawa</h3>
+            <div data-delivery></div>
+          </section>
+          <section class="box">
+            <h3>Płatność</h3>
+            <div data-payment></div>
+          </section>
+          <section class="box" data-invoice-box hidden>
+            <h3>Dane do faktury</h3>
+            <div data-invoice></div>
+          </section>
+          <section class="box" data-note-box hidden>
+            <h3>Uwagi do zamówienia</h3>
+            <p class="pre" data-note></p>
+          </section>
+        </div>
+
+        <div class="order__foot">
+          <p>Masz pytanie albo widzisz błąd w danych? Napisz na <a data-contact-mail href="/kontakt/">adres sklepu</a> i podaj numer zamówienia.</p>
+          <p class="muted">Możesz odstąpić od umowy w ciągu 14 dni od otrzymania paczki. <a href="/odstapienie-od-umowy/">Jak zwrócić produkt</a></p>
+        </div>
+      </div>
+
+      <p class="muted" data-no-details hidden>Szczegóły zamówienia znajdziesz w e-mailu z potwierdzeniem i na <a href="/konto/">koncie w sklepie</a>.</p>
+
+      <div class="actions" data-actions hidden>
+        <a href="/" class="btn" data-act="shop">Wróć do sklepu</a>
+        <a href="/konto/" class="btn btn--ghost" data-act="account">Moje zamówienia</a>
+        <a href="/koszyk/" class="btn btn--ghost" data-act="cart" hidden>Wróć do koszyka</a>
       </div>
     </div>
   </section>
@@ -35,10 +79,84 @@ import Base from '../../layouts/Base.astro';
 <script>
   import { clearCart } from '../../lib/cart';
 
+  type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
+  type Details = {
+    createdAt: string; paidAt: string | null; email: string; items: Line[];
+    subtotal: number; bundleDiscount: number; code: string | null; codeAmount: number; shipping: number;
+    delivery: { method: string; point: string | null; pointName: string | null; name: string | null; phone: string | null; street: string | null; postcode: string | null; city: string | null };
+    invoice: { company: string; nip: string; street: string; postcode: string; city: string } | null;
+    note: string | null; payment: { provider: string; method: string | null };
+    shippingTime: string | null; notice: string | null; contact: { email: string; phone: string | null };
+  };
+  type Status = { number: number; status: string; total: number; details: Details | null };
+
   const root = document.querySelector<HTMLElement>('[data-thanks]')!;
-  const show = (state: string, number?: number) => {
+  const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
+  const zl = (g: number) => pln.format(g / 100);
+  const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+  const when = (iso: string) => new Date(iso).toLocaleString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const phone = (p: string) => p.replace(/^\+?48/, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+
+  function renderDetails(o: Status, paid: boolean) {
+    const d = o.details;
+    q('[data-no-details]').hidden = Boolean(d) || !paid;
+    q('[data-order]').hidden = !d;
+    if (!d) return;
+    if (d.email) root.querySelectorAll('[data-email]').forEach((el) => { el.textContent = d.email; });
+
+    q('[data-meta]').textContent = `Nr ${o.number} · złożone ${when(d.createdAt)}`;
+
+    q('[data-items]').innerHTML = d.items.map((i) => `
+      <li class="item">
+        <a class="item__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(i.image)}" alt="" width="72" height="72" loading="lazy" />` : '<span class="ph">[foto]</span>'}</a>
+        <span class="item__info">
+          <a class="item__name" href="/produkt/${esc(i.slug)}/">${esc(i.name)}</a>
+          <span class="muted small">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat za zestaw −${zl(i.discount)}` : ''}</span>
+          ${d.shippingTime ? '' : `<span class="muted small">Wysyłamy ${esc(i.leadTime)}</span>`}
+        </span>
+        <span class="item__total">${zl(i.total)}</span>
+      </li>`).join('');
+
+    const rows: [string, string, string?][] = [['Produkty', zl(d.subtotal)]];
+    if (d.bundleDiscount) rows.push(['Rabat za zestaw', `−${zl(d.bundleDiscount)}`]);
+    if (d.code && d.codeAmount) rows.push([`Kod rabatowy ${d.code}`, `−${zl(d.codeAmount)}`]);
+    rows.push(['Dostawa', d.shipping ? zl(d.shipping) : 'Bezpłatna', d.shipping ? '' : 'ok']);
+    q('[data-totals]').innerHTML = rows.map(([k, v, c]) => `<div><dt>${esc(k)}</dt><dd${c ? ` class="${c}"` : ''}>${esc(v)}</dd></div>`).join('')
+      + `<div class="totals__sum"><dt>Razem${paid ? ' zapłacono' : ' do zapłaty'}</dt><dd>${zl(o.total)}</dd></div>`
+      + '<p class="muted small">Ceny zawierają podatek VAT.</p>';
+
+    const dv = d.delivery;
+    const who = [dv.name, dv.phone ? `tel. ${phone(dv.phone)}` : ''].filter(Boolean).map(esc).join('<br>');
+    q('[data-delivery]').innerHTML = dv.method === 'inpost_locker'
+      ? `<p><strong>Paczkomat InPost ${esc(dv.point || '')}</strong>${dv.pointName ? `<br>${esc(dv.pointName)}` : ''}</p><p class="muted">${who}</p>`
+      : `<p><strong>Kurier DPD</strong></p><p>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}</p>${dv.phone ? `<p class="muted">tel. ${esc(phone(dv.phone))}</p>` : ''}`;
+    if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<p class="lead-time">Wysyłamy ${esc(d.shippingTime)}${paid ? '' : ' od zaksięgowania płatności'}.</p>`);
+
+    q('[data-payment]').innerHTML = `<p><strong>${esc(d.payment.provider)}</strong>${d.payment.method ? `<br>${esc(d.payment.method)}` : ''}</p>`
+      + `<p class="${paid ? 'ok' : 'warn'}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</p>`;
+
+    q('[data-invoice-box]').hidden = !d.invoice;
+    if (d.invoice) q('[data-invoice]').innerHTML = `<p>${esc(d.invoice.company)}<br>NIP ${esc(d.invoice.nip)}<br>${esc(d.invoice.street)}<br>${esc(d.invoice.postcode)} ${esc(d.invoice.city)}</p><p class="muted small">Fakturę wyślemy e-mailem.</p>`;
+    q('[data-note-box]').hidden = !d.note;
+    if (d.note) q('[data-note]').textContent = d.note;
+
+    const box = q('[data-notice-box]');
+    box.hidden = !d.notice; if (d.notice) box.textContent = d.notice;
+
+    const mail = q<HTMLAnchorElement>('[data-contact-mail]');
+    mail.textContent = d.contact.email; mail.href = `mailto:${d.contact.email}?subject=${encodeURIComponent(`Zamówienie nr ${o.number}`)}`;
+  }
+
+  const show = (state: string, o?: Status) => {
     root.querySelectorAll<HTMLElement>('[data-state]').forEach((el) => { el.hidden = el.dataset.state !== state; });
-    if (number) root.querySelectorAll('[data-number]').forEach((el) => { el.textContent = String(number); });
+    if (o) root.querySelectorAll('[data-number]').forEach((el) => { el.textContent = String(o.number); });
+    const ok = state === 'paid' || state === 'pending';
+    q('[data-actions]').hidden = !ok;
+    root.querySelector<HTMLElement>('[data-act="cart"]')!.hidden = state !== 'pending';
+    root.querySelector<HTMLElement>('[data-act="account"]')!.hidden = state !== 'paid';
+    if (o && ok) renderDetails(o, state === 'paid');
+    else { q('[data-order]').hidden = true; q('[data-no-details]').hidden = true; }
   };
 
   const id = new URLSearchParams(location.search).get('id');
@@ -47,13 +165,13 @@ import Base from '../../layouts/Base.astro';
   async function check() {
     if (!id) return show('error');
     try {
-      const res = await fetch(`/api/zamowienie/status?id=${encodeURIComponent(id)}`);
+      const res = await fetch(`/api/zamowienie/status?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
       if (!res.ok) return show('error');
-      const o = await res.json();
-      if (['paid', 'shipped', 'completed'].includes(o.status)) { clearCart(); return show('paid', o.number); }
+      const o: Status = await res.json();
+      if (['paid', 'shipped', 'completed'].includes(o.status)) { clearCart(); return show('paid', o); }
       // Powiadomienie z P24 może przyjść kilka sekund po powrocie klienta – sprawdzamy przez ok. 30 s
       if (++tries < 10) return setTimeout(check, 3000);
-      show('pending', o.number);
+      show('pending', o);
     } catch {
       if (++tries < 10) setTimeout(check, 3000); else show('error');
     }
@@ -62,9 +180,42 @@ import Base from '../../layouts/Base.astro';
 </script>
 
 <style>
-  .thanks { max-width: 720px; }
-  .thanks > div { display: flex; flex-direction: column; gap: var(--s-2); }
-  .thanks > div[hidden] { display: none; }
-  .badge { align-self: flex-start; padding: 6px 14px; border-radius: var(--r-pill); background: #E3F5E8; color: var(--c-ok); font-size: var(--fs-small); }
+  .thanks { display: flex; flex-direction: column; gap: var(--s-4); }
+  .state { max-width: 720px; display: flex; flex-direction: column; gap: var(--s-2); }
+  .state[hidden], [hidden] { display: none !important; }
+  .badge { align-self: flex-start; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-ok-bg); color: var(--c-ok); font-size: var(--fs-small); }
+  .badge--wait { background: var(--c-warn-bg); color: var(--c-warn-ink); }
+  .notice { max-width: 720px; padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); }
   .actions { display: flex; flex-wrap: wrap; gap: var(--s-1); }
+  .small { font-size: var(--fs-small); }
+  .ok { color: var(--c-ok); }
+  .warn { color: var(--c-warn-ink); }
+  .pre { white-space: pre-wrap; }
+
+  .order { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }
+  .order__main { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+  .order__head { display: flex; flex-direction: column; gap: 6px; }
+  .order__head h2 { font-size: var(--fs-h4); font-weight: 400; }
+  .order__side { flex: 1 1 300px; display: flex; flex-direction: column; gap: var(--s-1); }
+  .order__foot { flex: 1 1 100%; display: flex; flex-direction: column; gap: 8px; padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); font-size: var(--fs-small); }
+
+  .items { list-style: none; margin: 0; padding: 0; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
+  .items :global(.item) { display: flex; align-items: center; gap: 16px 20px; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
+  .items :global(.item:last-child) { border-bottom: 0; }
+  .items :global(.item__img) { flex-shrink: 0; width: 72px; height: 72px; display: block; }
+  .items :global(.item__img img) { width: 72px; height: 72px; object-fit: contain; background: var(--c-photo-bg); }
+  .items :global(.item__img .ph) { width: 72px; height: 72px; padding: 4px; font-size: 0.6875rem; }
+  .items :global(.item__info) { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .items :global(.item__name) { font-size: 1.125rem; color: var(--c-ink); text-decoration: none; }
+  .items :global(.item__total) { font-size: 1.125rem; white-space: nowrap; }
+
+  .totals { margin: 0; display: flex; flex-direction: column; gap: 10px; padding: var(--s-2); background: var(--c-gray-100); }
+  .totals :global(div) { display: flex; justify-content: space-between; gap: 12px; }
+  .totals :global(dd) { margin: 0; white-space: nowrap; }
+  .totals :global(.totals__sum) { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
+
+  .box { padding: var(--s-2); box-shadow: inset 0 0 0 1px var(--c-gray-400); display: flex; flex-direction: column; gap: 10px; }
+  .box h3 { font-size: 1.125rem; }
+  .box :global(p) { line-height: 1.5; }
+  .box :global(.lead-time) { font-size: var(--fs-small); color: var(--c-ink-75); }
 </style>

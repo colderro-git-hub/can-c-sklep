@@ -3,14 +3,16 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { getSite, clearSiteCache, SITE_KEYS, CONTENT_KEYS } from '../../../lib/site-settings';
+import { getCustomRobots, clearRobotsCache, defaultRobots, invalidRobotsLines, renderRobots, ROBOTS_MAX } from '../../../lib/robots';
 
 export const prerender = false;
 
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
-  clearSiteCache();
-  return json(200, { site: await getSite(env) });
+  clearSiteCache(); clearRobotsCache();
+  const custom = await getCustomRobots(env);
+  return json(200, { site: await getSite(env), robots: { text: custom, default: defaultRobots(), preview: renderRobots(custom, 'https://can-c.pl') } });
 };
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -19,6 +21,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!admin) return json(401, { error: 'Brak dostępu.' });
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
+
+  // robots.txt – osobny zapis (klucz settings 'robots'); pusta treść = domyślna
+  if (b.action === 'robots') {
+    const text = String(b.text ?? '').replace(/\r/g, '').replace(/\t/g, ' ').trim();
+    if (text.length > ROBOTS_MAX) return json(422, { error: `robots.txt może mieć maks. ${ROBOTS_MAX} znaków.` });
+    const bad = invalidRobotsLines(text);
+    if (bad.length) return json(422, { error: `Nieprawidłowe linie: ${bad.slice(0, 5).join(', ')}. Każda linia to „Pole: wartość”, komentarz (#) albo pusta.` });
+    try {
+      await db(env).upsert('settings', { key: 'robots', value: { text }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+      clearRobotsCache();
+      console.log(`Admin ${admin} zmienił robots.txt`);
+      return json(200, { robots: { text, default: defaultRobots(), preview: renderRobots(text, 'https://can-c.pl') } });
+    } catch (e) {
+      console.error('Zapis robots.txt: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Nie udało się zapisać robots.txt.' });
+    }
+  }
 
   const v: Record<string, string> = {};
   for (const k of SITE_KEYS) v[k] = String(b[k] ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 200);
