@@ -84,7 +84,7 @@ import Base from '../../layouts/Base.astro';
     subtotal: number; bundleDiscount: number; code: string | null; codeAmount: number; shipping: number;
     delivery: { method: string; point: string | null; pointName: string | null; name: string | null; phone: string | null; street: string | null; postcode: string | null; city: string | null };
     invoice: { company: string; nip: string; street: string; postcode: string; city: string } | null;
-    note: string | null; payment: { provider: string; method: string | null };
+    note: string | null; payment: { provider: string; method: string | null; bank: { account: string; title: string; amount: number } | null };
     shippingTime: string | null; notice: string | null; contact: { email: string; phone: string | null };
   };
   type Status = { number: number; status: string; total: number; details: Details | null };
@@ -132,8 +132,15 @@ import Base from '../../layouts/Base.astro';
       : `<p><strong>Kurier DPD</strong></p><p>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}</p>${dv.phone ? `<p class="muted">tel. ${esc(phone(dv.phone))}</p>` : ''}`;
     if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<p class="lead-time">${esc(d.shippingTime)}${paid ? '' : ' Termin liczymy od zaksięgowania płatności.'}</p>`);
 
+    const bankData = d.payment.bank;
     q('[data-payment]').innerHTML = `<p><strong>${esc(d.payment.provider)}</strong>${d.payment.method ? `<br>${esc(d.payment.method)}` : ''}</p>`
-      + `<p class="${paid ? 'ok' : 'warn'}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</p>`;
+      + `<p class="${paid ? 'ok' : 'warn'}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</p>`
+      + (bankData ? `<dl class="bank-dl">
+          <div><dt>Numer rachunku</dt><dd class="bank-nr">${esc(bankData.account)}</dd></div>
+          <div><dt>Tytuł przelewu</dt><dd><strong>${esc(bankData.title)}</strong></dd></div>
+          <div><dt>Kwota</dt><dd><strong>${zl(bankData.amount)}</strong></dd></div>
+        </dl>
+        <p class="muted small">Przelej dokładną kwotę na powyższy numer. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty.</p>` : '');
 
     q('[data-invoice-box]').hidden = !d.invoice;
     if (d.invoice) q('[data-invoice]').innerHTML = `<p>${esc(d.invoice.company)}<br>NIP ${esc(d.invoice.nip)}<br>${esc(d.invoice.street)}<br>${esc(d.invoice.postcode)} ${esc(d.invoice.city)}</p><p class="muted small">Fakturę wyślemy e-mailem.</p>`;
@@ -148,7 +155,7 @@ import Base from '../../layouts/Base.astro';
   }
 
   const fillPending = (o: Status | undefined, el: HTMLElement, bodyEl: HTMLElement) => {
-    const bank = o?.details?.payment?.provider?.toLowerCase().includes('przelew');
+    const bank = !!(o?.details?.payment?.bank);
     if (bank) {
       el.textContent = 'Zamówienie przyjęte – czekamy na przelew';
       bodyEl.innerHTML = `<p>Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu.</p><p>Wysłaliśmy e-mail z danymi do przelewu. Sprawdź też folder spam.</p>`;
@@ -231,4 +238,9 @@ import Base from '../../layouts/Base.astro';
   .box h3 { font-size: 1.125rem; }
   .box :global(p) { line-height: 1.5; }
   .box :global(.lead-time) { font-size: var(--fs-small); color: var(--c-ink-75); }
+  .box :global(.bank-dl) { margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
+  .box :global(.bank-dl div) { display: flex; flex-direction: column; gap: 2px; }
+  .box :global(.bank-dl dt) { font-size: var(--fs-small); color: var(--c-ink-75); }
+  .box :global(.bank-dl dd) { margin: 0; }
+  .box :global(.bank-nr) { font-size: 1rem; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; word-break: break-all; }
 </style>

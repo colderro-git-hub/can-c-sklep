@@ -4,6 +4,7 @@ import { db } from '../../../lib/supabase';
 import { getCatalog, leadTimeText } from '../../../lib/catalog';
 import { getSite } from '../../../lib/site-settings';
 import { p24Config, paymentMethodName } from '../../../lib/p24';
+import { BANK_PROVIDER, BANK_ACCOUNT, bankTitle } from '../../../lib/bank-transfer';
 
 export const prerender = false;
 
@@ -95,9 +96,16 @@ export const GET: APIRoute = async ({ url, locals }) => {
       note: o.customer_note,
       payment: {
         provider: provider === 'przelewy24' ? 'Przelewy24'
+          : provider === BANK_PROVIDER ? 'Przelew bankowy'
           : provider.startsWith('ręcznie') ? `Płatność przyjęta przez sklep${provider.slice(8).trim() ? ` (${provider.replace(/^ręcznie:?\s*/, '')})` : ''}`
           : provider,
         method,
+        // Dane do przelewu widoczne na stronie podziękowania i koncie klienta (tylko gdy czeka na płatność)
+        bank: provider === BANK_PROVIDER && !PAID.includes(o.status) ? {
+          account: BANK_ACCOUNT,
+          title: bankTitle(o.number),
+          amount: o.total,
+        } : null,
       },
       shippingTime: leadTimes.length === 1 ? leadTimes[0] : null,
       notice: site.noticeActive ? site.noticeText : null,
