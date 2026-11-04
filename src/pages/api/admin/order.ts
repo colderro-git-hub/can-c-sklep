@@ -35,6 +35,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
 const ALLOWED: Record<string, { from: string[]; to?: string }> = {
   ship: { from: ['paid', 'on_hold'], to: 'shipped' },
   complete: { from: ['paid', 'shipped'], to: 'completed' },
+  finalize_bank: { from: ['pending_payment'], to: 'paid' },  // przelew bankowy: admin potwierdza wpłatę
   hold: { from: ['paid'], to: 'on_hold' },
   unhold: { from: ['on_hold'], to: 'paid' },
   cancel: { from: ['pending_payment', 'paid', 'on_hold'], to: 'cancelled' },
@@ -107,6 +108,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
       if (r === 'verify_failed') return json(502, { error: 'Przelewy24 odrzuciły potwierdzenie transakcji.' });
       return json(200, { ok: true, warning: r === 'already' ? 'Zamówienie było już opłacone.' : undefined });
+    }
+
+    // Przelew bankowy: admin ręcznie potwierdza wpłatę → paid + mail potwierdzenia
+    if (b.action === 'finalize_bank') {
+      if (!rule.from.includes(order.status)) return json(409, { error: 'Zamówienie nie czeka na płatność.' });
+      const [fullOrder] = await sb.select<any>(`orders?select=*&id=eq.${order.id}`);
+      if (!fullOrder || fullOrder.payment_provider !== 'bank_transfer') return json(409, { error: 'To zamówienie nie jest przelewem bankowym.' });
+      const r = await finalizePayment(env, sb, null, fullOrder, {
+        orderId: null, origin: new URL(request.url).origin, skipVerify: true, by: admin, from: rule.from,
+      });
+      if (r === 'already') return json(200, { ok: true, warning: 'Zamówienie było już opłacone.' });
+      return json(200, { ok: true });
     }
 
     if (b.action === 'note') {

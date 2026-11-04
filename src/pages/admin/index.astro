@@ -800,7 +800,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       });
       body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
         if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;
-        if (b.dataset.act === 'finalize_bank') { if (!confirm('Oznacz zamówienie jako opłacone? Użyj po zaksięgowaniu przelewu na koncie.')) return; await act({ id, action: 'complete' }); return; }
+        if (b.dataset.act === 'finalize_bank') { if (!confirm('Oznacz zamówienie jako opłacone? Użyj po zaksięgowaniu przelewu na koncie bankowym.')) return; await act({ id, action: 'finalize_bank' }); return; }
         await act({ id, action: b.dataset.act });
       }));
       body.querySelector<HTMLFormElement>('[data-note]')!.addEventListener('submit', async (ev) => {

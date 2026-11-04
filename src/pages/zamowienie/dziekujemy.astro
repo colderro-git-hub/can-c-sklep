@@ -188,8 +188,11 @@ import Base from '../../layouts/Base.astro';
       const res = await fetch(`/api/zamowienie/status?id=${encodeURIComponent(id)}`, { cache: 'no-store' });
       if (!res.ok) return show('error');
       const o: Status = await res.json();
+      // Płatność potwierdzona → wyczyść koszyk i pokaż podsumowanie
       if (['paid', 'shipped', 'completed'].includes(o.status)) { clearCart(); return show('paid', o); }
-      // Powiadomienie z P24 może przyjść kilka sekund po powrocie klienta – sprawdzamy przez ok. 30 s
+      // Przelew bankowy: status zawsze pending_payment → od razu pokaż stronę, nie czekaj 30 s na P24
+      if (o.details?.payment?.bank) { clearCart(); return show('pending', o); }
+      // P24: powiadomienie może przyjść kilka sekund po powrocie klienta → sprawdzamy przez ok. 30 s
       if (++tries < 10) return setTimeout(check, 3000);
       show('pending', o);
     } catch {
