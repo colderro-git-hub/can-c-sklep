@@ -5,6 +5,7 @@ import type { db } from './supabase';
 import { verifyTransaction, type p24Config } from './p24';
 import { sendMail, zl } from './mail';
 import { getSite } from './site-settings';
+import { orderConfirmationHtml } from './email-templates';
 
 export async function finalizePayment(
   env: Env,
@@ -39,8 +40,10 @@ export async function finalizePayment(
   // ---------- E-maile (błąd wysyłki nie cofa płatności; każdy mail wysyłany niezależnie) ----------
   const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
   let lines = '', delivery = '';
+  let itemRows: { name: string; qty: number; total: number }[] = [];
   try {
     const items = await sb.select<any>(`order_items?select=name,qty,total&order_id=eq.${order.id}`);
+    itemRows = items;
     lines = items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
     delivery = order.shipping_method === 'inpost_locker'
       ? `Paczkomat InPost ${order.shipping_point}`
@@ -53,6 +56,7 @@ export async function finalizePayment(
     await sendMail(env, {
       to: order.email,
       subject: `Potwierdzenie zamówienia nr ${order.number} – Can-C`,
+      html: orderConfirmationHtml({ site, origin, number: order.number, total: order.total, items: itemRows, delivery, invoice: Boolean(order.wants_invoice), pointName: order.shipping_address?.point_name }),
       replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
       text: [
         'Dziękujemy za zamówienie!', '',

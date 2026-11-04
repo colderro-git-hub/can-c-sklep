@@ -3,7 +3,9 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { sendMail } from '../../../lib/mail';
-import { trackingUrl } from '../../../lib/tracking';
+import { trackingUrl, carrierLabel } from '../../../lib/tracking';
+import { orderShippedHtml } from '../../../lib/email-templates';
+import { getSite } from '../../../lib/site-settings';
 import { p24Config, getTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
 import { str, EMAIL_RE, POSTCODE_RE, LOCKER_RE, cleanPhone, validPhone, validNip } from '../../../lib/validate';
@@ -140,6 +142,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           to: order.email,
           subject: `Zamówienie nr ${order.number} zostało wysłane – Can-C`,
           replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+          html: orderShippedHtml({ site: await getSite(env), origin: new URL(request.url).origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
           text: [
             'Dzień dobry,',
             '',

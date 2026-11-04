@@ -3,6 +3,7 @@ import { getEnv, json } from '../../lib/env';
 import { db } from '../../lib/supabase';
 import { sendMail } from '../../lib/mail';
 import { getSite } from '../../lib/site-settings';
+import { withdrawalConfirmHtml } from '../../lib/email-templates';
 
 export const prerender = false;
 
@@ -47,6 +48,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       to: email,
       replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
       subject: `Potwierdzenie odstąpienia od umowy – zamówienie nr ${order.number}`,
+      html: withdrawalConfirmHtml({ site, origin: new URL(request.url).origin, name, number: order.number, when, scopeText, note }),
       text: [
         `Dzień dobry ${name},`, '',
         `potwierdzamy otrzymanie oświadczenia o odstąpieniu od umowy sprzedaży (zamówienie nr ${order.number}).`,

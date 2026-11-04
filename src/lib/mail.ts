@@ -1,12 +1,12 @@
 // Wysyłka e-maili przez Resend (zwykły tekst).
 import type { Env } from './env';
 
-export async function sendMail(env: Env, m: { to: string | string[]; subject: string; text: string; replyTo?: string; headers?: Record<string, string> }) {
+export async function sendMail(env: Env, m: { to: string | string[]; subject: string; text: string; html?: string; replyTo?: string; headers?: Record<string, string> }) {
   if (!env.RESEND_API_KEY || !env.CONTACT_FROM) throw new Error('Brak konfiguracji Resend');
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: env.CONTACT_FROM, to: m.to, subject: m.subject, text: m.text, ...(m.replyTo ? { reply_to: m.replyTo } : {}), ...(m.headers ? { headers: m.headers } : {}) }),
+    body: JSON.stringify({ from: env.CONTACT_FROM, to: m.to, subject: m.subject, text: m.text, ...(m.html ? { html: m.html } : {}), ...(m.replyTo ? { reply_to: m.replyTo } : {}), ...(m.headers ? { headers: m.headers } : {}) }),
   });
   if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
 }

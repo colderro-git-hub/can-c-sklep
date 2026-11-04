@@ -3,6 +3,7 @@ import type { Env } from './env';
 import { db } from './supabase';
 import { sendMail } from './mail';
 import { getSite } from './site-settings';
+import { treatmentReminderHtml } from './email-templates';
 
 export const AUTOMATION_DEFAULTS = {
   enabled: false,          // automat wyłączony, dopóki nie włączysz go w panelu
@@ -96,6 +97,7 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
         subject: days > 0 ? `Kończy Ci się zapas kropli Can-C` : `Czas na kolejne opakowanie kropli Can-C`,
         headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
+        html: treatmentReminderHtml({ site, origin, firstName: c.first_name, days, packs: c.last_order_packs, code, pct: s.regularCodePercent, validDays: s.codeValidDays, orderUrl: `${origin}/produkt/krople-can-c/?zestaw=${qty}`, unsubscribe: unsub }),
         text: [
           `Dzień dobry${c.first_name ? ` ${c.first_name}` : ''},`, '',
           days > 0

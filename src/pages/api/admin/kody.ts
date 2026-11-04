@@ -5,6 +5,7 @@ import { requireAdmin } from '../../../lib/admin-auth';
 import { normalizeCode } from '../../../lib/discounts';
 import { sendMail } from '../../../lib/mail';
 import { getSite } from '../../../lib/site-settings';
+import { personalCodeHtml } from '../../../lib/email-templates';
 
 export const prerender = false;
 
@@ -84,6 +85,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
             to: cust.email,
             replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
             subject: `Rabat ${val} na kolejne zamówienie – Can-C`,
+            html: personalCodeHtml({ site, origin, firstName: cust.first_name, message: msg, code, val, minTotal: min_total, endsAt: ends_at }),
             text: [
               `Dzień dobry${cust.first_name ? ` ${cust.first_name}` : ''},`, '',
               msg || 'dziękujemy, że jesteś z nami. Przygotowaliśmy dla Ciebie osobisty kod rabatowy:',

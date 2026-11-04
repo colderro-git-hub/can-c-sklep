@@ -4,6 +4,8 @@ import { db } from '../../../../../lib/supabase';
 import { authorized } from '../../../../../lib/furgonetka';
 import { sendMail } from '../../../../../lib/mail';
 import { trackingUrl, carrierLabel } from '../../../../../lib/tracking';
+import { orderShippedHtml } from '../../../../../lib/email-templates';
+import { getSite } from '../../../../../lib/site-settings';
 
 export const prerender = false;
 
@@ -41,6 +43,7 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
         to: order.email,
         subject: `Zamówienie nr ${order.number} zostało wysłane – Can-C`,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+        html: orderShippedHtml({ site: await getSite(env), origin: new URL(request.url).origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
         text: [
           'Dzień dobry,', '',
           `Twoje zamówienie nr ${order.number} zostało nadane (${carrierLabel(carrier)}).`,

@@ -3,10 +3,11 @@ import type { Env } from './env';
 import { db } from './supabase';
 import { sendMail } from './mail';
 import { getSite } from './site-settings';
+import { backInStockHtml } from './email-templates';
 
 export async function sendBackInStock(env: Env, productId: string, origin: string) {
   const sb = db(env);
-  const [p] = await sb.select<{ id: string; name: string }>(`products?select=id,name&id=eq.${productId}`);
+  const [p] = await sb.select<{ id: string; name: string; images: { url: string }[] }>(`products?select=id,name,images&id=eq.${productId}`);
   if (!p) return { sent: 0 };
   const waiting = await sb.select<{ id: string; email: string }>(`stock_notifications?select=id,email&product_id=eq.${productId}&notified_at=is.null&limit=500`);
   if (!waiting.length) return { sent: 0 };
@@ -21,6 +22,7 @@ export async function sendBackInStock(env: Env, productId: string, origin: strin
         to: w.email,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
         subject: `${p.name} – znów dostępne w Can-C`,
+        html: backInStockHtml({ site, origin, productName: p.name, productUrl: `${origin}/produkt/${p.id}/`, image: Array.isArray(p.images) ? p.images[0]?.url : null }),
         text: [
           'Dzień dobry,', '',
           `produkt, na który czekasz, jest znów dostępny: ${p.name}.`, '',

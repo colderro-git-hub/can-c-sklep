@@ -7,6 +7,7 @@ import { p24Config, registerTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
 import { sendMail, zl } from '../../../lib/mail';
 import { getSite } from '../../../lib/site-settings';
+import { paymentLinkHtml } from '../../../lib/email-templates';
 import { str, EMAIL_RE, POSTCODE_RE, LOCKER_RE, cleanPhone, validPhone, validNip } from '../../../lib/validate';
 
 export const prerender = false;
@@ -102,6 +103,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           to: email,
           replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
           subject: `Zamówienie nr ${order.number} – link do płatności – Can-C`,
+          html: paymentLinkHtml({ site, origin, number: order.number, firstName, items: priced.items, extraDiscount, total, paymentUrl: paymentUrl! }),
           text: [
             `Dzień dobry ${firstName},`, '', 'przygotowaliśmy dla Ciebie zamówienie:', '', items,
             extraDiscount ? `Rabat: −${zl(extraDiscount)}` : '', `Do zapłaty: ${zl(total)} (dostawa gratis)`, '',
