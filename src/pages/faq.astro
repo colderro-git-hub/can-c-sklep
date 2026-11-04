@@ -1,21 +1,34 @@
 ---
 import Base from '../layouts/Base.astro';
-import { faqItems, faqCategories } from '../data/faq';
 import { site } from '../config';
-import { CONTENT_DEFAULTS } from '../lib/site-settings';
-const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const withTokens = (t: string) => escHtml(t).replace('{shippingTime}', `<span data-site="shippingTime">${CONTENT_DEFAULTS.shippingTime}</span>`);
+import { getPageContent, getSections, applyTokens } from '../lib/page-content';
+import { getSite } from '../lib/site-settings';
 
+export const prerender = false;
+
+const env = await Astro.locals.runtime?.env ?? {};
+const [faqRows, siteDb] = await Promise.all([
+  getPageContent(env, 'faq').catch(() => []),
+  getSite(env).catch(() => null),
+]);
+const tokens = { shippingTime: siteDb?.shippingTime ?? '' };
+const faqItems = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item');
+const faqCategories = [
+  { id: 'produkt', label: 'Produkt' }, { id: 'stosowanie', label: 'Stosowanie' },
+  { id: 'zamowienia', label: 'Zamówienia i dostawa' }, { id: 'zwroty', label: 'Płatności i zwroty' },
+];
+const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]!);
+const withTokens = (t: string) => {
+  const escaped = escHtml(applyTokens(t, tokens));
+  return escaped.replace(escHtml('{shippingTime}'), `<span data-site="shippingTime">${tokens.shippingTime}</span>`);
+};
 const catLabel = Object.fromEntries(faqCategories.map((c) => [c.id, c.label]));
 const counts = Object.fromEntries(faqCategories.map((c) => [c.id, faqItems.filter((f) => f.cat === c.id).length]));
-
 const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
+  '@context': 'https://schema.org', '@type': 'FAQPage',
   mainEntity: faqItems.map((f) => ({
-    '@type': 'Question',
-    name: f.q,
-    acceptedAnswer: { '@type': 'Answer', text: f.a.replace(/\n\n/g, ' ').replace('{shippingTime}', CONTENT_DEFAULTS.shippingTime) },
+    '@type': 'Question', name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: applyTokens(f.a.replace(/\n\n/g,' '), tokens) },
   })),
 };
 ---

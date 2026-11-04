@@ -44,6 +44,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M21 12a9 9 0 1 1-3-6.7M21 4v4h-4" /></svg>
             <span>Automaty</span>
           </button>
+          <button type="button" class="nav__item" data-tab="pages">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 8h10M7 12h6M7 16h4" /></svg>
+            <span>Strony</span>
+          </button>
           <button type="button" class="nav__item" data-tab="settings">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" /></svg>
             <span>Ustawienia sklepu</span>
@@ -257,6 +261,25 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </section>
 
           <!-- USTAWIENIA SKLEPU -->
+          <section data-view="pages" class="stack" hidden>
+            <div class="sec">
+              <div class="sec__head">
+                <h2 class="sec__t">Treści stron</h2>
+                <div class="actions">
+                  <select class="input input--sm" data-page-select>
+                    <option value="home">Strona główna</option>
+                    <option value="faq">FAQ</option>
+                    <option value="about">O nas</option>
+                    <option value="how_to_use">Stosowanie</option>
+                    <option value="footer">Stopka</option>
+                  </select>
+                  <a class="btn btn--outline btn--sm" data-page-preview href="/" target="_blank" rel="noopener">Podgląd strony</a>
+                </div>
+              </div>
+              <div data-pages-list></div>
+            </div>
+          </section>
+
           <section data-view="settings" class="stack" hidden>
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
             <form class="stack" data-settings-form novalidate>
@@ -1687,6 +1710,182 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     catch (err) { toast((err as Error).message, true); }
   });
 
+  // ===== CMS Stron =====
+  const PAGES_META: Record<string, any> = {
+    home: { label: 'Strona główna', previewHref: '/', sections: [
+      { key: 'home.hero', label: 'Hero (baner)', schema: {
+        kicker: { type: 'text', label: 'Kicker (mały tekst nad H1)' },
+        h1: { type: 'text', label: 'Nagłówek H1' },
+        lead: { type: 'textarea', label: 'Tekst lead' },
+        cta_primary_label: { type: 'text', label: 'Przycisk główny – etykieta' },
+        cta_primary_href: { type: 'url', label: 'Przycisk główny – link' },
+        cta_secondary_label: { type: 'text', label: 'Przycisk drugorzędny – etykieta (puste = ukryj)' },
+        cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny – link' },
+        image_url: { type: 'image', label: 'Zdjęcie w hero (URL z Supabase Storage, puste = placeholder)' },
+        image_alt: { type: 'text', label: 'Alt zdjęcia' },
+        trust: { type: 'list', label: 'Elementy zaufania pod przyciskami (jedna linia = jeden element)' },
+      }},
+      { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
+        h2: { type: 'text', label: 'Nagłówek sekcji' }, lead: { type: 'textarea', label: 'Tekst lead' },
+        link_label: { type: 'text', label: 'Link – etykieta' }, link_href: { type: 'url', label: 'Link – href' },
+        features: { type: 'array', label: 'Kafelki JSON [{title, text}]', hint: 'Tablica obiektów JSON z polami title i text' },
+      }},
+      { key: 'home.reviews', label: 'Opinie na stronie głównej', schema: {
+        h2: { type: 'text', label: 'Nagłówek sekcji' },
+        items: { type: 'array', label: 'Opinie JSON [{quote, author}]' },
+      }},
+      { key: 'home.k9', label: 'Sekcja Can-C K9', schema: {
+        tag: { type: 'text', label: 'Etykieta (np. „DLA PSA")' }, h2: { type: 'text', label: 'Nagłówek' },
+        lead: { type: 'textarea', label: 'Tekst lead' }, cta_label: { type: 'text', label: 'Przycisk – etykieta' },
+        cta_href: { type: 'url', label: 'Przycisk – link' },
+        image_url: { type: 'image', label: 'Zdjęcie (URL z Supabase Storage)' }, image_alt: { type: 'text', label: 'Alt' },
+      }},
+    ]},
+    faq: { label: 'FAQ', previewHref: '/faq/', sections: [] },
+    about: { label: 'O nas', previewHref: '/o-nas/', sections: [
+      { key: 'about.intro', label: 'Lead strony', schema: { lead: { type: 'textarea', label: 'Tekst lead' } } },
+      { key: 'about.who', label: '„Kim jesteśmy"', schema: {
+        h2: { type: 'text', label: 'Nagłówek' },
+        paragraphs: { type: 'list', label: 'Akapity (jedna linia = jeden akapit)', hint: 'Token {company} = nazwa firmy' },
+      }},
+      { key: 'about.promise', label: '„Na co możesz liczyć"', schema: {
+        h2: { type: 'text', label: 'Nagłówek' },
+        items: { type: 'list', label: 'Elementy listy', hint: 'Token {hours} = godziny obsługi' },
+      }},
+    ]},
+    how_to_use: { label: 'Stosowanie', previewHref: '/stosowanie/', sections: [
+      { key: 'how_to_use.intro', label: 'Nagłówek strony', schema: { h1: { type: 'text', label: 'Nagłówek H1' }, lead: { type: 'textarea', label: 'Tekst lead' } } },
+      { key: 'how_to_use.dosage', label: 'Dawkowanie', schema: { h2: { type: 'text', label: 'Nagłówek' }, note: { type: 'textarea', label: 'Notatka ostrzegawcza' }, doses: { type: 'array', label: 'Dawki JSON [{num, title, desc}]' } } },
+      { key: 'how_to_use.opening', label: 'Otwieranie fiolki', schema: { h2: { type: 'text', label: 'Nagłówek' }, lead: { type: 'textarea', label: 'Lead' }, steps: { type: 'list', label: 'Kroki (jedna linia = jeden krok)' } } },
+      { key: 'how_to_use.applying', label: 'Zakraplanie', schema: { h2: { type: 'text', label: 'Nagłówek' }, steps: { type: 'array', label: 'Kroki JSON [{title, desc}]' } } },
+    ]},
+    footer: { label: 'Stopka', previewHref: '/', sections: [
+      { key: 'footer.columns', label: 'Kolumny linków', schema: { columns: { type: 'array', label: 'Kolumny JSON [{title, links:[{href,label}]}]' } } },
+      { key: 'footer.badges', label: 'Metody płatności / dostawy', schema: { items: { type: 'list', label: 'Elementy (jedna linia = jeden element)' } } },
+    ]},
+  };
+
+  const pageSelect = $<HTMLSelectElement>('[data-page-select]');
+  const pagesList = $<HTMLElement>('[data-pages-list]');
+  const pagePreview = $<HTMLAnchorElement>('[data-page-preview]');
+
+  async function loadPages(page = pageSelect?.value ?? 'home') {
+    if (!pagesList) return;
+    pagesList.innerHTML = '<p class="muted">Ładowanie…</p>';
+    if (pagePreview) pagePreview.href = PAGES_META[page]?.previewHref ?? '/';
+    try {
+      const { rows } = await api(`/api/admin/pages?page=${encodeURIComponent(page)}`);
+      renderPageSections(page, rows);
+    } catch (e) { pagesList.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; }
+  }
+
+  function fieldHtml(fk: string, schema: any, value: unknown): string {
+    const val = value === null || value === undefined ? '' : value;
+    const hint = schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '';
+    switch (schema.type) {
+      case 'textarea': case 'markdown':
+        return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="4">${esc(String(val))}</textarea></label>`;
+      case 'list':
+        return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="5">${esc(Array.isArray(val) ? (val as string[]).join('\n') : String(val))}</textarea></label>`;
+      case 'array':
+        return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="8">${esc(typeof val === 'string' ? val : JSON.stringify(val, null, 2))}</textarea></label>`;
+      case 'image':
+        return `<label class="field">${esc(schema.label)}${val ? `<img src="${esc(String(val))}" alt="" style="max-height:120px;object-fit:contain;background:var(--line-soft);margin-bottom:8px" />` : ''}<input class="input" name="${fk}" type="url" value="${esc(String(val))}" placeholder="https://…" /></label>`;
+      default:
+        return `<label class="field">${esc(schema.label)}${hint}<input class="input" name="${fk}" type="text" value="${esc(String(val))}" /></label>`;
+    }
+  }
+
+  function collectData(form: HTMLFormElement, schema: Record<string, any>): Record<string, unknown> {
+    const fd = new FormData(form);
+    const data: Record<string, unknown> = {};
+    for (const [fk, s] of Object.entries(schema)) {
+      const raw = String(fd.get(fk) ?? '');
+      switch (s.type) {
+        case 'list': data[fk] = raw.split('\n').map((x: string) => x.trim()).filter(Boolean); break;
+        case 'array': try { data[fk] = JSON.parse(raw); } catch { data[fk] = raw; } break;
+        default: data[fk] = raw; break;
+      }
+    }
+    return data;
+  }
+
+  function renderPageSections(page: string, rows: any[]) {
+    const meta = PAGES_META[page];
+    if (!meta || !pagesList) return;
+    const rowMap = Object.fromEntries(rows.map((r: any) => [r.key, r]));
+
+    if (page === 'faq') {
+      const cats: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
+      pagesList.innerHTML = `<div class="faq-cms">
+        <p class="muted small">Edytuj pytania i odpowiedzi. Zmiany widoczne natychmiast po zapisie.</p>
+        <div data-faq-list>
+          ${rows.map((r) => `<details class="faq-cms__item" data-faq-key="${esc(r.key)}">
+            <summary class="faq-cms__q">
+              <span class="faq-cms__label">${esc(r.data.q || '(bez pytania)')}</span>
+              <span class="pill">${esc(cats[r.data.cat] || r.data.cat || '')}</span>
+              ${r.data.home ? '<span class="pill pill--ok">Na głównej</span>' : ''}
+            </summary>
+            <form class="faq-cms__form">
+              <div class="row2">
+                <label class="field">Kategoria<select class="input" name="cat">${Object.entries(cats).map(([id, lbl]) => `<option value="${id}" ${r.data.cat===id?'selected':''}>${lbl}</option>`).join('')}</select></label>
+                <label class="check faq-cms__check"><input type="checkbox" name="home" ${r.data.home?'checked':''} /> Pokaż na stronie głównej</label>
+              </div>
+              <label class="field">Pytanie<input class="input" name="q" value="${esc(r.data.q||'')}" required /></label>
+              <label class="field">Odpowiedź <span class="muted small">(pusta linia = nowy akapit; {shippingTime} = czas wysyłki)</span><textarea class="input mono" name="a" rows="5">${esc(r.data.a||'')}</textarea></label>
+              <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
+            </form>
+          </details>`).join('')}
+        </div>
+      </div>`;
+      pagesList.querySelectorAll<HTMLFormElement>('[data-faq-list] .faq-cms__form').forEach((form) => {
+        const key = form.closest<HTMLElement>('[data-faq-key]')!.dataset.faqKey!;
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const fd = new FormData(form);
+          const data = { cat: fd.get('cat'), home: fd.get('home') !== null, q: String(fd.get('q')||'').trim(), a: String(fd.get('a')||'').trim() };
+          try { await api('/api/admin/pages', { key, data }); toast('Zapisano pytanie.'); (form.closest('details') as any).open = false; }
+          catch (err) { toast((err as Error).message, true); }
+        });
+      });
+      return;
+    }
+
+    pagesList.innerHTML = meta.sections.map((sec: any) => {
+      const data = rowMap[sec.key]?.data ?? {};
+      const fields = Object.entries(sec.schema).map(([fk, fSchema]: [string, any]) => fieldHtml(fk, fSchema, data[fk])).join('');
+      return `<form class="card" data-page-form="${esc(sec.key)}">
+        <div class="card__head"><h2 class="card__title">${esc(sec.label)}</h2>${rowMap[sec.key]?.updated_at ? `<span class="muted small">Zmienione: ${date(rowMap[sec.key].updated_at)}</span>` : ''}</div>
+        ${fields}
+        <div class="actions"><button class="btn btn--sm">Zapisz sekcję</button></div>
+      </form>`;
+    }).join('');
+
+    pagesList.querySelectorAll<HTMLFormElement>('[data-page-form]').forEach((form) => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const key = form.dataset.pageForm!;
+        const sec = meta.sections.find((s: any) => s.key === key)!;
+        try { await api('/api/admin/pages', { key, data: collectData(form, sec.schema) }); toast(`Zapisano „${sec.label}".`); }
+        catch (err) { toast((err as Error).message, true); }
+      });
+    });
+  }
+
+  pageSelect?.addEventListener('change', () => loadPages());
+  document.querySelector('[data-tab="pages"]')?.addEventListener('click', () => setTimeout(() => loadPages(), 50));
+
+  // ===== CSS dla CMS Stron =====
+  document.head.insertAdjacentHTML('beforeend', `<style>
+    .faq-cms__item { background: var(--card); box-shadow: inset 0 0 0 1px var(--line); margin-bottom: 4px; }
+    .faq-cms__q { list-style: none; cursor: pointer; min-height: 56px; padding: 12px 16px; display: flex; align-items: center; gap: 10px; }
+    .faq-cms__q::-webkit-details-marker { display: none; }
+    .faq-cms__label { flex: 1; font-size: 0.9375rem; }
+    .faq-cms__form { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .faq-cms__check { align-self: flex-end; }
+    .pill--ok { background: var(--ok-a08); color: var(--ok); }
+  </style>`);
+
   // ---------- Ustawienia sklepu ----------
   const settingsForm = $<HTMLFormElement>('[data-settings-form]');
   async function loadSettings() {
@@ -1743,7 +1942,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
 
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu' };
+  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');

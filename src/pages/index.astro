@@ -4,11 +4,13 @@ import Arrow from '../components/Arrow.astro';
 import { products as fallback, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
+import { getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
+import { getSite } from '../lib/site-settings';
 import type { Availability } from '../lib/pricing';
 import AvailBadge from '../components/AvailBadge.astro';
 import ProductTags from '../components/ProductTags.astro';
 
-// Strona główna z aktualnymi produktami z bazy; przy awarii bazy – dane zapasowe z kodu
+// Strona główna z aktualnymi produktami i treściami z bazy; przy awarii bazy – dane zapasowe z kodu
 export const prerender = false;
 type Card = { slug: string; tag: string; tags: string[]; avail: Availability; name: string; desc: string; price: number | null; regular: number | null; onSale: boolean; image?: string; alt?: string; rating: number; reviews: number };
 let products: Card[];
@@ -24,6 +26,36 @@ try {
   products = fallback.map((p) => ({ slug: p.slug, tag: p.tag, tags: [], avail: 'in_stock' as Availability, name: p.name, desc: p.desc, price: p.price, regular: p.price, onSale: false, image: p.image, alt: p.name, rating: 0, reviews: 0 }));
 }
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
+
+// Treści z CMS (strona główna + FAQ)
+const env = await Astro.locals.runtime?.env ?? {};
+const [homeRows, faqRows, site] = await Promise.all([
+  getPageContent(env, 'home').catch(() => []),
+  getPageContent(env, 'faq').catch(() => []),
+  getSite(env).catch(() => null),
+]);
+const tokens = site ? { company: site.company, hours: site.hours, email: site.email, shippingTime: site.shippingTime } : {};
+const at = (key: string, fb: any, rows = homeRows): any => (getSection(rows, key) ?? fb);
+
+const hero = at('home.hero', {
+  kicker: 'Oryginalne krople zatwierdzone przez IVP',
+  h1: 'Krople do oczu Can-C z N-acetylokarnozyną',
+  lead: 'Codzienne wsparcie dla zmęczonych oczu. Można stosować przy soczewkach kontaktowych.',
+  cta_primary_label: 'Zamów krople', cta_primary_href: '/produkt/krople-can-c/',
+  cta_secondary_label: 'Jak stosować', cta_secondary_href: '/stosowanie/',
+  trust: ['Darmowa dostawa InPost i kurier', 'BLIK, Przelewy24, karta', 'Zwrot do 14 dni'],
+  image_url: null as string | null, image_alt: 'Krople Can-C',
+});
+const why = at('home.why', {
+  h2: 'Dlaczego krople Can-C', lead: '', link_label: 'Przeczytaj, jak stosować', link_href: '/stosowanie/',
+  features: features as { title: string; text: string }[],
+});
+const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[] });
+const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
+const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item')
+  .filter((f) => f.home)
+  .map((f) => ({ q: f.q, a: applyTokens(f.a, tokens) }));
+const faqList = faqCms.length ? faqCms : faqs;
 
 const dropsPrice = products.find((p) => p.slug === 'krople-can-c')?.price ?? fallback[0].price ?? 0;
 const bundleRows = bundles.map((b) => {
@@ -44,20 +76,18 @@ const bundleRows = bundles.map((b) => {
   <section class="section section--dark">
     <div class="container hero">
       <div class="hero__text">
-        <p class="hero__kicker">Oryginalne krople zatwierdzone przez IVP</p>
-        <h1>Krople do oczu Can-C z N-acetylokarnozyną</h1>
-        <p class="lead">Codzienne wsparcie dla zmęczonych oczu. Można stosować przy soczewkach kontaktowych. Jedno opakowanie to miesięczna kuracja.</p>
+        {hero.kicker && <p class="hero__kicker">{hero.kicker}</p>}
+        <h1>{hero.h1}</h1>
+        <p class="lead">{hero.lead}</p>
         <div class="hero__cta">
-          <a href="/produkt/krople-can-c/" class="btn btn--accent btn--lg">Zamów krople <Arrow /></a>
-          <a href="/stosowanie/" class="btn btn--ghost btn--lg">Jak stosować</a>
+          <a href={hero.cta_primary_href} class="btn btn--accent btn--lg">{hero.cta_primary_label} <Arrow /></a>
+          {hero.cta_secondary_label && <a href={hero.cta_secondary_href} class="btn btn--ghost btn--lg">{hero.cta_secondary_label}</a>}
         </div>
-        <ul class="hero__trust">
-          <li>Darmowa dostawa InPost i kurier</li>
-          <li>BLIK, Przelewy24, karta</li>
-          <li>Zwrot do 14 dni</li>
-        </ul>
+        {(hero.trust as string[]).length > 0 && <ul class="hero__trust">{(hero.trust as string[]).map((t: string) => <li>{t}</li>)}</ul>}
       </div>
-      <div class="ph hero__img">[Packshot: krople Can-C 2 × 5 ml na ciemnym tle]</div>
+      {hero.image_url
+        ? <img src={hero.image_url} alt={hero.image_alt} class="hero__img" width="840" height="960" loading="eager" />
+        : <div class="ph hero__img">[Packshot: krople Can-C 2 × 5 ml na ciemnym tle]</div>}
     </div>
   </section>
 
@@ -134,12 +164,12 @@ const bundleRows = bundles.map((b) => {
   <section class="section" id="dlaczego">
     <div class="container split">
       <div class="split__aside">
-        <h2>Dlaczego krople Can-C</h2>
-        <p class="lead">Pierwsze krople na świecie z N-acetylokarnozyną, badane i zatwierdzone przez Innovative Vision Products.</p>
-        <a href="/stosowanie/" class="link-arrow">Przeczytaj, jak stosować <Arrow /></a>
+        <h2>{why.h2}</h2>
+        {why.lead && <p class="lead">{why.lead}</p>}
+        {why.link_label && <a href={why.link_href} class="link-arrow">{why.link_label} <Arrow /></a>}
       </div>
       <div class="grid grid--2 split__main">
-        {features.map((f) => (
+        {(why.features as {title:string;text:string}[]).map((f) => (
           <div class="feature">
             <h3>{f.title}</h3>
             <p class="muted">{f.text}</p>
@@ -152,9 +182,9 @@ const bundleRows = bundles.map((b) => {
   <!-- Opinie -->
   <section class="section reviews">
     <div class="container stack">
-      <h2 class="h3">Opinie klientów</h2>
+      <h2 class="h3">{reviewsCms.h2}</h2>
       <div class="grid grid--3">
-        {reviews.map((r) => (
+        {(reviewsCms.items as {quote:string;author:string}[]).map((r) => (
           <figure class="review">
             <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true" class="quote-mark"><path d="M0 24V13C0 5 4 1 12 0v5c-4 1-6 4-6 8h6v11H0zm18 0V13c0-8 4-12 12-13v5c-4 1-6 4-6 8h6v11H18z" fill="currentColor" /></svg>
             <blockquote>{r.quote}</blockquote>
@@ -168,12 +198,12 @@ const bundleRows = bundles.map((b) => {
   <!-- K9 -->
   <section class="section">
     <div class="container split split--center">
-      <div class="ph k9__img">[Zdjęcie: pies + krople Can-C K9]</div>
+      {k9.image_url ? <img src={k9.image_url} alt={k9.image_alt} class="k9__img" width="640" height="480" loading="lazy" /> : <div class="ph k9__img">[Zdjęcie: pies + krople Can-C K9]</div>}
       <div class="split__aside">
-        <span class="card__tag">DLA PSA</span>
-        <h2 class="h3">Krople Can-C K9 z N-acetylokarnozyną</h2>
-        <p class="lead">Wersja dla psów. Wielu właścicieli stosuje je profilaktycznie u ras podatnych na problemy z oczami. Skonsultuj kurację z lekarzem weterynarii.</p>
-        <a href="/produkt/krople-can-c-k9/" class="btn" style="align-self: flex-start">Zobacz Can-C K9 <Arrow /></a>
+        {k9.tag && <span class="card__tag">{k9.tag}</span>}
+        <h2 class="h3">{k9.h2}</h2>
+        {k9.lead && <p class="lead">{k9.lead}</p>}
+        <a href={k9.cta_href} class="btn" style="align-self: flex-start">{k9.cta_label} <Arrow /></a>
       </div>
     </div>
   </section>
@@ -186,7 +216,7 @@ const bundleRows = bundles.map((b) => {
         <a href="/faq/" class="link-arrow">Wszystkie pytania <Arrow /></a>
       </div>
       <div class="split__main faq">
-        {faqs.map((f, i) => (
+        {faqList.map((f, i) => (
           <details class="faq__item" open={i === 0}>
             <summary>{f.q}</summary>
             <p class="muted">{f.a}</p>

@@ -2,13 +2,14 @@
 import Base from '../layouts/Base.astro';
 import Arrow from '../components/Arrow.astro';
 import { products, lineTotal, formatPrice } from '../data/shop';
+import { getPageContent, getSection } from '../lib/page-content';
+
+export const prerender = false;
 
 const drops = products.find((p) => p.slug === 'krople-can-c')!;
 const plan = [
-  { label: '1 miesiąc', qty: 1, rec: '1 opakowanie' },
-  { label: '2 miesiące', qty: 2, rec: 'Zestaw 2 opakowań' },
-  { label: '3–4 miesiące', qty: 4, rec: 'Zestaw 4 opakowań' },
-  { label: '6 miesięcy', qty: 6, rec: '6 opakowań' },
+  { label: '1 miesiąc', qty: 1 }, { label: '2 miesiące', qty: 2 },
+  { label: '3–4 miesiące', qty: 4 }, { label: '6 miesięcy', qty: 6 },
 ].map((p) => {
   const total = lineTotal(drops, p.qty);
   const regular = drops.price !== null ? drops.price * p.qty : null;
@@ -16,33 +17,18 @@ const plan = [
   return { ...p, price: `${formatPrice(total)}${saved ? ` · oszczędzasz ${saved}%` : ''}` };
 });
 const defaultPlan = 2;
-
-const openSteps = [
-  'Zdejmij dolny pierścień zabezpieczający.',
-  'Dokręć nakrętkę zgodnie z ruchem wskazówek zegara. Kolec w nakrętce przebije dyszę.',
-  'Odkręć nakrętkę w przeciwnym kierunku i zdejmij ją.',
-  'Delikatnie naciśnij fiolkę, aby wydobyć kroplę. Po użyciu załóż nakrętkę.',
-];
-const applySteps = [
-  { t: 'Odchyl głowę do tyłu', d: 'Patrz w górę. Przy problemach z szyją połóż się lub usiądź w fotelu z odchylanym oparciem.' },
-  { t: 'Zakroplij jedną kroplę', d: 'Nie dotykaj końcówką fiolki oka ani rzęs.' },
-  { t: 'Powoli zamknij oko', d: 'Zamknij je delikatnie, bez zaciskania powiek.' },
-  { t: 'Odczekaj 60 sekund', d: 'Nie mrugaj i nie otwieraj oka. W tym czasie kropla wchłania się w tkankę.' },
-  { t: 'Powtórz przy drugiej kropli', d: 'Jeśli stosujesz dwie krople, powtórz całą procedurę.' },
-];
 const toc = [
-  { href: '#dawkowanie', label: 'Dawkowanie' },
-  { href: '#otwieranie', label: 'Otwieranie fiolki' },
-  { href: '#zakraplanie', label: 'Zakraplanie' },
-  { href: '#kuracja', label: 'Ile opakowań potrzebujesz' },
+  { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#otwieranie', label: 'Otwieranie fiolki' },
+  { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#kuracja', label: 'Ile opakowań potrzebujesz' },
 ];
-
-const howTo = {
-  '@context': 'https://schema.org',
-  '@type': 'HowTo',
-  name: 'Jak stosować krople do oczu Can-C',
-  step: applySteps.map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.t, text: s.d })),
-};
+const env = await Astro.locals.runtime?.env ?? {};
+const rows = await getPageContent(env, 'how_to_use').catch(() => []);
+const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
+const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
+const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1–2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });
+const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolka jest fabrycznie zamknięta.', steps: ['Zdejmij dolny pierścień.', 'Dokręć nakrętkę.', 'Odkręć nakrętkę.', 'Naciśnij fiolkę.'] });
+const applying = at('how_to_use.applying', { h2: 'Zakraplanie', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }] });
+const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.h1, step: (applying.steps as {title:string;desc:string}[]).map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.desc })) };
 ---
 <Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację.">
   <script type="application/ld+json" set:html={JSON.stringify(howTo)} />
@@ -51,8 +37,8 @@ const howTo = {
     <div class="container hero-split">
       <div class="page-hero__inner">
         <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / Stosowanie</nav>
-        <h1>Jak stosować krople Can-C</h1>
-        <p class="lead">Pierwsze efekty mogą pojawić się po miesiącu. Producent zaleca kurację trwającą co najmniej 3–5 miesięcy.</p>
+        <h1>{intro.h1}</h1>
+        <p class="lead">{intro.lead}</p>
       </div>
       <nav class="toc" aria-label="Na tej stronie">
         {toc.map((t) => (
@@ -66,24 +52,22 @@ const howTo = {
 
   <section id="dawkowanie" class="section section--dark">
     <div class="container stack">
-      <h2>Dawkowanie</h2>
+      <h2>{dosage.h2}</h2>
       <div class="dose-grid">
-        <div class="dose"><span class="dose__num">1–2</span><span class="dose__t">krople do oka, dwa razy dziennie</span><span class="dose__d">Standardowe dawkowanie w trakcie kuracji.</span></div>
-        <div class="dose"><span class="dose__num">4</span><span class="dose__t">krople do oka dziennie to maksimum</span><span class="dose__d">Większa dawka nie daje dodatkowych korzyści. Nie przekraczaj jej.</span></div>
-        <div class="dose"><span class="dose__num">1</span><span class="dose__t">kropla raz dziennie, profilaktycznie</span><span class="dose__d">Po zakończeniu kuracji, z okresowymi przerwami.</span></div>
+        {(dosage.doses as {num:string;title:string;desc:string}[]).map((d) => <div class="dose"><span class="dose__num">{d.num}</span><span class="dose__t">{d.title}</span><span class="dose__d">{d.desc}</span></div>)}
       </div>
-      <p class="note-dark">Krople Can-C nie zastępują leczenia. Jeśli masz zdiagnozowaną chorobę oczu, przed rozpoczęciem kuracji porozmawiaj z okulistą.</p>
+      <p class="note-dark">{dosage.note}</p>
     </div>
   </section>
 
   <section id="otwieranie" class="section">
     <div class="container stack">
       <div class="intro">
-        <h2>Otwieranie fiolki</h2>
-        <p class="lead">Fiolka jest fabrycznie zamknięta. Przy pierwszym użyciu przebijasz ją kolcem w nakrętce.</p>
+        <h2>{opening.h2}</h2>
+        <p class="lead">{opening.lead}</p>
       </div>
       <ol class="open-steps">
-        {openSteps.map((t, i) => (
+        {(opening.steps as string[]).map((t, i) => (
           <li>
             <div class="ph open-steps__img">[Ilustracja {i + 1}]</div>
             <span class="open-steps__n">{i + 1}</span>
@@ -97,15 +81,15 @@ const howTo = {
   <section id="zakraplanie" class="section section--tint">
     <div class="container split">
       <div class="split__aside">
-        <h2>Zakraplanie</h2>
+        <h2>{applying.h2}</h2>
         <p class="lead">Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.</p>
         <div class="ph apply-img">[Ilustracja: odchylona głowa, zakraplanie]</div>
       </div>
       <ol class="apply split__main">
-        {applySteps.map((s, i) => (
+        {(applying.steps as {title:string;desc:string}[]).map((s, i) => (
           <li>
             <span class="apply__n">{i + 1}</span>
-            <span class="apply__text"><span class="apply__t">{s.t}</span><span class="muted">{s.d}</span></span>
+            <span class="apply__text"><span class="apply__t">{s.title}</span><span class="muted">{s.desc}</span></span>
           </li>
         ))}
       </ol>
