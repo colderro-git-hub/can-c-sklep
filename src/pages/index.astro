@@ -148,8 +148,9 @@ const bundleRows = bundles.map((b) => {
   </section>
 
   <!-- Korzyści -->
-  <section class="section benefits-section" style="padding:0">
-    <div class="benefits">
+  <section class="section benefits-section">
+    <div class="container">
+      <div class="benefits">
       <div class="benefits__img">
         {benefits.image_url
           ? <img src={benefits.image_url} alt={benefits.image_alt} width="720" height="900" loading="lazy" />
@@ -167,6 +168,7 @@ const bundleRows = bundles.map((b) => {
             <a href={benefits.cta_href} class="btn btn--accent">{benefits.cta_label}</a>
           </div>
         )}
+      </div>
       </div>
     </div>
   </section>
@@ -361,12 +363,12 @@ const bundleRows = bundles.map((b) => {
   .bundle__list { list-style: none; margin: 0; padding: var(--s-2) 0 0; display: flex; flex-direction: column; gap: var(--s-1); border-top: 1px solid var(--c-ink-10); }
 
   /* Sekcja korzyści — układ dzielony, styl editorial (bez zaokrągleń, bez cieni) */
-  .benefits-section { padding: 0; overflow: hidden; }
-  .benefits { display: flex; flex-wrap: wrap; align-items: stretch; min-height: 560px; }
+  .benefits-section { overflow: hidden; }
+  .benefits { display: flex; flex-wrap: wrap; align-items: stretch; min-height: 520px; }
   .benefits__img { flex: 1 1 480px; min-height: 480px; overflow: hidden; }
   .benefits__img img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
   .benefits__ph { width: 100%; height: 100%; min-height: 480px; background: var(--c-gray-300); display: flex; align-items: center; justify-content: center; color: var(--c-ink-70); font-size: var(--fs-small); }
-  .benefits__body { flex: 1 1 480px; padding: 72px 64px; display: flex; flex-direction: column; gap: var(--s-3); justify-content: center; background: var(--c-white); border-top: 1px solid var(--c-ink-10); }
+  .benefits__body { flex: 1 1 480px; padding: 0 0 0 var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); justify-content: center; background: var(--c-white); }
   .benefits__h2 { font-size: clamp(2rem, 3.5vw, 2.75rem); font-weight: 300; line-height: 1.12; letter-spacing: -0.01em; color: var(--c-ink); }
   .benefits__list { list-style: disc; padding-left: 20px; margin: 0; display: flex; flex-direction: column; gap: 8px; }
   .benefits__list li { font-size: 0.9375rem; line-height: 1.55; color: var(--c-ink-75); }
@@ -375,10 +377,9 @@ const bundleRows = bundles.map((b) => {
   @media (max-width: 900px) {
     .benefits { flex-direction: column-reverse; }
     .benefits__img { min-height: 300px; flex-basis: 300px; }
-    .benefits__body { padding: var(--s-4) var(--s-3); border-top: none; border-left: none; }
+    .benefits__body { padding: var(--s-3) 0 0; }
   }
-  :root[data-theme='dark'] .benefits__body { background: var(--c-gray-100); border-color: var(--c-ink-20); }
-  :root[data-theme='dark'] .benefits__list li { border-color: var(--c-ink-20); }
+  :root[data-theme='dark'] .benefits__body { background: transparent; }
 
   .feature { display: flex; flex-direction: column; gap: var(--s-1); padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); }
 
