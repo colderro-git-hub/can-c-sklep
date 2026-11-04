@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getEnv } from '../lib/env';
 import Arrow from '../components/Arrow.astro';
 import { products, lineTotal, formatPrice } from '../data/shop';
 import { getPageContent, getSection } from '../lib/page-content';
@@ -21,7 +22,7 @@ const toc = [
   { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#otwieranie', label: 'Otwieranie fiolki' },
   { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#kuracja', label: 'Ile opakowań potrzebujesz' },
 ];
-const env = await Astro.locals.runtime?.env ?? {};
+const env = await getEnv(Astro.locals);
 const rows = await getPageContent(env, 'how_to_use').catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });

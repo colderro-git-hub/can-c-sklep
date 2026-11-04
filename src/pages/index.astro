@@ -28,7 +28,7 @@ try {
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
 // Treści z CMS (strona główna + FAQ)
-const env = await Astro.locals.runtime?.env ?? {};
+const env = await getEnv(Astro.locals);
 const [homeRows, faqRows, site] = await Promise.all([
   getPageContent(env, 'home').catch(() => []),
   getPageContent(env, 'faq').catch(() => []),

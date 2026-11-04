@@ -1,12 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import { getEnv } from '../lib/env';
 import { site } from '../config';
 import { getPageContent, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
 
 export const prerender = false;
 
-const env = await Astro.locals.runtime?.env ?? {};
+const env = await getEnv(Astro.locals);
 const [faqRows, siteDb] = await Promise.all([
   getPageContent(env, 'faq').catch(() => []),
   getSite(env).catch(() => null),

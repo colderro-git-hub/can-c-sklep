@@ -1,6 +1,20 @@
 ---
 import { site } from '../config';
-const columns = [
+import { getEnv } from '../lib/env';
+import { getPageContent, getSection } from '../lib/page-content';
+
+// Stopka próbuje pobrać treści z bazy; przy awarii lub braku SUPABASE_URL używa fallbacku z kodu
+let columns: { title: string; links: { href: string; label: string }[] }[] = [];
+let badges: string[] = [];
+try {
+  const env = await getEnv(Astro.locals);
+  const rows = await getPageContent(env, 'footer');
+  const colData = getSection<{ columns: typeof columns }>(rows, 'footer.columns');
+  const badgeData = getSection<{ items: string[] }>(rows, 'footer.badges');
+  if (colData?.columns?.length) columns = colData.columns;
+  if (badgeData?.items?.length) badges = badgeData.items;
+} catch { /* fallback poniżej */ }
+if (!columns.length) columns = [
   { title: 'Sklep', links: [
     { href: '/produkt/krople-can-c/', label: 'Krople Can-C' },
     { href: '/produkt/krople-can-c-k9/', label: 'Can-C K9 dla psa' },
@@ -20,7 +34,7 @@ const columns = [
     { href: '/kontakt/', label: 'Kontakt' },
   ]},
 ];
-const methods = ['BLIK', 'Przelewy24', 'Karta', 'InPost Paczkomat', 'Kurier DPD'];
+if (!badges.length) badges = ['BLIK', 'Przelewy24', 'Karta', 'InPost Paczkomat', 'Kurier DPD'];
 const year = new Date().getFullYear();
 ---
 <footer class="footer">
@@ -38,7 +52,7 @@ const year = new Date().getFullYear();
       ))}
     </div>
     <ul class="chips" aria-label="Metody płatności i dostawy">
-      {methods.map((m) => <li>{m}</li>)}
+      {badges.map((m) => <li>{m}</li>)}
     </ul>
     <p class="legal"><span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span> · NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span> · © 2012–{year}</p>
   </div>

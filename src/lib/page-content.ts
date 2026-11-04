@@ -11,6 +11,8 @@ const cache = new Map<PageKey, { at: number; rows: Row[] }>();
 const TTL = 60_000;
 
 export async function getPageContent(env: Env, page: PageKey): Promise<Row[]> {
+  // Bez SUPABASE_URL nie ma sensu próbować – zwracamy puste (strony użyją fallbacku z kodu)
+  if (!env?.SUPABASE_URL) return cache.get(page)?.rows ?? [];
   const hit = cache.get(page);
   if (hit && Date.now() - hit.at < TTL) return hit.rows;
   try {
