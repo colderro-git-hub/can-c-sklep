@@ -51,6 +51,23 @@ const why = at('home.why', {
   features: features as { title: string; text: string }[],
 });
 const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[] });
+const benefits = at('home.benefits', {
+  kicker: 'DLACZEGO KROPLE CAN-C?',
+  h2: 'Korzyści używania kropli Can-C',
+  items: [
+    'Zmniejszają występowanie i rozwój zaćmy starczej.',
+    'Korzystne przy dyskomforcie noszenia soczewek kontaktowych.',
+    'Pomagają przy walce z chorobami rogówki.',
+    'Walka z przemęczeniem oczu.',
+    'Łagodzą efekt zespołu suchego oka.',
+    'Poprawiają funkcję starzejącego się oka.',
+    'Przywracają ostrość widzenia.',
+  ] as string[],
+  cta_label: 'Jak używać kropli Can-C',
+  cta_href: '/stosowanie/',
+  image_url: null as string | null,
+  image_alt: 'Korzyści stosowania kropli Can-C',
+});
 const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
 const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item')
   .filter((f) => f.home)
@@ -126,6 +143,27 @@ const bundleRows = bundles.map((b) => {
             </div>
           </article>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Korzyści -->
+  <section class="section benefits-section">
+    <div class="container benefits">
+      <div class="benefits__img">
+        {benefits.image_url
+          ? <img src={benefits.image_url} alt={benefits.image_alt} width="720" height="900" loading="lazy" />
+          : <div class="ph benefits__ph">[Zdjęcie: {benefits.image_alt}]</div>}
+      </div>
+      <div class="benefits__body">
+        {benefits.kicker && <p class="benefits__kicker">{benefits.kicker}</p>}
+        <h2 class="benefits__h2">{benefits.h2}</h2>
+        <ul class="benefits__list">
+          {(benefits.items as string[]).map((item: string) => <li set:html={item.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')} />)}
+        </ul>
+        {benefits.cta_label && (
+          <a href={benefits.cta_href} class="btn btn--accent">{benefits.cta_label}</a>
+        )}
       </div>
     </div>
   </section>
@@ -318,6 +356,19 @@ const bundleRows = bundles.map((b) => {
   .badge { font-size: 0.8125rem; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-black); }
   .bundle__total { font-size: 2.5rem; font-weight: 300; line-height: 1.15; letter-spacing: -0.01em; }
   .bundle__list { list-style: none; margin: 0; padding: var(--s-2) 0 0; display: flex; flex-direction: column; gap: var(--s-1); border-top: 1px solid var(--c-ink-10); }
+
+  /* Sekcja korzyści */
+  .benefits { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; }
+  .benefits__img { flex: 1 1 420px; min-height: 480px; overflow: hidden; }
+  .benefits__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .benefits__ph { width: 100%; height: 100%; min-height: 480px; background: var(--c-gray-300); }
+  .benefits__body { flex: 1 1 480px; padding: var(--s-5) var(--s-4); display: flex; flex-direction: column; gap: var(--s-3); justify-content: center; background: var(--c-tint); }
+  .benefits__kicker { font-size: 0.8125rem; letter-spacing: 0.1em; color: var(--c-ink-70); font-weight: 500; }
+  .benefits__h2 { font-size: clamp(1.75rem, 3vw, 2.75rem); font-weight: 300; line-height: 1.15; color: var(--c-link); font-style: italic; }
+  .benefits__list { list-style: disc; padding-left: 1.25em; display: flex; flex-direction: column; gap: 8px; color: var(--c-ink-75); line-height: 1.55; }
+  .benefits__list strong { color: var(--c-ink); font-weight: 600; }
+  .benefits__body .btn { align-self: flex-start; }
+  @media (max-width: 860px) { .benefits { flex-direction: column; } .benefits__img { min-height: 300px; } .benefits__body { padding: var(--s-4) var(--s-3); } }
 
   .feature { display: flex; flex-direction: column; gap: var(--s-1); padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); }
 

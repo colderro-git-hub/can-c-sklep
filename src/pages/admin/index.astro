@@ -1725,6 +1725,15 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
         trust: { type: 'list', label: 'Elementy zaufania pod przyciskami (jedna linia = jeden element)' },
       }},
+      { key: 'home.benefits', label: 'Korzyści (sekcja ze zdjęciem)', schema: {
+        kicker: { type: 'text', label: 'Kicker (mały tekst nad nagłówkiem)', hint: 'Np. „DLACZEGO KROPLE CAN-C?" – puste = ukryj' },
+        h2: { type: 'text', label: 'Nagłówek sekcji' },
+        items: { type: 'list', label: 'Punkty listy (jedna linia = jeden punkt)', hint: '**tekst** = pogrubienie' },
+        cta_label: { type: 'text', label: 'Przycisk – etykieta (puste = ukryj)' },
+        cta_href: { type: 'url', label: 'Przycisk – link' },
+        image_url: { type: 'image', label: 'Zdjęcie po lewej (URL z Supabase Storage)' },
+        image_alt: { type: 'text', label: 'Alt zdjęcia' },
+      }},
       { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
         h2: { type: 'text', label: 'Nagłówek sekcji' }, lead: { type: 'textarea', label: 'Tekst lead' },
         link_label: { type: 'text', label: 'Link – etykieta' }, link_href: { type: 'url', label: 'Link – href' },
