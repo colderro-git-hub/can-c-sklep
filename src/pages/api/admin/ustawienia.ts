@@ -23,6 +23,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
 
   // robots.txt – osobny zapis (klucz settings 'robots'); pusta treść = domyślna
+  // GTM ID – osobna akcja, nie wymaga pełnych danych sklepu
+  if (b.action === 'gtm') {
+    const gtmId = String(b.gtmId ?? '').trim().toUpperCase();
+    if (gtmId && !/^GTM-[A-Z0-9]{4,10}$/.test(gtmId)) return json(422, { error: 'Nieprawidłowy GTM ID. Format: GTM-XXXXXXX' });
+    try {
+      const sb = db(env);
+      const [row] = await sb.select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');
+      const existing = row?.value ?? {};
+      await sb.upsert('settings', { key: 'site', value: { ...existing, gtmId }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+      clearSiteCache();
+      console.log(`Admin ${admin} zmienił GTM ID na ${gtmId || '(puste)'}`);
+      return json(200, { ok: true, gtmId });
+    } catch (e) {
+      console.error('Zapis GTM ID: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Nie udało się zapisać GTM ID.' });
+    }
+  }
+
   if (b.action === 'robots') {
     const text = String(b.text ?? '').replace(/\r/g, '').replace(/\t/g, ' ').trim();
     if (text.length > ROBOTS_MAX) return json(422, { error: `robots.txt może mieć maks. ${ROBOTS_MAX} znaków.` });

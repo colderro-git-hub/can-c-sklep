@@ -1969,7 +1969,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     e.preventDefault();
     if (!gtmInput.checkValidity()) { gtmInput.reportValidity(); return; }
     try {
-      await api('/api/admin/ustawienia', { gtmId: gtmInput.value.trim() });
+      await api('/api/admin/ustawienia', { action: 'gtm', gtmId: gtmInput.value.trim() });
       toast(gtmInput.value ? 'GTM podłączony. Sprawdź na stronie po pushu.' : 'GTM odłączony.');
       loadSettings();
     } catch (err) { toast((err as Error).message, true); }
