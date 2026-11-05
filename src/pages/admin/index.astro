@@ -279,13 +279,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                   <button class="btn btn--outline btn--sm" data-an-refresh>Odśwież</button>
                 </div>
               </div>
-              <form class="card" data-gtm-form novalidate>
+              <div data-an-body><p class="muted">Ładowanie danych…</p></div>
+            <form class="card" data-gtm-form novalidate style="margin-top:var(--s-2)">
               <div class="card__head"><h2 class="card__title">Google Tag Manager</h2></div>
               <label class="field">GTM ID <span class="muted small">– np. GTM-XXXXXXX; puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
               <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2, GA4, Google Ads, Meta Pixel.</p>
               <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
             </form>
-            <div data-an-body class="stack"><p class="muted">Ładowanie danych…</p></div>
             </div>
           </section>
 
@@ -2037,7 +2037,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     const env_ga4_missing = !d.ga4 && true; // ga4 null = brak konfiguracji lub błąd
     const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier DPD' };
 
-    anBody.innerHTML = `
+    anBody.innerHTML = `<div class="an-body-inner">` + `
       <!-- KPI -->
       <div class="card">
         <div class="card__head"><h2 class="card__title">Przychód i zamówienia</h2>${delta(kpi.revenue, prev.revenue)}</div>
@@ -2180,15 +2180,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         </div>` : ''}
       </div>` : env_ga4_missing ? `<div class="box box--blue"><strong>GA4 nie skonfigurowane</strong><span>Dodaj sekrety GA4_PRIVATE_KEY, GA4_CLIENT_EMAIL i GA4_PROPERTY_ID w Cloudflare Workers → Settings → Variables.</span></div>` : ''}
 
-      <!-- Kody rabatowe -->
-      ${topCodes.length ? `<div class="card">
-        <div class="card__head"><h2 class="card__title">Kody rabatowe – skuteczność</h2><span class="muted small">Ostatnie ${range} dni</span></div>
-        <div class="table-wrap"><table class="table">
-          <thead><tr><th>Kod</th><th class="r">Użyć</th><th class="r">Udzielony rabat</th><th class="r">Przychód z kodem</th></tr></thead>
-          <tbody>${topCodes.map((c:any)=>`<tr><td><strong>${esc(c.code)}</strong></td><td class="r">${c.used}</td><td class="r nowrap">${zl_an(c.discount)}</td><td class="r nowrap">${zl_an(c.revenue)}</td></tr>`).join('')}</tbody>
-        </table></div>
-      </div>` : ''}
-    `;
+
+    ` + `</div>`;
   }
 
   anRange?.addEventListener('change', loadAnalytics);
@@ -2212,7 +2205,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     .an-funnel__fill--err { background: var(--danger); }
     .an-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
     @media (max-width: 700px) { .an-row2 { grid-template-columns: 1fr; } .an-funnel__l { width: 120px; } }
-    [data-an-body] { display: flex; flex-direction: column; gap: var(--s-2); }
+    .an-body-inner { display: flex; flex-direction: column; gap: var(--s-2); }
   </style>`);
 
   // ===== CSS dla CMS Stron =====
