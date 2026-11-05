@@ -280,7 +280,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 </div>
               </div>
               <div data-an-body><p class="muted">Ładowanie danych…</p></div>
-            <form class="card" data-gtm-form novalidate style="margin-top:var(--s-2)">
+            <form class="card" data-gtm-form novalidate style="margin-top:24px">
               <div class="card__head"><h2 class="card__title">Google Tag Manager</h2></div>
               <label class="field">GTM ID <span class="muted small">– np. GTM-XXXXXXX; puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
               <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2, GA4, Google Ads, Meta Pixel.</p>
@@ -598,7 +598,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .drawer__head h2 { margin: 0; font: 500 20px/1.2 var(--display); color: var(--ink-60); }
   .drawer__body { overflow-y: auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 16px; }
   .sec { display: flex; flex-direction: column; gap: 10px; }
-  .an-body-inner { display: flex; flex-direction: column; gap: 24px; }
+  .an__body { display: flex; flex-direction: column; gap: 24px; }
   .sec__t { margin: 0; font: 500 13px var(--font); color: var(--ink-10); text-transform: none; }
   .box { border-radius: var(--r-lg); background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .box--blue { background: var(--primary-a08); box-shadow: none; }
@@ -1947,7 +1947,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     return `<span class="${d>=0?'ok':'err'}">${d>=0?'+':''}${d}% vs poprzedni okres</span>`;
   }
   function kpiCard(label: string, value: string, sub = '') {
-    return `<div class="an-kpi"><span class="an-kpi__v">${value}</span><span class="an-kpi__l">${label}</span>${sub?`<span class="an-kpi__d">${sub}</span>`:''}</div>`;
+    return `<div class="an__kpi"><span class="an__kpi_v">${value}</span><span class="an__kpi_l">${label}</span>${sub?`<span class="an__kpi_d">${sub}</span>`:''}</div>`;
   }
 
   // Wykres liniowy SVG – minimalistyczny, zaokrąglona linia bezier
@@ -1991,7 +1991,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     const dots = pts.map((pt,i)=>data[i].revenue>0
       ? `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="var(--primary)" stroke="var(--card)" stroke-width="1.5"><title>${data[i].date}: ${new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(data[i].revenue/100)}</title></circle>` : '').join('');
 
-    return `<svg viewBox="0 0 ${W2} ${h}" class="an-chart" aria-label="Wykres przychodu dziennego" style="margin:0 -4px">
+    return `<svg viewBox="0 0 ${W2} ${h}" class="an__chart" aria-label="Wykres przychodu dziennego" style="margin:0 -4px">
       <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.12"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.01"/></linearGradient></defs>
       ${yLabels}
       <path d="${areaPath}" fill="url(#ag)"/>
@@ -2018,13 +2018,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         <text x="${(x+BAR_W/2).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="10" text-anchor="middle" fill="var(--ink-50)" font-family="system-ui">${valLabel}</text>
         <text x="${(x+BAR_W/2).toFixed(1)}" y="${h-6}" font-size="9" text-anchor="middle" fill="var(--ink-30)" font-family="system-ui">${esc(label)}</text>`;
     }).join('');
-    return `<svg viewBox="0 0 ${W2} ${h}" class="an-chart" aria-label="Wykres słupkowy" style="margin:0 -4px">${bars}</svg>`;
+    return `<svg viewBox="0 0 ${W2} ${h}" class="an__chart" aria-label="Wykres słupkowy" style="margin:0 -4px">${bars}</svg>`;
   }
 
   // Lejek
   function funnelBar(label: string, val: number, max: number, cls='') {
     const w = max ? Math.round((val/max)*100) : 0;
-    return `<div class="an-funnel__row"><span class="an-funnel__l">${esc(label)}</span><span class="an-funnel__bar"><span class="an-funnel__fill ${cls}" style="width:${w}%"></span></span><strong>${val}</strong></div>`;
+    return `<div class="an__funnel_row"><span class="an__funnel_l">${esc(label)}</span><span class="an__funnel_bar"><span class="an__funnel_fill ${cls}" style="width:${w}%"></span></span><strong>${val}</strong></div>`;
   }
 
   async function loadAnalytics() {
@@ -2038,11 +2038,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     const env_ga4_missing = !d.ga4 && true; // ga4 null = brak konfiguracji lub błąd
     const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier DPD' };
 
-    anBody.innerHTML = `<div class="an-body-inner">` + `
+    anBody.innerHTML = `<div class="an__body">` + `
       <!-- KPI -->
       <div class="card">
         <div class="card__head"><h2 class="card__title">Przychód i zamówienia</h2>${delta(kpi.revenue, prev.revenue)}</div>
-        <div class="an-kpis">
+        <div class="an__kpis">
           ${kpiCard('Przychód', zl_an(kpi.revenue), delta(kpi.revenue, prev.revenue))}
           ${kpiCard('Zamówień opłaconych', kpi.orders, delta(kpi.orders, prev.orders))}
           ${kpiCard('Średnia wartość', zl_an(kpi.avgOrder))}
@@ -2060,12 +2060,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <!-- Lejek zamówień -->
       <div class="card">
         <div class="card__head"><h2 class="card__title">Lejek zamówień</h2><span class="muted small">Ostatnie ${range} dni</span></div>
-        <div class="an-funnel">
+        <div class="an__funnel">
           ${funnelBar('Złożone', funnel.placed, funnel.placed)}
-          ${funnelBar('Opłacone', funnel.paid, funnel.placed, 'an-funnel__fill--ok')}
-          ${funnelBar('Wysłane', funnel.shipped, funnel.placed, 'an-funnel__fill--ok')}
-          ${funnelBar('Zrealizowane', funnel.completed, funnel.placed, 'an-funnel__fill--ok')}
-          ${funnelBar('Anulowane', funnel.cancelled, funnel.placed, 'an-funnel__fill--err')}
+          ${funnelBar('Opłacone', funnel.paid, funnel.placed, 'an__funnel_fill--ok')}
+          ${funnelBar('Wysłane', funnel.shipped, funnel.placed, 'an__funnel_fill--ok')}
+          ${funnelBar('Zrealizowane', funnel.completed, funnel.placed, 'an__funnel_fill--ok')}
+          ${funnelBar('Anulowane', funnel.cancelled, funnel.placed, 'an__funnel_fill--err')}
           ${funnelBar('Oczekujące na płatność', funnel.pending, funnel.placed)}
         </div>
         <p class="muted small" style="padding-top:8px">Konwersja (złożone→opłacone): <strong>${pct(funnel.paid,funnel.placed)}</strong></p>
@@ -2084,7 +2084,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <!-- Klienci -->
       <div class="card">
         <div class="card__head"><h2 class="card__title">Konto użytkownika</h2></div>
-        <div class="an-kpis">
+        <div class="an__kpis">
           ${kpiCard('Nowi klienci', kpi.newCustomers)}
           ${kpiCard('Powracający', kpi.returning)}
           ${kpiCard('Bez konta (gość)', kpi.guests)}
@@ -2092,16 +2092,16 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </div>
 
       <!-- Metody dostawy i płatności -->
-      <div class="an-row2">
+      <div class="an__row2">
         <div class="card">
           <div class="card__head"><h2 class="card__title">Metoda dostawy</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${Object.entries(byShipping).sort(([,a],[,b])=>(b as number)-(a as number)).map(([k,v])=>funnelBar(ship[k]||k,v as number,kpi.orders)).join('')}
           </div>
         </div>
         <div class="card">
           <div class="card__head"><h2 class="card__title">Metoda płatności</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${Object.entries(byPayment).sort(([,a],[,b])=>(b as number)-(a as number)).map(([k,v])=>funnelBar(k,v as number,kpi.orders)).join('')}
           </div>
         </div>
@@ -2111,17 +2111,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       ${d.ga4 ? `
       <div class="card">
         <div class="card__head"><h2 class="card__title">GA4 — Ruch i zdarzenia</h2><span class="muted small">Google Analytics · ostatnie ${range} dni</span></div>
-        <div class="an-kpis">
+        <div class="an__kpis">
           ${kpiCard('Sesje', d.ga4.sessions.toLocaleString('pl-PL'))}
           ${kpiCard('Użytkownicy', d.ga4.users.toLocaleString('pl-PL'))}
           ${kpiCard('Nowi użytkownicy', d.ga4.newUsers.toLocaleString('pl-PL'))}
           ${kpiCard('Współczynnik odrzuceń', d.ga4.bounceRate+'%')}
         </div>
       </div>
-      <div class="an-row2">
+      <div class="an__row2">
         <div class="card">
           <div class="card__head"><h2 class="card__title">GA4 — Produkty i koszyk</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${[
               ['Wyświetlenia list produktów', d.ga4.view_item_list],
               ['Wybór produktu z listy', d.ga4.select_item],
@@ -2134,7 +2134,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         </div>
         <div class="card">
           <div class="card__head"><h2 class="card__title">GA4 — Proces zamówienia</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${[
               ['Rozpoczęcie zamówienia', d.ga4.begin_checkout],
               ['Dane dostawy', d.ga4.add_shipping_info],
@@ -2145,17 +2145,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
         </div>
       </div>
-      <div class="an-row2">
+      <div class="an__row2">
         <div class="card">
           <div class="card__head"><h2 class="card__title">GA4 — Konto użytkownika</h2></div>
-          <div class="an-kpis">
+          <div class="an__kpis">
             ${kpiCard('Rejestracje (sign_up)', d.ga4.sign_up)}
             ${kpiCard('Logowania (login)', d.ga4.login)}
           </div>
         </div>
         <div class="card">
           <div class="card__head"><h2 class="card__title">GA4 — Formularze</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${[
               ['Rozpoczęcia formularza', d.ga4.form_start],
               ['Kliknięcia w pola', d.ga4.form_field_click],
@@ -2165,10 +2165,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
         </div>
       </div>
-      <div class="an-row2">
+      <div class="an__row2">
         <div class="card">
           <div class="card__head"><h2 class="card__title">GA4 — Lejek konwersji</h2></div>
-          <div class="an-funnel">
+          <div class="an__funnel">
             ${d.ga4.funnelRates.map((f: any) => funnelBar(f.step + ' (' + f.rate + '%)', f.count, d.ga4.funnelRates[0]?.count || 1)).join('')}
           </div>
         </div>
@@ -2191,22 +2191,21 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
   // CSS analityki
   document.head.insertAdjacentHTML('beforeend', `<style>
-    .an-kpis { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
-    .an-kpi { flex: 1 1 130px; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
-    .an-kpi__v { font-size: 1.5rem; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; }
-    .an-kpi__l { font-size: 11px; color: var(--ink-50); margin-top: 2px; }
-    .an-kpi__d { font-size: 11px; margin-top: 4px; }
-    .an-chart { width: 100%; height: auto; display: block; overflow: visible; }
-    .an-funnel { display: flex; flex-direction: column; gap: 10px; }
-    .an-funnel__row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-    .an-funnel__l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
-    .an-funnel__bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
-    .an-funnel__fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
-    .an-funnel__fill--ok { background: var(--ok); }
-    .an-funnel__fill--err { background: var(--danger); }
-    .an-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
-    @media (max-width: 700px) { .an-row2 { grid-template-columns: 1fr; } .an-funnel__l { width: 120px; } }
-    .an-body-inner { display: flex; flex-direction: column; gap: var(--s-2); }
+    .an__kpis { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
+    .an__kpi { flex: 1 1 130px; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+    .an__kpi_v { font-size: 1.5rem; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; }
+    .an__kpi_l { font-size: 11px; color: var(--ink-50); margin-top: 2px; }
+    .an__kpi_d { font-size: 11px; margin-top: 4px; }
+    .an__chart { width: 100%; height: auto; display: block; overflow: visible; }
+    .an__funnel { display: flex; flex-direction: column; gap: 10px; }
+    .an__funnel_row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .an__funnel_l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
+    .an__funnel_bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+    .an__funnel_fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
+    .an__funnel_fill--ok { background: var(--ok); }
+    .an__funnel_fill--err { background: var(--danger); }
+    .an__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 700px) { .an__row2 { grid-template-columns: 1fr; } .an__funnel_l { width: 120px; } }
   </style>`);
 
   // ===== CSS dla CMS Stron =====
