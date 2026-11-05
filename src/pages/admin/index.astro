@@ -44,6 +44,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M21 12a9 9 0 1 1-3-6.7M21 4v4h-4" /></svg>
             <span>Automaty</span>
           </button>
+          <button type="button" class="nav__item" data-tab="analytics">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M7 20V10M11 20V4M15 20v-7M19 20v-4"/></svg>
+            <span>Analityka</span>
+          </button>
           <button type="button" class="nav__item" data-tab="pages">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 8h10M7 12h6M7 16h4" /></svg>
             <span>Strony</span>
@@ -261,6 +265,30 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </section>
 
           <!-- USTAWIENIA SKLEPU -->
+          <section data-view="analytics" class="stack" hidden>
+            <div class="sec">
+              <div class="sec__head">
+                <h2 class="sec__t">Analityka sprzedaży</h2>
+                <div class="actions">
+                  <select class="input input--sm" data-an-range>
+                    <option value="7">Ostatnie 7 dni</option>
+                    <option value="30" selected>Ostatnie 30 dni</option>
+                    <option value="90">Ostatnie 90 dni</option>
+                    <option value="365">Ostatnie 12 miesięcy</option>
+                  </select>
+                  <button class="btn btn--outline btn--sm" data-an-refresh>Odśwież</button>
+                </div>
+              </div>
+              <form class="card" data-gtm-form novalidate>
+              <div class="card__head"><h2 class="card__title">Google Tag Manager</h2></div>
+              <label class="field">GTM ID <span class="muted small">– np. GTM-XXXXXXX; puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
+              <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2, GA4, Google Ads, Meta Pixel.</p>
+              <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
+            </form>
+            <div data-an-body><p class="muted">Ładowanie danych…</p></div>
+            </div>
+          </section>
+
           <section data-view="pages" class="stack" hidden>
             <div class="sec">
               <div class="sec__head">
@@ -281,12 +309,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </section>
 
           <section data-view="settings" class="stack" hidden>
-            <form class="card" data-gtm-form novalidate>
-              <div class="card__head"><h2 class="card__title">Analityka</h2></div>
-              <label class="field">Google Tag Manager ID <span class="muted small">– wklej ID kontenera GTM (np. GTM-XXXXXXX); puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
-              <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2 (CookieYes), GA4, Google Ads, Meta Pixel.</p>
-              <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
-            </form>
+
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
             <form class="stack" data-settings-form novalidate>
             <div class="card">
@@ -1911,6 +1934,189 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   pageSelect?.addEventListener('change', () => loadPages());
   document.querySelector('[data-tab="pages"]')?.addEventListener('click', () => setTimeout(() => loadPages(), 50));
 
+  // ===== ANALITYKA =====
+  const anBody = $<HTMLElement>('[data-an-body]');
+  const anRange = $<HTMLSelectElement>('[data-an-range]');
+
+  function zl_an(g: number) { return new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(g/100); }
+  function pct(a: number, b: number) { return b ? Math.round((a/b)*10)/10+'%' : '—'; }
+  function delta(cur: number, prev: number) {
+    if (!prev) return '';
+    const d = Math.round(((cur-prev)/prev)*100);
+    return `<span class="${d>=0?'ok':'err'}">${d>=0?'+':''}${d}% vs poprzedni okres</span>`;
+  }
+  function kpiCard(label: string, value: string, sub = '') {
+    return `<div class="an-kpi"><span class="an-kpi__v">${value}</span><span class="an-kpi__l">${label}</span>${sub?`<span class="an-kpi__d">${sub}</span>`:''}</div>`;
+  }
+
+  // Wykres liniowy SVG
+  function lineChart(data: {date:string;revenue:number}[], h=160): string {
+    if (!data.length) return '';
+    const W2=600, PAD=40;
+    const vals = data.map(d=>d.revenue);
+    const max = Math.max(...vals,1);
+    const pts = data.map((d,i)=>{
+      const x = PAD + (i/(data.length-1||1))*(W2-PAD*2);
+      const y = h - PAD/2 - (d.revenue/max)*(h-PAD);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const area = data.map((d,i)=>{
+      const x = PAD + (i/(data.length-1||1))*(W2-PAD*2);
+      const y = h - PAD/2 - (d.revenue/max)*(h-PAD);
+      return `${i===0?'M':'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ') + ` L${(W2-PAD).toFixed(1)},${h-PAD/2} L${PAD},${h-PAD/2} Z`;
+    // Etykiety osi X (co 7 dni)
+    const xLabels = data.filter((_,i)=> i%(Math.ceil(data.length/6)||1)===0).map((d,_,arr)=>{
+      const i = data.indexOf(d);
+      const x = PAD + (i/(data.length-1||1))*(W2-PAD*2);
+      const label = d.date.slice(5);
+      return `<text x="${x.toFixed(1)}" y="${h}" font-size="10" text-anchor="middle" fill="var(--ink-50)">${label}</text>`;
+    }).join('');
+    return `<svg viewBox="0 0 ${W2} ${h+8}" class="an-chart" aria-label="Wykres przychodu">
+      <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.18"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>
+      <path d="${area}" fill="url(#ag)"/>
+      <polyline points="${pts}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round"/>
+      ${data.map((d,i)=>{ const x=PAD+(i/(data.length-1||1))*(W2-PAD*2); const y=h-PAD/2-(d.revenue/max)*(h-PAD); return d.revenue>0?`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3" fill="var(--primary)"/>`:''}).join('')}
+      ${xLabels}
+    </svg>`;
+  }
+
+  // Wykres słupkowy SVG
+  function barChart(labels: string[], values: number[], h=140): string {
+    if (!labels.length) return '';
+    const W2=600, PAD=8, BAR_W=Math.min(40, (W2-PAD*2)/labels.length - 6);
+    const max = Math.max(...values,1);
+    const bars = labels.map((l,i)=>{
+      const x = PAD + i*((W2-PAD*2)/labels.length) + ((W2-PAD*2)/labels.length - BAR_W)/2;
+      const bh = Math.max(2,(values[i]/max)*(h-30));
+      const y = h - 20 - bh;
+      const label = l.length > 10 ? l.slice(0,10)+'…' : l;
+      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${BAR_W}" height="${bh.toFixed(1)}" rx="3" fill="var(--primary)" opacity="0.85"/>
+        <text x="${(x+BAR_W/2).toFixed(1)}" y="${h-4}" font-size="9" text-anchor="middle" fill="var(--ink-50)">${esc(label)}</text>
+        <text x="${(x+BAR_W/2).toFixed(1)}" y="${(y-4).toFixed(1)}" font-size="10" text-anchor="middle" fill="var(--ink)">${zl_an(values[i])}</text>`;
+    }).join('');
+    return `<svg viewBox="0 0 ${W2} ${h}" class="an-chart" aria-label="Wykres słupkowy">${bars}</svg>`;
+  }
+
+  // Lejek
+  function funnelBar(label: string, val: number, max: number, cls='') {
+    const w = max ? Math.round((val/max)*100) : 0;
+    return `<div class="an-funnel__row"><span class="an-funnel__l">${esc(label)}</span><span class="an-funnel__bar"><span class="an-funnel__fill ${cls}" style="width:${w}%"></span></span><strong>${val}</strong></div>`;
+  }
+
+  async function loadAnalytics() {
+    if (!anBody) return;
+    const range = anRange?.value || '30';
+    anBody.innerHTML = '<p class="muted">Ładowanie danych…</p>';
+    let d: any;
+    try { d = await api(`/api/admin/analytics?range=${range}`); }
+    catch (e) { anBody.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+    const { kpi, prev, funnel, daily, topProducts, byShipping, byPayment, topCodes } = d;
+    const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier DPD' };
+
+    anBody.innerHTML = `
+      <!-- KPI -->
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">Przychód i zamówienia</h2>${delta(kpi.revenue, prev.revenue)}</div>
+        <div class="an-kpis">
+          ${kpiCard('Przychód', zl_an(kpi.revenue), delta(kpi.revenue, prev.revenue))}
+          ${kpiCard('Zamówień opłaconych', kpi.orders, delta(kpi.orders, prev.orders))}
+          ${kpiCard('Średnia wartość', zl_an(kpi.avgOrder))}
+          ${kpiCard('Konwersja', kpi.convRate+'%')}
+          ${kpi.avgPayMin!==null ? kpiCard('Śr. czas do płatności', kpi.avgPayMin < 60 ? kpi.avgPayMin+'min' : Math.round(kpi.avgPayMin/60)+'h '+kpi.avgPayMin%60+'min') : ''}
+        </div>
+      </div>
+
+      <!-- Wykres przychodu -->
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">Przychód dzienny</h2></div>
+        ${lineChart(daily)}
+      </div>
+
+      <!-- Lejek zamówień -->
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">Lejek zamówień</h2><span class="muted small">Ostatnie ${range} dni</span></div>
+        <div class="an-funnel">
+          ${funnelBar('Złożone', funnel.placed, funnel.placed)}
+          ${funnelBar('Opłacone', funnel.paid, funnel.placed, 'an-funnel__fill--ok')}
+          ${funnelBar('Wysłane', funnel.shipped, funnel.placed, 'an-funnel__fill--ok')}
+          ${funnelBar('Zrealizowane', funnel.completed, funnel.placed, 'an-funnel__fill--ok')}
+          ${funnelBar('Anulowane', funnel.cancelled, funnel.placed, 'an-funnel__fill--err')}
+          ${funnelBar('Oczekujące na płatność', funnel.pending, funnel.placed)}
+        </div>
+        <p class="muted small" style="padding-top:8px">Konwersja (złożone→opłacone): <strong>${pct(funnel.paid,funnel.placed)}</strong></p>
+      </div>
+
+      <!-- Top produkty -->
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">Top produkty</h2></div>
+        ${barChart(topProducts.map((p:any)=>p.name.replace(/Can-C\s*/,'')), topProducts.map((p:any)=>p.revenue))}
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>Produkt</th><th class="r">Sprzedanych szt.</th><th class="r">Przychód</th></tr></thead>
+          <tbody>${topProducts.map((p:any)=>`<tr><td>${esc(p.name)}</td><td class="r">${p.qty}</td><td class="r nowrap">${zl_an(p.revenue)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>
+
+      <!-- Klienci -->
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">Konto użytkownika</h2></div>
+        <div class="an-kpis">
+          ${kpiCard('Nowi klienci', kpi.newCustomers)}
+          ${kpiCard('Powracający', kpi.returning)}
+          ${kpiCard('Bez konta (gość)', kpi.guests)}
+        </div>
+      </div>
+
+      <!-- Metody dostawy i płatności -->
+      <div class="an-row2">
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">Metoda dostawy</h2></div>
+          <div class="an-funnel">
+            ${Object.entries(byShipping).sort(([,a],[,b])=>(b as number)-(a as number)).map(([k,v])=>funnelBar(ship[k]||k,v as number,kpi.orders)).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">Metoda płatności</h2></div>
+          <div class="an-funnel">
+            ${Object.entries(byPayment).sort(([,a],[,b])=>(b as number)-(a as number)).map(([k,v])=>funnelBar(k,v as number,kpi.orders)).join('')}
+          </div>
+        </div>
+      </div>
+
+      <!-- Kody rabatowe -->
+      ${topCodes.length ? `<div class="card">
+        <div class="card__head"><h2 class="card__title">Kody rabatowe – skuteczność</h2><span class="muted small">Ostatnie ${range} dni</span></div>
+        <div class="table-wrap"><table class="table">
+          <thead><tr><th>Kod</th><th class="r">Użyć</th><th class="r">Udzielony rabat</th><th class="r">Przychód z kodem</th></tr></thead>
+          <tbody>${topCodes.map((c:any)=>`<tr><td><strong>${esc(c.code)}</strong></td><td class="r">${c.used}</td><td class="r nowrap">${zl_an(c.discount)}</td><td class="r nowrap">${zl_an(c.revenue)}</td></tr>`).join('')}</tbody>
+        </table></div>
+      </div>` : ''}
+    `;
+  }
+
+  anRange?.addEventListener('change', loadAnalytics);
+  $('[data-an-refresh]')?.addEventListener('click', loadAnalytics);
+  document.querySelector('[data-tab="analytics"]')?.addEventListener('click', () => setTimeout(loadAnalytics, 50));
+
+  // CSS analityki
+  document.head.insertAdjacentHTML('beforeend', `<style>
+    .an-kpis { display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; }
+    .an-kpi { flex: 1 1 140px; display: flex; flex-direction: column; gap: 4px; padding: 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+    .an-kpi__v { font-size: 1.75rem; font-weight: 300; line-height: 1.1; }
+    .an-kpi__l { font-size: 12px; color: var(--ink-50); }
+    .an-kpi__d { font-size: 11px; }
+    .an-chart { width: 100%; height: auto; display: block; overflow: visible; }
+    .an-funnel { display: flex; flex-direction: column; gap: 10px; }
+    .an-funnel__row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .an-funnel__l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
+    .an-funnel__bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+    .an-funnel__fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
+    .an-funnel__fill--ok { background: var(--ok); }
+    .an-funnel__fill--err { background: var(--danger); }
+    .an-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
+    @media (max-width: 700px) { .an-row2 { grid-template-columns: 1fr; } .an-funnel__l { width: 120px; } }
+  </style>`);
+
   // ===== CSS dla CMS Stron =====
   document.head.insertAdjacentHTML('beforeend', `<style>
     .faq-cms__item { background: var(--card); box-shadow: inset 0 0 0 1px var(--line); margin-bottom: 4px; }
@@ -1997,7 +2203,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
 
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony' };
+  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
