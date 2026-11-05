@@ -599,6 +599,21 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .drawer__body { overflow-y: auto; padding: 16px 20px 24px; display: flex; flex-direction: column; gap: 16px; }
   .sec { display: flex; flex-direction: column; gap: 10px; }
   .an__body { display: flex; flex-direction: column; gap: 24px !important; }
+  .an__kpis { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
+  .an__kpi { flex: 1 1 130px; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
+  .an__kpi_v { font-size: 1.5rem; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; }
+  .an__kpi_l { font-size: 11px; color: var(--ink-50); margin-top: 2px; }
+  .an__kpi_d { font-size: 11px; margin-top: 4px; }
+  .an__chart { width: 100%; height: auto; display: block; overflow: visible; }
+  .an__funnel { display: flex; flex-direction: column; gap: 10px; }
+  .an__funnel_row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+  .an__funnel_l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
+  .an__funnel_bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
+  .an__funnel_fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
+  .an__funnel_fill--ok { background: var(--ok); }
+  .an__funnel_fill--err { background: var(--danger); }
+  .an__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 700px) { .an__row2 { grid-template-columns: 1fr; } .an__funnel_l { width: 120px; } }
   .sec__t { margin: 0; font: 500 13px var(--font); color: var(--ink-10); text-transform: none; }
   .box { border-radius: var(--r-lg); background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .box--blue { background: var(--primary-a08); box-shadow: none; }
@@ -2190,23 +2205,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   document.querySelector('[data-tab="analytics"]')?.addEventListener('click', () => setTimeout(loadAnalytics, 50));
 
   // CSS analityki
-  document.head.insertAdjacentHTML('beforeend', `<style>
-    .an__kpis { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
-    .an__kpi { flex: 1 1 130px; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
-    .an__kpi_v { font-size: 1.5rem; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; }
-    .an__kpi_l { font-size: 11px; color: var(--ink-50); margin-top: 2px; }
-    .an__kpi_d { font-size: 11px; margin-top: 4px; }
-    .an__chart { width: 100%; height: auto; display: block; overflow: visible; }
-    .an__funnel { display: flex; flex-direction: column; gap: 10px; }
-    .an__funnel_row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-    .an__funnel_l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
-    .an__funnel_bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
-    .an__funnel_fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
-    .an__funnel_fill--ok { background: var(--ok); }
-    .an__funnel_fill--err { background: var(--danger); }
-    .an__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    @media (max-width: 700px) { .an__row2 { grid-template-columns: 1fr; } .an__funnel_l { width: 120px; } }
-  </style>`);
+  // CSS analityki przeniesiony do głównego bloku <style>
 
   // ===== CSS dla CMS Stron =====
   document.head.insertAdjacentHTML('beforeend', `<style>
