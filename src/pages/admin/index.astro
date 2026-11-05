@@ -607,13 +607,19 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .an__chart { width: 100%; height: auto; display: block; overflow: visible; }
   .an__funnel { display: flex; flex-direction: column; gap: 10px; }
   .an__funnel_row { display: flex; align-items: center; gap: 12px; font-size: 13px; }
-  .an__funnel_l { width: 200px; flex-shrink: 0; color: var(--ink-50); }
-  .an__funnel_bar { flex: 1; height: 20px; background: var(--line-soft); border-radius: 3px; overflow: hidden; }
-  .an__funnel_fill { display: block; height: 100%; background: var(--primary); border-radius: 3px; transition: width 0.4s ease; }
-  .an__funnel_fill--ok { background: var(--ok); }
-  .an__funnel_fill--err { background: var(--danger); }
+  .an__funnel_l { width: 200px; flex-shrink: 0; color: var(--ink-50); font-size: 12px; }
+  .an__funnel_bar { flex: 1; height: 10px; background: #f1f3f9; border-radius: 100px; overflow: hidden; }
+  .an__funnel_fill { display: block; height: 100%; background: var(--primary); border-radius: 100px; transition: width 0.6s cubic-bezier(.4,0,.2,1); min-width: 2px; }
+  .an__funnel_fill--ok { background: #22c55e; }
+  .an__funnel_fill--err { background: #f87171; }
   .an__row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
   @media (max-width: 700px) { .an__row2 { grid-template-columns: 1fr; } .an__funnel_l { width: 120px; } }
+  .an__bars { display: flex; flex-direction: column; gap: 10px; padding: 4px 0; }
+  .an__bar_row { display: flex; align-items: center; gap: 10px; font-size: 12px; }
+  .an__bar_name { width: 160px; flex-shrink: 0; color: var(--ink-50); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .an__bar_track { flex: 1; height: 8px; background: #f1f3f9; border-radius: 100px; overflow: hidden; }
+  .an__bar_fill { display: block; height: 100%; background: var(--primary); border-radius: 100px; opacity: 0.7; transition: width 0.6s cubic-bezier(.4,0,.2,1); min-width: 2px; }
+  .an__bar_val { width: 70px; text-align: right; color: var(--ink-50); font-variant-numeric: tabular-nums; flex-shrink: 0; }
   .sec__t { margin: 0; font: 500 13px var(--font); color: var(--ink-10); text-transform: none; }
   .box { border-radius: var(--r-lg); background: #FAFAFD; box-shadow: inset 0 0 0 1px var(--line-soft); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .box--blue { background: var(--primary-a08); box-shadow: none; }
@@ -1965,75 +1971,66 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     return `<div class="an__kpi"><span class="an__kpi_v">${value}</span><span class="an__kpi_l">${label}</span>${sub?`<span class="an__kpi_d">${sub}</span>`:''}</div>`;
   }
 
-  // Wykres liniowy SVG – minimalistyczny, zaokrąglona linia bezier
-  function lineChart(data: {date:string;revenue:number;orders:number}[], h=180): string {
+  // Wykres liniowy SVG – minimalistyczny
+  function lineChart(data: {date:string;revenue:number;orders:number}[], h=200): string {
     if (!data.length) return '';
-    const W2=680, PL=48, PR=16, PT=20, PB=28;
-    const IW = W2-PL-PR, IH = h-PT-PB;
+    const W2=680, PL=52, PR=16, PT=16, PB=32, IW=W2-PL-PR, IH=h-PT-PB;
     const vals = data.map(d=>d.revenue);
-    const max = Math.max(...vals,1);
+    const max = Math.max(...vals, 1);
     const px = (i:number) => PL + (i/(data.length-1||1))*IW;
     const py = (v:number) => PT + IH - (v/max)*IH;
-
-    // Bezier smoothing
-    function bezierPath(pts:{x:number;y:number}[]) {
-      if (pts.length < 2) return '';
-      let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
-      for (let i=1;i<pts.length;i++) {
-        const p0=pts[i-1], p1=pts[i];
-        const cp1x=p0.x+(p1.x-p0.x)*0.4, cp1y=p0.y;
-        const cp2x=p0.x+(p1.x-p0.x)*0.6, cp2y=p1.y;
-        d+=` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`;
-      }
-      return d;
-    }
+    // Bezier
     const pts = data.map((d,i)=>({x:px(i),y:py(d.revenue)}));
-    const linePath = bezierPath(pts);
-    const areaPath = linePath + ` L${px(data.length-1).toFixed(1)},${(PT+IH).toFixed(1)} L${PL},${(PT+IH).toFixed(1)} Z`;
-
-    // Oś Y – 4 wartości
-    const ySteps = [0,0.33,0.67,1].map(f=>({v:Math.round(max*f),y:PT+IH-f*IH}));
-    const yLabels = ySteps.map(s=>`<text x="${PL-6}" y="${(s.y+4).toFixed(1)}" font-size="10" text-anchor="end" fill="var(--ink-30)" font-family="system-ui">${s.v>0?new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:1}).format(s.v/100):''}</text><line x1="${PL}" y1="${s.y.toFixed(1)}" x2="${(PL+IW).toFixed(1)}" y2="${s.y.toFixed(1)}" stroke="var(--line)" stroke-width="1"/>`).join('');
-
-    // Oś X – max 7 etykiet
-    const step = Math.ceil(data.length/7);
-    const xLabels = data.filter((_,i)=>i%step===0||i===data.length-1).map(d=>{
-      const i=data.indexOf(d);
-      return `<text x="${px(i).toFixed(1)}" y="${h-4}" font-size="10" text-anchor="middle" fill="var(--ink-30)" font-family="system-ui">${d.date.slice(5)}</text>`;
+    function bezier(pp:{x:number;y:number}[]) {
+      let d=''; for(let i=0;i<pp.length;i++) {
+        if(i===0){d+=`M${pp[0].x.toFixed(1)},${pp[0].y.toFixed(1)}`;continue;}
+        const p0=pp[i-1],p1=pp[i],t=0.35;
+        d+=` C${(p0.x+(p1.x-p0.x)*t).toFixed(1)},${p0.y.toFixed(1)} ${(p0.x+(p1.x-p0.x)*(1-t)).toFixed(1)},${p1.y.toFixed(1)} ${p1.x.toFixed(1)},${p1.y.toFixed(1)}`;
+      } return d;
+    }
+    const linePath = bezier(pts);
+    const areaPath = linePath+` L${px(data.length-1).toFixed(1)},${(PT+IH).toFixed(1)} L${PL},${(PT+IH).toFixed(1)} Z`;
+    // Oś Y – 4 linie
+    const yLines = [0,.33,.67,1].map(f=>{
+      const v=max*f, y=PT+IH-f*IH;
+      const lbl=v>0?new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:0}).format(v/100):'0';
+      return `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${(PL+IW)}" y2="${y.toFixed(1)}" stroke="#e5e7eb" stroke-width="1"/>
+        <text x="${PL-6}" y="${(y+4).toFixed(1)}" font-size="10" text-anchor="end" fill="#9ca3af" font-family="system-ui,sans-serif">${lbl}</text>`;
     }).join('');
-
-    // Tooltip dots – tylko gdzie jest przychód
-    const dots = pts.map((pt,i)=>data[i].revenue>0
-      ? `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="var(--primary)" stroke="var(--card)" stroke-width="1.5"><title>${data[i].date}: ${new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(data[i].revenue/100)}</title></circle>` : '').join('');
-
-    return `<svg viewBox="0 0 ${W2} ${h}" class="an__chart" aria-label="Wykres przychodu dziennego" style="margin:0 -4px">
-      <defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.12"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.01"/></linearGradient></defs>
-      ${yLabels}
-      <path d="${areaPath}" fill="url(#ag)"/>
-      <path d="${linePath}" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round"/>
-      ${dots}
-      ${xLabels}
+    // Oś X
+    const step=Math.max(1,Math.ceil(data.length/6));
+    const xLabels=data.filter((_,i)=>i%step===0||i===data.length-1).map(d=>{
+      const i=data.indexOf(d);
+      return `<text x="${px(i).toFixed(1)}" y="${h-4}" font-size="10" text-anchor="middle" fill="#9ca3af" font-family="system-ui,sans-serif">${d.date.slice(5)}</text>`;
+    }).join('');
+    // Dot tylko na wartościach > 0
+    const dots=pts.map((pt,i)=>data[i].revenue>0
+      ?`<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="3" fill="#fff" stroke="#6366f1" stroke-width="1.5"><title>${data[i].date}: ${new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(data[i].revenue/100)}</title></circle>`:''
+    ).join('');
+    return `<svg viewBox="0 0 ${W2} ${h}" class="an__chart" aria-label="Wykres przychodu dziennego">
+      <defs><linearGradient id="ag2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#6366f1" stop-opacity="0.08"/><stop offset="100%" stop-color="#6366f1" stop-opacity="0"/></linearGradient></defs>
+      ${yLines}
+      <path d="${areaPath}" fill="url(#ag2)"/>
+      <path d="${linePath}" fill="none" stroke="#6366f1" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}${xLabels}
     </svg>`;
   }
 
-  // Wykres słupkowy SVG – minimalistyczny
-  function barChart(labels: string[], values: number[], h=160): string {
+  // Wykres słupkowy poziomy – minimalistyczny
+  function barChart(labels: string[], values: number[], h=0): string {
     if (!labels.length) return '';
-    const W2=680, PL=8, PR=8, PT=28, PB=24;
-    const n=labels.length, IW=W2-PL-PR, IH=h-PT-PB;
-    const BAR_W=Math.min(48,IW/n*0.55), GAP=IW/n;
-    const max=Math.max(...values,1);
-    const bars=labels.map((l,i)=>{
-      const x=PL+i*GAP+(GAP-BAR_W)/2;
-      const bh=Math.max(2,(values[i]/max)*IH);
-      const y=PT+IH-bh;
-      const label=l.length>12?l.slice(0,12)+'…':l;
-      const valLabel=values[i]>0?new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:1}).format(values[i]/100):'';
-      return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${BAR_W.toFixed(1)}" height="${bh.toFixed(1)}" rx="3" fill="var(--primary)" opacity="0.75"/>
-        <text x="${(x+BAR_W/2).toFixed(1)}" y="${(y-6).toFixed(1)}" font-size="10" text-anchor="middle" fill="var(--ink-50)" font-family="system-ui">${valLabel}</text>
-        <text x="${(x+BAR_W/2).toFixed(1)}" y="${h-6}" font-size="9" text-anchor="middle" fill="var(--ink-30)" font-family="system-ui">${esc(label)}</text>`;
+    const maxV = Math.max(...values, 1);
+    const rows = labels.map((l,i) => {
+      const pct = Math.round((values[i]/maxV)*100);
+      const val = values[i]>0 ? new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:1}).format(values[i]/100)+' zł' : '—';
+      const name = l.length>28 ? l.slice(0,28)+'…' : l;
+      return `<div class="an__bar_row">
+        <span class="an__bar_name">${esc(name)}</span>
+        <span class="an__bar_track"><span class="an__bar_fill" style="width:${pct}%"></span></span>
+        <span class="an__bar_val">${val}</span>
+      </div>`;
     }).join('');
-    return `<svg viewBox="0 0 ${W2} ${h}" class="an__chart" aria-label="Wykres słupkowy" style="margin:0 -4px">${bars}</svg>`;
+    return `<div class="an__bars">${rows}</div>`;
   }
 
   // Lejek
