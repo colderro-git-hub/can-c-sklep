@@ -285,7 +285,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2, GA4, Google Ads, Meta Pixel.</p>
               <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
             </form>
-            <div data-an-body><p class="muted">Ładowanie danych…</p></div>
+            <div data-an-body class="stack"><p class="muted">Ładowanie danych…</p></div>
             </div>
           </section>
 
@@ -2197,7 +2197,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
   // CSS analityki
   document.head.insertAdjacentHTML('beforeend', `<style>
-    .an-kpis { display: flex; flex-wrap: wrap; gap: 16px; padding: 4px 0; }
+    .an-kpis { display: flex; flex-wrap: wrap; gap: 12px; padding: 4px 0; }
     .an-kpi { flex: 1 1 130px; display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; background: var(--page); box-shadow: inset 0 0 0 1px var(--line); }
     .an-kpi__v { font-size: 1.5rem; font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; }
     .an-kpi__l { font-size: 11px; color: var(--ink-50); margin-top: 2px; }
@@ -2212,6 +2212,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     .an-funnel__fill--err { background: var(--danger); }
     .an-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-2); }
     @media (max-width: 700px) { .an-row2 { grid-template-columns: 1fr; } .an-funnel__l { width: 120px; } }
+    [data-an-body] { display: flex; flex-direction: column; gap: var(--s-2); }
   </style>`);
 
   // ===== CSS dla CMS Stron =====
