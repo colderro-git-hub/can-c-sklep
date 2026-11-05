@@ -720,6 +720,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try {
       const { order: o, events } = await api(`/api/admin/order?id=${id}`);
+      (window as any).__gaCurrentOrder = o;
       $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
       const a = o.shipping_address || {};
       const wc = o.source === 'woocommerce';
@@ -829,6 +830,16 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       });
       body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
         if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;
+        if (b.dataset.act === 'cancel') {
+          const gaO = (window as any).__gaCurrentOrder;
+          if (gaO?.total && gaO.status !== 'pending_payment') {
+            try {
+              window.dataLayer = window.dataLayer || [];
+              window.dataLayer.push({ ecommerce: null });
+              window.dataLayer.push({ event: 'refund', ecommerce: { transaction_id: gaO.id, currency: 'PLN', value: gaO.total / 100 } });
+            } catch {}
+          }
+        }
         if (b.dataset.act === 'finalize_bank') { if (!confirm('Oznacz zamówienie jako opłacone? Użyj po zaksięgowaniu przelewu na koncie bankowym.')) return; await act({ id, action: 'finalize_bank' }); return; }
         await act({ id, action: b.dataset.act });
       }));

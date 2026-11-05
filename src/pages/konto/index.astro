@@ -137,6 +137,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 <script>
   import { sb } from '../../lib/sb-client';
   import { addItem } from '../../lib/cart';
+  import { trackLogin, trackSignUp, setUserId, clearUserData, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
 
   (async () => {
   await (window as any).__CANC_READY__;
@@ -415,6 +416,54 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     showError('Link logowania wygasł albo został już użyty. Wyślij nowy.');
     history.replaceState(null, '', location.pathname);
   }
+  // ---- GA4: konto ----
+
+  // form_start dla formularza e-mail przy pierwszym focusie
+  let _loginStarted = false;
+  $<HTMLInputElement>('[data-login-form] input[name="email"]').addEventListener('focus', () => {
+    if (_loginStarted) return; _loginStarted = true; trackFormStart('login_form');
+  });
+
+  // form_field_click + form_field_error dla pola kodu OTP
+  $<HTMLInputElement>('[data-code-form] input[name="code"]').addEventListener('focus', () => {
+    trackFormFieldClick('login_form', 'otp_code');
+  });
+
+  // Nadpisz onAuthStateChange aby wysłać login/sign_up i user_id
+  const _origOASC = sb().auth.onAuthStateChange;
+  sb().auth.onAuthStateChange((event, session) => {
+    if (session?.user) {
+      const uid = session.user.id;
+      if (event === 'SIGNED_IN') {
+        // Supabase nie rozróżnia sign_up od login w OTP – sprawdzamy datę konta
+        const created = new Date(session.user.created_at).getTime();
+        const isNew = Date.now() - created < 60_000; // nowe konto = stworzone <60s temu
+        if (isNew) trackSignUp('email_otp');
+        trackLogin('email_otp', uid);
+        setUserId(uid);
+      } else if (event === 'INITIAL_SESSION') {
+        setUserId(uid);
+      }
+    } else if (event === 'SIGNED_OUT') {
+      clearUserData();
+    }
+  });
+
+  // form_field_error przy błędnym kodzie OTP
+  const _origCodeSubmit = $('[data-code-form]').onsubmit;
+  $('[data-code-form]').addEventListener('submit', async (e) => {
+    // Obsługiwane przez istniejący listener – tutaj tylko obserwujemy wynik
+    // przez MutationObserver na komunikacie błędu
+    const msg = $('[data-code-msg]');
+    const obs = new MutationObserver(() => {
+      if (msg.textContent?.includes('nieprawidłowy') || msg.textContent?.includes('wygasł')) {
+        trackFormFieldError('login_form', 'otp_code', 'Nieprawidłowy lub wygasły kod');
+      }
+      obs.disconnect();
+    });
+    obs.observe(msg, { childList: true, characterData: true, subtree: true });
+  });
+
   })();
 </script>
 

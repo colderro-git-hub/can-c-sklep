@@ -128,7 +128,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
 <script>
   import { getCart } from '../../lib/cart';
-  import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo } from '../../lib/analytics';
+  import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
   import { BANK_ACCOUNT, BANK_PROVIDER, bankTitle } from '../../lib/bank-transfer';
 
   (async () => {
@@ -213,6 +213,24 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       } catch { /* niezalogowany albo brak konfiguracji – formularz działa normalnie */ }
     })();
 
+    // GA4 form_start – przy pierwszym focusie na dowolnym polu
+    let _fmStarted = false;
+    form.addEventListener('focusin', () => { if (_fmStarted) return; _fmStarted = true; trackFormStart('checkout_form'); }, { once: false });
+
+    // GA4 form_field_click – śledzimy nazwę pola, NIE wartość
+    const FIELD_MAP: Record<string, string> = {
+      email: 'email', phone: 'phone', firstName: 'first_name', lastName: 'last_name',
+      street: 'street', postcode: 'postal_code', city: 'city',
+      company: 'company_name', nip: 'nip', invStreet: 'invoice_street',
+      invPostcode: 'invoice_postal_code', invCity: 'invoice_city', note: 'note',
+      locker: 'locker_id', lockerName: 'locker_name',
+    };
+    form.querySelectorAll<HTMLElement>('input, textarea, select').forEach((el) => {
+      const name = (el as HTMLInputElement).name;
+      const mapped = FIELD_MAP[name] || name;
+      el.addEventListener('focus', () => { if (name) trackFormFieldClick('checkout_form', mapped); });
+    });
+
     // Pola zależne od wyboru
     const locker = form.querySelector<HTMLElement>('[data-locker]')!;
     const address = form.querySelector<HTMLElement>('[data-address]')!;
@@ -289,9 +307,15 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       });
       const gaValue = gaItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
       const gaCode = (window as any).__cancCode?.() || undefined;
-      trackBeginCheckout(gaItems, gaValue, gaCode);
-      trackAddShippingInfo(gaItems, gaValue, val('shippingMethod') === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD');
-      trackAddPaymentInfo(gaItems, gaValue, val('paymentMethod') === 'bank_transfer' ? 'Przelew bankowy' : 'Przelewy24');
+      trackFormSubmit('checkout_form');
+      // item_variant = rozmiar/pakiet z pola subtitle katalogu
+      const gaItemsWithVariant = gaItems.map((it: any) => {
+        const cp = (window as any).__CANC_CATALOG__?.find((x: any) => x.slug === it.item_id);
+        return cp?.size ? { ...it, item_variant: cp.size } : it;
+      });
+      trackBeginCheckout(gaItemsWithVariant, gaValue, gaCode);
+      trackAddShippingInfo(gaItemsWithVariant, gaValue, val('shippingMethod') === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD');
+      trackAddPaymentInfo(gaItemsWithVariant, gaValue, val('paymentMethod') === 'bank_transfer' ? 'Przelew bankowy' : 'Przelewy24');
 
       const paymentMethod = val('paymentMethod') === 'bank_transfer' ? BANK_PROVIDER : 'p24';
       submit.disabled = true;
@@ -313,7 +337,18 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           }),
         });
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+        if (!res.ok) {
+          // GA4 form_field_error – próbujemy wykryć pole z błędu (uproszczone)
+          const errMsg: string = data.error || '';
+          const fieldHint = errMsg.toLowerCase().includes('email') ? 'email'
+            : errMsg.toLowerCase().includes('telefon') ? 'phone'
+            : errMsg.toLowerCase().includes('nip') ? 'nip'
+            : errMsg.toLowerCase().includes('kod pocztowy') ? 'postal_code'
+            : errMsg.toLowerCase().includes('paczkomat') ? 'locker_id'
+            : 'unknown';
+          trackFormFieldError('checkout_form', fieldHint, errMsg.slice(0, 100));
+          throw new Error(errMsg || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+        }
         if (paymentMethod === BANK_PROVIDER) {
           // Przelew bankowy: bez przekierowania do P24 → prosto na stronę podziękowania
           location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`;
