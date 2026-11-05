@@ -11,9 +11,11 @@ let tokenCache: { token: string; exp: number } | null = null;
 async function getAccessToken(env: Env): Promise<string> {
   if (tokenCache && Date.now() < tokenCache.exp) return tokenCache.token;
 
-  const key = env.GA4_PRIVATE_KEY?.replace(/\\n/g, '\n');
+  const rawKey = env.GA4_PRIVATE_KEY || '';
   const email = env.GA4_CLIENT_EMAIL;
-  if (!key || !email) throw new Error('Brak konfiguracji GA4 (GA4_PRIVATE_KEY, GA4_CLIENT_EMAIL).');
+  if (!rawKey || !email) throw new Error('Brak konfiguracji GA4 (GA4_PRIVATE_KEY, GA4_CLIENT_EMAIL).');
+  // Obsługuje dwa formaty: dosłowne \n (Cloudflare Secret) i prawdziwe nowe linie (plik JSON)
+  const key = rawKey.includes('\\n') ? rawKey.replace(/\\n/g, '\n') : rawKey;
 
   const now = Math.floor(Date.now() / 1000);
   const header = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
@@ -28,11 +30,16 @@ async function getAccessToken(env: Env): Promise<string> {
   // Import klucza PEM RSA
   const pem = key.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');
   const der = Uint8Array.from(atob(pem), c => c.charCodeAt(0));
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8', der.buffer,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false, ['sign'],
-  );
+  let cryptoKey: CryptoKey;
+  try {
+    cryptoKey = await crypto.subtle.importKey(
+      'pkcs8', der.buffer,
+      { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+      false, ['sign'],
+    );
+  } catch (e) {
+    throw new Error('GA4: błąd importu klucza RSA. Sprawdź czy GA4_PRIVATE_KEY zawiera pełny klucz PEM z nagłówkami BEGIN/END PRIVATE KEY. Błąd: ' + (e instanceof Error ? e.message : String(e)));
+  }
 
   const sig = await crypto.subtle.sign(
     'RSASSA-PKCS1-v1_5', cryptoKey,
