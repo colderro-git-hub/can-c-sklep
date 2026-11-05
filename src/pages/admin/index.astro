@@ -2034,6 +2034,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     try { d = await api(`/api/admin/analytics?range=${range}`); }
     catch (e) { anBody.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
     const { kpi, prev, funnel, daily, topProducts, byShipping, byPayment, topCodes } = d;
+    const env_ga4_missing = !d.ga4 && true; // ga4 null = brak konfiguracji lub błąd
     const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier DPD' };
 
     anBody.innerHTML = `
@@ -2104,6 +2105,80 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
         </div>
       </div>
+
+      <!-- GA4 Data API -->
+      ${d.ga4 ? `
+      <div class="card">
+        <div class="card__head"><h2 class="card__title">GA4 — Ruch i zdarzenia</h2><span class="muted small">Google Analytics · ostatnie ${range} dni</span></div>
+        <div class="an-kpis">
+          ${kpiCard('Sesje', d.ga4.sessions.toLocaleString('pl-PL'))}
+          ${kpiCard('Użytkownicy', d.ga4.users.toLocaleString('pl-PL'))}
+          ${kpiCard('Nowi użytkownicy', d.ga4.newUsers.toLocaleString('pl-PL'))}
+          ${kpiCard('Współczynnik odrzuceń', d.ga4.bounceRate+'%')}
+        </div>
+      </div>
+      <div class="an-row2">
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Produkty i koszyk</h2></div>
+          <div class="an-funnel">
+            ${[
+              ['Wyświetlenia list produktów', d.ga4.view_item_list],
+              ['Wybór produktu z listy', d.ga4.select_item],
+              ['Wyświetlenia produktu', d.ga4.view_item],
+              ['Dodania do koszyka', d.ga4.add_to_cart],
+              ['Usunięcia z koszyka', d.ga4.remove_from_cart],
+              ['Wyświetlenia koszyka', d.ga4.view_cart],
+            ].map(([l,v]) => funnelBar(l as string, v as number, Math.max(d.ga4.view_item_list, d.ga4.view_item, 1))).join('')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Proces zamówienia</h2></div>
+          <div class="an-funnel">
+            ${[
+              ['Rozpoczęcie zamówienia', d.ga4.begin_checkout],
+              ['Dane dostawy', d.ga4.add_shipping_info],
+              ['Dane płatności', d.ga4.add_payment_info],
+              ['Zakupy (purchase)', d.ga4.purchase],
+              ['Zwroty (refund)', d.ga4.refund],
+            ].map(([l,v]) => funnelBar(l as string, v as number, d.ga4.begin_checkout || 1)).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="an-row2">
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Konto użytkownika</h2></div>
+          <div class="an-kpis">
+            ${kpiCard('Rejestracje (sign_up)', d.ga4.sign_up)}
+            ${kpiCard('Logowania (login)', d.ga4.login)}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Formularze</h2></div>
+          <div class="an-funnel">
+            ${[
+              ['Rozpoczęcia formularza', d.ga4.form_start],
+              ['Kliknięcia w pola', d.ga4.form_field_click],
+              ['Błędy pól', d.ga4.form_field_error],
+              ['Wysłania formularza', d.ga4.form_submit],
+            ].map(([l,v]) => funnelBar(l as string, v as number, d.ga4.form_start || 1)).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="an-row2">
+        <div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Lejek konwersji</h2></div>
+          <div class="an-funnel">
+            ${d.ga4.funnelRates.map((f: any) => funnelBar(f.step + ' (' + f.rate + '%)', f.count, d.ga4.funnelRates[0]?.count || 1)).join('')}
+          </div>
+        </div>
+        ${d.ga4.topFieldErrors.length ? `<div class="card">
+          <div class="card__head"><h2 class="card__title">GA4 — Błędy pól formularzy</h2></div>
+          <div class="table-wrap"><table class="table">
+            <thead><tr><th>Pole</th><th class="r">Błędów</th></tr></thead>
+            <tbody>${d.ga4.topFieldErrors.map((f: any) => `<tr><td>${esc(f.field)}</td><td class="r">${f.count}</td></tr>`).join('')}</tbody>
+          </table></div>
+        </div>` : ''}
+      </div>` : env_ga4_missing ? `<div class="box box--blue"><strong>GA4 nie skonfigurowane</strong><span>Dodaj sekrety GA4_PRIVATE_KEY, GA4_CLIENT_EMAIL i GA4_PROPERTY_ID w Cloudflare Workers → Settings → Variables.</span></div>` : ''}
 
       <!-- Kody rabatowe -->
       ${topCodes.length ? `<div class="card">

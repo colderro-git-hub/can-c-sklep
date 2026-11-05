@@ -3,6 +3,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { db } from '../../../lib/supabase';
+import { getGA4Stats } from '../../../lib/ga4';
 
 export const prerender = false;
 
@@ -14,6 +15,15 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   const days = Math.min(365, Math.max(1, Number(range) || 30));
   const from = new Date(Date.now() - days * 864e5).toISOString();
   const sb = db(env);
+
+  // GA4 (opcjonalne – gdy brak konfiguracji zwraca null)
+  let ga4: any = null;
+  if (env.GA4_PRIVATE_KEY && env.GA4_CLIENT_EMAIL && env.GA4_PROPERTY_ID) {
+    ga4 = await getGA4Stats(env, days).catch((e) => {
+      console.error('GA4 stats: ' + (e instanceof Error ? e.message : String(e)));
+      return null;
+    });
+  }
 
   try {
     const [orders, items, codes] = await Promise.all([
@@ -126,7 +136,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const prevCount = prevPaid.length;
 
     return json(200, {
-      range: days, from,
+      range: days, from, ga4,
       kpi: { revenue, orders: paidOrders.length, avgOrder, convRate, avgPayMin, newCustomers, returning, guests },
       prev: { revenue: prevRevenue, orders: prevCount },
       funnel,

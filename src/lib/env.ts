@@ -19,7 +19,8 @@ export type Env = {
   ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
   ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
   FURGONETKA_API_KEY?: string; // klucz integracji własnej (ten sam wpisujesz w panelu Furgonetki)
-  CRON_SECRET?: string;        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
+  CRON_SECRET?;
+  GA4_PRIVATE_KEY?; GA4_CLIENT_EMAIL?; GA4_PROPERTY_ID?: string;        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {
@@ -40,3 +41,4 @@ export async function getEnv(locals: unknown): Promise<Env> {
 
 export const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
+
