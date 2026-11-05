@@ -281,6 +281,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </section>
 
           <section data-view="settings" class="stack" hidden>
+            <form class="card" data-gtm-form novalidate>
+              <div class="card__head"><h2 class="card__title">Analityka</h2></div>
+              <label class="field">Google Tag Manager ID <span class="muted small">– wklej ID kontenera GTM (np. GTM-XXXXXXX); puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
+              <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2 (CookieYes), GA4, Google Ads, Meta Pixel.</p>
+              <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
+            </form>
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
             <form class="stack" data-settings-form novalidate>
             <div class="card">
