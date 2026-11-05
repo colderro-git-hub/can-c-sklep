@@ -128,6 +128,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
 <script>
   import { getCart } from '../../lib/cart';
+  import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo } from '../../lib/analytics';
   import { BANK_ACCOUNT, BANK_PROVIDER, bankTitle } from '../../lib/bank-transfer';
 
   (async () => {
@@ -279,6 +280,18 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const fd = new FormData(form);
       const val = (k: string) => String(fd.get(k) ?? '');
       if (!fd.get('terms')) { error.textContent = 'Zaakceptuj regulamin, aby złożyć zamówienie.'; return; }
+
+      // GA4 events
+      const list: any[] = (window as any).__CANC_CATALOG__ || [];
+      const gaItems = items.flatMap((it: any) => {
+        const cp = list.find((x: any) => x.slug === it.slug);
+        return (cp && cp.price !== null) ? [{ item_id: it.slug, item_name: cp.name, price: cp.price / 100, quantity: it.qty, item_brand: 'Can-C' }] : [];
+      });
+      const gaValue = gaItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
+      const gaCode = (window as any).__cancCode?.() || undefined;
+      trackBeginCheckout(gaItems, gaValue, gaCode);
+      trackAddShippingInfo(gaItems, gaValue, val('shippingMethod') === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD');
+      trackAddPaymentInfo(gaItems, gaValue, val('paymentMethod') === 'bank_transfer' ? 'Przelew bankowy' : 'Przelewy24');
 
       const paymentMethod = val('paymentMethod') === 'bank_transfer' ? BANK_PROVIDER : 'p24';
       submit.disabled = true;

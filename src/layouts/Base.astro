@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { getEnv } from '../lib/env';
+import { getSite } from '../lib/site-settings';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
@@ -11,6 +13,9 @@ interface Props {
 }
 const { title, description, noindex = false, noReferrer = false } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
+// GTM ID z ustawień sklepu (cache 60 s); jeśli puste – analityka wyłączona
+let gtmId = '';
+try { const env = await getEnv(Astro.locals); const site = await getSite(env); gtmId = site.gtmId || ''; } catch {}
 ---
 <!doctype html>
 <html lang="pl">
@@ -38,8 +43,33 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <link rel="preload" href="/fonts/geomanist-regular.woff2" as="font" type="font/woff2" crossorigin />
+    {gtmId && <>
+      {/* Consent Mode v2 – domyślne wartości przed załadowaniem GTM.
+          CookieYes wywoła gtag('consent','update') z faktycznym wyborem użytkownika.
+          'denied' + ad_user_data/ad_personalization wymagane przez EU User Consent Policy. */}
+      <script is:inline>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('consent', 'default', {
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied',
+          analytics_storage: 'denied',
+          functionality_storage: 'denied',
+          personalization_storage: 'denied',
+          security_storage: 'granted',
+          wait_for_update: 500,
+          region: ['PL']
+        });
+        gtag('set', 'ads_data_redaction', true);
+        gtag('set', 'url_passthrough', true);
+      </script>
+      {/* Google Tag Manager */}
+      <script is:inline define:vars={{ gtmId }}>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',gtmId);</script>
+    </>}
   </head>
   <body>
+    {gtmId && <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`} height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
     <a class="skip" href="#tresc">Przejdź do treści</a>
     <Header />
     <main id="tresc">

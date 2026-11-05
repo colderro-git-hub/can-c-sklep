@@ -77,6 +77,7 @@ import Base from '../../layouts/Base.astro';
 
 <script>
   import { clearCart } from '../../lib/cart';
+  import { trackPurchase } from '../../lib/analytics';
 
   type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
   type Details = {
@@ -189,7 +190,23 @@ import Base from '../../layouts/Base.astro';
       if (!res.ok) return show('error');
       const o: Status = await res.json();
       // Płatność potwierdzona → wyczyść koszyk i pokaż podsumowanie
-      if (['paid', 'shipped', 'completed'].includes(o.status)) { clearCart(); return show('paid', o); }
+      if (['paid', 'shipped', 'completed'].includes(o.status)) {
+        clearCart();
+        // GA4 purchase – wysyłamy tylko raz (tries === 1 = pierwsze udane sprawdzenie)
+        if (tries <= 1 && o.details) {
+          trackPurchase({
+            transactionId: id!,
+            value: o.total / 100,
+            shipping: (o.details.shipping || 0) / 100,
+            coupon: o.details.code || undefined,
+            items: (o.details.items || []).map((i: any) => ({
+              item_id: i.slug, item_name: i.name, price: i.unitPrice / 100, quantity: i.qty, item_brand: 'Can-C',
+              discount: i.discount ? i.discount / 100 : undefined,
+            })),
+          });
+        }
+        return show('paid', o);
+      }
       // Przelew bankowy: status zawsze pending_payment → od razu pokaż stronę, nie czekaj 30 s na P24
       if (o.details?.payment?.bank) { clearCart(); return show('pending', o); }
       // P24: powiadomienie może przyjść kilka sekund po powrocie klienta → sprawdzamy przez ok. 30 s

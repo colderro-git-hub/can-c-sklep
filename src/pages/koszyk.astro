@@ -71,6 +71,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
 <script>
   import { getCart, setQty, onCartChange } from '../lib/cart';
+  import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
 
   (async () => {
   await (window as any).__CANC_READY__;
@@ -126,7 +127,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       if (out) li.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
       li.querySelector('[data-dec]')!.addEventListener('click', () => setQty(p.slug, item.qty - 1));
       li.querySelector('[data-inc]')!.addEventListener('click', () => setQty(p.slug, item.qty + 1));
-      li.querySelector('[data-remove]')!.addEventListener('click', () => setQty(p.slug, 0));
+      li.querySelector('[data-remove]')!.addEventListener('click', () => {
+        if (p && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price / 100, quantity: item.qty, item_brand: 'Can-C' });
+        setQty(p.slug, 0);
+      });
       lines.append(li);
     }
 
@@ -138,6 +142,19 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
     $<HTMLElement>('[data-blocked]').hidden = !blocked;
   }
+  // GA4 view_cart
+  function sendViewCart() {
+    const its = getCart();
+    if (!its.length) return;
+    const list: any[] = (window as any).__CANC_CATALOG__ || [];
+    const gaItems = its.flatMap((it: any) => {
+      const p = list.find((x: any) => x.slug === it.slug);
+      return (p && p.price !== null) ? [{ item_id: it.slug, item_name: p.name, price: p.price / 100, quantity: it.qty, item_brand: 'Can-C' }] : [];
+    });
+    trackViewCart(gaItems, gaItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0));
+  }
+  sendViewCart();
+
   $<HTMLAnchorElement>('[data-checkout]').addEventListener('click', (e) => {
     if ((e.currentTarget as HTMLElement).getAttribute('aria-disabled') === 'true') e.preventDefault();
   });

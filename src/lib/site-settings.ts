@@ -5,6 +5,7 @@ import { site as configSite } from '../config';
 
 // Treści, których nie ma w config.ts – wartości domyślne
 export const CONTENT_DEFAULTS = {
+  gtmId: '',             // GTM-XXXXXXX; puste = analityka wyłączona
   promo1: 'Darmowa dostawa w Polsce',
   promo2: 'Do 10% rabatu przy 2 i 4 opakowaniach',
   promo3: 'Płatność BLIK i Przelewy24',

@@ -55,6 +55,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Treści: pasek promocji, czas wysyłki, komunikat
   const LIMITS: Record<string, number> = { promo1: 80, promo2: 80, promo3: 80, shippingTime: 80, noticeText: 300 };
   for (const k of CONTENT_KEYS) v[k] = String(b[k] ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, LIMITS[k] ?? 40);
+  // Walidacja GTM ID
+  if (v.gtmId && !/^GTM-[A-Z0-9]{4,10}$/.test(v.gtmId)) return json(422, { error: 'Nieprawidłowy GTM ID. Format: GTM-XXXXXXX' });
   v.noticeEnabled = b.noticeEnabled === true || b.noticeEnabled === 'true' ? 'true' : '';
   const toIso = (x: string) => { if (!x) return ''; const d = new Date(x); return isNaN(+d) ? 'bad' : d.toISOString(); };
   v.noticeFrom = toIso(v.noticeFrom); v.noticeTo = toIso(v.noticeTo);

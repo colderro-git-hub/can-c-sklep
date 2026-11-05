@@ -1911,6 +1911,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     try {
       const { site, robots } = await api('/api/admin/ustawienia');
       if (robots) fillRobots(robots);
+      const gtmInput = document.querySelector<HTMLInputElement>('[data-s-gtmId]');
+      if (gtmInput) gtmInput.value = String((site as any).gtmId ?? '');
       const local = (iso: string) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
       for (const [k, v] of Object.entries(site)) {
         const el = settingsForm.elements.namedItem(k) as HTMLInputElement | null;
@@ -1948,6 +1950,23 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     e.preventDefault();
     try { const r = await api('/api/admin/ustawienia', { action: 'robots', text: robotsText.value }); fillRobots(r.robots); toast('Zapisano robots.txt. Google pobierze go przy najbliższej wizycie.'); }
     catch (err) { toast((err as Error).message, true); }
+  });
+
+  // GTM ID: walidacja i zapis
+  const gtmInput = document.querySelector<HTMLInputElement>('[data-s-gtmId]');
+  gtmInput?.addEventListener('input', function() {
+    const v = this.value.trim().toUpperCase();
+    this.setCustomValidity(v && !/^GTM-[A-Z0-9]{4,10}$/.test(v) ? 'Format: GTM-XXXXXXX' : '');
+    this.value = v;
+  });
+  gtmInput?.closest('form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!gtmInput.checkValidity()) { gtmInput.reportValidity(); return; }
+    try {
+      await api('/api/admin/ustawienia', { gtmId: gtmInput.value.trim() });
+      toast(gtmInput.value ? 'GTM podłączony. Sprawdź na stronie po pushu.' : 'GTM odłączony.');
+      loadSettings();
+    } catch (err) { toast((err as Error).message, true); }
   });
 
   settingsForm.addEventListener('submit', async (e) => {

@@ -294,8 +294,22 @@ const bundleRows = bundles.map((b) => {
 
 <script>
   import { addItem } from '../lib/cart';
+  import { trackViewItemList, trackSelectItem, trackAddToCart } from '../lib/analytics';
   import { flyToCart, announceAdded } from '../lib/cart-fx';
   // „+” na karcie: 1 sztuka do koszyka bez wchodzenia na stronę produktu
+  // GA4 view_item_list – produkty na stronie głównej
+  const _gaList: any[] = (window as any).__CANC_CATALOG__ || [];
+  const _gaListItems = _gaList.map((p: any, i: number) => ({ item_id: p.slug, item_name: p.name, price: (p.price||0) / 100, quantity: 1, index: i, item_brand: 'Can-C' }));
+  if (_gaListItems.length) trackViewItemList(_gaListItems, 'Strona główna');
+
+  // Klik w kartę produktu → select_item
+  document.querySelectorAll<HTMLElement>('.card__link').forEach((a, i) => {
+    a.addEventListener('click', () => {
+      const p = _gaList[i];
+      if (p) trackSelectItem({ item_id: p.slug, item_name: p.name, price: (p.price||0)/100, quantity: 1, item_brand: 'Can-C' }, 'Strona główna');
+    });
+  });
+
   document.querySelectorAll<HTMLButtonElement>('[data-quick-add]').forEach((b) => b.addEventListener('click', () => {
     const slug = b.dataset.quickAdd!;
     addItem(slug, 1);
@@ -303,6 +317,8 @@ const bundleRows = bundles.map((b) => {
     setTimeout(() => b.classList.remove('is-added'), 1600);
     const img = b.closest('.card')?.querySelector<HTMLImageElement>('img');
     flyToCart(img || b, img?.src).then(() => announceAdded({ slug, qty: 1 }));
+    const _gaP = _gaList.find((x: any) => x.slug === slug);
+    if (_gaP) trackAddToCart({ item_id: slug, item_name: _gaP.name, price: (_gaP.price||0)/100, quantity: 1, item_brand: 'Can-C' });
   }));
 </script>
 

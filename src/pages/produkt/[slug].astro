@@ -105,7 +105,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         )}
       </div>
 
-      <div class="buy" data-product={p.id}>
+      <div class="buy" data-product={p.id} data-name={p.name} data-price={p.current ?? 0}>
         {p.subtitle && <span class="tag">{p.subtitle}</span>}
         <h1>{p.name}</h1>
         <ProductTags tags={p.tags} />
@@ -267,6 +267,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
 <script>
   import { addItem } from '../../lib/cart';
+  import { trackViewItem, trackAddToCart, trackSelectItem } from '../../lib/analytics';
   import { flyToCart, announceAdded } from '../../lib/cart-fx';
 
   // Galeria
@@ -294,7 +295,25 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     radios.forEach((r) => { if (wanted && r.value === wanted) r.checked = true; r.addEventListener('change', () => render(r)); });
     const checked = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
     if (checked) render(checked);
-    const addBtn = root.querySelector<HTMLButtonElement>('[data-add]');
+    // GA4: view_item po załadowaniu strony
+  const _gaEl = document.querySelector<HTMLElement>('[data-product]');
+  const _gaSlug = _gaEl?.dataset.product || '';
+  const _gaName = _gaEl?.dataset.name || document.title;
+  const _gaPrice = Number(_gaEl?.dataset.price || 0) / 100;
+  if (_gaSlug) trackViewItem({ item_id: _gaSlug, item_name: _gaName, price: _gaPrice, quantity: 1, item_brand: 'Can-C' });
+
+  // GA4: select_item dla powiązanych produktów
+  root.querySelectorAll<HTMLAnchorElement>('.related__item').forEach((a) => {
+    a.addEventListener('click', () => {
+      const rSlug = (new URL(a.href)).pathname.split('/').filter(Boolean)[1] || '';
+      const rName = a.querySelector('.related__name')?.textContent || '';
+      const rPriceEl = a.querySelector<HTMLElement>('.related__foot span:first-child');
+      const rPrice = rPriceEl ? parseFloat(rPriceEl.textContent?.replace(/[^0-9,]/g,'').replace(',','.') || '0') : 0;
+      if (rSlug) trackSelectItem({ item_id: rSlug, item_name: rName, price: rPrice, quantity: 1 }, 'Często kupowane razem');
+    });
+  });
+
+  const addBtn = root.querySelector<HTMLButtonElement>('[data-add]');
     let resetTimer = 0;
     addBtn?.addEventListener('click', () => {
       const cur = root.querySelector<HTMLInputElement>('input[name="qty"]:checked');
@@ -308,6 +327,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       resetTimer = window.setTimeout(() => { addBtn.textContent = label; addBtn.classList.remove('is-added'); }, 1800);
       const img = document.querySelector<HTMLImageElement>('[data-main]');
       flyToCart(img || addBtn, img?.src).then(() => announceAdded({ slug, qty }));
+      trackAddToCart({ item_id: slug, item_name: _gaName, price: _gaPrice, quantity: qty, item_brand: 'Can-C' });
     });
   }
 
