@@ -7,6 +7,8 @@ import { getCatalog } from '../lib/catalog';
 import { getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
 import type { Availability } from '../lib/pricing';
+import { isAvailable, availabilityOf } from '../lib/pricing';
+import { AVAIL_LABEL } from '../lib/catalog';
 import AvailBadge from '../components/AvailBadge.astro';
 import ProductTags from '../components/ProductTags.astro';
 
