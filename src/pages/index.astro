@@ -155,7 +155,7 @@ const bundleRows = bundles.map((b) => {
       </div>
       <div class="products-grid" style="margin-top:90px">
         {products.map((p) => (
-          <article class="product-card" data-track-select data-slug={p.id} data-name={p.name} data-price={p.current ?? 0}>
+          <article class="product-card" data-track-select data-slug={p.id} data-name={p.name} data-price={p.price !== null ? p.price * 100 : 0}>
             <div class="product-card__img">
               {p.images?.[0]?.url
                 ? <img src={p.images[0].url} alt={p.images[0].alt || p.name} width="400" height="300" loading="lazy" />
@@ -171,7 +171,7 @@ const bundleRows = bundles.map((b) => {
               <h3 style="margin:0;font-size:1.375rem;line-height:30px;font-weight:500">{p.name}</h3>
               <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:14px">
                 <span style="font-size:1.75rem;line-height:42px;font-weight:500;white-space:nowrap">
-                  {p.current !== null ? formatPrice(p.current) : '—'}
+                  {p.price !== null ? formatPrice(p.price * 100) : '—'}
                 </span>
                 {isAvailable(p)
                   ? <button type="button" class="product-card__add" aria-label={`Dodaj do koszyka: ${p.name}`} data-quick-add={p.id}>
@@ -217,13 +217,13 @@ const bundleRows = bundles.map((b) => {
       <p class="lead" style="width:517px;text-align:justify;max-width:100%">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
     </div>
     <div class="bundles-grid" style="margin-top:45px">
-      {bundleList.map((b, i) => (
+      {bundleRows.map((b, i) => (
         <div class={`bundle-card${i === 1 ? ' bundle-card--featured' : ''}`}>
           {i > 0 && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{i === 1 ? 'Polecany · −8%' : '−10%'}</span>}
           <span style="font-size:18px;line-height:27px;font-weight:400">{b.qty === 1 ? '1 opakowanie' : b.qty === 2 ? '2 opakowania' : '4 opakowania'}</span>
           <div>
-            <div style="font-size:3rem;line-height:72px;font-weight:300">{formatPrice(b.price ?? 0)}</div>
-            <div style={`font-size:14px;line-height:21px;font-weight:300;color:${i === 1 ? 'rgba(255,255,255,0.65)' : 'var(--muted)'}`}>{b.price !== null && b.qty > 0 ? formatPrice(Math.round((b.price) / b.qty)) + ' / szt.' : ''}</div>
+            <div style="font-size:3rem;line-height:72px;font-weight:300">{b.total}</div>
+            <div style={`font-size:14px;line-height:21px;font-weight:300;color:${i === 1 ? 'rgba(255,255,255,0.65)' : 'var(--muted)'}`}>{b.unit}</div>
           </div>
           <ul style={`list-style:none;margin:0;padding:14px 0 0;border-top:1px solid ${i === 1 ? 'rgba(255,255,255,0.15)' : 'var(--line)'};display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:24px;font-weight:300`}>
             <li style="display:flex;align-items:center;gap:14px">
@@ -232,7 +232,7 @@ const bundleRows = bundles.map((b) => {
             </li>
             {i > 0 && <li style="display:flex;align-items:center;gap:14px">
               <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
-              {b.saved ? `Oszczędzasz ${formatPrice(b.saved)}` : ''}
+              {b.save !== 'Cena regularna' ? b.save : ''}
             </li>}
             <li style="display:flex;align-items:center;gap:14px">
               <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
@@ -317,7 +317,7 @@ const bundleRows = bundles.map((b) => {
           {k9.cta_label}
           <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
         </a>
-        <span style="font-size:1.75rem;line-height:42px;font-weight:500">{formatPrice(krabPrice)}</span>
+        <span style="font-size:1.75rem;line-height:42px;font-weight:500">{formatPrice((products.find(p => p.slug === 'krople-can-c-k9')?.price ?? dropsPrice) * 100)}</span>
       </div>
     </div>
   </section>
