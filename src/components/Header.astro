@@ -1,14 +1,13 @@
 ---
-import { site } from '../config';
 import { getEnv } from '../lib/env';
 import { getSite } from '../lib/site-settings';
 
 const env = await getEnv(Astro.locals).catch(() => ({}));
 const siteData = await getSite(env as any).catch(() => null);
 const promos = [
-  siteData?.promo1 || site.promo1 || '',
-  siteData?.promo2 || site.promo2 || '',
-  siteData?.promo3 || site.promo3 || '',
+  siteData?.promo1 || '',
+  siteData?.promo2 || '',
+  siteData?.promo3 || '',
 ].filter(Boolean);
 const notice = siteData?.noticeActive ? siteData.noticeText : '';
 
