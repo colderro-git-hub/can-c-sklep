@@ -1,246 +1,116 @@
 ---
-const nav = [
-  { href: '/produkt/krople-can-c/', label: 'Krople' },
-  { href: '/#produkty', label: 'Kapsułki' },
-  { href: '/produkt/krople-can-c-k9/', label: 'Can-C K9' },
-  { href: '/stosowanie/', label: 'Stosowanie' },
-  { href: '/faq/', label: 'FAQ' },
-  { href: '/kontakt/', label: 'Kontakt' },
+import { site } from '../config';
+import { getEnv } from '../lib/env';
+import { getSite } from '../lib/site-settings';
+
+const env = await getEnv(Astro.locals).catch(() => ({}));
+const siteData = await getSite(env as any).catch(() => null);
+const promos = [
+  siteData?.promo1 || site.promo1 || '',
+  siteData?.promo2 || site.promo2 || '',
+  siteData?.promo3 || site.promo3 || '',
+].filter(Boolean);
+const notice = siteData?.noticeActive ? siteData.noticeText : '';
+
+type Props = {
+  nav?: string;
+};
+const { nav = '' } = Astro.props as Props;
+
+const navItems = [
+  { key: 'krople',    label: 'Krople',    href: '/produkt/krople-can-c/' },
+  { key: 'kapsulki',  label: 'Kapsułki',  href: '/produkt/krople-can-c/' },
+  { key: 'k9',        label: 'Can-C K9',  href: '/produkt/krople-can-c-k9/' },
+  { key: 'stosowanie',label: 'Stosowanie',href: '/stosowanie/' },
+  { key: 'faq',       label: 'FAQ',       href: '/faq/' },
+  { key: 'kontakt',   label: 'Kontakt',   href: '/kontakt/' },
 ];
-const current = Astro.url.pathname;
-// Na stronie koszyka i zamówienia podgląd koszyka w nagłówku byłby powtórzeniem
-const miniOff = /^\/(koszyk|zamowienie)\//.test(current);
 ---
-<div class="notice-bar" data-notice hidden role="status">
-  <div class="container"><span data-site="noticeText"></span></div>
-</div>
-<div class="promo">
-  <div class="container promo__inner">
-    <span data-site="promo1" data-site-hide-empty>Darmowa dostawa w Polsce</span>
-    <span data-site="promo2" data-site-hide-empty>Do 10% rabatu przy 2 i 4 opakowaniach</span>
-    <span data-site="promo3" data-site-hide-empty>Płatność BLIK i Przelewy24</span>
+
+{notice && (
+  <div class="notice-bar" data-notice>
+    <div class="container">{notice}</div>
   </div>
+)}
+
+<div class="promo-bar" data-notice-bar>
+  {promos.map(p => <span data-site="promo">{p}</span>)}
 </div>
 
-<header class="header">
-  <div class="container header__inner">
-    <a href="/" class="logo" aria-label="Can-C, strona główna">Can-C</a>
-
-    <nav class="nav nav--desktop" aria-label="Główna">
-      {nav.map((item) => (
-        <a href={item.href} aria-current={current === item.href ? 'page' : undefined}>{item.label}</a>
-      ))}
-    </nav>
-
-    <details class="menu">
-      <summary class="menu__toggle" aria-label="Menu">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" aria-hidden="true"><path d="M2 6h18M2 11h18M2 16h18" stroke="currentColor" stroke-width="1.2" /></svg>
-      </summary>
-      <nav class="nav nav--mobile" aria-label="Główna (telefon)">
-        {nav.map((item) => (
-          <a href={item.href} aria-current={current === item.href ? 'page' : undefined}>{item.label}</a>
+<header class="site-header">
+  <div class="site-header__inner">
+    <a href="/" class="site-logo">
+      <span class="site-logo__circle" aria-hidden="true"></span>
+      <span class="site-logo__name">Can-C</span>
+    </a>
+    <div class="site-header__right">
+      <nav aria-label="Menu sklepu" class="site-nav">
+        {navItems.map(item => (
+          <a
+            href={item.href}
+            class="site-nav__link"
+            aria-current={nav === item.key ? 'page' : undefined}
+          >{item.label}</a>
         ))}
       </nav>
-    </details>
-
-    <div class="actions">
-      <a href="/konto/" class="icon-btn" aria-label="Twoje konto">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="6.5" r="3.5" stroke="currentColor" stroke-width="1.2" /><path d="M3 18c.8-3.5 3.6-5.5 7-5.5s6.2 2 7 5.5" stroke="currentColor" stroke-width="1.2" /></svg>
-      </a>
-      <button type="button" class="icon-btn theme-btn" data-theme-toggle aria-pressed="false" aria-label="Tryb ciemny" title="Włącz tryb ciemny">
-        <svg class="theme-btn__moon" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16.5 12.3A7 7 0 0 1 7.7 3.5a7 7 0 1 0 8.8 8.8Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" /></svg>
-        <svg class="theme-btn__sun" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="3.6" stroke="currentColor" stroke-width="1.2" /><path d="M10 1.8v2M10 16.2v2M1.8 10h2M16.2 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M4.2 15.8l1.4-1.4M14.4 5.6l1.4-1.4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" /></svg>
-      </button>
-      <div class="cart-wrap" data-mini-wrap data-mini-off={miniOff ? '' : undefined}>
-        <a href="/koszyk/" class="cart" data-cart-link>Koszyk <span class="cart__count" data-cart-count aria-label="liczba produktów w koszyku">0</span></a>
-        <div class="mini" data-mini role="region" aria-label="Zawartość koszyka">
-          <div class="mini__panel">
-            <p class="mini__added" data-mini-added hidden role="status">Dodano do koszyka</p>
-            <ul class="mini__lines" data-mini-lines></ul>
-            <p class="mini__empty muted" data-mini-empty>Koszyk jest pusty.</p>
-            <div class="mini__foot" data-mini-foot hidden>
-              <dl class="mini__sum">
-                <div data-mini-disc-row hidden><dt>Rabat za zestaw</dt><dd data-mini-disc></dd></div>
-                <div><dt>Dostawa</dt><dd class="mini__ok">Bezpłatna</dd></div>
-                <div class="mini__total"><dt>Razem</dt><dd data-mini-total></dd></div>
-              </dl>
-              <div class="mini__cta">
-                <a href="/zamowienie/" class="btn" data-mini-checkout>Realizuj zamówienie</a>
-                <a href="/koszyk/" class="btn btn--ghost">Zobacz koszyk</a>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div class="site-actions">
+        <a href="/konto/" aria-label="Moje konto" class="icon-btn">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
+          </svg>
+        </a>
+        <button type="button" aria-label="Tryb ciemny" class="icon-btn" id="theme-toggle">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>
+          </svg>
+        </button>
+        <a href="/koszyk/" class="cart-btn" data-cart-link>
+          Koszyk
+          <span class="cart-btn__count" data-cart-count aria-live="polite">0</span>
+        </a>
+        <a href="#" lang="en" class="lang-link">EN</a>
       </div>
-      <a href="https://can-c.store/" class="lang" hreflang="en">EN</a>
     </div>
   </div>
 </header>
 
-<script>
-  import { cartCount, onCartChange, getCart } from '../lib/cart';
-  import { ADDED_EVENT } from '../lib/cart-fx';
-  const badge = document.querySelector<HTMLElement>('[data-cart-count]');
-  const update = () => { if (badge) badge.textContent = String(cartCount()); };
-  update();
-  onCartChange(update);
-
-  // ---------- Podgląd koszyka (najechanie na „Koszyk” i po dodaniu produktu) ----------
-  type P = { slug: string; name: string; size: string; price: number | null; bundles: boolean; avail: string; image: string | null };
-  const wrap = document.querySelector<HTMLElement>('[data-mini-wrap]');
-  const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
-  const zl = (g: number) => pln.format(g / 100);
-  const rate = (qty: number, bundles: boolean) => (!bundles ? 0 : qty >= 4 ? 0.1 : qty >= 2 ? 0.08 : 0);
-  let catalog: Promise<P[]> | null = null;
-  // Ceny z bazy (w groszach); do podglądu – ostateczną kwotę liczy serwer
-  const loadCatalog = () => (catalog ??= fetch('/api/produkty').then((r) => (r.ok ? r.json() : [])).catch(() => { catalog = null; return []; }));
-
-  async function renderMini() {
-    if (!wrap || wrap.hasAttribute('data-mini-off')) return;
-    const q = <T extends HTMLElement>(s: string) => wrap.querySelector<T>(s)!;
-    const items = getCart();
-    const list = items.length ? await loadCatalog() : [];
-    const lines = q('[data-mini-lines]');
-    lines.replaceChildren();
-    let total = 0, disc = 0, blocked = false;
-    for (const it of items.slice(0, 5)) {
-      const p = list.find((x) => x.slug === it.slug);
-      const li = document.createElement('li');
-      li.className = 'mini__line';
-      const out = !p || p.price === null || p.avail === 'out_of_stock';
-      const a = document.createElement('a');
-      a.href = `/produkt/${it.slug}/`; a.className = 'mini__img'; a.tabIndex = -1; a.setAttribute('aria-hidden', 'true');
-      if (p?.image) { const img = new Image(); img.src = p.image; img.alt = ''; img.width = 56; img.height = 56; a.append(img); }
-      const info = document.createElement('span'); info.className = 'mini__info';
-      const name = document.createElement('a'); name.href = `/produkt/${it.slug}/`; name.className = 'mini__name'; name.textContent = p?.name || it.slug;
-      const meta = document.createElement('span'); meta.className = 'mini__meta';
-      const price = document.createElement('span'); price.className = 'mini__price';
-      if (out) { blocked = true; meta.textContent = `${it.qty} szt. · chwilowo niedostępny`; meta.classList.add('mini__err'); price.textContent = '—'; }
-      else {
-        const gross = (p!.price as number) * it.qty, d = Math.round(gross * rate(it.qty, p!.bundles));
-        total += gross - d; disc += d;
-        meta.textContent = `${it.qty} × ${zl(p!.price as number)}${d ? ` · −${Math.round(rate(it.qty, p!.bundles) * 100)}%` : ''}`;
-        price.textContent = zl(gross - d);
-      }
-      info.append(name, meta);
-      li.append(a, info, price);
-      lines.append(li);
-    }
-    if (items.length > 5) { const more = document.createElement('li'); more.className = 'mini__more muted'; more.textContent = `i ${items.length - 5} więcej w koszyku`; lines.append(more); }
-    q('[data-mini-empty]').hidden = items.length > 0;
-    q('[data-mini-foot]').hidden = items.length === 0;
-    q('[data-mini-disc-row]').hidden = !disc;
-    q('[data-mini-disc]').textContent = `−${zl(disc)}`;
-    q('[data-mini-total]').textContent = zl(total);
-    q('[data-mini-checkout]').hidden = blocked; // niedostępny produkt – najpierw trzeba go usunąć w koszyku
-  }
-
-  if (wrap && !wrap.hasAttribute('data-mini-off')) {
-    wrap.addEventListener('mouseenter', renderMini);
-    wrap.addEventListener('focusin', renderMini);
-    onCartChange(() => { if (wrap.matches(':hover, :focus-within, .is-open')) renderMini(); });
-    let closeTimer = 0;
-    const close = () => { wrap.classList.remove('is-open'); wrap.querySelector<HTMLElement>('[data-mini-added]')!.hidden = true; };
-    // Po dodaniu produktu: licznik „podskakuje”, podgląd otwiera się na kilka sekund
-    window.addEventListener(ADDED_EVENT, async () => {
-      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) badge?.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.45)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'ease-out' });
-      await renderMini();
-      wrap.querySelector<HTMLElement>('[data-mini-added]')!.hidden = false;
-      wrap.classList.add('is-open');
-      clearTimeout(closeTimer);
-      closeTimer = window.setTimeout(() => { if (!wrap.matches(':hover, :focus-within')) close(); }, 4000);
-    });
-    wrap.addEventListener('mouseleave', () => { clearTimeout(closeTimer); closeTimer = window.setTimeout(close, 300); });
-    document.addEventListener('click', (e) => { if (!wrap.contains(e.target as Node)) close(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-    loadCatalog(); // dane w tle, żeby podgląd otwierał się od razu
-  }
-
-  // Tryb jasny/ciemny: zapamiętany wybór klienta; bez wyboru strona idzie za ustawieniem systemu
-  const root = document.documentElement;
-  const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
-  const sync = () => {
-    const dark = root.dataset.theme === 'dark';
-    toggle?.setAttribute('aria-pressed', String(dark));
-    toggle?.setAttribute('title', dark ? 'Włącz tryb jasny' : 'Włącz tryb ciemny');
-  };
-  sync();
-  toggle?.addEventListener('click', () => {
-    const next = root.dataset.theme === 'dark' ? 'light' : 'dark';
-    root.dataset.theme = next;
-    try { localStorage.setItem('canc-theme', next); } catch { /* tryb prywatny – wybór działa do zamknięcia karty */ }
-    sync();
-  });
-  window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', (e) => {
-    let saved: string | null = null;
-    try { saved = localStorage.getItem('canc-theme'); } catch { /* */ }
-    if (!saved) { root.dataset.theme = e.matches ? 'dark' : 'light'; sync(); }
-  });
-</script>
-
 <style>
-  .notice-bar { background: var(--c-ink); color: var(--c-white); padding: 12px 0; text-align: center; font-size: var(--fs-small); }
-  .notice-bar[hidden] { display: none; }
-  .promo { background: var(--c-gray-200); font-size: var(--fs-small); color: var(--c-ink-85); }
-  .promo__inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 36px; padding-block: 10px; }
-
-  .header { position: sticky; top: 0; z-index: 10; background: var(--c-header-bg); backdrop-filter: blur(32px); border-bottom: 1px solid var(--c-ink-10); }
-  .header__inner { min-height: 72px; display: flex; align-items: center; gap: var(--s-2); }
-  .logo { font-size: 1.75rem; line-height: 1; color: var(--c-ink); text-decoration: none; margin-right: auto; }
-
-  .menu__toggle { list-style: none; width: 44px; height: 44px; display: none; align-items: center; justify-content: center; cursor: pointer; }
-  .menu__toggle::-webkit-details-marker { display: none; }
-  .nav { display: flex; gap: 28px; }
-  .nav a { color: var(--c-ink); text-decoration: none; padding: 12px 0; }
-  .nav a[aria-current='page'] { box-shadow: inset 0 -1px 0 var(--c-ink); }
-
-  .actions { order: 3; display: flex; align-items: center; gap: 8px; }
-  .icon-btn { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: var(--c-ink); }
-  .theme-btn { padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: var(--r-pill); }
-  .theme-btn:hover { opacity: 0.7; }
-  .theme-btn__sun { display: none; }
-  :global(:root[data-theme='dark']) .theme-btn__sun { display: block; }
-  :global(:root[data-theme='dark']) .theme-btn__moon { display: none; }
-  .cart { height: 44px; padding: 0 20px; border-radius: var(--r-pill); background: var(--c-ink); color: var(--c-white); text-decoration: none; display: flex; align-items: center; gap: 10px; font-size: 0.9375rem; }
-  .cart__count { min-width: 22px; height: 22px; border-radius: var(--r-pill); background: var(--c-accent); color: var(--c-black); font-size: 0.8125rem; display: inline-flex; align-items: center; justify-content: center; }
-  /* Podgląd koszyka */
-  .cart-wrap { position: relative; }
-  .mini { display: none; position: absolute; right: 0; top: 100%; z-index: 30; padding-top: 10px; width: min(380px, calc(100vw - 24px)); }
-  @media (hover: hover) { .cart-wrap:not([data-mini-off]):hover .mini { display: block; } }
-  .cart-wrap:not([data-mini-off]):focus-within .mini, .cart-wrap.is-open .mini { display: block; }
-  .mini__panel { background: var(--c-white); color: var(--c-ink); box-shadow: 0 0 0 1px var(--c-gray-400), 0 16px 40px rgba(1, 8, 15, 0.16); padding: var(--s-2); display: flex; flex-direction: column; gap: 14px; }
-  .mini__added { display: flex; align-items: center; gap: 8px; color: var(--c-ok); font-size: var(--fs-small); }
-  .mini__added::before { content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--c-ok); color: var(--c-paper); font-size: 0.75rem; }
-  .mini__lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; max-height: 320px; overflow: auto; }
-  :global(.mini__line) { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--c-ink-10); }
-  :global(.mini__line:first-child) { padding-top: 0; }
-  :global(.mini__img) { flex-shrink: 0; width: 56px; height: 56px; background: var(--c-photo-bg); display: block; }
-  :global(.mini__img img) { width: 56px; height: 56px; object-fit: contain; padding: 4px; }
-  :global(.mini__info) { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-  :global(.mini__name) { color: var(--c-ink); text-decoration: none; font-size: 0.9375rem; line-height: 1.3; }
-  :global(.mini__meta) { font-size: 0.8125rem; color: var(--c-ink-70); }
-  :global(.mini__err) { color: var(--c-err); }
-  :global(.mini__price) { white-space: nowrap; font-size: 0.9375rem; }
-  :global(.mini__more) { padding-top: 10px; font-size: 0.8125rem; }
-  .mini__empty { font-size: var(--fs-small); }
-  .mini__foot { display: flex; flex-direction: column; gap: 14px; }
-  .mini__sum { margin: 0; display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-small); }
-  .mini__sum div { display: flex; justify-content: space-between; gap: 12px; }
-  .mini__sum dd { margin: 0; }
-  .mini__ok { color: var(--c-ok); }
-  .mini__total { padding-top: 8px; border-top: 1px solid var(--c-ink-10); font-size: 1.125rem; }
-  .mini__cta { display: flex; flex-direction: column; gap: 8px; }
-  .mini__cta .btn { width: 100%; min-height: 48px; }
-
-  .lang { color: var(--c-ink); text-decoration: none; font-size: var(--fs-small); padding: 12px 8px; }
-
-  /* Desktop: menu w linii; telefon: menu zwijane */
-  .menu { display: none; }
-  @media (max-width: 960px) {
-    .nav--desktop, .lang { display: none; }
-    .menu { display: block; order: 4; }
-    .menu__toggle { display: flex; }
-    .nav--mobile { position: absolute; left: 0; right: 0; top: 100%; flex-direction: column; gap: 0; padding: 12px 24px 24px; background: var(--c-white); border-bottom: 1px solid var(--c-ink-10); }
-    .nav--mobile a { padding: 14px 0; border-bottom: 1px solid var(--c-ink-10); }
+  .notice-bar {
+    background: var(--ink); color: var(--surface);
+    padding: 10px var(--page-px); font-size: var(--fs-small); font-weight: 300;
+    text-align: center;
+  }
+  .site-header__right { display: flex; align-items: center; gap: 24px 45px; flex-wrap: wrap; }
+  .lang-link { font-size: 1.125rem; font-weight: 400; color: var(--ink); text-decoration: none; padding: 0 4px; }
+  @media (max-width: 1000px) {
+    .site-nav { display: none; }
   }
 </style>
+
+<script>
+  import { getCart, onCartChange } from '../lib/cart';
+  function updateCount() {
+    const c = getCart().reduce((s, i) => s + i.qty, 0);
+    document.querySelectorAll('[data-cart-count]').forEach(el => { el.textContent = String(c); });
+  }
+  updateCount();
+  onCartChange(updateCount);
+
+  // Podmiana data-site
+  fetch('/api/ustawienia').then(r => r.json()).then(d => {
+    document.querySelectorAll('[data-site]').forEach(el => {
+      const k = (el as HTMLElement).dataset.site!;
+      if (d[k]) el.textContent = d[k];
+    });
+  }).catch(() => {});
+
+  // Tryb ciemny – wyłączony dla frontendu (panel admina ma własny)
+  const btn = document.getElementById('theme-toggle');
+  btn?.addEventListener('click', () => {
+    const html = document.documentElement;
+    const dark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', dark ? 'light' : 'dark');
+    try { localStorage.setItem('canc-theme', dark ? 'light' : 'dark'); } catch {}
+  });
+</script>
