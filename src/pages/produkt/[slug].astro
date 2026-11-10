@@ -266,7 +266,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           {related.map((r) => (
             <a class="pr-also__i" href={`/produkt/${r.id}/`} data-slug={r.id} data-name={r.name} data-price={r.current ?? 0}>
               <span class={`pr-also__img${r.avail === 'out_of_stock' ? ' is-out' : ''}`}>
-                {r.images[0] ? <img src={r.images[0].url} alt={r.images[0].alt || r.name} width="400" height="200" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
+                {r.images[0] ? <img src={r.images[0].url} alt={r.images[0].alt || r.name} width="400" height="400" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
                 <AvailBadge avail={r.avail} />
               </span>
               <span class="pr-also__n">{r.name}</span>
@@ -465,7 +465,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-also { width: 436px; background: var(--surface); border-radius: var(--r-lg); padding: 24px; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 14px; }
   .pr-also__t { font-size: 18px; line-height: 27px; font-weight: 400; }
   .pr-also__i { display: flex; flex-direction: column; gap: 14px; text-decoration: none; color: var(--ink); }
-  .pr-also__img { position: relative; height: 200px; border-radius: var(--r-md); background: var(--image); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .pr-also__img { position: relative; aspect-ratio: 1 / 1; /* kwadratowy kadr – produkt widoczny w całości */ border-radius: var(--r-md); background: var(--image); display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .pr-also__img img { width: 100%; height: 100%; object-fit: cover; }
   .pr-also__n { font-size: 22px; line-height: 30px; font-weight: 500; }
   .pr-also__f { display: flex; align-items: center; justify-content: space-between; font-size: 18px; line-height: 27px; }
