@@ -4,9 +4,14 @@ import type { Env } from './env';
 import { db } from './supabase';
 
 export type SeoPage = { title?: string; description?: string; ogImage?: string; noindex?: boolean };
+export type SeoOrg = {
+  name?: string; legalName?: string; description?: string; logo?: string; sameAs?: string[];
+  street?: string; postcode?: string; city?: string; foundingDate?: string; breadcrumbs?: boolean;
+};
 export type SeoSettings = {
   pages: Record<string, SeoPage>;
   share: { ogImage?: string; siteName?: string; twitter?: string };
+  org: SeoOrg;
 };
 
 // Strony z treścią, którymi zarządza zakładka SEO → Strony. Domyślne tytuły i opisy = wartości z kodu stron
@@ -26,7 +31,7 @@ export const SEO_PAGES: { path: string; label: string; title: string; descriptio
 ];
 
 export const SEO_LIMITS = { title: 60, description: 155 };
-const EMPTY: SeoSettings = { pages: {}, share: {} };
+const EMPTY: SeoSettings = { pages: {}, share: {}, org: {} };
 let cache: { at: number; value: SeoSettings } | null = null;
 
 export async function getSeo(env: Env): Promise<SeoSettings> {
@@ -34,7 +39,7 @@ export async function getSeo(env: Env): Promise<SeoSettings> {
   if (cache && Date.now() - cache.at < 60_000) return cache.value;
   try {
     const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
-    const value: SeoSettings = { pages: row?.value?.pages ?? {}, share: row?.value?.share ?? {} };
+    const value: SeoSettings = { pages: row?.value?.pages ?? {}, share: row?.value?.share ?? {}, org: row?.value?.org ?? {} };
     cache = { at: Date.now(), value };
     return value;
   } catch (e) {
@@ -46,3 +51,61 @@ export const clearSeoCache = () => { cache = null; };
 
 // Normalizacja ścieżki do klucza rejestru: zawsze z ukośnikiem na końcu
 export const seoPath = (pathname: string) => (pathname.endsWith('/') ? pathname : pathname + '/');
+
+// ---------- Dane firmy (etap 2) ----------
+const ORIGIN = 'https://can-c.pl';
+type SiteLike = { company?: string; address?: string; nip?: string; email?: string; phone?: string; facebook?: string; logoHeader?: string };
+// Pole „do uzupełnienia” z konfiguracji (np. „[numer telefonu]”) nie trafia do danych strukturalnych
+const real = (v?: string) => (v && !/^\s*\[.*\]\s*$/.test(v) ? v.trim() : '');
+
+// „ul. Parkowa 31B, 52-200 Wysoka” → ulica, kod, miasto
+export function splitAddress(address = '') {
+  const m = address.match(/^(.*?),\s*(\d{2}-\d{3})\s+(.+)$/);
+  return m ? { street: m[1].trim(), postcode: m[2], city: m[3].trim() } : { street: address.trim(), postcode: '', city: '' };
+}
+
+// Wartości efektywne: panel SEO → Ustawienia sklepu → domyślne
+export function orgData(seo: SeoSettings, site: SiteLike) {
+  const o = seo.org || {};
+  const a = splitAddress(site.address);
+  const sameAs = [...(o.sameAs || []), real(site.facebook)].filter((u, i, arr) => u && arr.indexOf(u) === i);
+  return {
+    name: o.name || seo.share.siteName || 'Can-C',
+    legalName: o.legalName || real(site.company),
+    description: o.description || '',
+    logo: o.logo || site.logoHeader || '',
+    sameAs,
+    street: o.street || a.street, postcode: o.postcode || a.postcode, city: o.city || a.city,
+    email: real(site.email), phone: real(site.phone), taxID: real(site.nip),
+    foundingDate: o.foundingDate || '',
+    breadcrumbs: o.breadcrumbs !== false,
+  };
+}
+
+// Organization (OnlineStore) + WebSite – na stronie głównej i „O nas”
+export function orgJsonLd(seo: SeoSettings, site: SiteLike) {
+  const d = orgData(seo, site);
+  const org: Record<string, unknown> = {
+    '@type': 'OnlineStore', '@id': `${ORIGIN}/#organization`, name: d.name, url: `${ORIGIN}/`,
+    ...(d.legalName && { legalName: d.legalName }),
+    ...(d.description && { description: d.description }),
+    ...(d.logo && { logo: { '@type': 'ImageObject', url: d.logo }, image: d.logo }),
+    ...(d.sameAs.length && { sameAs: d.sameAs }),
+    ...((d.street || d.city) && { address: { '@type': 'PostalAddress', streetAddress: d.street, postalCode: d.postcode, addressLocality: d.city, addressCountry: 'PL' } }),
+    ...(d.email && { email: d.email }),
+    ...(d.phone && { telephone: d.phone }),
+    ...(d.taxID && { taxID: d.taxID, vatID: `PL${d.taxID.replace(/\D/g, '')}` }),
+    ...(d.foundingDate && { foundingDate: d.foundingDate }),
+    contactPoint: { '@type': 'ContactPoint', contactType: 'customer service', areaServed: 'PL', availableLanguage: ['pl'], ...(d.email && { email: d.email }), ...(d.phone && { telephone: d.phone }) },
+  };
+  const website = { '@type': 'WebSite', '@id': `${ORIGIN}/#website`, name: d.name, url: `${ORIGIN}/`, inLanguage: 'pl-PL', publisher: { '@id': `${ORIGIN}/#organization` } };
+  return { '@context': 'https://schema.org', '@graph': [org, website] };
+}
+
+// Okruszki: Strona główna › … ; ścieżki z ukośnikiem na końcu
+export function breadcrumbJsonLd(items: { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+    itemListElement: items.map((it, i) => ({ '@type': 'ListItem', position: i + 1, name: it.name, item: `${ORIGIN}${it.path}` })),
+  };
+}

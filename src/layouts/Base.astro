@@ -4,7 +4,8 @@ import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { getEnv } from '../lib/env';
-import { getSeo, seoPath } from '../lib/seo';
+import { getSeo, seoPath, SEO_PAGES, orgData, orgJsonLd, breadcrumbJsonLd } from '../lib/seo';
+import { getSite } from '../lib/site-settings';
 
 interface Props {
   title: string;
@@ -14,14 +15,20 @@ interface Props {
   nav?: string;          // aktywna pozycja menu: krople | kapsulki | k9 | stosowanie | faq | kontakt
   ogImage?: string;      // obraz do udostępniania tej strony (np. zdjęcie produktu); pierwszeństwo ma ustawienie z panelu
   ogType?: 'website' | 'product';
+  crumbs?: { name: string; path: string }[]; // okruszki bez strony głównej; domyślnie z rejestru stron SEO
 }
 const { noReferrer = false, nav = '', ogType = 'website' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
 
 // SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
 // Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu – zostają wartości z kodu.
-let seo = { pages: {} as Record<string, any>, share: {} as Record<string, string> };
-try { seo = await getSeo(await getEnv(Astro.locals)); } catch { /* strona statyczna */ }
+let seo: Awaited<ReturnType<typeof getSeo>> = { pages: {}, share: {}, org: {} };
+let site: Record<string, any> = {};
+try {
+  const env = await getEnv(Astro.locals);
+  seo = await getSeo(env);
+  if (env.SUPABASE_URL) site = await getSite(env);
+} catch { /* strona statyczna */ }
 const ov = seo.pages[seoPath(Astro.url.pathname)] ?? {};
 const title: string = ov.title || Astro.props.title;
 const description: string = ov.description || Astro.props.description;
@@ -29,6 +36,13 @@ const noindex = Astro.props.noindex || ov.noindex === true;
 const siteName = seo.share.siteName || 'Can-C';
 const ogImage = ov.ogImage || Astro.props.ogImage || seo.share.ogImage || '';
 const twitter = (seo.share.twitter || '').replace(/^@?/, '@');
+
+// Dane strukturalne: firma (strona główna i „O nas”) oraz okruszki (strony indeksowane)
+const path = seoPath(Astro.url.pathname);
+const orgLd = !noindex && site.company && (path === '/' || path === '/o-nas/') ? orgJsonLd(seo, site) : null;
+const reg = SEO_PAGES.find((p) => p.path === path);
+const trail = Astro.props.crumbs ?? (reg && path !== '/' ? [{ name: reg.label, path }] : []);
+const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? breadcrumbJsonLd([{ name: 'Strona główna', path: '/' }, ...trail]) : null;
 
 ---
 <!doctype html>
@@ -65,6 +79,8 @@ const twitter = (seo.share.twitter || '').replace(/^@?/, '@');
     {ogImage && <meta property="og:image:alt" content={title} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     {twitter.length > 1 && <meta name="twitter:site" content={twitter} />}
+    {orgLd && <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />}
+    {crumbLd && <script type="application/ld+json" set:html={JSON.stringify(crumbLd)} />}
     <!-- Consent Mode v2 + GTM: ID pobierany z /api/ustawienia (działa na stronach statycznych i SSR) -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];

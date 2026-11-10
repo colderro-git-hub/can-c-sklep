@@ -316,10 +316,43 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div class="seo-tabs" role="tablist" aria-label="Działy SEO">
               <button type="button" role="tab" class="seo-tab" aria-selected="true" data-seo-tab="pages">Strony</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="share">Udostępnianie</button>
+              <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="org">Dane firmy</button>
             </div>
             <div data-seo-pane="pages" role="tabpanel">
               <p class="notice">Tytuł i opis widać w wynikach Google i w odpowiedziach wyszukiwarek AI. Puste pole = tekst domyślny (szary podgląd w polu). Zmiany działają na stronie w ciągu minuty. Produkty mają własne pola SEO w zakładce <strong>Produkty</strong>.</p>
               <div class="stack" data-seo-pages><p class="muted">Ładowanie…</p></div>
+            </div>
+            <div data-seo-pane="org" role="tabpanel" hidden>
+              <p class="notice">Te dane trafiają do Google i wyszukiwarek AI jako opis firmy (dane strukturalne <code>OnlineStore</code> i <code>WebSite</code> na stronie głównej i „O nas”). Puste pole = wartość z <strong>Ustawień sklepu</strong> (szary podgląd w polu).</p>
+              <div class="seo-grid">
+                <form class="card stack" data-seo-org novalidate>
+                  <div class="card__head"><h2 class="card__title">Firma</h2></div>
+                  <label class="field">Nazwa marki <input class="input" name="name" maxlength="80" /></label>
+                  <label class="field">Pełna nazwa firmy <input class="input" name="legalName" maxlength="150" /></label>
+                  <label class="field">Krótki opis firmy <span class="muted small">1–2 zdania: co sprzedajecie i komu</span><textarea class="input" name="description" rows="3" maxlength="300" placeholder="np. Oficjalny sklep z oryginalnymi kroplami do oczu Can-C z N-acetylokarnozyną. Sprzedajemy w Polsce od 2013 roku."></textarea></label>
+                  <div class="field">Logo dla wyszukiwarek <span class="muted small">najlepiej kwadratowe, na białym tle, min. 112 × 112 px · puste = logo z menu górnego</span><div class="org-logo" data-org-logo></div></div>
+                  <div class="seo-addr">
+                    <label class="field">Ulica i numer <input class="input" name="street" maxlength="120" /></label>
+                    <label class="field">Kod <input class="input" name="postcode" maxlength="6" /></label>
+                    <label class="field">Miejscowość <input class="input" name="city" maxlength="60" /></label>
+                  </div>
+                  <div class="field">Kontakt i NIP <span class="muted small">zmienisz w Ustawieniach sklepu</span><p class="small" data-org-contact></p></div>
+                  <label class="field">Profile w mediach społecznościowych <span class="muted small">jeden adres w linii, np. Instagram, YouTube, Allegro · Facebook z Ustawień dodajemy automatycznie</span><textarea class="input" name="sameAs" rows="3" placeholder="https://www.instagram.com/…"></textarea></label>
+                  <label class="field">Rok założenia <span class="muted small">opcjonalnie</span><input class="input" name="foundingDate" maxlength="10" placeholder="np. 2012" /></label>
+                  <label class="check"><input type="checkbox" name="breadcrumbs" /> Okruszki w wynikach Google (BreadcrumbList) – ścieżka typu Strona główna › Sklep › Produkt</label>
+                  <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
+                </form>
+                <div class="card stack">
+                  <div class="card__head"><h2 class="card__title">Podgląd danych strukturalnych</h2></div>
+                  <p class="muted small">Tak opis firmy trafi do kodu strony głównej. Po starcie sklepu sprawdź go w narzędziach:</p>
+                  <div class="actions">
+                    <a class="btn btn--outline btn--sm" href="https://search.google.com/test/rich-results?url=https%3A%2F%2Fcan-c.pl%2F" target="_blank" rel="noopener">Test wyników z elementami rozszerzonymi (Google)</a>
+                    <a class="btn btn--outline btn--sm" href="https://validator.schema.org/#url=https%3A%2F%2Fcan-c.pl%2F" target="_blank" rel="noopener">Walidator schema.org</a>
+                  </div>
+                  <pre class="code" data-org-json></pre>
+                  <details><summary class="small">Przykład okruszków na karcie produktu</summary><pre class="code" data-crumb-json></pre></details>
+                </div>
+              </div>
             </div>
             <div data-seo-pane="share" role="tabpanel" hidden>
               <form class="card" data-seo-share novalidate>
@@ -524,6 +557,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .seo-addr { display: grid; grid-template-columns: minmax(0, 2fr) 110px minmax(0, 1.4fr); gap: 12px; }
+  .org-logo .og-slot__prev { aspect-ratio: 1 / 1; max-width: 160px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
+  .org-logo .og-slot__prev img { object-fit: contain; padding: 12px; }
+  .org-logo__fallback { opacity: .55; }
+  pre.code { margin: 0; padding: 14px; border-radius: var(--r-md); background: #0f172a; color: #e2e8f0; font: 12px/1.5 ui-monospace, Menlo, Consolas, monospace; overflow: auto; max-height: 520px; white-space: pre; }
   .seo-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
   .seo-tab { all: unset; cursor: pointer; padding: 10px 16px; font: 500 14px var(--font); color: var(--ink-50); border-bottom: 2px solid transparent; margin-bottom: -1px; }
   .seo-tab:hover { color: var(--ink-100); }
@@ -2623,6 +2661,36 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     wireOgSlot(slotWrap.querySelector<HTMLElement>('[data-og]')!, () => saveShare('Zapisano domyślny obraz.'));
     sf.onsubmit = async (e) => { e.preventDefault(); try { await saveShare(); } catch (err) { toast((err as Error).message, true); } };
     fbPrev();
+    fillOrg(seoData as any);
+  }
+
+  // Dane firmy
+  function fillOrg(d: any) {
+    const f = $<HTMLFormElement>('[data-seo-org]');
+    const o = d.seo.org || {}, def = d.orgDefaults || {};
+    const set = (n: string, v: string, ph = '') => { const el = f.elements.namedItem(n) as HTMLInputElement; el.value = v || ''; if (ph) el.placeholder = ph; };
+    set('name', o.name, def.name); set('legalName', o.legalName, def.legalName); set('description', o.description);
+    set('street', o.street, def.street); set('postcode', o.postcode, def.postcode); set('city', o.city, def.city);
+    set('sameAs', (o.sameAs || []).join('\n')); set('foundingDate', o.foundingDate);
+    (f.elements.namedItem('breadcrumbs') as HTMLInputElement).checked = o.breadcrumbs !== false;
+    $('[data-org-contact]').innerHTML = [def.email ? `E-mail: ${esc(def.email)}` : '<span class="err">Brak e-maila</span>', def.phone ? `Telefon: ${esc(def.phone)}` : '<span class="err">Brak telefonu – uzupełnij w Ustawieniach sklepu</span>', def.taxID ? `NIP: ${esc(def.taxID)}` : ''].filter(Boolean).join('<br>');
+    $('[data-org-json]').textContent = JSON.stringify(d.orgJsonLd, null, 2);
+    $('[data-crumb-json]').textContent = JSON.stringify(d.crumbExample, null, 2);
+    const wrap = $<HTMLElement>('[data-org-logo]');
+    wrap.innerHTML = ogSlotHtml(o.logo || '');
+    if (!o.logo && def.logo) wrap.querySelector('.og-slot__prev')!.insertAdjacentHTML('afterbegin', `<img src="${esc(def.logo)}" alt="" class="org-logo__fallback" />`), (wrap.querySelector('[data-og-empty]') as HTMLElement).hidden = true;
+    wireOgSlot(wrap.querySelector<HTMLElement>('[data-og]')!, () => saveOrg('Zapisano logo dla wyszukiwarek.'));
+    f.onsubmit = async (e) => { e.preventDefault(); try { await saveOrg(); } catch (err) { toast((err as Error).message, true); } };
+  }
+  async function saveOrg(msg = 'Zapisano dane firmy.') {
+    const f = $<HTMLFormElement>('[data-seo-org]');
+    const fd = new FormData(f);
+    const r = await api('/api/admin/seo', { action: 'org', name: fd.get('name'), legalName: fd.get('legalName'), description: fd.get('description'),
+      logo: fd.get('ogImage'), street: fd.get('street'), postcode: fd.get('postcode'), city: fd.get('city'), sameAs: fd.get('sameAs'),
+      foundingDate: fd.get('foundingDate'), breadcrumbs: fd.get('breadcrumbs') !== null });
+    seoData = { ...seoData!, ...r, seo: r.seo };
+    $('[data-org-json]').textContent = JSON.stringify(r.orgJsonLd, null, 2);
+    toast(msg);
   }
   document.querySelectorAll<HTMLButtonElement>('[data-seo-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-seo-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
