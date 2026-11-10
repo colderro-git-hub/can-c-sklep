@@ -9,6 +9,7 @@ import type { Availability } from '../lib/pricing';
 import { AVAIL_LABEL } from '../lib/catalog';
 import Stars from '../components/Stars.astro';
 import ProductCard from '../components/ProductCard.astro';
+import FaqItem from '../components/FaqItem.astro';
 
 // Strona główna z aktualnymi produktami i treściami z bazy; przy awarii bazy – dane zapasowe z kodu
 export const prerender = false;
@@ -72,10 +73,12 @@ const benefits = at('home.benefits', {
   image_alt: 'Korzyści stosowania kropli Can-C',
 });
 const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
+const faqCatLabel: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
+const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item')
   .filter((f) => f.home)
-  .map((f) => ({ q: f.q, a: applyTokens(f.a, tokens) }));
-const faqList = faqCms.length ? faqCms : faqs;
+  .map((f) => ({ q: f.q, a: applyTokens(f.a, tokens), cat: f.cat }));
+const faqList: { q: string; a: string; cat?: string }[] = faqCms.length ? faqCms : faqs;
 
 const dropsPrice = products.find((p) => p.slug === 'krople-can-c')?.price ?? fallback[0].price ?? 0;
 const bundleRows = bundles.map((b) => {
@@ -306,19 +309,9 @@ const bundleRows = bundles.map((b) => {
         Wszystkie pytania
       </a>
     </div>
-    <div style="flex:1;min-width:280px;border-bottom:1px solid var(--line)">
+    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
       {faqList.map((f, i) => (
-        <div style="border-top:1px solid var(--line)">
-          <details class="faq-item">
-            <summary class="acc">
-              <span>{f.q}</span>
-              <span class="acc__icon" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
-              </span>
-            </summary>
-            <p class="lead" style="max-width:680px;padding-bottom:24px;text-align:left">{f.a}</p>
-          </details>
-        </div>
+        <FaqItem cat={f.cat ? faqCatLabel[f.cat] : undefined} q={f.q} answer={escHtml(f.a)} open={i === 0} />
       ))}
     </div>
   </section>
@@ -338,14 +331,6 @@ const bundleRows = bundles.map((b) => {
   </section>
 </Base>
 
-<script>
-  // FAQ: ikona „−” przy otwartym pytaniu
-  document.querySelectorAll<HTMLDetailsElement>('.faq-item').forEach((d) => d.addEventListener('toggle', () => {
-    const path = d.querySelector('.acc__icon path');
-    path?.setAttribute('d', d.open ? 'M1 7h12' : 'M7 1v12M1 7h12');
-  }));
-
-</script>
 
 <style>
   /* Hero: kształty w px pod kontener 1300 px; węższe ekrany – układ pionowy */

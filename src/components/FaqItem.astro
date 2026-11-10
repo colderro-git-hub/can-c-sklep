@@ -1,0 +1,36 @@
+---
+// Karta pytania FAQ (wygląd ze strony /faq/). `answer` to bezpieczny HTML akapitu; akapity rozdzielone pustą linią.
+interface Props { id?: string; cat?: string; q: string; answer: string; open?: boolean; text?: string }
+const { id, cat, q, answer, open = false, text } = Astro.props;
+const catAttr = Astro.props['data-cat' as keyof Props] as string | undefined;
+---
+<details class="fq-item" id={id} data-cat={catAttr} data-text={text} open={open}>
+  <summary class="fq-q">
+    <span class="fq-q__t">{cat && <span class="fq-q__cat">{cat}</span>}<span class="fq-q__q">{q}</span></span>
+    <span aria-hidden="true" class="fq-q__i">
+      <svg class="fq-plus" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
+      <svg class="fq-minus" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
+    </span>
+  </summary>
+  <div class="fq-a">{answer.split('\n\n').map((t) => <p class="p" set:html={t} />)}</div>
+</details>
+
+<style>
+  .fq-item { border: 1px solid var(--line); border-radius: var(--r-md); scroll-margin-top: 24px; }
+  .fq-item[hidden] { display: none; }
+  .fq-item[open] { border-color: var(--ink); }
+  .fq-q { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 23px; cursor: pointer; }
+  .fq-q::-webkit-details-marker { display: none; }
+  .fq-q__t { display: flex; flex-direction: column; gap: 4px; }
+  .fq-q__cat { font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .fq-q__q { font-size: 24px; line-height: 28px; font-weight: 400; }
+  .fq-q__i { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: var(--band); color: var(--ink); display: flex; align-items: center; justify-content: center; }
+  .fq-item[open] .fq-q__i { background: var(--ink); color: var(--surface); }
+  .fq-minus, .fq-item[open] .fq-plus { display: none; }
+  .fq-item[open] .fq-minus { display: block; }
+  .fq-a { padding: 0 90px 24px 23px; display: flex; flex-direction: column; gap: 14px; }
+  @media (max-width: 1000px) {
+    .fq-q__q { font-size: 20px; line-height: 26px; }
+    .fq-a { padding: 0 23px 24px; }
+  }
+</style>
