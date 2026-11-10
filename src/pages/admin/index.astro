@@ -492,6 +492,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 6px; }
+  .img-slot { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .img-slot__cap { font-size: 13px; color: var(--ink-50); }
+  .img-slot__prev { height: 140px; max-width: 360px; border-radius: var(--r-md); background: var(--line-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .img-slot__prev img { width: 100%; height: 100%; object-fit: contain; }
+  .img-slot label.btn { cursor: pointer; }
   .logo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
   .logo-slot { display: flex; flex-direction: column; gap: 10px; }
   .logo-slot__t { font-weight: 500; font-size: 14px; }
@@ -1815,7 +1821,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         cta_primary_href: { type: 'url', label: 'Przycisk główny – link' },
         cta_secondary_label: { type: 'text', label: 'Przycisk drugorzędny – etykieta (puste = ukryj)' },
         cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny – link' },
-        image_url: { type: 'image', label: 'Zdjęcie w hero (URL z Supabase Storage, puste = placeholder)' },
+        image_url: { type: 'image', label: 'Zdjęcie w hero', hint: 'Bez zdjęcia na stronie jest szare tło zastępcze.' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
         trust: { type: 'list', label: 'Elementy zaufania pod przyciskami (jedna linia = jeden element)' },
       }},
@@ -1825,7 +1831,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         items: { type: 'list', label: 'Punkty listy (jedna linia = jeden punkt)', hint: '**tekst** = pogrubienie' },
         cta_label: { type: 'text', label: 'Przycisk – etykieta (puste = ukryj)' },
         cta_href: { type: 'url', label: 'Przycisk – link' },
-        image_url: { type: 'image', label: 'Zdjęcie po lewej (URL z Supabase Storage)' },
+        image_url: { type: 'image', label: 'Zdjęcie po lewej' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
       }},
       { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
@@ -1841,7 +1847,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         tag: { type: 'text', label: 'Etykieta (np. „DLA PSA")' }, h2: { type: 'text', label: 'Nagłówek' },
         lead: { type: 'textarea', label: 'Tekst lead' }, cta_label: { type: 'text', label: 'Przycisk – etykieta' },
         cta_href: { type: 'url', label: 'Przycisk – link' },
-        image_url: { type: 'image', label: 'Zdjęcie (URL z Supabase Storage)' }, image_alt: { type: 'text', label: 'Alt' },
+        image_url: { type: 'image', label: 'Zdjęcie' }, image_alt: { type: 'text', label: 'Alt' },
       }},
     ]},
     faq: { label: 'FAQ', previewHref: '/faq/', sections: [] },
@@ -1863,12 +1869,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         h2: { type: 'text', label: 'Nagłówek' },
         lead: { type: 'textarea', label: 'Lead' },
         steps: { type: 'list', label: 'Kroki (jedna linia = jeden krok)' },
-        step_images: { type: 'array', label: 'Zdjęcia kroków JSON (tablica 4 URLi)', hint: 'Format: ["https://…krok1.jpg", "https://…krok2.jpg", null, null] – null = placeholder' },
+        step_images: { type: 'images', count: 4, itemLabel: 'Krok', label: 'Ilustracje kroków', hint: 'Bez ilustracji na stronie jest szare tło zastępcze. Grafika jest pokazywana w całości.' },
       },},
       { key: 'how_to_use.applying', label: 'Zakraplanie', schema: {
         h2: { type: 'text', label: 'Nagłówek' },
         steps: { type: 'array', label: 'Kroki JSON [{title, desc}]' },
-        image_url: { type: 'image', label: 'Zdjęcie przy sekcji zakraplania (URL z Supabase Storage)' },
+        image_url: { type: 'image', label: 'Zdjęcie przy sekcji zakraplania' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
       },},
     ]},
@@ -1892,6 +1898,20 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     } catch (e) { pagesList.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; }
   }
 
+  // Pole obrazu: podgląd + „Wybierz plik” / „Usuń”; adres trzymany w ukrytym polu formularza sekcji
+  const IMG_ACCEPT = '.svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp';
+  function imgSlot(name: string, url: string, caption = ''): string {
+    return `<div class="img-slot" data-img-slot>
+      ${caption ? `<span class="img-slot__cap">${esc(caption)}</span>` : ''}
+      <input type="hidden" name="${name}" value="${esc(url)}" />
+      <div class="img-slot__prev">${url ? `<img src="${esc(url)}" alt="" />` : ''}<span class="muted small" data-img-empty ${url ? 'hidden' : ''}>Brak zdjęcia</span></div>
+      <div class="actions">
+        <label class="btn btn--sm">${url ? 'Zmień plik' : 'Wybierz plik'}<input type="file" accept="${IMG_ACCEPT}" data-img-file hidden /></label>
+        <button type="button" class="btn btn--outline btn--sm" data-img-remove ${url ? '' : 'hidden'}>Usuń</button>
+      </div>
+    </div>`;
+  }
+
   function fieldHtml(fk: string, schema: any, value: unknown): string {
     const val = value === null || value === undefined ? '' : value;
     const hint = schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '';
@@ -1903,7 +1923,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       case 'array':
         return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="8">${esc(typeof val === 'string' ? val : JSON.stringify(val, null, 2))}</textarea></label>`;
       case 'image':
-        return `<label class="field">${esc(schema.label)}${val ? `<img src="${esc(String(val))}" alt="" style="max-height:120px;object-fit:contain;background:var(--line-soft);margin-bottom:8px" />` : ''}<input class="input" name="${fk}" type="url" value="${esc(String(val))}" placeholder="https://…" /></label>`;
+        return `<div class="field">${esc(schema.label)}${hint}${imgSlot(fk, String(val))}</div>`;
+      case 'images': {
+        const arr = Array.isArray(val) ? (val as (string | null)[]) : [];
+        const n = schema.count || 4;
+        return `<div class="field">${esc(schema.label)}${hint}<div class="img-grid">${Array.from({ length: n }, (_, i) => imgSlot(`${fk}__${i}`, arr[i] || '', `${schema.itemLabel || 'Zdjęcie'} ${i + 1}`)).join('')}</div></div>`;
+      }
       default:
         return `<label class="field">${esc(schema.label)}${hint}<input class="input" name="${fk}" type="text" value="${esc(String(val))}" /></label>`;
     }
@@ -1917,6 +1942,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       switch (s.type) {
         case 'list': data[fk] = raw.split('\n').map((x: string) => x.trim()).filter(Boolean); break;
         case 'array': try { data[fk] = JSON.parse(raw); } catch { data[fk] = raw; } break;
+        case 'images': data[fk] = Array.from({ length: s.count || 4 }, (_, i) => String(fd.get(`${fk}__${i}`) ?? '') || null); break;
         default: data[fk] = raw; break;
       }
     }
@@ -1974,13 +2000,56 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </form>`;
     }).join('');
 
+    const saveSection = async (form: HTMLFormElement, msg?: string) => {
+      const key = form.dataset.pageForm!;
+      const sec = meta.sections.find((s: any) => s.key === key)!;
+      await api('/api/admin/pages', { key, data: collectData(form, sec.schema) });
+      toast(msg || `Zapisano „${sec.label}".`);
+    };
     pagesList.querySelectorAll<HTMLFormElement>('[data-page-form]').forEach((form) => {
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const key = form.dataset.pageForm!;
-        const sec = meta.sections.find((s: any) => s.key === key)!;
-        try { await api('/api/admin/pages', { key, data: collectData(form, sec.schema) }); toast(`Zapisano „${sec.label}".`); }
-        catch (err) { toast((err as Error).message, true); }
+        try { await saveSection(form); } catch (err) { toast((err as Error).message, true); }
+      });
+    });
+
+    // Grafiki: wysłanie pliku (zdjęcia zmniejszone do 1600 px WebP, SVG bez zmian) i od razu zapis sekcji – jak logo w Ustawieniach
+    pagesList.querySelectorAll<HTMLElement>('[data-img-slot]').forEach((slot) => {
+      const form = slot.closest<HTMLFormElement>('[data-page-form]')!;
+      const hidden = slot.querySelector<HTMLInputElement>('input[type="hidden"]')!;
+      const prev = slot.querySelector<HTMLElement>('.img-slot__prev')!;
+      const pick = slot.querySelector<HTMLLabelElement>('label.btn')!;
+      const input = slot.querySelector<HTMLInputElement>('[data-img-file]')!;
+      const removeBtn = slot.querySelector<HTMLButtonElement>('[data-img-remove]')!;
+      const show = (url: string) => {
+        hidden.value = url;
+        prev.querySelector('img')?.remove();
+        if (url) { const im = document.createElement('img'); im.src = url; im.alt = ''; prev.prepend(im); }
+        prev.querySelector<HTMLElement>('[data-img-empty]')!.hidden = !!url;
+        removeBtn.hidden = !url;
+        pick.firstChild!.textContent = url ? 'Zmień plik' : 'Wybierz plik';
+      };
+      input.addEventListener('change', async () => {
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file) return;
+        const before = hidden.value;
+        try {
+          toast(`Wysyłanie ${file.name}…`);
+          const svg = file.type === 'image/svg+xml' || /\.svg$/i.test(file.name);
+          const fd = new FormData(); fd.append('file', svg ? file : fileFrom(await shrink(file))); fd.append('product', 'cms');
+          const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+          const d = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(d.error || 'Błąd wysyłania pliku.');
+          show(d.url);
+          await saveSection(form, 'Zapisano zdjęcie.');
+        } catch (err) { show(before); toast((err as Error).message, true); }
+      });
+      removeBtn.addEventListener('click', async () => {
+        if (!confirm('Usunąć zdjęcie? Na stronie pojawi się szare tło zastępcze.')) return;
+        const before = hidden.value;
+        try { show(''); await saveSection(form, 'Usunięto zdjęcie.'); }
+        catch (err) { show(before); toast((err as Error).message, true); }
       });
     });
   }

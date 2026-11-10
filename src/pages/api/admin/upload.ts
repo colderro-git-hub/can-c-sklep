@@ -35,11 +35,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const file = form?.get('file');
   const product = String(form?.get('product') || 'produkt').replace(/[^a-z0-9-]/g, '').slice(0, 60) || 'produkt';
   if (!(file instanceof File)) return json(400, { error: 'Brak pliku.' });
-  // Logo sklepu: dodatkowo SVG (sprawdzone pod kątem skryptów), limit 1 MB, folder logo/
+  // Logo sklepu (folder logo/) i grafiki stron z CMS (folder cms/): dodatkowo SVG sprawdzone pod kątem skryptów
   const isLogo = product === 'logo';
-  const isSvg = isLogo && (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name));
+  const svgAllowed = isLogo || product === 'cms';
+  const isSvg = svgAllowed && (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name));
   const ext = isSvg ? 'svg' : TYPES[file.type];
-  if (!ext) return json(415, { error: isLogo ? 'Dozwolone formaty logo: SVG, PNG, JPG, WebP.' : 'Dozwolone formaty: WebP, JPG, PNG.' });
+  if (!ext) return json(415, { error: svgAllowed ? 'Dozwolone formaty: SVG, PNG, JPG, WebP.' : 'Dozwolone formaty: WebP, JPG, PNG.' });
   if (file.size > (isLogo ? 1 : 5) * 1024 * 1024) return json(413, { error: `Plik jest większy niż ${isLogo ? 1 : 5} MB.` });
   let body: ReadableStream | string = file.stream();
   if (isSvg) {
