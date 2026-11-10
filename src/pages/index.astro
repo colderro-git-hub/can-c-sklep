@@ -256,7 +256,7 @@ const bundleRows = bundles.map((b) => {
     <div style="flex:1;min-width:280px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
       {(why.features as {title:string;text:string}[]).map((f, i) => (
         <div style="border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:14px">
-          <span style="font-size:3rem;line-height:72px;font-weight:200">0{i+1}</span>
+          <span style="font-size:3rem;line-height:72px;font-weight:200;color:var(--accent)">0{i+1}</span>
           <h3 style="margin:0;font-size:1.5rem;line-height:28px;font-weight:400">{f.title}</h3>
           <p class="lead" style="text-align:left">{f.text}</p>
         </div>
@@ -293,7 +293,7 @@ const bundleRows = bundles.map((b) => {
                 : <span class="rv-thumb" aria-hidden="true"></span>}
               <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
             </div>
-            <svg aria-hidden="true" width="15" height="11" viewBox="5 7 14 10"><path fill="var(--muted)" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+            <svg aria-hidden="true" width="15" height="11" viewBox="5 7 14 10"><path fill="var(--accent)" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
             <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{r.quote}</blockquote>
           </figure>
         ))}
