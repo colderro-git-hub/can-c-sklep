@@ -527,7 +527,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   .ac__code { font-size: 24px; letter-spacing: 0.3em; text-align: center; }
   /* Przycisk-link (także w kartach zamówień wstawianych przez JS, stąd :global) */
   :global(.ac__linkbtn) { border: none; background: none; padding: 0; font-family: var(--font); font-size: 14px; line-height: 21px; font-weight: 400; letter-spacing: var(--ls); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; align-self: flex-start; }
-  :global(.ac__linkbtn:hover) { color: var(--muted); }
+  :global(.ac__linkbtn:hover) { color: var(--accent-text); }
   :global(.ac__linkbtn:disabled) { color: var(--muted); cursor: default; }
 
   .ac__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
@@ -589,7 +589,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.ac__olinks) { display: flex; gap: 24px; flex-wrap: wrap; }
   :global(.ac__olinks) { align-items: center; }
   :global(.ac__olinks a) { font-size: 14px; line-height: 21px; font-weight: 400; color: var(--ink); text-underline-offset: 3px; }
-  :global(.ac__olinks a:hover) { color: var(--muted); }
+  :global(.ac__olinks a:hover) { color: var(--accent-text); }
   :global(.ac__ask) { display: flex; flex-direction: column; gap: 14px; padding: 23px; border-radius: var(--r-md); background: var(--band); }
   :global(.ac__askrow) { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 

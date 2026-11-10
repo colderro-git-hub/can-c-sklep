@@ -89,7 +89,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__right { display: flex; align-items: center; gap: 24px 28px; flex-wrap: wrap; }
   .hd__nav { display: flex; align-items: center; gap: 12px 28px; flex-wrap: wrap; }
   .hd__link { font-size: 18px; line-height: 27px; font-weight: 300; color: var(--muted); text-decoration: none; white-space: nowrap; }
-  .hd__link:hover { color: var(--ink); }
+  .hd__link:hover { color: var(--accent-text); }
   .hd__link[aria-current='page'] {
     display: inline-block; height: 32px; padding: 0 14px; line-height: 30px;
     border: 1px solid var(--primary); border-radius: var(--r-pill); font-weight: 400; color: var(--ink);
@@ -99,7 +99,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
     border: none; background: transparent; border-radius: 50%; cursor: pointer; color: var(--ink);
   }
-  .hd__icon:hover { background: var(--band); }
+  .hd__icon:hover { background: var(--band); color: var(--accent-text); }
   .hd__cartwrap { position: relative; }
   .hd__cart {
     display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 12px 0 20px;
@@ -118,7 +118,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     padding: 24px; display: flex; flex-direction: column; gap: 14px;
   }
   .hd__lang { font-size: 16px; line-height: 24px; font-weight: 400; color: var(--ink); text-decoration: none; padding: 0 4px; }
-  .hd__lang:hover { color: var(--muted); }
+  .hd__lang:hover { color: var(--accent-text); }
   .hd__pvhead { font-size: 18px; line-height: 27px; font-weight: 400; }
   .hd__pvlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow: auto; }
   .hd__pvlist :global(li) { display: flex; align-items: center; gap: 14px; font-size: 14px; line-height: 21px; font-weight: 300; }

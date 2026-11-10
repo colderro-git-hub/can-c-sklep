@@ -14,7 +14,10 @@
   --image:   #D3DAE6;   /* tła zdjęć i kształtów */
   --band:    #E8EDF5;   /* pasy sekcji, tła pomocnicze */
   --surface: #FFFFFF;
-  --peach:   #DCE4F2;   /* akcent etykiet i wyróżnień (dawniej brzoskwiniowy) */
+  --accent:      #169089;   /* akcent: ikony, strzałki, znaczniki list (min. 3:1) */
+  --accent-text: #107571;   /* akcent w tekście: linki po najechaniu (min. 4,5:1 także na pasach) */
+  --accent-soft: #D4EEEB;   /* tło etykiet, wyróżnień i paneli informacyjnych */
+  --peach:   var(--accent-soft);   /* dawna nazwa roli „brzoskwiniowej” – teraz tło akcentu */
   --star:    #D8BE95;   /* gwiazdki ocen */
   --primary: #4E5A7C;   /* przyciski, koszyk, ciemne karty, stopka */
   --primary-hover: #3F4A68;
@@ -109,6 +112,9 @@
 
 /* Tryb ciemny — tylko panel admina i elementy które mają data-theme */
 [data-theme="dark"] {
+  --accent: #3CC2B9;
+  --accent-text: #5ED3CB;
+  --accent-soft: #173B39;
   --primary: #6F7FA6;
   --primary-hover: #8191B8;
   --ink:     #FFFFFF;
@@ -448,10 +454,12 @@ select.input {
 
 .crumb { font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); }
 .crumb a { color: var(--muted); text-underline-offset: 3px; }
-.crumb a:hover { color: var(--ink); }
+.crumb a:hover { color: var(--accent-text); }
 
 .lnk { display: inline-flex; align-items: center; gap: 14px; font-size: 18px; line-height: 27px; font-weight: 500; color: var(--ink); text-decoration: none; }
-.lnk:hover { color: var(--muted); }
+.lnk:hover { color: var(--accent-text); }
+.lnk svg, .link-arrow svg { color: var(--accent); }
+.link-arrow:hover { color: var(--accent-text); }
 
 .btn-o { background: var(--surface); color: var(--ink); }
 .btn-o:hover { background: var(--band); color: var(--ink); }
@@ -482,7 +490,7 @@ select.input {
 .checks li { display: flex; align-items: flex-start; gap: 14px; }
 .checks li::before {
   content: ''; width: 14px; height: 10px; margin-top: 7px; flex-shrink: 0;
-  background: currentColor;
+  background: var(--accent);
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M1 5l4 4 8-8' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") no-repeat center / contain;
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M1 5l4 4 8-8' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") no-repeat center / contain;
 }
@@ -557,7 +565,8 @@ textarea.fld { height: 110px; padding: 14px 18px; resize: vertical; line-height:
   border: none; border-radius: 50%; background: var(--bg); color: var(--ink);
   display: flex; align-items: center; justify-content: center; text-decoration: none; cursor: pointer;
 }
-.notch__btn:hover { background: var(--band); }
+.notch__btn { color: var(--accent); }
+.notch__btn:hover { background: var(--band); color: var(--accent-text); }
 
 /* Pusty stan */
 .empty { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 45px; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
@@ -570,6 +579,11 @@ textarea.fld { height: 110px; padding: 14px 18px; resize: vertical; line-height:
 @media (max-width: 1000px) and (min-width: 601px) {
   .g4 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
 }
+
+/* Akcent (wariant Morski): elementy wspólne dla wielu stron */
+a:not(.btn):not(.chip):not(.hd__cart):hover { text-decoration-color: var(--accent); }
+.dot--ok, .pr-avail--in_stock .dot { color: var(--accent); }
+.p-tag { border-color: var(--accent-soft); background: var(--accent-soft); }
 
 /* ----------------------------------------------------------------
    Responsywność
