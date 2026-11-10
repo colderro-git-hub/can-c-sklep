@@ -3,6 +3,8 @@ import '../styles/global.css';
 
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { getEnv } from '../lib/env';
+import { getSeo, seoPath } from '../lib/seo';
 
 interface Props {
   title: string;
@@ -10,9 +12,23 @@ interface Props {
   noindex?: boolean;     // strony z danymi zamówienia – zawsze poza Google
   noReferrer?: boolean;  // adres strony zawiera identyfikator zamówienia – nie przekazujemy go dalej
   nav?: string;          // aktywna pozycja menu: krople | kapsulki | k9 | stosowanie | faq | kontakt
+  ogImage?: string;      // obraz do udostępniania tej strony (np. zdjęcie produktu); pierwszeństwo ma ustawienie z panelu
+  ogType?: 'website' | 'product';
 }
-const { title, description, noindex = false, noReferrer = false, nav = '' } = Astro.props;
+const { noReferrer = false, nav = '', ogType = 'website' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
+
+// SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
+// Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu – zostają wartości z kodu.
+let seo = { pages: {} as Record<string, any>, share: {} as Record<string, string> };
+try { seo = await getSeo(await getEnv(Astro.locals)); } catch { /* strona statyczna */ }
+const ov = seo.pages[seoPath(Astro.url.pathname)] ?? {};
+const title: string = ov.title || Astro.props.title;
+const description: string = ov.description || Astro.props.description;
+const noindex = Astro.props.noindex || ov.noindex === true;
+const siteName = seo.share.siteName || 'Can-C';
+const ogImage = ov.ogImage || Astro.props.ogImage || seo.share.ogImage || '';
+const twitter = (seo.share.twitter || '').replace(/^@?/, '@');
 
 ---
 <!doctype html>
@@ -39,10 +55,16 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
     <!-- Do startu sklepu staging nie może trafić do Google. W dniu startu: zmienna builda PUBLIC_SITE_INDEXABLE=true -->
     {(noindex || import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true') && <meta name="robots" content="noindex, nofollow" />}
     {noReferrer && <meta name="referrer" content="no-referrer" />}
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:locale" content="pl_PL" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:alt" content={title} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    {twitter.length > 1 && <meta name="twitter:site" content={twitter} />}
     <!-- Consent Mode v2 + GTM: ID pobierany z /api/ustawienia (działa na stronach statycznych i SSR) -->
     <script is:inline>
       window.dataLayer = window.dataLayer || [];

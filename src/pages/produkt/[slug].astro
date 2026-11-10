@@ -80,7 +80,7 @@ const jsonLd: Record<string, unknown> = {
 };
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 ---
-<Base title={p.seo_title || `${p.name} | Can-C`} description={p.seo_description || p.short_description || p.name} nav={navKey}>
+<Base title={p.seo_title || `${p.name} | Can-C`} description={p.seo_description || p.short_description || p.name} nav={navKey} ogImage={images[0]?.url} ogType="product">
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   {TURNSTILE_SITE_KEY && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 

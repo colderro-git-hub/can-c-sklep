@@ -52,6 +52,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M7 8h10M7 12h6M7 16h4" /></svg>
             <span>Strony</span>
           </button>
+          <button type="button" class="nav__item" data-tab="seo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21M8 10.5h5M10.5 8v5" /></svg>
+            <span>SEO</span>
+          </button>
           <button type="button" class="nav__item" data-tab="settings">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.6 1.6 0 0 0-1-1.5 1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.6 1.6 0 0 0 1.5-1 1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1Z" /></svg>
             <span>Ustawienia sklepu</span>
@@ -308,6 +312,34 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </div>
           </section>
 
+          <section data-view="seo" class="stack" hidden>
+            <div class="seo-tabs" role="tablist" aria-label="Działy SEO">
+              <button type="button" role="tab" class="seo-tab" aria-selected="true" data-seo-tab="pages">Strony</button>
+              <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="share">Udostępnianie</button>
+            </div>
+            <div data-seo-pane="pages" role="tabpanel">
+              <p class="notice">Tytuł i opis widać w wynikach Google i w odpowiedziach wyszukiwarek AI. Puste pole = tekst domyślny (szary podgląd w polu). Zmiany działają na stronie w ciągu minuty. Produkty mają własne pola SEO w zakładce <strong>Produkty</strong>.</p>
+              <div class="stack" data-seo-pages><p class="muted">Ładowanie…</p></div>
+            </div>
+            <div data-seo-pane="share" role="tabpanel" hidden>
+              <form class="card" data-seo-share novalidate>
+                <div class="card__head"><h2 class="card__title">Udostępnianie w mediach społecznościowych</h2></div>
+                <p class="muted">Tak wygląda link do sklepu wklejony na Facebooku, w Messengerze, na LinkedIn czy w WhatsAppie. Obraz domyślny pokazujemy na stronach bez własnego obrazu; produkty używają swojego pierwszego zdjęcia.</p>
+                <div class="seo-share">
+                  <div class="stack">
+                    <div class="field">Domyślny obraz do udostępniania <span class="muted small">JPG, PNG lub WebP · najlepiej 1200 × 630 px</span><div data-og-slot="share"></div></div>
+                    <label class="field">Nazwa witryny <span class="muted small">og:site_name</span><input class="input" name="siteName" maxlength="60" placeholder="Can-C" /></label>
+                    <label class="field">Konto X (Twitter) <span class="muted small">opcjonalnie, bez @</span><input class="input" name="twitter" maxlength="16" placeholder="np. canc_pl" /></label>
+                    <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
+                  </div>
+                  <div class="fb-card" aria-hidden="true">
+                    <div class="fb-card__img" data-fb-img><span>Brak obrazu</span></div>
+                    <div class="fb-card__body"><span class="fb-card__dom">CAN-C.PL</span><span class="fb-card__t" data-fb-title></span><span class="fb-card__d" data-fb-desc></span></div>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </section>
           <section data-view="settings" class="stack" hidden>
 
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
@@ -492,6 +524,35 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .seo-tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .seo-tab { all: unset; cursor: pointer; padding: 10px 16px; font: 500 14px var(--font); color: var(--ink-50); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .seo-tab:hover { color: var(--ink-100); }
+  .seo-tab[aria-selected='true'] { color: var(--primary); border-bottom-color: var(--primary); }
+  .seo-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .seo-page { gap: 0; }
+  .seo-page__sum { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; }
+  .seo-page__sum::-webkit-details-marker { display: none; }
+  .seo-page__name { display: flex; flex-direction: column; gap: 2px; }
+  .seo-page__pills { display: flex; gap: 6px; }
+  .seo-page__form { margin-top: 16px; }
+  .seo-grid, .seo-share { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .pill--warn { background: rgba(229,140,30,.14); color: #8a5300; }
+  .serp { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: var(--r-md); box-shadow: inset 0 0 0 1px var(--line); font-family: Arial, sans-serif; }
+  .serp__url { font-size: 12px; color: #4d5156; }
+  .serp__t { font-size: 18px; line-height: 1.3; color: #1a0dab; }
+  .serp__d { font-size: 13px; line-height: 1.5; color: #4d5156; }
+  .og-slot { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+  .og-slot__prev { aspect-ratio: 1200 / 630; max-width: 360px; border-radius: var(--r-md); background: var(--line-soft); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .og-slot__prev img { width: 100%; height: 100%; object-fit: cover; }
+  .og-slot label.btn { cursor: pointer; }
+  .fb-card { border-radius: 8px; overflow: hidden; box-shadow: 0 0 0 1px #dadde1; font-family: Helvetica, Arial, sans-serif; max-width: 420px; }
+  .fb-card__img { aspect-ratio: 1200 / 630; background: #f0f2f5; display: flex; align-items: center; justify-content: center; color: #65676b; font-size: 13px; }
+  .fb-card__img img { width: 100%; height: 100%; object-fit: cover; }
+  .fb-card__body { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; background: #f0f2f5; }
+  .fb-card__dom { font-size: 12px; color: #65676b; }
+  .fb-card__t { font-size: 16px; font-weight: 600; color: #050505; }
+  .fb-card__d { font-size: 14px; color: #65676b; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+  @media (max-width: 900px) { .seo-grid, .seo-share { grid-template-columns: minmax(0, 1fr); } }
   .img-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 6px; }
   .img-slot { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
   .img-slot__cap { font-size: 13px; color: var(--ink-50); }
@@ -2426,8 +2487,150 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     catch (err) { toast((err as Error).message, true); }
   });
 
+  // ---------- SEO ----------
+  type SeoPageDef = { path: string; label: string; title: string; description: string };
+  let seoData: { seo: any; pages: SeoPageDef[]; limits: { title: number; description: number } } | null = null;
+  const OG_ACCEPT = '.png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp';
+
+  // Pole obrazu OG: podgląd 1200×630 (proporcje), wybór pliku, usunięcie; adres w ukrytym polu
+  function ogSlotHtml(url: string) {
+    return `<div class="og-slot" data-og>
+      <input type="hidden" name="ogImage" value="${esc(url)}" />
+      <div class="og-slot__prev">${url ? `<img src="${esc(url)}" alt="" />` : ''}<span class="muted small" data-og-empty ${url ? 'hidden' : ''}>Brak obrazu</span></div>
+      <div class="actions"><label class="btn btn--sm">${url ? 'Zmień plik' : 'Wybierz plik'}<input type="file" accept="${OG_ACCEPT}" hidden data-og-file /></label>
+      <button type="button" class="btn btn--outline btn--sm" data-og-remove ${url ? '' : 'hidden'}>Usuń</button></div>
+    </div>`;
+  }
+  function wireOgSlot(slot: HTMLElement, onChange: (url: string) => Promise<void>) {
+    const hidden = slot.querySelector<HTMLInputElement>('input[name="ogImage"]')!;
+    const prev = slot.querySelector<HTMLElement>('.og-slot__prev')!;
+    const pick = slot.querySelector<HTMLLabelElement>('label.btn')!;
+    const rm = slot.querySelector<HTMLButtonElement>('[data-og-remove]')!;
+    const show = (url: string) => {
+      hidden.value = url; prev.querySelector('img')?.remove();
+      if (url) { const im = document.createElement('img'); im.src = url; im.alt = ''; prev.prepend(im); }
+      prev.querySelector<HTMLElement>('[data-og-empty]')!.hidden = !!url; rm.hidden = !url;
+      pick.firstChild!.textContent = url ? 'Zmień plik' : 'Wybierz plik';
+    };
+    slot.querySelector<HTMLInputElement>('[data-og-file]')!.addEventListener('change', async (e) => {
+      const input = e.target as HTMLInputElement; const file = input.files?.[0]; input.value = '';
+      if (!file) return;
+      const before = hidden.value;
+      try {
+        toast(`Wysyłanie ${file.name}…`);
+        const fd = new FormData(); fd.append('file', fileFrom(await shrink(file))); fd.append('product', 'seo');
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Błąd wysyłania pliku.');
+        show(d.url); await onChange(d.url);
+      } catch (err) { show(before); toast((err as Error).message, true); }
+    });
+    rm.addEventListener('click', async () => {
+      if (!confirm('Usunąć obraz?')) return;
+      const before = hidden.value;
+      try { show(''); await onChange(''); } catch (err) { show(before); toast((err as Error).message, true); }
+    });
+  }
+  // Licznik znaków: zielony do limitu Google, potem ostrzeżenie (tekst będzie skrócony w wynikach)
+  function counter(el: HTMLInputElement | HTMLTextAreaElement, out: HTMLElement, limit: number) {
+    const upd = () => {
+      const n = (el.value || el.placeholder).length, own = el.value.length > 0;
+      out.textContent = `${n}/${limit}${own ? '' : ' (domyślny)'}`;
+      out.className = `small ${n > limit ? 'err' : 'muted'}`;
+    };
+    el.addEventListener('input', upd); upd();
+  }
+
+  async function loadSeo() {
+    const list = $<HTMLElement>('[data-seo-pages]');
+    try { seoData = await api('/api/admin/seo'); } catch (e) { list.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+    const { seo, pages, limits } = seoData!;
+    list.innerHTML = pages.map((p) => {
+      const o = seo.pages[p.path] || {};
+      const own = Boolean(o.title || o.description || o.ogImage);
+      return `<details class="card seo-page" data-seo-path="${esc(p.path)}">
+        <summary class="seo-page__sum">
+          <span class="seo-page__name"><strong>${esc(p.label)}</strong><span class="muted small">${esc(p.path)}</span></span>
+          <span class="seo-page__pills">${o.noindex ? '<span class="pill pill--warn">Nie indeksuj</span>' : ''}<span class="pill ${own ? 'pill--ok' : ''}">${own ? 'Własne' : 'Domyślne'}</span></span>
+        </summary>
+        <form class="stack seo-page__form" novalidate>
+          <div class="seo-grid">
+            <div class="stack">
+              <label class="field">Tytuł strony (title) <span data-cnt-title></span><input class="input" name="title" maxlength="90" value="${esc(o.title || '')}" placeholder="${esc(p.title)}" /></label>
+              <label class="field">Opis (meta description) <span data-cnt-desc></span><textarea class="input" name="description" rows="3" maxlength="300" placeholder="${esc(p.description)}">${esc(o.description || '')}</textarea></label>
+              <label class="check"><input type="checkbox" name="noindex" ${o.noindex ? 'checked' : ''} /> Nie indeksuj tej strony w Google (noindex)</label>
+            </div>
+            <div class="stack">
+              <div class="serp" aria-label="Podgląd w Google"><span class="serp__url">can-c.pl${esc(p.path === '/' ? '' : p.path.replace(/\/$/, '').replace(/\//g, ' › '))}</span><span class="serp__t" data-serp-t></span><span class="serp__d" data-serp-d></span></div>
+              <div class="field">Obraz do udostępniania <span class="muted small">puste = obraz domyślny z „Udostępniania”</span>${ogSlotHtml(o.ogImage || '')}</div>
+            </div>
+          </div>
+          <div class="actions"><button class="btn btn--sm">Zapisz</button><a class="btn btn--outline btn--sm" href="${esc(p.path)}" target="_blank" rel="noopener">Otwórz stronę</a></div>
+        </form>
+      </details>`;
+    }).join('');
+
+    list.querySelectorAll<HTMLElement>('[data-seo-path]').forEach((card) => {
+      const path = card.dataset.seoPath!;
+      const form = card.querySelector<HTMLFormElement>('form')!;
+      const t = form.elements.namedItem('title') as HTMLInputElement;
+      const d = form.elements.namedItem('description') as HTMLTextAreaElement;
+      counter(t, card.querySelector('[data-cnt-title]')!, limits.title);
+      counter(d, card.querySelector('[data-cnt-desc]')!, limits.description);
+      const serp = () => {
+        const tt = t.value || t.placeholder, dd = d.value || d.placeholder;
+        card.querySelector('[data-serp-t]')!.textContent = tt.length > limits.title + 2 ? tt.slice(0, limits.title).trimEnd() + '…' : tt;
+        card.querySelector('[data-serp-d]')!.textContent = dd.length > limits.description + 3 ? dd.slice(0, limits.description).trimEnd() + '…' : dd;
+      };
+      t.addEventListener('input', serp); d.addEventListener('input', serp); serp();
+      const save = async (msg = 'Zapisano SEO strony.') => {
+        const fd = new FormData(form);
+        const r = await api('/api/admin/seo', { action: 'page', path, title: fd.get('title'), description: fd.get('description'), ogImage: fd.get('ogImage'), noindex: fd.get('noindex') !== null });
+        seoData!.seo = r.seo;
+        const o = r.seo.pages[path] || {};
+        const own = Boolean(o.title || o.description || o.ogImage);
+        card.querySelector('.seo-page__pills')!.innerHTML = `${o.noindex ? '<span class="pill pill--warn">Nie indeksuj</span>' : ''}<span class="pill ${own ? 'pill--ok' : ''}">${own ? 'Własne' : 'Domyślne'}</span>`;
+        toast(msg);
+      };
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ni = form.elements.namedItem('noindex') as HTMLInputElement;
+        if (ni.checked && !seoData!.seo.pages[path]?.noindex && !confirm('Strona zniknie z wyników Google. Kontynuować?')) return;
+        try { await save(); } catch (err) { toast((err as Error).message, true); }
+      });
+      wireOgSlot(card.querySelector<HTMLElement>('[data-og]')!, () => save('Zapisano obraz do udostępniania.'));
+    });
+
+    // Udostępnianie
+    const sf = $<HTMLFormElement>('[data-seo-share]');
+    (sf.elements.namedItem('siteName') as HTMLInputElement).value = seo.share.siteName || '';
+    (sf.elements.namedItem('twitter') as HTMLInputElement).value = seo.share.twitter || '';
+    const slotWrap = sf.querySelector<HTMLElement>('[data-og-slot="share"]')!;
+    slotWrap.innerHTML = ogSlotHtml(seo.share.ogImage || '');
+    const fbPrev = () => {
+      const url = (sf.querySelector<HTMLInputElement>('input[name="ogImage"]')!).value;
+      const box = sf.querySelector<HTMLElement>('[data-fb-img]')!;
+      box.innerHTML = url ? `<img src="${esc(url)}" alt="" />` : '<span>Brak obrazu</span>';
+      const home = pages.find((p) => p.path === '/')!; const ho = seo.pages['/'] || {};
+      sf.querySelector('[data-fb-title]')!.textContent = ho.title || home.title;
+      sf.querySelector('[data-fb-desc]')!.textContent = ho.description || home.description;
+    };
+    const saveShare = async (msg = 'Zapisano ustawienia udostępniania.') => {
+      const fd = new FormData(sf);
+      const r = await api('/api/admin/seo', { action: 'share', ogImage: fd.get('ogImage'), siteName: fd.get('siteName'), twitter: fd.get('twitter') });
+      seoData!.seo = r.seo; fbPrev(); toast(msg);
+    };
+    wireOgSlot(slotWrap.querySelector<HTMLElement>('[data-og]')!, () => saveShare('Zapisano domyślny obraz.'));
+    sf.onsubmit = async (e) => { e.preventDefault(); try { await saveShare(); } catch (err) { toast((err as Error).message, true); } };
+    fbPrev();
+  }
+  document.querySelectorAll<HTMLButtonElement>('[data-seo-tab]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-seo-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
+    document.querySelectorAll<HTMLElement>('[data-seo-pane]').forEach((p) => { p.hidden = p.dataset.seoPane !== b.dataset.seoTab; });
+  }));
+
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka' };
+  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
@@ -2439,6 +2642,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     if (b.dataset.tab === 'automations') loadAutomations();
     if (b.dataset.tab === 'reviews') loadReviews();
     if (b.dataset.tab === 'settings') loadSettings();
+    if (b.dataset.tab === 'seo') loadSeo();
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-status]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
