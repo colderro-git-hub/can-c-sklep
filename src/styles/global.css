@@ -181,7 +181,7 @@ button { font-family: var(--font); letter-spacing: var(--ls); }
   box-sizing: border-box; height: 66px; padding: 0 32px;
   border: 1px solid var(--primary); border-radius: var(--r-md);
   background: var(--primary); color: var(--surface);
-  font-family: var(--font); font-size: 1.5rem; font-weight: 500;
+  font-family: var(--font); font-size: 1.5rem; font-weight: 400;
   letter-spacing: var(--ls); line-height: 1;
   text-decoration: none; cursor: pointer; white-space: nowrap;
   transition: background 0.15s, border-color 0.15s;
@@ -383,7 +383,7 @@ select.input {
   display: inline-flex; align-items: center; gap: 12px;
   height: 54px; padding: 0 14px 0 24px; box-sizing: border-box;
   border-radius: var(--r-md); background: var(--primary); color: var(--surface);
-  font-size: 1.5rem; font-weight: 500; text-decoration: none;
+  font-size: 1.5rem; font-weight: 400; text-decoration: none;
 }
 .cart-btn__count {
   min-width: 28px; height: 28px; padding: 0 6px; box-sizing: border-box;
