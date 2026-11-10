@@ -403,7 +403,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .co__side { width: 436px; flex-shrink: 0; position: sticky; top: 14px; }
   .co__lines { list-style: none; margin: 0; padding: 0 0 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
   :global(.co__lines li) { display: flex; align-items: center; gap: 14px; }
-  :global(.co__thumb) { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: contain; padding: 4px; }
+  :global(.co__thumb) { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: cover; }
   :global(.co__lname) { flex-grow: 1; font-size: 16px; line-height: 24px; font-weight: 300; }
   :global(.co__lprice) { font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; }
   .co__code { display: flex; gap: 10px; }

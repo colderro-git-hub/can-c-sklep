@@ -88,7 +88,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / <a href="/sklep/">Sklep</a> / <span aria-current="page">{p.name}</span></nav>
 
     <div class="row pr-grid">
-      <div class="fl pr-gallery" data-gallery>
+      <div class={`fl pr-gallery${p.avail === 'out_of_stock' ? ' is-out' : ''}`} data-gallery>
         <div class="notch pr-main">
           {images.length
             ? <img src={images[0].url} alt={images[0].alt || p.name} width="800" height="800" data-main fetchpriority="high" />
@@ -265,7 +265,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <span class="pr-also__t">Często kupowane razem</span>
           {related.map((r) => (
             <a class="pr-also__i" href={`/produkt/${r.id}/`} data-slug={r.id} data-name={r.name} data-price={r.current ?? 0}>
-              <span class="pr-also__img">
+              <span class={`pr-also__img${r.avail === 'out_of_stock' ? ' is-out' : ''}`}>
                 {r.images[0] ? <img src={r.images[0].url} alt={r.images[0].alt || r.name} width="400" height="200" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
                 <AvailBadge avail={r.avail} />
               </span>
@@ -396,7 +396,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-flag { position: absolute; z-index: 2; left: 24px; top: 24px; display: inline-flex; align-items: center; height: 32px; padding: 0 14px; border-radius: var(--r-pill); background: var(--surface); font-size: 14px; font-weight: 400; }
   .pr-thumbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
   .pr-thumb { height: 120px; padding: 0; border: 2px solid transparent; border-radius: var(--r-md); background: var(--image); cursor: pointer; overflow: hidden; }
-  .pr-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  .pr-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .pr-thumb[aria-pressed='true'] { border-color: var(--ink); }
 
   .pr-buy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
@@ -466,7 +466,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-also__t { font-size: 18px; line-height: 27px; font-weight: 400; }
   .pr-also__i { display: flex; flex-direction: column; gap: 14px; text-decoration: none; color: var(--ink); }
   .pr-also__img { position: relative; height: 200px; border-radius: var(--r-md); background: var(--image); display: flex; align-items: center; justify-content: center; overflow: hidden; }
-  .pr-also__img img { width: 100%; height: 100%; object-fit: contain; padding: 14px; }
+  .pr-also__img img { width: 100%; height: 100%; object-fit: cover; }
   .pr-also__n { font-size: 22px; line-height: 30px; font-weight: 500; }
   .pr-also__f { display: flex; align-items: center; justify-content: space-between; font-size: 18px; line-height: 27px; }
   .pr-also__go { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; }

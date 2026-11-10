@@ -207,9 +207,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .ct__lines { display: flex; flex-direction: column; gap: 14px; }
   :global(.ct__line) { border: 1px solid var(--line); border-radius: var(--r-md); padding: 24px; display: flex; align-items: center; gap: 24px; }
   :global(.ct__img) { position: relative; width: 120px; height: 120px; flex-shrink: 0; border-radius: var(--r-md); background: var(--image); overflow: hidden; }
-  :global(.ct__img img) { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  :global(.ct__img img) { width: 100%; height: 100%; object-fit: cover; }
   :global(.ct__img .p-badge) { left: 8px; bottom: 8px; height: 24px; padding: 0 10px; font-size: 12px; }
-  :global(.ct__line--out .ct__img img) { filter: grayscale(1); opacity: 0.6; }
+  :global(.ct__line--out .ct__img img) { filter: grayscale(1); }
   :global(.ct__info) { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
   :global(.ct__name) { font-size: 24px; line-height: 32px; font-weight: 400; color: var(--ink); text-decoration: none; }
   :global(.ct__lead) { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 21px; font-weight: 300; }

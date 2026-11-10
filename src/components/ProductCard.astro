@@ -11,7 +11,7 @@ const { slug, name, tag, flag, image, alt, avail, price, regular, onSale } = Ast
 const href = `/produkt/${slug}/`;
 ---
 <article class="pc" data-slug={slug} data-name={name} data-price={price ?? 0}>
-  <div class="notch pc__img">
+  <div class={`notch pc__img${avail === 'out_of_stock' ? ' is-out' : ''}`}>
     {image ? <img src={image} alt={alt || name} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[zdjęcie produktu]</span>}
     {avail !== 'in_stock'
       ? <span class={`p-badge p-badge--${avail}`}>{AVAIL_LABEL[avail]}</span>

@@ -539,7 +539,9 @@ textarea.fld { height: 110px; padding: 14px 18px; resize: vertical; line-height:
     radial-gradient(circle at 0 100%, transparent calc(var(--r) - 0.5px), var(--bg) var(--r)) 0 0 / var(--r) var(--r) no-repeat,
     radial-gradient(circle at 0 100%, transparent calc(var(--r) - 0.5px), var(--bg) var(--r)) 100% 100% / var(--r) var(--r) no-repeat;
 }
-.notch > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; padding: 8%; }
+.notch > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* Produkt niedostępny: zdjęcie czarno-białe na całej powierzchni */
+.is-out img, img.is-out { filter: grayscale(1); }
 .notch__ph { position: absolute; left: 14px; right: 14px; top: 62%; text-align: center; font-size: 14px; font-weight: 300; color: var(--muted); }
 .notch__btn {
   position: absolute; z-index: 2; right: 0; top: 0; width: calc(var(--n) - 12px); height: calc(var(--n) - 12px);

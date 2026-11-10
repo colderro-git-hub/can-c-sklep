@@ -578,7 +578,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.ac__st--done) { background: var(--surface); border-color: var(--ink); }
   :global(.ac__st--cancel) { background: var(--surface); border-color: var(--line); color: var(--muted); }
   :global(.ac__oitems) { display: flex; gap: 14px; align-items: center; font-size: 16px; line-height: 24px; font-weight: 300; }
-  :global(.ac__othumb) { width: 66px; height: 66px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: contain; padding: 4px; }
+  :global(.ac__othumb) { width: 66px; height: 66px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: cover; }
   :global(.ac__ofoot) { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; padding-top: 14px; border-top: 1px solid var(--line); }
   :global(.ac__opay) { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
   :global(.ac__ototal) { font-size: 22px; line-height: 30px; font-weight: 500; }
