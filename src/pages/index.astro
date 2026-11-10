@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import { products as fallback, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
+import { db } from '../lib/supabase';
 import { getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
 import type { Availability } from '../lib/pricing';
@@ -55,6 +56,22 @@ const why = at('home.why', {
   features: features as { title: string; text: string }[],
 });
 const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[] });
+
+// 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie – teksty z CMS
+type HomeReview = { quote: string; author: string; slug?: string; productName?: string; image?: string };
+const shorten = (t: string, n = 180) => (t.length > n ? t.slice(0, t.lastIndexOf(' ', n) > 120 ? t.lastIndexOf(' ', n) : n).trimEnd() + '…' : t);
+let latestReviews: HomeReview[] = [];
+try {
+  const rows = await db(env).select<{ product_id: string; author_name: string; body: string }>(
+    'reviews?select=product_id,author_name,body&status=eq.approved&order=created_at.desc&limit=5');
+  latestReviews = rows.map((r) => {
+    const prod = products.find((x) => x.slug === r.product_id);
+    return { quote: shorten(r.body), author: r.author_name, slug: r.product_id, productName: prod?.name, image: prod?.image };
+  });
+} catch { /* baza niedostępna – zostają teksty z CMS */ }
+const homeReviews: HomeReview[] = latestReviews.length ? latestReviews : (reviewsCms.items as HomeReview[]).slice(0, 5);
+// Układ: 3 opinie, karta „Napisz opinię”, kolejne opinie
+const reviewSlots: (HomeReview | 'cta')[] = [...homeReviews.slice(0, 3), 'cta', ...homeReviews.slice(3)];
 const benefits = at('home.benefits', {
   kicker: 'DLACZEGO KROPLE CAN-C?',
   h2: 'Korzyści używania kropli Can-C',
@@ -261,20 +278,25 @@ const bundleRows = bundles.map((b) => {
         </div>
       </div>
       <div style="flex:1;min-width:280px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
-        {(reviewsCms.items as {quote:string;author:string}[]).map((r: {quote:string;author:string}) => (
+        {reviewSlots.map((r) => r === 'cta' ? (
+          <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
+            <span style="font-size:1.5rem;line-height:28px;font-weight:400">Kupiłeś Can-C? Podziel się wrażeniami.</span>
+            <a href="/produkt/krople-can-c/#opinia" class="btn btn--outline btn--sm" style="align-self:flex-start">Napisz opinię</a>
+          </div>
+        ) : (
           <figure style="margin:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px">
             <div style="display:flex;align-items:center;gap:14px">
-              <div style="width:32px;height:32px;background:var(--image);border-radius:5px;flex-shrink:0"></div>
+              {r.slug
+                ? <a href={`/produkt/${r.slug}/`} class="rv-thumb" title={r.productName} aria-label={`Opinia o produkcie: ${r.productName || r.slug}`}>
+                    {r.image ? <img src={r.image} alt="" width="44" height="44" loading="lazy" /> : null}
+                  </a>
+                : <span class="rv-thumb" aria-hidden="true"></span>}
               <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
             </div>
             <svg aria-hidden="true" width="15" height="11" viewBox="5 7 14 10"><path fill="var(--muted)" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
             <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{r.quote}</blockquote>
           </figure>
         ))}
-        <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
-          <span style="font-size:1.5rem;line-height:28px;font-weight:400">Kupiłeś Can-C? Podziel się wrażeniami.</span>
-          <a href="/produkt/krople-can-c/#opinia" class="btn btn--outline btn--sm" style="align-self:flex-start">Napisz opinię</a>
-        </div>
       </div>
     </div>
   </section>
@@ -391,6 +413,10 @@ const bundleRows = bundles.map((b) => {
   .bundle-card { position: relative; border: 1px solid var(--line); border-radius: 40px; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
   .bundle-card--featured { background: var(--primary); color: var(--surface); border-color: var(--primary); }
 
+  /* Miniatura produktu w opinii */
+  .rv-thumb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; background: var(--image); overflow: hidden; display: block; }
+  .rv-thumb img { width: 100%; height: 100%; object-fit: cover; }
+  a.rv-thumb:hover { outline: 2px solid var(--primary); outline-offset: 2px; }
   .cta-box { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 50px; padding: 45px; display: flex; align-items: center; justify-content: space-between; gap: 45px; }
   /* FAQ */
   .faq-item summary { list-style: none; }
