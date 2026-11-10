@@ -317,6 +317,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <button type="button" role="tab" class="seo-tab" aria-selected="true" data-seo-tab="pages">Strony</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="share">Udostępnianie</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="org">Dane firmy</button>
+              <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="bots">Roboty i AI</button>
             </div>
             <div data-seo-pane="pages" role="tabpanel">
               <p class="notice">Tytuł i opis widać w wynikach Google i w odpowiedziach wyszukiwarek AI. Puste pole = tekst domyślny (szary podgląd w polu). Zmiany działają na stronie w ciągu minuty. Produkty mają własne pola SEO w zakładce <strong>Produkty</strong>.</p>
@@ -353,6 +354,32 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                   <details><summary class="small">Przykład okruszków na karcie produktu</summary><pre class="code" data-crumb-json></pre></details>
                 </div>
               </div>
+            </div>
+            <div data-seo-pane="bots" role="tabpanel" class="stack" hidden>
+              <form class="card stack" data-ai-form novalidate>
+                <div class="card__head"><h2 class="card__title">Polityka botów AI</h2></div>
+                <p class="muted">Zablokowany bot nie może pobierać stron sklepu. Boty wyszukiwarek AI przy blokadzie nie zacytują ani nie polecą sklepu w odpowiedziach. Boty treningowe zbierają treści do uczenia modeli; ich blokada nie wpływa na wyszukiwarki. Google AI Overviews i Copilot korzystają z Googlebota i Bingbota – nie da się ich wyłączyć bez wypadnięcia z wyszukiwarki, dlatego ich tu nie ma.</p>
+                <div class="ai-groups" data-ai-groups></div>
+                <p class="small muted">robots.txt to prośba, nie zabezpieczenie: znane firmy go przestrzegają, nieuczciwe boty mogą go zignorować.</p>
+                <div class="actions"><button class="btn btn--sm">Zapisz politykę botów</button></div>
+              </form>
+            <form class="card" data-robots-form novalidate>
+              <div class="card__head"><h2 class="card__title">robots.txt</h2><a class="btn btn--outline btn--sm" href="/robots.txt" target="_blank" rel="noopener">Otwórz robots.txt</a></div>
+              <p class="muted">Instrukcje dla robotów wyszukiwarek na can-c.pl. Puste pole = treść domyślna. Reguły dla botów AI i linię „Sitemap:” dopisujemy automatycznie. Staging zawsze blokuje indeksowanie, niezależnie od tej treści.</p>
+              <label class="field">Treść<textarea class="input mono" name="robots" rows="10" maxlength="5000" spellcheck="false" data-robots-text></textarea></label>
+              <p class="notice" data-robots-warn hidden>Ta treść blokuje całą stronę dla wszystkich robotów („Disallow: /”). Po starcie sklepu zniknie on z Google.</p>
+              <details class="manual"><summary>Co zobaczy Google (z regułami botów AI)</summary><pre class="note mono" data-robots-preview></pre></details>
+              <div class="actions"><button class="btn">Zapisz robots.txt</button><button type="button" class="btn btn--outline" data-robots-default>Wstaw treść domyślną</button></div>
+            </form>
+              <form class="card stack" data-llms-form novalidate>
+                <div class="card__head"><h2 class="card__title">llms.txt</h2><a class="btn btn--outline btn--sm" href="/llms.txt" target="_blank" rel="noopener">Otwórz llms.txt</a></div>
+                <p class="muted">Zwięzły opis sklepu dla modeli językowych (standard llmstxt.org): produkty z cenami i dostępnością, dostawa, płatności, zwroty i najważniejsze strony. Generujemy go automatycznie z katalogu, więc zawsze jest aktualny. Google go nie wymaga; korzystają z niego m.in. ChatGPT, Claude i Perplexity.</p>
+                <label class="check"><input type="checkbox" name="enabled" /> Publikuj /llms.txt</label>
+                <label class="field">Opis sklepu <span class="muted small">1–2 zdania; puste = opis z „Danych firmy” albo domyślny</span><textarea class="input" name="summary" rows="2" maxlength="500"></textarea></label>
+                <label class="field">Dodatkowa treść <span class="muted small">Markdown, np. „## Dla hurtowni” z listą informacji · maks. 5000 znaków</span><textarea class="input mono" name="extra" rows="5" maxlength="5000" spellcheck="false" placeholder="## Współpraca&#10;- Sprzedaż hurtowa: kontakt@can-c.pl"></textarea></label>
+                <div class="actions"><button class="btn btn--sm">Zapisz llms.txt</button></div>
+                <details class="manual" open><summary>Podgląd /llms.txt</summary><pre class="code" data-llms-preview></pre></details>
+              </form>
             </div>
             <div data-seo-pane="share" role="tabpanel" hidden>
               <form class="card" data-seo-share novalidate>
@@ -437,14 +464,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </div>
             <div class="actions"><button class="btn">Zapisz ustawienia</button></div>
             </form>
-            <form class="card" data-robots-form novalidate>
-              <div class="card__head"><h2 class="card__title">robots.txt</h2><a class="btn btn--outline btn--sm" href="/robots.txt" target="_blank" rel="noopener">Otwórz robots.txt</a></div>
-              <p class="muted">Instrukcje dla robotów wyszukiwarek na can-c.pl. Puste pole = treść domyślna. Linię „Sitemap:” dopisujemy automatycznie, jeśli jej nie ma. Staging zawsze blokuje indeksowanie, niezależnie od tej treści.</p>
-              <label class="field">Treść<textarea class="input mono" name="robots" rows="10" maxlength="5000" spellcheck="false" data-robots-text></textarea></label>
-              <p class="notice" data-robots-warn hidden>Ta treść blokuje całą stronę dla wszystkich robotów („Disallow: /”). Po starcie sklepu zniknie on z Google.</p>
-              <details class="manual"><summary>Co zobaczy Google</summary><pre class="note mono" data-robots-preview></pre></details>
-              <div class="actions"><button class="btn">Zapisz robots.txt</button><button type="button" class="btn btn--outline" data-robots-default>Wstaw treść domyślną</button></div>
-            </form>
+
           </section>
 
           <!-- KODY RABATOWE -->
@@ -557,6 +577,20 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .ai-groups { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+  .ai-group { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .ai-group legend { padding: 0; display: flex; flex-direction: column; gap: 2px; }
+  .ai-bot { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); cursor: pointer; }
+  .ai-bot__n { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .ai-bot code { font-size: 13px; }
+  .ai-sw { position: relative; display: inline-flex; align-items: center; flex-shrink: 0; }
+  .ai-sw input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .ai-sw__l { min-width: 84px; text-align: center; padding: 6px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; background: rgba(220,53,69,.12); color: #a1202f; }
+  .ai-sw__l::after { content: attr(data-off); }
+  .ai-sw input:checked + .ai-sw__l { background: rgba(25,135,84,.12); color: #146c43; }
+  .ai-sw input:checked + .ai-sw__l::after { content: attr(data-on); }
+  .ai-sw input:focus-visible + .ai-sw__l { outline: 2px solid var(--primary); outline-offset: 2px; }
+  @media (max-width: 900px) { .ai-groups { grid-template-columns: minmax(0, 1fr); } }
   .seo-addr { display: grid; grid-template-columns: minmax(0, 2fr) 110px minmax(0, 1.4fr); gap: 12px; }
   .org-logo .og-slot__prev { aspect-ratio: 1 / 1; max-width: 160px; background: #fff; box-shadow: inset 0 0 0 1px var(--line); }
   .org-logo .og-slot__prev img { object-fit: contain; padding: 12px; }
@@ -2419,8 +2453,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const settingsForm = $<HTMLFormElement>('[data-settings-form]');
   async function loadSettings() {
     try {
-      const { site, robots } = await api('/api/admin/ustawienia');
-      if (robots) fillRobots(robots);
+      const { site } = await api('/api/admin/ustawienia');
       const gtmInput = document.querySelector<HTMLInputElement>('[data-s-gtmId]');
       if (gtmInput) gtmInput.value = String((site as any).gtmId ?? '');
       const local = (iso: string) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
@@ -2649,9 +2682,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       const url = (sf.querySelector<HTMLInputElement>('input[name="ogImage"]')!).value;
       const box = sf.querySelector<HTMLElement>('[data-fb-img]')!;
       box.innerHTML = url ? `<img src="${esc(url)}" alt="" />` : '<span>Brak obrazu</span>';
-      const home = pages.find((p) => p.path === '/')!; const ho = seo.pages['/'] || {};
-      sf.querySelector('[data-fb-title]')!.textContent = ho.title || home.title;
-      sf.querySelector('[data-fb-desc]')!.textContent = ho.description || home.description;
+      const home = pages.find((p) => p.path === '/'); const ho = seo.pages['/'] || {};
+      sf.querySelector('[data-fb-title]')!.textContent = ho.title || home?.title || '';
+      sf.querySelector('[data-fb-desc]')!.textContent = ho.description || home?.description || '';
     };
     const saveShare = async (msg = 'Zapisano ustawienia udostępniania.') => {
       const fd = new FormData(sf);
@@ -2662,6 +2695,53 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     sf.onsubmit = async (e) => { e.preventDefault(); try { await saveShare(); } catch (err) { toast((err as Error).message, true); } };
     fbPrev();
     fillOrg(seoData as any);
+    fillBots(seoData as any);
+  }
+
+  // Roboty i AI
+  function fillBots(d: any) {
+    if (d.robots) fillRobots(d.robots);
+    const blocked = new Set<string>(d.seo.ai?.block || []);
+    const groups: [string, string, string][] = [
+      ['search', 'Wyszukiwarki i asystenci AI', 'Cytują i polecają sklep w odpowiedziach. Zalecamy zezwolić.'],
+      ['training', 'Trening modeli AI', 'Zbierają treści do uczenia modeli. Decyzja biznesowa – blokada nie wpływa na wyszukiwarki.'],
+    ];
+    $('[data-ai-groups]').innerHTML = groups.map(([g, t, h]) => `
+      <fieldset class="ai-group">
+        <legend><strong>${t}</strong> <span class="muted small">${h}</span></legend>
+        <div class="actions" style="margin:6px 0 10px"><button type="button" class="btn btn--outline btn--sm" data-ai-all="${g}" data-v="allow">Zezwól wszystkim</button><button type="button" class="btn btn--outline btn--sm" data-ai-all="${g}" data-v="block">Zablokuj wszystkie</button></div>
+        ${d.aiBots.filter((b: any) => b.group === g).map((b: any) => `
+          <label class="ai-bot"><span class="ai-bot__n"><code>${esc(b.id)}</code><span class="muted small">${esc(b.owner)} · ${esc(b.note)}</span></span>
+            <span class="ai-sw"><input type="checkbox" name="allow" value="${esc(b.id)}" ${blocked.has(b.id) ? '' : 'checked'} data-ai-group="${g}" /><span class="ai-sw__l" data-on="Dozwolony" data-off="Zablokowany"></span></span>
+          </label>`).join('')}
+      </fieldset>`).join('');
+    const form = $<HTMLFormElement>('[data-ai-form]');
+    form.querySelectorAll<HTMLButtonElement>('[data-ai-all]').forEach((b) => b.addEventListener('click', () => {
+      form.querySelectorAll<HTMLInputElement>(`input[data-ai-group="${b.dataset.aiAll}"]`).forEach((i) => { i.checked = b.dataset.v === 'allow'; });
+    }));
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const block = d.aiBots.map((b: any) => b.id).filter((id: string) => !form.querySelector<HTMLInputElement>(`input[value="${id}"]`)!.checked);
+      const searchBlocked = d.aiBots.filter((b: any) => b.group === 'search' && block.includes(b.id)).length;
+      if (searchBlocked && !confirm(`Blokujesz ${searchBlocked} bot(y) wyszukiwarek AI – te serwisy nie zacytują ani nie polecą sklepu. Kontynuować?`)) return;
+      try { const r = await api('/api/admin/seo', { action: 'ai', block }); Object.assign(seoData!, r); fillRobots(r.robots); toast(block.length ? `Zapisano. Zablokowane boty: ${block.length}.` : 'Zapisano. Wszystkie boty AI mają dostęp.'); }
+      catch (err) { toast((err as Error).message, true); }
+    };
+    const lf = $<HTMLFormElement>('[data-llms-form]');
+    const ll = d.seo.llms || {};
+    (lf.elements.namedItem('enabled') as HTMLInputElement).checked = ll.enabled !== false;
+    (lf.elements.namedItem('summary') as HTMLTextAreaElement).value = ll.summary || '';
+    (lf.elements.namedItem('extra') as HTMLTextAreaElement).value = ll.extra || '';
+    $('[data-llms-preview]').textContent = d.llmsPreview || '';
+    lf.onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(lf);
+      try {
+        const r = await api('/api/admin/seo', { action: 'llms', enabled: fd.get('enabled') !== null, summary: fd.get('summary'), extra: fd.get('extra') });
+        Object.assign(seoData!, r); $('[data-llms-preview]').textContent = fd.get('enabled') !== null ? r.llmsPreview : '(wyłączone – /llms.txt zwraca 404)';
+        toast('Zapisano llms.txt.');
+      } catch (err) { toast((err as Error).message, true); }
+    };
   }
 
   // Dane firmy

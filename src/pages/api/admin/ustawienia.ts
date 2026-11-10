@@ -4,6 +4,7 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { getSite, clearSiteCache, SITE_KEYS, CONTENT_KEYS } from '../../../lib/site-settings';
 import { getCustomRobots, clearRobotsCache, defaultRobots, invalidRobotsLines, renderRobots, ROBOTS_MAX } from '../../../lib/robots';
+import { getSeo } from '../../../lib/seo';
 
 export const prerender = false;
 
@@ -70,7 +71,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await db(env).upsert('settings', { key: 'robots', value: { text }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
       clearRobotsCache();
       console.log(`Admin ${admin} zmienił robots.txt`);
-      return json(200, { robots: { text, default: defaultRobots(), preview: renderRobots(text, 'https://can-c.pl') } });
+      return json(200, { robots: { text, default: defaultRobots(), preview: renderRobots(text, 'https://can-c.pl', (await getSeo(env)).ai?.block ?? []) } });
     } catch (e) {
       console.error('Zapis robots.txt: ' + (e instanceof Error ? e.message : String(e)));
       return json(500, { error: 'Nie udało się zapisać robots.txt.' });

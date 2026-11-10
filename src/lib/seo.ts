@@ -12,6 +12,8 @@ export type SeoSettings = {
   pages: Record<string, SeoPage>;
   share: { ogImage?: string; siteName?: string; twitter?: string };
   org: SeoOrg;
+  ai: { block?: string[] };
+  llms: { enabled?: boolean; summary?: string; extra?: string };
 };
 
 // Strony z treścią, którymi zarządza zakładka SEO → Strony. Domyślne tytuły i opisy = wartości z kodu stron
@@ -31,7 +33,7 @@ export const SEO_PAGES: { path: string; label: string; title: string; descriptio
 ];
 
 export const SEO_LIMITS = { title: 60, description: 155 };
-const EMPTY: SeoSettings = { pages: {}, share: {}, org: {} };
+const EMPTY: SeoSettings = { pages: {}, share: {}, org: {}, ai: {}, llms: {} };
 let cache: { at: number; value: SeoSettings } | null = null;
 
 export async function getSeo(env: Env): Promise<SeoSettings> {
@@ -39,7 +41,8 @@ export async function getSeo(env: Env): Promise<SeoSettings> {
   if (cache && Date.now() - cache.at < 60_000) return cache.value;
   try {
     const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
-    const value: SeoSettings = { pages: row?.value?.pages ?? {}, share: row?.value?.share ?? {}, org: row?.value?.org ?? {} };
+    const v = row?.value ?? {};
+    const value: SeoSettings = { pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {} };
     cache = { at: Date.now(), value };
     return value;
   } catch (e) {

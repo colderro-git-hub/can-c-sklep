@@ -6,6 +6,8 @@ import { requireAdmin } from '../../../lib/admin-auth';
 import { db } from '../../../lib/supabase';
 import { SEO_PAGES, SEO_LIMITS, clearSeoCache, orgData, orgJsonLd, breadcrumbJsonLd, type SeoSettings } from '../../../lib/seo';
 import { getSite } from '../../../lib/site-settings';
+import { AI_BOTS, AI_BOT_IDS, getCustomRobots, defaultRobots, renderRobots } from '../../../lib/robots';
+import { buildLlms } from '../../../lib/llms';
 
 export const prerender = false;
 
@@ -13,7 +15,9 @@ const clean = (v: unknown, max: number) => String(v ?? '').replace(/[\r\n\t]+/g,
 
 async function readSeo(env: Parameters<typeof db>[0]): Promise<SeoSettings> {
   const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
-  return { pages: row?.value?.pages ?? {}, share: row?.value?.share ?? {}, org: row?.value?.org ?? {} };
+  // Cały wpis (także działy, których ta akcja nie zmienia) – zapis jednego działu nie kasuje pozostałych
+  const v: any = row?.value ?? {};
+  return { ...v, pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {} };
 }
 
 // Wartości domyślne (z Ustawień sklepu) i podgląd danych strukturalnych dla działu „Dane firmy”
@@ -25,12 +29,24 @@ function orgPreview(seo: SeoSettings, site: Record<string, any>) {
   };
 }
 
+// Dział „Roboty i AI”: robots.txt (z regułami botów AI), lista botów i podgląd llms.txt
+async function botsPreview(env: Parameters<typeof db>[0], seo: SeoSettings) {
+  const custom = await getCustomRobots(env);
+  let llms = '';
+  try { llms = (await buildLlms(env)).text; } catch (e) { llms = '(nie udało się wygenerować podglądu)'; }
+  return {
+    robots: { text: custom, default: defaultRobots(), preview: renderRobots(custom, 'https://can-c.pl', seo.ai?.block ?? []) },
+    aiBots: AI_BOTS,
+    llmsPreview: llms,
+  };
+}
+
 export const GET: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   try {
     const seo = await readSeo(env);
-    return json(200, { seo, pages: SEO_PAGES, limits: SEO_LIMITS, ...orgPreview(seo, await getSite(env)) });
+    return json(200, { seo, pages: SEO_PAGES, limits: SEO_LIMITS, ...orgPreview(seo, await getSite(env)), ...(await botsPreview(env, seo)) });
   } catch (e) {
     console.error('SEO GET: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Nie udało się wczytać ustawień SEO.' });
@@ -85,6 +101,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (org.foundingDate && !/^\d{4}(-\d{2}(-\d{2})?)?$/.test(org.foundingDate)) return json(422, { error: 'Data założenia: rok (np. 2012) albo RRRR-MM-DD.' });
     // Zapisujemy tylko pola różne od pustych; okruszki zapisujemy tylko gdy wyłączone
     seo.org = Object.fromEntries(Object.entries(org).filter(([k, v]) => (k === 'breadcrumbs' ? v === false : Array.isArray(v) ? v.length : v !== '')));
+  } else if (b.action === 'ai') {
+    const block = Array.isArray(b.block) ? b.block.map(String).filter((id: string) => AI_BOT_IDS.has(id)) : [];
+    seo.ai = block.length ? { block } : {};
+  } else if (b.action === 'llms') {
+    const summary = clean(b.summary, 500);
+    const extra = String(b.extra ?? '').replace(/\r/g, '').trim().slice(0, 5000);
+    seo.llms = { ...(b.enabled === false ? { enabled: false } : {}), ...(summary ? { summary } : {}), ...(extra ? { extra } : {}) };
   } else {
     return json(400, { error: 'Nieznana akcja.' });
   }
@@ -93,7 +116,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await db(env).upsert('settings', { key: 'seo', value: seo, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
     clearSeoCache();
     console.log(`Admin ${admin} zmienił SEO (${b.action}${b.path ? ' ' + b.path : ''})`);
-    return json(200, { seo, ...(b.action === 'org' ? orgPreview(seo, await getSite(env)) : {}) });
+    const extra = b.action === 'org' ? orgPreview(seo, await getSite(env)) : b.action === 'ai' || b.action === 'llms' ? await botsPreview(env, seo) : {};
+    return json(200, { seo, ...extra });
   } catch (e) {
     console.error('SEO POST: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Nie udało się zapisać ustawień SEO.' });
