@@ -318,6 +318,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="share">Udostępnianie</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="org">Dane firmy</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="bots">Roboty i AI</button>
+              <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="redirects">Przekierowania</button>
             </div>
             <div data-seo-pane="pages" role="tabpanel">
               <p class="notice">Tytuł i opis widać w wynikach Google i w odpowiedziach wyszukiwarek AI. Puste pole = tekst domyślny (szary podgląd w polu). Zmiany działają na stronie w ciągu minuty. Produkty mają własne pola SEO w zakładce <strong>Produkty</strong>.</p>
@@ -380,6 +381,48 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <div class="actions"><button class="btn btn--sm">Zapisz llms.txt</button></div>
                 <details class="manual" open><summary>Podgląd /llms.txt</summary><pre class="code" data-llms-preview></pre></details>
               </form>
+            </div>
+            <div data-seo-pane="redirects" role="tabpanel" class="stack" hidden>
+              <p class="notice" data-rd-migration hidden></p>
+              <form class="card stack" data-rd-form novalidate>
+                <div class="card__head"><h2 class="card__title" data-rd-form-title>Dodaj przekierowanie</h2></div>
+                <p class="muted small">Stary adres możesz wkleić w całości (np. ze starej strony na WordPressie) – zapiszemy samą ścieżkę. Wielkość liter i ukośnik na końcu nie mają znaczenia. Parametry kampanii (utm_…) przechodzą na nowy adres.</p>
+                <div class="rd-grid">
+                  <label class="field">Stary adres<input class="input mono" name="from" placeholder="/sklep/krople-do-oczu-can-c/" required /></label>
+                  <label class="field">Nowy adres<input class="input mono" name="to" list="rd-targets" placeholder="/produkt/krople-can-c/" required /><datalist id="rd-targets"></datalist></label>
+                  <label class="field">Typ<select class="input" name="code"><option value="301">301 – na stałe</option><option value="302">302 – tymczasowo</option></select></label>
+                </div>
+                <label class="field">Notatka <span class="muted small">opcjonalnie</span><input class="input" name="note" maxlength="200" /></label>
+                <input type="hidden" name="id" />
+                <div class="actions"><button class="btn btn--sm">Zapisz przekierowanie</button><button type="button" class="btn btn--outline btn--sm" data-rd-cancel hidden>Anuluj edycję</button></div>
+              </form>
+
+              <div class="card stack">
+                <div class="card__head"><h2 class="card__title">Przekierowania <span class="muted" data-rd-count></span></h2>
+                  <div class="actions"><input class="input input--sm" type="search" placeholder="Szukaj adresu" data-rd-q style="width:220px" /><button type="button" class="btn btn--outline btn--sm" data-rd-csv>Pobierz CSV</button></div></div>
+                <div class="table-wrap"><table class="table rd-table">
+                  <thead><tr><th>Stary adres</th><th>Nowy adres</th><th>Typ</th><th class="r">Trafienia</th><th>Ostatnio</th><th></th></tr></thead>
+                  <tbody data-rd-list><tr><td colspan="6" class="muted">Ładowanie…</td></tr></tbody>
+                </table></div>
+              </div>
+
+              <form class="card stack" data-rd-import novalidate>
+                <div class="card__head"><h2 class="card__title">Import listy</h2></div>
+                <p class="muted small">Jedno przekierowanie w linii: stary i nowy adres oddzielone spacją, przecinkiem, średnikiem lub strzałką „->”. Opcjonalnie trzecia kolumna: 301 lub 302. Linie z „#” są pomijane. Istniejące przekierowania z tych samych adresów zostaną zaktualizowane.</p>
+                <textarea class="input mono" name="text" rows="6" spellcheck="false" placeholder="/sklep/krople-do-oczu-can-c/ /produkt/krople-can-c/&#10;/?p=123 -> /stosowanie/&#10;https://can-c.pl/kategoria/dla-psa/, /produkt/krople-can-c-k9/"></textarea>
+                <div class="actions"><button class="btn btn--sm">Importuj</button></div>
+                <div class="small" data-rd-import-result></div>
+              </form>
+
+              <div class="card stack">
+                <div class="card__head"><h2 class="card__title">Dziennik 404 <span class="muted" data-nf-count></span></h2>
+                  <button type="button" class="btn btn--outline btn--sm" data-nf-clear>Wyczyść dziennik</button></div>
+                <p class="muted small">Adresy, pod którymi ktoś trafił na „Nie znaleziono”, posortowane od najczęstszych. Po starcie sklepu zajrzyj tu po kilku dniach – stare linki z Google i innych stron pokażą, co jeszcze przekierować. Pomijamy automatyczne skanery (np. wp-login.php). <span data-nf-ignored></span></p>
+                <div class="table-wrap"><table class="table rd-table">
+                  <thead><tr><th>Adres</th><th class="r">Trafienia</th><th>Ostatnio</th><th>Skąd</th><th></th></tr></thead>
+                  <tbody data-nf-list><tr><td colspan="5" class="muted">Ładowanie…</td></tr></tbody>
+                </table></div>
+              </div>
             </div>
             <div data-seo-pane="share" role="tabpanel" hidden>
               <form class="card" data-seo-share novalidate>
@@ -577,6 +620,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .input--sm { height: 36px; font-size: 13px; }
+  .ok { color: #146c43; }
+  .rd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 180px; gap: 12px; }
+  .rd-table td { vertical-align: top; }
+  .rd-path { max-width: 380px; word-break: break-all; }
+  @media (max-width: 900px) { .rd-grid { grid-template-columns: minmax(0, 1fr); } }
   .ai-groups { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
   .ai-group { margin: 0; padding: 0; border: 0; min-width: 0; }
   .ai-group legend { padding: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -2775,7 +2824,95 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   document.querySelectorAll<HTMLButtonElement>('[data-seo-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-seo-tab]').forEach((x) => x.setAttribute('aria-selected', String(x === b)));
     document.querySelectorAll<HTMLElement>('[data-seo-pane]').forEach((p) => { p.hidden = p.dataset.seoPane !== b.dataset.seoTab; });
+    if (b.dataset.seoTab === 'redirects') loadRedirects();
   }));
+
+  // ---------- Przekierowania i dziennik 404 ----------
+  let rdData: { redirects: any[]; notFound: any[]; ignoredCount: number; targets: { path: string; label: string }[]; migration?: string } | null = null;
+  const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—');
+  async function loadRedirects() {
+    try { rdData = await api('/api/admin/redirects'); } catch (e) { toast((e as Error).message, true); return; }
+    const mig = $<HTMLElement>('[data-rd-migration]');
+    mig.hidden = !rdData!.migration; mig.textContent = rdData!.migration || '';
+    $('#rd-targets').innerHTML = rdData!.targets.map((t) => `<option value="${esc(t.path)}">${esc(t.label)}</option>`).join('');
+    renderRedirects(); renderNotFound();
+  }
+  function renderRedirects() {
+    const q = $<HTMLInputElement>('[data-rd-q]').value.trim().toLowerCase();
+    const rows = rdData!.redirects.filter((r) => !q || r.from_path.toLowerCase().includes(q) || r.to_url.toLowerCase().includes(q));
+    $('[data-rd-count]').textContent = `(${rdData!.redirects.length})`;
+    $('[data-rd-list]').innerHTML = rows.length ? rows.map((r) => `<tr>
+      <td class="mono rd-path">${esc(r.from_path)}${r.note ? `<div class="muted small">${esc(r.note)}</div>` : ''}</td>
+      <td class="mono rd-path"><a href="${esc(r.to_url)}" target="_blank" rel="noopener">${esc(r.to_url)}</a></td>
+      <td>${r.code}</td><td class="r">${r.hits}</td><td class="nowrap">${fmtDate(r.last_hit_at)}</td>
+      <td class="nowrap r"><button type="button" class="btn btn--outline btn--sm" data-rd-edit="${esc(r.id)}">Edytuj</button> <button type="button" class="btn btn--outline btn--sm" data-rd-del="${esc(r.id)}">Usuń</button></td></tr>`).join('')
+      : `<tr><td colspan="6" class="muted">${q ? 'Brak wyników.' : 'Brak przekierowań. Dodaj pierwsze albo zaimportuj listę.'}</td></tr>`;
+  }
+  function renderNotFound() {
+    const rows = rdData!.notFound;
+    $('[data-nf-count]').textContent = `(${rows.length})`;
+    $('[data-nf-ignored]').textContent = rdData!.ignoredCount ? `Zignorowane: ${rdData!.ignoredCount}.` : '';
+    $('[data-nf-list]').innerHTML = rows.length ? rows.map((r) => `<tr>
+      <td class="mono rd-path">${esc(r.path)}</td><td class="r">${r.hits}</td><td class="nowrap">${fmtDate(r.last_seen)}</td>
+      <td class="rd-path small muted">${r.referrer ? esc(r.referrer) : '—'}</td>
+      <td class="nowrap r"><button type="button" class="btn btn--sm" data-nf-go="${esc(r.path)}">Przekieruj</button> <button type="button" class="btn btn--outline btn--sm" data-nf-ignore="${esc(r.path)}">Ignoruj</button></td></tr>`).join('')
+      : '<tr><td colspan="5" class="muted">Brak błędów 404.</td></tr>';
+  }
+  const rdForm = $<HTMLFormElement>('[data-rd-form]');
+  const rdSet = (n: string, v: string) => { (rdForm.elements.namedItem(n) as HTMLInputElement).value = v; };
+  const rdReset = () => { rdForm.reset(); rdSet('id', ''); $('[data-rd-form-title]').textContent = 'Dodaj przekierowanie'; $<HTMLElement>('[data-rd-cancel]').hidden = true; };
+  $('[data-rd-cancel]').addEventListener('click', rdReset);
+  $('[data-rd-q]').addEventListener('input', () => rdData && renderRedirects());
+  rdForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(rdForm);
+    try {
+      const r = await api('/api/admin/redirects', { action: 'save', id: fd.get('id') || undefined, from: fd.get('from'), to: fd.get('to'), code: Number(fd.get('code')), note: fd.get('note') });
+      toast(r.note ? `Zapisano. ${r.note}` : 'Zapisano przekierowanie.'); rdReset(); await loadRedirects();
+    } catch (err) { toast((err as Error).message, true); }
+  });
+  $('[data-rd-list]').addEventListener('click', async (e) => {
+    const t = e.target as HTMLElement;
+    const edit = t.closest<HTMLElement>('[data-rd-edit]'), del = t.closest<HTMLElement>('[data-rd-del]');
+    if (edit) {
+      const r = rdData!.redirects.find((x) => x.id === edit.dataset.rdEdit)!;
+      rdSet('id', r.id); rdSet('from', r.from_path); rdSet('to', r.to_url); rdSet('code', String(r.code)); rdSet('note', r.note || '');
+      $('[data-rd-form-title]').textContent = 'Edytuj przekierowanie'; $<HTMLElement>('[data-rd-cancel]').hidden = false;
+      rdForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (del) {
+      const r = rdData!.redirects.find((x) => x.id === del.dataset.rdDel)!;
+      if (!confirm(`Usunąć przekierowanie ${r.from_path} → ${r.to_url}?`)) return;
+      try { await api('/api/admin/redirects', { action: 'delete', id: r.id }); toast('Usunięto.'); await loadRedirects(); } catch (err) { toast((err as Error).message, true); }
+    }
+  });
+  $('[data-nf-list]').addEventListener('click', async (e) => {
+    const t = e.target as HTMLElement;
+    const go = t.closest<HTMLElement>('[data-nf-go]'), ign = t.closest<HTMLElement>('[data-nf-ignore]');
+    if (go) { rdReset(); rdSet('from', go.dataset.nfGo!); rdForm.scrollIntoView({ behavior: 'smooth', block: 'start' }); (rdForm.elements.namedItem('to') as HTMLInputElement).focus(); }
+    if (ign) { try { await api('/api/admin/redirects', { action: 'ignore', path: ign.dataset.nfIgnore }); await loadRedirects(); } catch (err) { toast((err as Error).message, true); } }
+  });
+  $('[data-nf-clear]').addEventListener('click', async () => {
+    if (!confirm('Wyczyścić dziennik 404? Zignorowane adresy zostaną.')) return;
+    try { await api('/api/admin/redirects', { action: 'clear404' }); toast('Wyczyszczono dziennik.'); await loadRedirects(); } catch (err) { toast((err as Error).message, true); }
+  });
+  $<HTMLFormElement>('[data-rd-import]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.currentTarget as HTMLFormElement;
+    const out = $('[data-rd-import-result]');
+    try {
+      const r = await api('/api/admin/redirects', { action: 'import', text: new FormData(f).get('text') });
+      out.innerHTML = `<p class="ok">Dodano lub zaktualizowano: ${r.added}.</p>`
+        + (r.errorCount ? `<p class="err">Pominięto ${r.errorCount}:</p><ul>${r.errors.map((x: string) => `<li>${esc(x)}</li>`).join('')}</ul>` : '')
+        + (r.notes.length ? `<ul class="muted">${r.notes.map((x: string) => `<li>${esc(x)}</li>`).join('')}</ul>` : '');
+      if (r.added) { f.reset(); await loadRedirects(); }
+    } catch (err) { toast((err as Error).message, true); }
+  });
+  $('[data-rd-csv]').addEventListener('click', () => {
+    if (!rdData) return;
+    const csv = ['stary_adres,nowy_adres,typ,trafienia', ...rdData.redirects.map((r) => [r.from_path, r.to_url, r.code, r.hits].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'przekierowania.csv'; a.click(); URL.revokeObjectURL(a.href);
+  });
 
   // ---------- Zdarzenia interfejsu ----------
   const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };

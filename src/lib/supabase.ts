@@ -41,6 +41,8 @@ export function db(env: Env) {
       call<T[]>('POST', `${table}?select=${returning}`, rows, 'return=representation'),
     upsert: <T = any>(table: string, rows: unknown, onConflict: string, returning = '*') =>
       call<T[]>('POST', `${table}?on_conflict=${onConflict}&select=${returning}`, rows, 'resolution=merge-duplicates,return=representation'),
+    // Usuwanie wierszy (ścieżka z filtrem, np. 'redirects?id=eq.…')
+    remove: (path: string) => call('DELETE', path, undefined, 'return=minimal'),
     update: <T = any>(path: string, patch: unknown, returning = '*') =>
       call<T[]>('PATCH', `${path}&select=${returning}`, patch, 'return=representation'),
   };

@@ -1,0 +1,42 @@
+---
+// Strona „Nie znaleziono” – adres trafia do dziennika 404 w panelu (SEO → Przekierowania)
+import Base from '../layouts/Base.astro';
+export const prerender = false;
+Astro.response.status = 404;
+const links = [
+  { href: '/#produkty', label: 'Produkty', text: 'Krople Can-C, wersja dla psa i kapsułki' },
+  { href: '/stosowanie/', label: 'Stosowanie', text: 'Dawkowanie i zakraplanie krok po kroku' },
+  { href: '/faq/', label: 'FAQ', text: 'Odpowiedzi na najczęstsze pytania' },
+  { href: '/kontakt/', label: 'Kontakt', text: 'Napisz, jeśli szukasz czegoś konkretnego' },
+];
+---
+<Base title="Nie znaleziono strony | Can-C" description="Ta strona nie istnieje albo została przeniesiona." noindex>
+  <section class="w nf">
+    <div class="nf__head">
+      <span class="nf__code">404</span>
+      <h1 class="h1">Nie znaleźliśmy<br />tej strony</h1>
+      <p class="p p--lg">Adres mógł się zmienić po przeniesieniu sklepu albo zawiera literówkę. Zacznij od jednej z tych stron:</p>
+    </div>
+    <div class="g4 nf__grid">
+      {links.map((l) => (
+        <a href={l.href} class="nf__card">
+          <span class="nf__t">{l.label}</span>
+          <span class="k">{l.text}</span>
+          <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        </a>
+      ))}
+    </div>
+    <a href="/" class="btn" style="margin-top:45px">Strona główna</a>
+  </section>
+</Base>
+
+<style>
+  .nf { margin-top: 90px; margin-bottom: 90px; }
+  .nf__head { display: flex; flex-direction: column; gap: 24px; max-width: 819px; }
+  .nf__code { font-size: 88px; line-height: 88px; font-weight: 200; color: var(--accent); }
+  .nf__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 45px; }
+  .nf__card { display: flex; flex-direction: column; gap: 6px; padding: 32px; border: 1px solid var(--line); border-radius: var(--r-lg); text-decoration: none; color: var(--ink); }
+  .nf__card:hover { border-color: var(--accent); }
+  .nf__card svg { margin-top: 14px; color: var(--accent); }
+  .nf__t { font-size: 24px; line-height: 28px; font-weight: 400; }
+</style>
