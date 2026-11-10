@@ -127,7 +127,8 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__pvbtn { height: 54px; font-size: 18px; }
   .hd__burger { display: none; }
 
-  @media (max-width: 1000px) {
+  /* Pełne menu z projektu potrzebuje ok. 1300 px ekranu – poniżej menu mobilne */
+  @media (max-width: 1320px) {
     .hd__name { font-size: 28px; }
     .hd__cart { font-size: 18px; height: 48px; padding: 0 10px 0 18px; }
     .hd__burger { display: flex; }
@@ -196,7 +197,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     return true;
   }
   async function show(added = false, autoHide = false) {
-    if (window.matchMedia('(max-width: 1000px)').matches) return;
+    if (window.matchMedia('(max-width: 1320px)').matches) return;
     if (!(await render(added)) || !pv) return;
     clearTimeout(hideT);
     pv.hidden = false;
