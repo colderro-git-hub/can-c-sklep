@@ -72,7 +72,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
                 <span class="opt__txt"><span class="opt__t">Przelew bankowy</span><span class="opt__s">Realizacja po zaksięgowaniu wpłaty</span></span></label>
               <div class="co__sub" data-bank hidden>
                 <span class="co__banktxt">Wpłać na nasze konto i podaj numer zamówienia w tytule. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty. Pełne dane do przelewu pokażemy po złożeniu zamówienia i wyślemy e-mailem.</span>
-                <span class="k" style="color:#1F1F1F">Numer rachunku</span>
+                <span class="k" style="color: var(--ink)">Numer rachunku</span>
                 <span class="co__banknr" data-bank-nr></span>
               </div>
             </fieldset>
@@ -392,10 +392,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .co__ct { float: left; width: 100%; margin: 0 0 10px; padding: 0; font-size: 28px; line-height: 32px; font-weight: 400; }
   .co__ct + * { clear: both; }
   .co__g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
-  .co__sub { background: var(--peach); color: #1F1F1F; border-radius: var(--r-md); padding: 23px; display: flex; flex-direction: column; gap: 10px; }
+  .co__sub { background: var(--peach); color: var(--ink); border-radius: var(--r-md); padding: 23px; display: flex; flex-direction: column; gap: 10px; }
   .co__addr { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; }
   .co__inv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
-  .co__link { font-size: 14px; line-height: 21px; font-weight: 400; color: #1F1F1F; text-underline-offset: 3px; }
+  .co__link { font-size: 14px; line-height: 21px; font-weight: 400; color: var(--ink); text-underline-offset: 3px; }
   .co__pick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
   .co__pickinfo { display: flex; flex-direction: column; font-size: 18px; line-height: 27px; }
   .co__banktxt { font-size: 14px; line-height: 21px; font-weight: 300; }

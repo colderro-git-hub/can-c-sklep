@@ -172,22 +172,22 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
   .us-anc:hover { color: var(--muted); }
   section[id] { scroll-margin-top: 24px; }
   .us-pad { padding-top: 90px; padding-bottom: 90px; }
-  .us-dark { margin-top: 90px; background: #1F1F1F; color: #FFFFFF; }
+  .us-dark { margin-top: 90px; background: var(--primary); color: #FFFFFF; }
   .us-doses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 45px; }
-  .us-dose { border: 1px solid rgba(255,255,255,0.18); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .us-dose { border: 1px solid var(--on-dark-line); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
   .us-dose__n { font-size: 88px; line-height: 88px; font-weight: 200; }
   .us-dose__t { font-size: 24px; line-height: 28px; font-weight: 400; }
-  .us-dose__d { font-size: 16px; line-height: 24px; font-weight: 300; color: #E8E8E8; }
+  .us-dose__d { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--on-dark-soft); }
   .us-note { display: flex; align-items: center; gap: 14px; margin-top: 45px; max-width: 737px; }
-  .us-note__i { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: var(--peach); color: #1F1F1F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; }
-  .us-note p { font-size: 16px; line-height: 24px; font-weight: 300; color: #E8E8E8; }
+  .us-note__i { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: var(--peach); color: var(--ink); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; }
+  .us-note p { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--on-dark-soft); }
   .us-sec { margin-top: 90px; }
   .us-sechead { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
   .us-steps { list-style: none; margin: 45px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
   .us-step { display: flex; flex-direction: column; gap: 24px; }
   .us-step__img { height: 300px; }
   .us-step__img img { object-fit: cover; padding: 0; }
-  .us-step__n { position: absolute; z-index: 2; right: 0; top: 0; width: 84px; height: 84px; border: 1px solid var(--ink); border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 48px; line-height: 48px; font-weight: 200; }
+  .us-step__n { position: absolute; z-index: 2; right: 0; top: 0; width: 84px; height: 84px; border: 1px solid var(--primary); border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 48px; line-height: 48px; font-weight: 200; }
   .us-step__t { font-size: 18px; line-height: 28px; font-weight: 400; }
   .us-band { margin-top: 90px; background: var(--band); }
   .us-split { display: flex; align-items: flex-start; gap: 45px; }

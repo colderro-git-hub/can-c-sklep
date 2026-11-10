@@ -70,28 +70,28 @@ const year = new Date().getFullYear();
 </footer>
 
 <style>
-  .ft { background: #1F1F1F; color: #FFFFFF; }
+  .ft { background: var(--primary); color: #FFFFFF; }
   .ft__in { max-width: var(--container); margin: 0 auto; padding: 90px var(--page-px) 45px; }
   .ft__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 45px; flex-wrap: wrap; }
   .ft__brand { width: 408px; max-width: 100%; display: flex; flex-direction: column; gap: 24px; }
   .ft__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: #FFFFFF; }
   .ft__ring { width: 24px; height: 24px; border: 1px solid #FFFFFF; border-radius: 50%; }
   .ft__name { font-size: 36px; line-height: 54px; font-weight: 300; }
-  .ft__contact { font-size: 14px; line-height: 21px; font-weight: 300; color: #E8E8E8; }
+  .ft__contact { font-size: 14px; line-height: 21px; font-weight: 300; color: var(--on-dark-soft); }
   .ft__cols { display: flex; gap: 45px 90px; padding-top: 12px; flex-wrap: wrap; }
   .ft__col { display: flex; flex-direction: column; gap: 18px; }
   .ft__title { font-family: 'Montserrat', sans-serif; font-size: 24px; line-height: 29px; }
   .ft__links { display: flex; flex-direction: column; }
   .ft__links a {
     display: flex; align-items: center; gap: 10px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 25px;
-    font-weight: 300; letter-spacing: 0; color: #FFFFFF; text-decoration: none; white-space: nowrap;
+    font-weight: 300; letter-spacing: 0; color: var(--on-dark-soft); text-decoration: none; white-space: nowrap;
   }
-  .ft__links a:hover { color: #8A8A8A; }
+  .ft__links a:hover { color: #FFFFFF; }
   .ft__chips { list-style: none; margin: 45px 0 0; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
   .ft__chips li {
     display: inline-flex; align-items: center; height: 36px; padding: 0 16px;
     border: 1px solid rgba(255,255,255,0.4); border-radius: 500px; font-size: 14px; font-weight: 300;
   }
-  .ft__line { margin-top: 45px; border-top: 1px solid rgba(255,255,255,0.15); }
-  .ft__legal { margin-top: 24px; font-size: 14px; line-height: 21px; font-weight: 300; color: #E8E8E8; }
+  .ft__line { margin-top: 45px; border-top: 1px solid var(--on-dark-line); }
+  .ft__legal { margin-top: 24px; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--on-dark-soft); }
 </style>

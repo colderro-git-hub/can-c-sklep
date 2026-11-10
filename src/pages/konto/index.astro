@@ -71,7 +71,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
           <span class="ac__soft" data-rem-sub></span>
         </div>
         <div class="fl ac__codes" data-codes hidden>
-          <span class="k" style="color:#1F1F1F">Twój kod rabatowy</span>
+          <span class="k" style="color: var(--ink)">Twój kod rabatowy</span>
           <div data-codes-list class="ac__clist"></div>
         </div>
       </div>
@@ -381,7 +381,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
             <span class="ac__cval">${c.type === 'percent' ? `−${c.value}%` : `−${pln(c.value)}`}</span>
             <span class="ac__ccode">${esc(c.code)}</span>
           </div>
-          <span class="k" style="color:#1F1F1F">${[esc(c.description || ''), c.min_total ? `od ${pln(c.min_total)}` : '', c.ends_at ? `ważny do ${day(c.ends_at)}` : ''].filter(Boolean).join(' · ')}</span>
+          <span class="k" style="color: var(--ink)">${[esc(c.description || ''), c.min_total ? `od ${pln(c.min_total)}` : '', c.ends_at ? `ważny do ${day(c.ends_at)}` : ''].filter(Boolean).join(' · ')}</span>
           <button type="button" class="btn btn-o btn-s" data-copy="${esc(c.code)}">Kopiuj kod</button>
         </div>`).join('');
       $('[data-codes-list]').querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
@@ -539,27 +539,27 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.ac__bcol) { flex: 1; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; }
   :global(.ac__b) { width: 100%; background: var(--line); border-radius: 6px 6px 2px 2px; }
   :global(.ac__b--on) { background: var(--muted); }
-  :global(.ac__b--now) { background: var(--ink); }
+  :global(.ac__b--now) { background: var(--primary); }
   :global(.ac__bl) { font-size: 11px; line-height: 14px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
 
   .ac__cards { display: flex; gap: 14px; margin-top: 14px; }
-  .ac__cure { flex: 1; min-width: 0; background: #1F1F1F; color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
-  .ac__soft { font-size: 14px; line-height: 21px; font-weight: 300; color: #E8E8E8; }
+  .ac__cure { flex: 1; min-width: 0; background: var(--primary); color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .ac__soft { font-size: 14px; line-height: 21px; font-weight: 300; color: var(--on-dark-soft); }
   .ac__curerow { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
   .ac__curet { font-size: 28px; line-height: 32px; font-weight: 400; }
-  .ac__wbtn { background: #FFFFFF; color: #1F1F1F; border-color: #FFFFFF; }
-  .ac__wbtn:hover { background: #ECECEC; color: #1F1F1F; }
-  .ac__bar { height: 8px; border-radius: 500px; background: rgba(255,255,255,0.15); overflow: hidden; }
+  .ac__wbtn { background: #FFFFFF; color: var(--ink); border-color: #FFFFFF; }
+  .ac__wbtn:hover { background: var(--band); color: var(--ink); }
+  .ac__bar { height: 8px; border-radius: 500px; background: var(--on-dark-line); overflow: hidden; }
   .ac__bar > div { height: 8px; border-radius: 500px; background: var(--peach); width: 0; }
-  .ac__codes { width: 436px; flex-shrink: 0; background: var(--peach); color: #1F1F1F; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .ac__codes { width: 436px; flex-shrink: 0; background: var(--peach); color: var(--ink); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
   .ac__cure[hidden] + .ac__codes { width: 100%; }
   .ac__clist { display: flex; flex-direction: column; gap: 24px; }
   :global(.ac__citem) { display: flex; flex-direction: column; gap: 10px; }
-  :global(.ac__citem--more) { padding-top: 24px; border-top: 1px solid rgba(31,31,31,0.15); }
+  :global(.ac__citem--more) { padding-top: 24px; border-top: 1px solid rgba(20,28,43,0.15); }
   :global(.ac__citem .btn) { align-self: flex-start; }
   :global(.ac__crow) { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
   :global(.ac__cval) { font-size: 48px; line-height: 56px; font-weight: 300; }
-  :global(.ac__ccode) { height: 44px; padding: 0 16px; display: inline-flex; align-items: center; border: 1px dashed #1F1F1F; border-radius: 14px; font-size: 18px; font-weight: 500; letter-spacing: 0.04em; }
+  :global(.ac__ccode) { height: 44px; padding: 0 16px; display: inline-flex; align-items: center; border: 1px dashed var(--primary); border-radius: 14px; font-size: 18px; font-weight: 500; letter-spacing: 0.04em; }
 
   .ac__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 90px; }
   .ac__orders { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 24px; }
@@ -572,10 +572,10 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   :global(.ac__onr) { font-size: 22px; line-height: 30px; font-weight: 500; }
   :global(.ac__st) { display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 14px; border-radius: 500px; border: 1px solid transparent; font-size: 14px; font-weight: 400; }
   :global(.ac__st .dot) { width: 6px; height: 6px; }
-  :global(.ac__st--wait) { background: var(--peach); color: #1F1F1F; }
+  :global(.ac__st--wait) { background: var(--peach); color: var(--ink); }
   :global(.ac__st--new) { background: var(--band); }
-  :global(.ac__st--sent) { background: var(--ink); color: var(--surface); }
-  :global(.ac__st--done) { background: var(--surface); border-color: var(--ink); }
+  :global(.ac__st--sent) { background: var(--primary); color: var(--surface); }
+  :global(.ac__st--done) { background: var(--surface); border-color: var(--primary); }
   :global(.ac__st--cancel) { background: var(--surface); border-color: var(--line); color: var(--muted); }
   :global(.ac__oitems) { display: flex; gap: 14px; align-items: center; font-size: 16px; line-height: 24px; font-weight: 300; }
   :global(.ac__othumb) { width: 66px; height: 66px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: cover; }

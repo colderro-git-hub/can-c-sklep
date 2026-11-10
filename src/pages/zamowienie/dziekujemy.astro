@@ -290,8 +290,8 @@ import Base from '../../layouts/Base.astro';
   :global(.ty__t) { display: flex; align-items: center; gap: 14px; }
   :global(.ty__t--off) { color: var(--muted); }
   :global(.ty__tn) { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 400; }
-  :global(.ty__tn--done) { background: var(--ink); border-color: var(--ink); color: var(--surface); }
-  :global(.ty__tn--now) { background: var(--peach); border-color: #1F1F1F; color: #1F1F1F; }
+  :global(.ty__tn--done) { background: var(--primary); border-color: var(--primary); color: var(--surface); }
+  :global(.ty__tn--now) { background: var(--peach); border-color: var(--primary); color: var(--ink); }
   :global(.ty__tt) { display: flex; flex-direction: column; }
   :global(.ty__tl) { font-size: 18px; line-height: 28px; font-weight: 400; }
   .ty__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 45px; }
@@ -310,13 +310,13 @@ import Base from '../../layouts/Base.astro';
   .ty__muted { color: var(--muted); }
   .ty__actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 21px; }
   .ty__side { width: 436px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
-  .ty__dark { background: #1F1F1F; color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
-  .ty__soft { color: #E8E8E8; font-size: 14px; line-height: 21px; }
-  :global(.ty__brow) { display: flex; flex-direction: column; gap: 2px; padding-top: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); }
+  .ty__dark { background: var(--primary); color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ty__soft { color: var(--on-dark-soft); font-size: 14px; line-height: 21px; }
+  :global(.ty__brow) { display: flex; flex-direction: column; gap: 2px; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--on-dark-line); }
   :global(.ty__copy) { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
   :global(.ty__bval) { font-size: 18px; line-height: 27px; font-weight: 400; letter-spacing: 0; word-break: break-word; }
-  :global(.ty__cb) { flex-shrink: 0; height: 36px; padding: 0 14px; border: 1px solid #FFFFFF; border-radius: var(--r-pill); background: #FFFFFF; font-family: var(--font); font-size: 14px; font-weight: 400; letter-spacing: var(--ls); color: #1F1F1F; cursor: pointer; }
-  :global(.ty__cb:hover) { background: #ECECEC; }
+  :global(.ty__cb) { flex-shrink: 0; height: 36px; padding: 0 14px; border: 1px solid #FFFFFF; border-radius: var(--r-pill); background: #FFFFFF; font-family: var(--font); font-size: 14px; font-weight: 400; letter-spacing: var(--ls); color: var(--ink); cursor: pointer; }
+  :global(.ty__cb:hover) { background: var(--band); }
   .ty__card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
   .ty__card > div { display: flex; flex-direction: column; gap: 6px; }
   .ty__ct { margin: 0 0 4px; font-size: 24px; line-height: 28px; font-weight: 400; }

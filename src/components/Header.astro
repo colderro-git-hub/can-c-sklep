@@ -70,7 +70,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
 </header>
 
 <style>
-  .hd-notice { background: var(--ink); color: var(--surface); padding: 10px var(--page-px); text-align: center; font-size: 14px; line-height: 21px; font-weight: 300; }
+  .hd-notice { background: var(--primary); color: var(--surface); padding: 10px var(--page-px); text-align: center; font-size: 14px; line-height: 21px; font-weight: 300; }
   .hd-promo { background: var(--band); }
   .hd-promo__in {
     max-width: var(--container); margin: 0 auto; padding: 0 var(--page-px); min-height: 45px;
@@ -84,7 +84,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   }
   .hd__line { border-top: 1px solid var(--line); }
   .hd__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: var(--ink); }
-  .hd__ring { width: 24px; height: 24px; border: 1px solid var(--ink); border-radius: 50%; }
+  .hd__ring { width: 24px; height: 24px; border: 1px solid var(--primary); border-radius: 50%; }
   .hd__name { font-size: 36px; line-height: 54px; font-weight: 300; }
   .hd__right { display: flex; align-items: center; gap: 24px 28px; flex-wrap: wrap; }
   .hd__nav { display: flex; align-items: center; gap: 12px 28px; flex-wrap: wrap; }
@@ -92,7 +92,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__link:hover { color: var(--ink); }
   .hd__link[aria-current='page'] {
     display: inline-block; height: 32px; padding: 0 14px; line-height: 30px;
-    border: 1px solid var(--ink); border-radius: var(--r-pill); font-weight: 400; color: var(--ink);
+    border: 1px solid var(--primary); border-radius: var(--r-pill); font-weight: 400; color: var(--ink);
   }
   .hd__actions { display: flex; align-items: center; gap: 14px; }
   .hd__icon {
@@ -103,10 +103,10 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__cartwrap { position: relative; }
   .hd__cart {
     display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 12px 0 20px;
-    border-radius: var(--r-md); background: var(--ink); color: var(--surface);
+    border-radius: var(--r-md); background: var(--primary); color: var(--surface);
     font-size: 18px; line-height: 27px; font-weight: 500; text-decoration: none;
   }
-  .hd__cart:hover { background: #3A3A3A; color: var(--surface); }
+  .hd__cart:hover { background: var(--primary-hover); color: var(--surface); }
   .hd__count {
     min-width: 28px; height: 28px; padding: 0 6px; border-radius: var(--r-pill);
     background: var(--surface); color: var(--ink); font-size: 14px; line-height: 28px; font-weight: 500;

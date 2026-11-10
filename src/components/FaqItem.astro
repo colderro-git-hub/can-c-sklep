@@ -18,14 +18,14 @@ const catAttr = Astro.props['data-cat' as keyof Props] as string | undefined;
 <style>
   .fq-item { border: 1px solid var(--line); border-radius: var(--r-md); scroll-margin-top: 24px; }
   .fq-item[hidden] { display: none; }
-  .fq-item[open] { border-color: var(--ink); }
+  .fq-item[open] { border-color: var(--primary); }
   .fq-q { list-style: none; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 24px 23px; cursor: pointer; }
   .fq-q::-webkit-details-marker { display: none; }
   .fq-q__t { display: flex; flex-direction: column; gap: 4px; }
   .fq-q__cat { font-size: 12px; line-height: 18px; font-weight: 400; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
   .fq-q__q { font-size: 24px; line-height: 28px; font-weight: 400; }
   .fq-q__i { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: var(--band); color: var(--ink); display: flex; align-items: center; justify-content: center; }
-  .fq-item[open] .fq-q__i { background: var(--ink); color: var(--surface); }
+  .fq-item[open] .fq-q__i { background: var(--primary); color: var(--surface); }
   .fq-minus, .fq-item[open] .fq-plus { display: none; }
   .fq-item[open] .fq-minus { display: block; }
   .fq-a { padding: 0 90px 24px 23px; display: flex; flex-direction: column; gap: 14px; }
