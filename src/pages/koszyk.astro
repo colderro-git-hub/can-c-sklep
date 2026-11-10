@@ -1,61 +1,88 @@
 ---
+// Koszyk wg projektu „S7 · Koszyk” (Laluna). Ceny do podglądu; kwotę do zapłaty liczy serwer.
 import Base from '../layouts/Base.astro';
 import { products } from '../data/shop';
 
-// Do przeglądarki trafiają tylko dane potrzebne do podglądu koszyka
+// Do przeglądarki trafiają tylko dane potrzebne do podglądu koszyka (zapas, gdy API nie odpowie)
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
-<Base title="Koszyk | Can-C" description="Twój koszyk w sklepie Can-C.">
-  <section class="section">
-    <div class="container cart-page">
-      <h1>Koszyk</h1>
-      <p class="cart-notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
+<Base title="Koszyk | Can-C" description="Twój koszyk w sklepie Can-C." noindex>
+  <section class="w ct">
+    <ol class="steps" aria-label="Etapy zamówienia">
+      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">1</span>Koszyk</li>
+      <li class="steps__sep" aria-hidden="true"></li>
+      <li class="steps__i"><span class="steps__n">2</span>Dostawa i płatność</li>
+      <li class="steps__sep" aria-hidden="true"></li>
+      <li class="steps__i"><span class="steps__n">3</span>Potwierdzenie</li>
+    </ol>
+    <h1 class="h1 ct__title">Koszyk</h1>
+    <p class="ct__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
-      <div data-empty hidden class="empty">
-        <p class="lead">Koszyk jest pusty.</p>
-        <a href="/#produkty" class="btn">Przejdź do produktów</a>
-      </div>
-
-      <div data-filled hidden class="cart-layout">
-        <ul class="lines" data-lines aria-label="Produkty w koszyku"></ul>
-
-        <aside class="summary">
-          <h2>Podsumowanie</h2>
-          <dl>
-            <div><dt>Produkty</dt><dd data-subtotal></dd></div>
-            <div><dt>Rabat za zestaw</dt><dd data-discount></dd></div>
-            <div><dt>Dostawa</dt><dd class="ok">0,00 zł</dd></div>
-            <div class="total"><dt>Razem</dt><dd data-total></dd></div>
-          </dl>
-          <a href="/zamowienie/" class="btn btn--lg" data-checkout>Realizuj zamówienie</a>
-          <p class="blocked" data-blocked hidden role="status">Usuń z koszyka produkty oznaczone jako niedostępne, aby przejść dalej.</p>
-          <p class="muted note">Ostateczną kwotę potwierdzimy w kolejnym kroku.</p>
-        </aside>
-      </div>
-
-      <template data-line-tpl>
-        <li class="line">
-          <a class="media line__media" data-link>
-            <img class="line__img" alt="" width="72" height="72" loading="lazy" hidden />
-            <span class="ph line__img line__ph" aria-hidden="true">[foto]</span>
-            <span class="p-badge p-badge--out_of_stock line__badge" hidden>Brak</span>
-          </a>
-          <div class="line__info">
-            <a class="line__name" data-link></a>
-            <span class="muted line__meta"></span>
-            <span class="line__lead" hidden></span>
-            <span class="line__out" hidden>Chwilowo niedostępny – usuń z koszyka</span>
-          </div>
-          <div class="qty">
-            <button type="button" class="qty__btn" data-dec aria-label="Zmniejsz ilość">−</button>
-            <span class="qty__val" aria-live="polite"></span>
-            <button type="button" class="qty__btn" data-inc aria-label="Zwiększ ilość">+</button>
-          </div>
-          <span class="line__total"></span>
-          <button type="button" class="line__remove" data-remove>Usuń</button>
-        </li>
-      </template>
+    <div data-empty hidden class="empty ct__empty">
+      <span class="ct__emptyt">Koszyk jest pusty</span>
+      <p class="p">Wybierz krople, kapsułki albo wersję dla psa. Dostawa jest zawsze darmowa.</p>
+      <a href="/#produkty" class="btn">Przejdź do produktów</a>
     </div>
+
+    <div data-filled hidden class="row ct__grid">
+      <div class="ct__main">
+        <div class="ct__lines" data-lines aria-label="Produkty w koszyku" role="list"></div>
+
+        <div class="row ct__upsell" data-upsell hidden>
+          <div class="ct__upsell-t">
+            <span class="ct__upsell-h" data-up-title></span>
+            <span data-up-text></span>
+          </div>
+          <button type="button" class="btn btn-s" data-up-btn></button>
+        </div>
+
+        <a href="/#produkty" class="lnk ct__back">
+          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M10 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Kontynuuj zakupy
+        </a>
+      </div>
+
+      <aside class="fl ct__side">
+        <div class="ct__sum">
+          <h2 class="ct__sumh">Podsumowanie</h2>
+          <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
+          <div class="srow"><span>Rabat za zestaw</span><span data-discount></span></div>
+          <div class="srow"><span>Dostawa</span><span style="font-weight:400">Darmowa</span></div>
+          <div class="total-row" style="border-color:var(--image)"><span>Razem</span><span data-total></span></div>
+          <a href="/zamowienie/" class="btn btn--wide" style="margin-top:10px" data-checkout>Realizuj zamówienie</a>
+          <span class="k ct__blocked" data-blocked hidden role="status">Usuń z koszyka produkty oznaczone jako niedostępne, aby przejść dalej.</span>
+          <span class="k">Ostateczną kwotę potwierdzimy w kolejnym kroku.</span>
+        </div>
+        <div class="ct__perks">
+          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>Darmowa dostawa InPost i DPD</span>
+          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>14 dni na zwrot</span>
+          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>BLIK, Przelewy24, karta</span>
+        </div>
+      </aside>
+    </div>
+
+    <template data-line-tpl>
+      <article class="ct__line" role="listitem">
+        <a class="ct__img" data-link tabindex="-1" aria-hidden="true">
+          <img alt="" width="120" height="120" loading="lazy" hidden />
+          <span class="p-badge p-badge--out_of_stock" data-badge hidden>Brak</span>
+        </a>
+        <div class="ct__info">
+          <a class="ct__name" data-link></a>
+          <span class="k" data-meta></span>
+          <span class="ct__lead" data-lead hidden><span class="dot" aria-hidden="true"></span><span></span></span>
+          <span class="ct__out" data-out hidden>Chwilowo niedostępny – usuń z koszyka</span>
+        </div>
+        <div class="ct__qty">
+          <button type="button" class="ct__qb" data-dec aria-label="Zmniejsz ilość"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="2"/></svg></button>
+          <span class="ct__qv" aria-live="polite" data-qty></span>
+          <button type="button" class="ct__qb" data-inc aria-label="Zwiększ ilość"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg></button>
+        </div>
+        <div class="ct__right">
+          <span class="ct__ltotal" data-ltotal></span>
+          <button type="button" class="ct__rm" data-remove>Usuń</button>
+        </div>
+      </article>
+    </template>
   </section>
 </Base>
 
@@ -74,135 +101,144 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
 
   (async () => {
-  await (window as any).__CANC_READY__;
+    await (window as any).__CANC_READY__;
 
-  type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string; image?: string | null; imageAlt?: string; avail?: string; leadTime?: string };
-  const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
-  const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
-  const discountFor = (qty: number, p: P) => (!p.bundles ? 0 : qty >= 4 ? 0.1 : qty >= 2 ? 0.08 : 0);
+    type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string; image?: string | null; imageAlt?: string; avail?: string; leadTime?: string };
+    const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
+    const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
+    const discountFor = (qty: number, p: P) => (!p.bundles ? 0 : qty >= 4 ? 0.1 : qty >= 2 ? 0.08 : 0);
+    const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
+    const lines = $<HTMLElement>('[data-lines]');
+    const tpl = $<HTMLTemplateElement>('[data-line-tpl]');
 
-  const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
-  const lines = $<HTMLUListElement>('[data-lines]');
-  const tpl = $<HTMLTemplateElement>('[data-line-tpl]');
+    function render() {
+      const items = getCart().filter((i) => catalog.some((p) => p.slug === i.slug));
+      $<HTMLElement>('[data-empty]').hidden = items.length > 0;
+      $<HTMLElement>('[data-filled]').hidden = items.length === 0;
+      lines.replaceChildren();
 
-  function render() {
-    const items = getCart().filter((i) => catalog.some((p) => p.slug === i.slug));
-    $<HTMLElement>('[data-empty]').hidden = items.length > 0;
-    $<HTMLElement>('[data-filled]').hidden = items.length === 0;
-    lines.replaceChildren();
+      let subtotal = 0, discount = 0, blocked = false;
+      for (const item of items) {
+        const p = catalog.find((c) => c.slug === item.slug)!;
+        // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy – serwer i tak by go odrzucił
+        const out = p.price === null || p.avail === 'out_of_stock';
+        if (out) blocked = true;
+        const base = out ? 0 : (p.price as number) * item.qty;
+        const d = out ? 0 : discountFor(item.qty, p);
+        subtotal += base;
+        discount += base * d;
 
-    let subtotal = 0;
-    let discount = 0;
-    let blocked = false;
-    for (const item of items) {
-      const p = catalog.find((c) => c.slug === item.slug)!;
-      // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy – serwer i tak by go odrzucił
-      const out = p.price === null || p.avail === 'out_of_stock';
-      if (out) blocked = true;
-      const base = out ? 0 : (p.price as number) * item.qty;
-      const d = out ? 0 : discountFor(item.qty, p);
-      subtotal += base;
-      discount += base * d;
-
-      const li = tpl.content.firstElementChild!.cloneNode(true) as HTMLLIElement;
-      const url = `/produkt/${p.slug}/`;
-      li.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = url; });
-      li.querySelector<HTMLAnchorElement>('.line__media')!.tabIndex = -1;
-      li.querySelector<HTMLAnchorElement>('.line__media')!.setAttribute('aria-hidden', 'true');
-      if (p.image) {
-        const img = li.querySelector<HTMLImageElement>('img.line__img')!;
-        img.src = p.image; img.hidden = false;
-        li.querySelector<HTMLElement>('.line__ph')!.hidden = true;
+        const el = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = `/produkt/${p.slug}/`; });
+        if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = p.image; img.hidden = false; }
+        el.querySelector('.ct__name')!.textContent = p.name;
+        const unit = p.price !== null ? `${pln.format(p.price)} / szt.` : '';
+        el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat ${Math.round(d * 100)}%` : ''].filter(Boolean).join(' · ');
+        if (p.leadTime && !out) { const lt = el.querySelector<HTMLElement>('[data-lead]')!; lt.lastElementChild!.textContent = p.leadTime; lt.hidden = false; }
+        if (out) {
+          el.classList.add('ct__line--out');
+          el.querySelector<HTMLElement>('[data-out]')!.hidden = false;
+          el.querySelector<HTMLElement>('[data-badge]')!.hidden = false;
+          el.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
+        }
+        el.querySelector('[data-qty]')!.textContent = String(item.qty);
+        el.querySelector('[data-ltotal]')!.textContent = out ? '—' : pln.format(base * (1 - d));
+        el.querySelector('[data-dec]')!.addEventListener('click', () => {
+          if (item.qty === 1 && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price, quantity: 1, item_brand: 'Can-C' });
+          setQty(p.slug, item.qty - 1);
+        });
+        el.querySelector('[data-inc]')!.addEventListener('click', () => setQty(p.slug, item.qty + 1));
+        el.querySelector('[data-remove]')!.addEventListener('click', () => {
+          if (p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price, quantity: item.qty, item_brand: 'Can-C' });
+          setQty(p.slug, 0);
+        });
+        lines.append(el);
       }
-      li.querySelector('.line__name')!.textContent = p.name;
-      li.querySelector('.line__meta')!.textContent = d ? `${p.size} · rabat ${Math.round(d * 100)}%` : p.size;
-      if (p.leadTime && !out) { const lt = li.querySelector<HTMLElement>('.line__lead')!; lt.textContent = p.leadTime; lt.hidden = false; }
-      if (out) {
-        li.classList.add('line--out');
-        li.querySelector<HTMLElement>('.line__out')!.hidden = false;
-        li.querySelector<HTMLElement>('.line__badge')!.hidden = false;
+
+      // Propozycja zestawu: pierwszy produkt z rabatem zestawowym, którego jest mniej niż 4 szt.
+      const up = $<HTMLElement>('[data-upsell]');
+      const cand = items.find((i) => { const p = catalog.find((c) => c.slug === i.slug)!; return p.bundles && p.avail !== 'out_of_stock' && p.price !== null && i.qty < 4; });
+      up.hidden = !cand;
+      if (cand) {
+        const next = cand.qty < 2 ? 2 : 4;
+        $('[data-up-title]').textContent = next === 2 ? 'Dodaj drugie opakowanie i zapłać 8% mniej' : 'Przy 4 opakowaniach rabat rośnie do 10%';
+        $('[data-up-text]').textContent = next === 2 ? '2 opakowania to około 2 miesiące kuracji.' : '4 opakowania to około 4 miesiące kuracji.';
+        const btn = $<HTMLButtonElement>('[data-up-btn]');
+        btn.textContent = next - cand.qty === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${next}`;
+        btn.onclick = () => setQty(cand.slug, next);
       }
-      li.querySelector('.qty__val')!.textContent = String(item.qty);
-      li.querySelector('.line__total')!.textContent = out ? '—' : pln.format(base * (1 - d));
-      if (out) li.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
-      li.querySelector('[data-dec]')!.addEventListener('click', () => setQty(p.slug, item.qty - 1));
-      li.querySelector('[data-inc]')!.addEventListener('click', () => setQty(p.slug, item.qty + 1));
-      li.querySelector('[data-remove]')!.addEventListener('click', () => {
-        if (p && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price / 100, quantity: item.qty, item_brand: 'Can-C' });
-        setQty(p.slug, 0);
-      });
-      lines.append(li);
+
+      $('[data-subtotal]').textContent = pln.format(subtotal);
+      $('[data-discount]').textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
+      $('[data-total]').textContent = pln.format(subtotal - discount);
+      const cta = $<HTMLAnchorElement>('[data-checkout]');
+      if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
+      $<HTMLElement>('[data-blocked]').hidden = !blocked;
     }
 
-    $<HTMLElement>('[data-subtotal]').textContent = pln.format(subtotal);
-    $<HTMLElement>('[data-discount]').textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
-    $<HTMLElement>('[data-total]').textContent = pln.format(subtotal - discount);
-    const cta = $<HTMLAnchorElement>('[data-checkout]');
-    cta.classList.toggle('btn--off', blocked);
-    if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
-    $<HTMLElement>('[data-blocked]').hidden = !blocked;
-  }
-  // GA4 view_cart
-  function sendViewCart() {
+    // GA4 view_cart (ceny w złotych)
     const its = getCart();
-    if (!its.length) return;
-    const list: any[] = (window as any).__CANC_CATALOG__ || [];
-    const gaItems = its.flatMap((it: any) => {
-      const p = list.find((x: any) => x.slug === it.slug);
-      return (p && p.price !== null) ? [{ item_id: it.slug, item_name: p.name, price: p.price / 100, quantity: it.qty, item_brand: 'Can-C' }] : [];
+    if (its.length) {
+      const gaItems = its.flatMap((it) => {
+        const p = catalog.find((x) => x.slug === it.slug);
+        return p && p.price !== null ? [{ item_id: it.slug, item_name: p.name, price: p.price, quantity: it.qty, item_brand: 'Can-C' }] : [];
+      });
+      trackViewCart(gaItems, gaItems.reduce((s, i) => s + i.price * i.quantity, 0));
+    }
+
+    $<HTMLAnchorElement>('[data-checkout]').addEventListener('click', (e) => {
+      if ((e.currentTarget as HTMLElement).getAttribute('aria-disabled') === 'true') e.preventDefault();
     });
-    trackViewCart(gaItems, gaItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0));
-  }
-  sendViewCart();
 
-  $<HTMLAnchorElement>('[data-checkout]').addEventListener('click', (e) => {
-    if ((e.currentTarget as HTMLElement).getAttribute('aria-disabled') === 'true') e.preventDefault();
-  });
-
-  render();
-  onCartChange(render);
+    render();
+    onCartChange(render);
   })();
 </script>
 
 <style>
-  .cart-notice { padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); }
-  .cart-notice[hidden] { display: none; }
-  .cart-page { display: flex; flex-direction: column; gap: var(--s-4); }
-  .empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
-  .cart-layout { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }
-  .cart-layout[hidden], .empty[hidden] { display: none; }
-
-  .lines { flex: 999 1 560px; min-width: 0; list-style: none; margin: 0; padding: 0; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
-  :global(.line) { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
-  :global(.line:last-child) { border-bottom: 0; }
-  :global(.line__media) { flex-shrink: 0; width: 88px; height: 88px; overflow: hidden; background: var(--c-photo-bg); }
-  :global(.line__img) { width: 88px; height: 88px; object-fit: contain; padding: 6px; }
-  :global(.line__ph) { width: 88px; height: 88px; padding: 4px; background: var(--c-gray-200); font-size: 0.6875rem; }
-  :global(.line__badge) { top: 4px; left: 4px; max-width: calc(100% - 8px); padding: 2px 8px; font-size: 0.6875rem; }
-  :global(.line--out .line__img) { filter: grayscale(1); opacity: 0.6; }
-  :global(.line__lead) { font-size: var(--fs-small); color: var(--c-ink-75); }
-  :global(.line__out) { font-size: var(--fs-small); color: var(--c-err); }
-  :global(.line__name) { color: var(--c-ink); text-decoration: none; }
-  :global(.line__info) { flex: 1 1 200px; display: flex; flex-direction: column; gap: 4px; }
-  :global(.line__name) { font-size: 1.125rem; }
-  :global(.line__meta) { font-size: var(--fs-small); }
-  :global(.qty) { display: flex; align-items: center; gap: 4px; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--c-gray-300); }
-  :global(.qty__btn) { width: 44px; height: 44px; border: 0; background: transparent; color: var(--c-ink); font: inherit; font-size: 1.25rem; cursor: pointer; border-radius: var(--r-pill); }
-  :global(.qty__btn:disabled) { opacity: 0.3; cursor: not-allowed; }
-  :global(.qty__val) { min-width: 24px; text-align: center; }
-  :global(.line__total) { min-width: 110px; text-align: right; font-size: 1.125rem; }
-  :global(.line__remove) { border: 0; background: transparent; padding: 12px 0; font: inherit; font-size: var(--fs-small); color: var(--c-link); text-decoration: underline; cursor: pointer; }
-
-  .summary { flex: 1 1 340px; padding: var(--s-3); background: var(--c-gray-100); display: flex; flex-direction: column; gap: var(--s-2); }
-  .summary h2 { font-size: var(--fs-h4); font-weight: 400; }
-  .summary dl { margin: 0; display: flex; flex-direction: column; gap: 12px; }
-  .summary dl div { display: flex; justify-content: space-between; gap: 12px; }
-  .summary dd { margin: 0; }
-  .summary .total { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
-  .ok { color: var(--c-ok); }
-  .note { font-size: 0.8125rem; }
-  .btn--off { opacity: 0.4; cursor: not-allowed; }
-  .btn--off:hover { opacity: 0.4; }
-  .blocked { font-size: var(--fs-small); color: var(--c-err); }
-  .blocked[hidden] { display: none; }
+  .ct { margin-top: 45px; margin-bottom: 90px; }
+  .ct__title { margin-top: 45px; }
+  .ct__notice { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); font-size: 14px; }
+  .ct__notice[hidden], [data-empty][hidden], [data-filled][hidden], [data-upsell][hidden] { display: none !important; }
+  .ct__empty { margin-top: 45px; }
+  .ct__emptyt { font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ct__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 45px; }
+  .ct__main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ct__lines { display: flex; flex-direction: column; gap: 14px; }
+  :global(.ct__line) { border: 1px solid var(--line); border-radius: var(--r-md); padding: 24px; display: flex; align-items: center; gap: 24px; }
+  :global(.ct__img) { position: relative; width: 120px; height: 120px; flex-shrink: 0; border-radius: var(--r-md); background: var(--image); overflow: hidden; }
+  :global(.ct__img img) { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  :global(.ct__img .p-badge) { left: 8px; bottom: 8px; height: 24px; padding: 0 10px; font-size: 12px; }
+  :global(.ct__line--out .ct__img img) { filter: grayscale(1); opacity: 0.6; }
+  :global(.ct__info) { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  :global(.ct__name) { font-size: 24px; line-height: 32px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  :global(.ct__lead) { display: flex; align-items: center; gap: 8px; font-size: 14px; line-height: 21px; font-weight: 300; }
+  :global(.ct__lead .dot) { width: 6px; height: 6px; }
+  :global(.ct__lead[hidden]), :global(.ct__out[hidden]) { display: none; }
+  :global(.ct__out) { font-size: 14px; line-height: 21px; color: var(--err); }
+  :global(.ct__qty) { display: flex; align-items: center; height: 54px; padding: 0 4px; border: 1px solid var(--line); border-radius: var(--r-pill); flex-shrink: 0; }
+  :global(.ct__qb) { width: 44px; height: 44px; border: none; background: transparent; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--ink); }
+  :global(.ct__qb:hover) { background: var(--band); }
+  :global(.ct__qb:disabled) { opacity: 0.3; cursor: not-allowed; }
+  :global(.ct__qv) { min-width: 32px; text-align: center; font-size: 18px; font-weight: 400; }
+  :global(.ct__right) { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  :global(.ct__ltotal) { font-size: 22px; line-height: 30px; font-weight: 500; white-space: nowrap; }
+  :global(.ct__rm) { border: none; background: transparent; padding: 0; font-family: var(--font); font-size: 14px; line-height: 21px; font-weight: 400; letter-spacing: var(--ls); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+  .ct__upsell { position: relative; overflow: hidden; background: var(--peach); color: #1F1F1F; border-radius: var(--r-lg); padding: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  .ct__upsell-t { display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ct__upsell-h { font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ct__back { margin-top: 10px; align-self: flex-start; }
+  .ct__side { width: 436px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ct__sum { background: var(--band); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .ct__sumh { margin: 0 0 10px; font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ct__blocked { color: var(--err); }
+  .ct__perks { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 32px; display: flex; flex-direction: column; gap: 14px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ct__perks span { display: flex; align-items: center; gap: 14px; }
+  .ct__perks svg { flex-shrink: 0; }
+  @media (max-width: 1000px) {
+    :global(.ct__line) { flex-wrap: wrap; }
+    :global(.ct__info) { flex-basis: calc(100% - 144px); }
+    :global(.ct__right) { width: auto; flex-grow: 1; }
+    .ct__upsell .btn { align-self: flex-start; }
+  }
 </style>

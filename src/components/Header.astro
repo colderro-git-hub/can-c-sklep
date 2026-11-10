@@ -1,115 +1,232 @@
 ---
-import { getEnv } from '../lib/env';
-import { getSite } from '../lib/site-settings';
+// Nagłówek sklepu wg „Komponent · Nagłówek sklepu” (Laluna).
+// Treści paska i komunikatu: domyślne z kodu, podmieniane w przeglądarce z /api/ustawienia (Base.astro).
+import { CONTENT_DEFAULTS } from '../lib/site-settings';
 
-const env = await getEnv(Astro.locals).catch(() => ({}));
-const siteData = await getSite(env as any).catch(() => null);
-const promos = [
-  siteData?.promo1 || '',
-  siteData?.promo2 || '',
-  siteData?.promo3 || '',
-].filter(Boolean);
-const notice = siteData?.noticeActive ? siteData.noticeText : '';
+interface Props { nav?: string }
+const { nav = '' } = Astro.props;
 
-type Props = {
-  nav?: string;
-};
-const { nav = '' } = Astro.props as Props;
-
-const navItems = [
-  { key: 'krople',    label: 'Krople',    href: '/produkt/krople-can-c/' },
-  { key: 'kapsulki',  label: 'Kapsułki',  href: '/produkt/krople-can-c/' },
-  { key: 'k9',        label: 'Can-C K9',  href: '/produkt/krople-can-c-k9/' },
-  { key: 'stosowanie',label: 'Stosowanie',href: '/stosowanie/' },
-  { key: 'faq',       label: 'FAQ',       href: '/faq/' },
-  { key: 'kontakt',   label: 'Kontakt',   href: '/kontakt/' },
+const items = [
+  { key: 'krople', label: 'Krople', href: '/produkt/krople-can-c/' },
+  { key: "kapsulki", label: "Kapsułki", href: "/sklep/#kapsulki" },
+  { key: 'k9', label: 'Can-C K9', href: '/produkt/krople-can-c-k9/' },
+  { key: 'stosowanie', label: 'Stosowanie', href: '/stosowanie/' },
+  { key: 'faq', label: 'FAQ', href: '/faq/' },
+  { key: 'kontakt', label: 'Kontakt', href: '/kontakt/' },
 ];
+const promos = ['promo1', 'promo2', 'promo3'] as const;
 ---
+<div class="hd-notice" data-notice hidden><span data-site="noticeText"></span></div>
 
-{notice && (
-  <div class="notice-bar" data-notice>
-    <div class="container">{notice}</div>
+<div class="hd-promo">
+  <div class="hd-promo__in">
+    {promos.map((k) => <span data-site={k} data-site-hide-empty>{CONTENT_DEFAULTS[k]}</span>)}
   </div>
-)}
-
-<div class="promo-bar" data-notice-bar>
-  {promos.map(p => <span data-site="promo">{p}</span>)}
 </div>
 
-<header class="site-header">
-  <div class="site-header__inner">
-    <a href="/" class="site-logo">
-      <span class="site-logo__circle" aria-hidden="true"></span>
-      <span class="site-logo__name">Can-C</span>
+<header class="hd">
+  <div class="hd__in">
+    <a href="/" class="hd__logo" aria-label="Can-C – strona główna">
+      <span class="hd__ring" aria-hidden="true"></span>
+      <span class="hd__name">Can-C</span>
     </a>
-    <div class="site-header__right">
-      <nav aria-label="Menu sklepu" class="site-nav">
-        {navItems.map(item => (
-          <a
-            href={item.href}
-            class="site-nav__link"
-            aria-current={nav === item.key ? 'page' : undefined}
-          >{item.label}</a>
+
+    <div class="hd__right">
+      <nav aria-label="Menu sklepu" class="hd__nav" id="hd-nav">
+        {items.map((i) => (
+          <a href={i.href} class="hd__link" aria-current={nav === i.key ? 'page' : undefined}>{i.label}</a>
         ))}
       </nav>
-      <div class="site-actions">
-        <a href="/konto/" aria-label="Moje konto" class="icon-btn">
-          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="8" r="4"/>
-            <path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>
-          </svg>
+
+      <div class="hd__actions">
+        <a href="/konto/" aria-label="Moje konto" class="hd__icon">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
         </a>
-        <button type="button" aria-label="Tryb ciemny" class="icon-btn" id="theme-toggle">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/>
-          </svg>
+        <button type="button" class="hd__icon" data-theme-toggle aria-label="Tryb ciemny" aria-pressed="false">
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>
         </button>
-        <a href="/koszyk/" class="cart-btn" data-cart-link>
-          Koszyk
-          <span class="cart-btn__count" data-cart-count aria-live="polite">0</span>
-        </a>
-        <a href="#" lang="en" class="lang-link">EN</a>
+
+        <div class="hd__cartwrap" data-cart-wrap>
+          <a href="/koszyk/" class="hd__cart" data-cart-link aria-describedby="hd-preview">
+            Koszyk
+            <span class="hd__count" data-cart-count aria-label="Liczba produktów w koszyku">0</span>
+          </a>
+          <div class="hd__preview" id="hd-preview" role="region" aria-label="Podgląd koszyka" data-cart-preview hidden>
+            <p class="hd__pvhead" data-pv-head>Twój koszyk</p>
+            <ul class="hd__pvlist" data-pv-list></ul>
+            <div class="hd__pvsum"><span>Razem</span><strong data-pv-total>0,00 zł</strong></div>
+            <a href="/koszyk/" class="btn btn--wide hd__pvbtn">Przejdź do koszyka</a>
+          </div>
+        </div>
+
+        <button type="button" class="hd__icon hd__burger" aria-controls="hd-nav" aria-expanded="false" aria-label="Menu" data-burger>
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+        </button>
       </div>
     </div>
   </div>
+  <div class="hd__line"></div>
 </header>
 
 <style>
-  .notice-bar {
-    background: var(--ink); color: var(--surface);
-    padding: 10px var(--page-px); font-size: var(--fs-small); font-weight: 300;
-    text-align: center;
+  .hd-notice { background: var(--ink); color: var(--surface); padding: 10px var(--page-px); text-align: center; font-size: 14px; line-height: 21px; font-weight: 300; }
+  .hd-promo { background: var(--band); }
+  .hd-promo__in {
+    max-width: var(--container); margin: 0 auto; padding: 0 var(--page-px); min-height: 45px;
+    display: flex; align-items: center; justify-content: center; gap: 12px 45px; flex-wrap: wrap;
+    font-size: 14px; line-height: 21px; font-weight: 300;
   }
-  .site-header__right { display: flex; align-items: center; gap: 24px 45px; flex-wrap: wrap; }
-  .lang-link { font-size: 1.125rem; font-weight: 400; color: var(--ink); text-decoration: none; padding: 0 4px; }
+  .hd { background: var(--surface); position: relative; z-index: 30; }
+  .hd__in {
+    max-width: var(--container); margin: 0 auto; padding: 24px var(--page-px);
+    display: flex; align-items: center; justify-content: space-between; gap: 24px 45px; flex-wrap: wrap;
+  }
+  .hd__line { border-top: 1px solid var(--line); }
+  .hd__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: var(--ink); }
+  .hd__ring { width: 24px; height: 24px; border: 1px solid var(--ink); border-radius: 50%; }
+  .hd__name { font-size: 36px; line-height: 54px; font-weight: 300; }
+  .hd__right { display: flex; align-items: center; gap: 24px 28px; flex-wrap: wrap; }
+  .hd__nav { display: flex; align-items: center; gap: 12px 28px; flex-wrap: wrap; }
+  .hd__link { font-size: 24px; line-height: 36px; font-weight: 300; color: var(--muted); text-decoration: none; white-space: nowrap; }
+  .hd__link:hover { color: var(--ink); }
+  .hd__link[aria-current='page'] {
+    display: inline-block; height: 36px; padding: 0 15px; line-height: 34px;
+    border: 1px solid var(--ink); border-radius: var(--r-pill); font-weight: 400; color: var(--ink);
+  }
+  .hd__actions { display: flex; align-items: center; gap: 14px; }
+  .hd__icon {
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    border: none; background: transparent; border-radius: 50%; cursor: pointer; color: var(--ink);
+  }
+  .hd__icon:hover { background: var(--band); }
+  .hd__cartwrap { position: relative; }
+  .hd__cart {
+    display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 14px 0 24px;
+    border-radius: var(--r-md); background: var(--ink); color: var(--surface);
+    font-size: 24px; line-height: 36px; font-weight: 500; text-decoration: none;
+  }
+  .hd__cart:hover { background: #3A3A3A; color: var(--surface); }
+  .hd__count {
+    min-width: 28px; height: 28px; padding: 0 6px; border-radius: var(--r-pill);
+    background: var(--surface); color: var(--ink); font-size: 14px; line-height: 28px; font-weight: 500;
+    text-align: center; letter-spacing: 0;
+  }
+  .hd__preview {
+    position: absolute; right: 0; top: calc(100% + 14px); width: 380px; max-width: calc(100vw - 40px);
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
+    padding: 24px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .hd__pvhead { font-size: 18px; line-height: 27px; font-weight: 400; }
+  .hd__pvlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow: auto; }
+  .hd__pvlist :global(li) { display: flex; align-items: center; gap: 14px; font-size: 14px; line-height: 21px; font-weight: 300; }
+  .hd__pvlist :global(.pv-img) { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: cover; }
+  .hd__pvlist :global(.pv-name) { flex: 1; min-width: 0; }
+  .hd__pvlist :global(.pv-price) { font-weight: 400; white-space: nowrap; }
+  .hd__pvsum { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 16px; }
+  .hd__pvsum strong { font-weight: 500; }
+  .hd__pvbtn { height: 54px; font-size: 18px; }
+  .hd__burger { display: none; }
+
   @media (max-width: 1000px) {
-    .site-nav { display: none; }
+    .hd__name { font-size: 28px; }
+    .hd__cart { font-size: 18px; height: 48px; padding: 0 10px 0 18px; }
+    .hd__burger { display: flex; }
+    .hd__right { flex: 1; justify-content: flex-end; }
+    .hd__nav {
+      display: none; position: absolute; left: 0; right: 0; top: 100%;
+      background: var(--surface); border-bottom: 1px solid var(--line);
+      flex-direction: column; align-items: stretch; gap: 0; padding: 10px var(--page-px) 24px;
+    }
+    .hd__nav.is-open { display: flex; }
+    .hd__link { padding: 10px 0; border-top: 1px solid var(--line); }
+    .hd__link[aria-current='page'] { border-radius: 0; border: none; border-top: 1px solid var(--line); padding: 10px 0; height: auto; line-height: 36px; }
+    .hd__preview { display: none !important; }
+  }
+  @media (max-width: 520px) {
+    .hd__in { padding-top: 14px; padding-bottom: 14px; }
+    [data-theme-toggle], .hd__actions > a[href='/konto/'] { display: none; }
   }
 </style>
 
 <script>
-  import { getCart, onCartChange } from '../lib/cart';
-  function updateCount() {
-    const c = getCart().reduce((s, i) => s + i.qty, 0);
-    document.querySelectorAll('[data-cart-count]').forEach(el => { el.textContent = String(c); });
+  import { getCart, onCartChange, type CartItem } from '../lib/cart';
+  import { ADDED_EVENT } from '../lib/cart-fx';
+
+  type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string };
+  const zl = (gr: number) => (gr / 100).toFixed(2).replace('.', ',') + ' zł';
+  const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+  let catalog: P[] | null = null;
+  const loadCatalog = async () => {
+    if (catalog) return catalog;
+    try { catalog = await fetch('/api/produkty').then((r) => (r.ok ? r.json() : [])); } catch { catalog = []; }
+    return catalog!;
+  };
+
+  const count = (items: CartItem[]) => {
+    const n = items.reduce((s, i) => s + i.qty, 0);
+    document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = String(n); });
+  };
+  count(getCart());
+  onCartChange(count);
+
+  // Podgląd koszyka: najechanie / fokus na przycisk Koszyk, a po dodaniu produktu – na 3 s
+  const wrap = document.querySelector<HTMLElement>('[data-cart-wrap]');
+  const pv = document.querySelector<HTMLElement>('[data-cart-preview]');
+  const list = document.querySelector<HTMLElement>('[data-pv-list]');
+  const total = document.querySelector<HTMLElement>('[data-pv-total]');
+  const head = document.querySelector<HTMLElement>('[data-pv-head]');
+  let hideT: number | undefined;
+
+  async function render(added = false) {
+    const items = getCart();
+    if (!items.length || !pv || !list || !total) return false;
+    const cat = await loadCatalog();
+    let sum = 0;
+    list.innerHTML = items.map((i) => {
+      const p = cat.find((c) => c.slug === i.slug);
+      if (!p) return '';
+      const line = (p.price ?? 0) * i.qty;
+      sum += line;
+      const img = p.image ? `<img class="pv-img" src="${esc(p.image)}" alt="" loading="lazy">` : '<span class="pv-img"></span>';
+      return `<li>${img}<span class="pv-name">${esc(p.name)} × ${i.qty}</span><span class="pv-price">${zl(line)}</span></li>`;
+    }).join('');
+    total.textContent = zl(sum);
+    if (head) head.textContent = added ? 'Dodano do koszyka' : 'Twój koszyk';
+    return true;
   }
-  updateCount();
-  onCartChange(updateCount);
+  async function show(added = false, autoHide = false) {
+    if (window.matchMedia('(max-width: 1000px)').matches) return;
+    if (!(await render(added)) || !pv) return;
+    clearTimeout(hideT);
+    pv.hidden = false;
+    if (autoHide) hideT = window.setTimeout(() => { if (!wrap?.matches(':hover, :focus-within')) pv.hidden = true; }, 3000);
+  }
+  const hide = () => { hideT = window.setTimeout(() => { if (pv) pv.hidden = true; }, 150); };
+  wrap?.addEventListener('mouseenter', () => show());
+  wrap?.addEventListener('mouseleave', hide);
+  wrap?.addEventListener('focusin', () => show());
+  wrap?.addEventListener('focusout', (e) => { if (!wrap.contains(e.relatedTarget as Node)) hide(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pv && !pv.hidden) pv.hidden = true; });
+  window.addEventListener(ADDED_EVENT, () => show(true, true));
 
-  // Podmiana data-site
-  fetch('/api/ustawienia').then(r => r.json()).then(d => {
-    document.querySelectorAll('[data-site]').forEach(el => {
-      const k = (el as HTMLElement).dataset.site!;
-      if (d[k]) el.textContent = d[k];
-    });
-  }).catch(() => {});
+  // Menu mobilne
+  const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const nav = document.getElementById('hd-nav');
+  burger?.addEventListener('click', () => {
+    const open = !nav?.classList.contains('is-open');
+    nav?.classList.toggle('is-open', open);
+    burger.setAttribute('aria-expanded', String(open));
+  });
 
-  // Tryb ciemny – wyłączony dla frontendu (panel admina ma własny)
-  const btn = document.getElementById('theme-toggle');
-  btn?.addEventListener('click', () => {
-    const html = document.documentElement;
-    const dark = html.getAttribute('data-theme') === 'dark';
-    html.setAttribute('data-theme', dark ? 'light' : 'dark');
-    try { localStorage.setItem('canc-theme', dark ? 'light' : 'dark'); } catch {}
+  // Tryb ciemny (wybór zapamiętany w przeglądarce)
+  const tBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const sync = () => tBtn?.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
+  sync();
+  tBtn?.addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    try { localStorage.setItem('canc-theme', dark ? 'dark' : 'light'); } catch { /* tryb prywatny */ }
+    sync();
   });
 </script>

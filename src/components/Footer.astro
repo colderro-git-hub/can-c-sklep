@@ -1,70 +1,97 @@
 ---
+// Stopka wg „Komponent · Stopka sklepu” (Laluna). Kolumny i metody płatności z CMS (page_content footer.*).
 import { site } from '../config';
 import { getEnv } from '../lib/env';
 import { getPageContent, getSection } from '../lib/page-content';
 
-let columns: { title: string; links: { href: string; label: string }[] }[] = [];
+type Col = { title: string; links: { href: string; label: string }[] };
+let columns: Col[] = [];
 let badges: string[] = [];
 try {
   const env = await getEnv(Astro.locals);
   const rows = await getPageContent(env, 'footer');
-  const colData = getSection<{ columns: typeof columns }>(rows, 'footer.columns');
-  const badgeData = getSection<{ items: string[] }>(rows, 'footer.badges');
-  if (colData?.columns?.length) columns = colData.columns;
-  if (badgeData?.items?.length) badges = badgeData.items;
-} catch {}
+  const c = getSection<{ columns: Col[] }>(rows, 'footer.columns');
+  const b = getSection<{ items: string[] }>(rows, 'footer.badges');
+  if (c?.columns?.length) columns = c.columns;
+  if (b?.items?.length) badges = b.items;
+} catch { /* strona statyczna albo baza niedostępna – treści z kodu */ }
 if (!columns.length) columns = [
   { title: 'Sklep', links: [
     { href: '/produkt/krople-can-c/', label: 'Krople Can-C' },
     { href: '/produkt/krople-can-c-k9/', label: 'Can-C K9 dla psa' },
-    { href: '/sklep/', label: 'Wszystkie produkty' },
+    { href: '/sklep/', label: 'Kapsułki 60 i 90' },
     { href: '/konto/', label: 'Moje konto' },
-  ]},
+  ] },
   { title: 'Zakupy', links: [
     { href: '/formy-dostawy/', label: 'Formy dostawy' },
     { href: '/formy-platnosci/', label: 'Formy płatności' },
     { href: '/odstapienie-od-umowy/', label: 'Zwroty i reklamacje' },
-    { href: '/odstapienie-od-umowy/', label: 'Odstąp od umowy' },
-  ]},
+    { href: '/odstapienie-od-umowy/#formularz', label: 'Odstąp od umowy' },
+  ] },
   { title: 'Informacje', links: [
     { href: '/o-nas/', label: 'O nas' },
     { href: '/regulamin/', label: 'Regulamin' },
     { href: '/polityka-prywatnosci/', label: 'Polityka prywatności' },
     { href: '/kontakt/', label: 'Kontakt' },
-  ]},
+  ] },
 ];
 if (!badges.length) badges = ['BLIK', 'Przelewy24', 'Karta', 'InPost Paczkomat', 'Kurier DPD'];
 const year = new Date().getFullYear();
 ---
-<footer class="footer">
-  <div class="footer__inner">
-    <div class="footer__cols">
-      <div class="footer__brand">
-        <div class="footer__logo-row">
-          <span class="footer__logo-circle" aria-hidden="true"></span>
-          <span class="footer__logo-name">Can-C</span>
-        </div>
-        <p class="footer__muted">
-          <span data-site="email">{site.email}</span><br/>
-          <span data-site="hours">{site.hours}</span>
-        </p>
+<footer class="ft">
+  <div class="ft__in">
+    <div class="ft__top">
+      <div class="ft__brand">
+        <a href="/" class="ft__logo"><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></a>
+        <p class="ft__contact"><span data-site="email">{site.email}</span><br /><span data-site="hours">{site.hours}</span></p>
       </div>
-      {columns.map(col => (
-        <nav aria-label={col.title} class="footer__col">
-          <span class="footer__col-title">{col.title}</span>
-          {col.links.map(l => <a href={l.href}>{l.label}</a>)}
-        </nav>
-      ))}
+      <div class="ft__cols">
+        {columns.map((c) => (
+          <nav aria-label={c.title} class="ft__col">
+            <span class="ft__title">{c.title}</span>
+            <div class="ft__links">
+              {c.links.map((l) => (
+                <a href={l.href}><svg aria-hidden="true" width="4" height="6" viewBox="0 0 4 6"><path d="M.7.7L3 3 .7 5.3" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>{l.label}</a>
+              ))}
+            </div>
+          </nav>
+        ))}
+      </div>
     </div>
-    <ul class="footer__chips" aria-label="Metody płatności i dostawy">
-      {badges.map(m => <li>{m}</li>)}
+    <ul class="ft__chips" aria-label="Metody płatności i dostawy">
+      {badges.map((b) => <li>{b}</li>)}
     </ul>
-    <p class="footer__legal">
-      <span data-site="company">{site.company}</span>,
-      <span data-site="address">{site.address}</span> ·
-      NIP <span data-site="nip">{site.nip}</span> ·
-      REGON <span data-site="regon">{site.regon}</span> ·
-      © 2012–{year}
+    <div class="ft__line"></div>
+    <p class="ft__legal">
+      <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>
+      · NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span> · © 2012–{year}
     </p>
   </div>
 </footer>
+
+<style>
+  .ft { background: #1F1F1F; color: #FFFFFF; }
+  .ft__in { max-width: var(--container); margin: 0 auto; padding: 90px var(--page-px) 45px; }
+  .ft__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 45px; flex-wrap: wrap; }
+  .ft__brand { width: 408px; max-width: 100%; display: flex; flex-direction: column; gap: 24px; }
+  .ft__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: #FFFFFF; }
+  .ft__ring { width: 24px; height: 24px; border: 1px solid #FFFFFF; border-radius: 50%; }
+  .ft__name { font-size: 36px; line-height: 54px; font-weight: 300; }
+  .ft__contact { font-size: 14px; line-height: 21px; font-weight: 300; color: #E8E8E8; }
+  .ft__cols { display: flex; gap: 45px 90px; padding-top: 12px; flex-wrap: wrap; }
+  .ft__col { display: flex; flex-direction: column; gap: 18px; }
+  .ft__title { font-family: 'Montserrat', sans-serif; font-size: 24px; line-height: 29px; }
+  .ft__links { display: flex; flex-direction: column; }
+  .ft__links a {
+    display: flex; align-items: center; gap: 10px; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 25px;
+    font-weight: 300; letter-spacing: 0; color: #FFFFFF; text-decoration: none; white-space: nowrap;
+  }
+  .ft__links a:hover { color: #8A8A8A; }
+  .ft__chips { list-style: none; margin: 45px 0 0; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+  .ft__chips li {
+    display: inline-flex; align-items: center; height: 36px; padding: 0 16px;
+    border: 1px solid rgba(255,255,255,0.4); border-radius: 500px; font-size: 14px; font-weight: 300;
+  }
+  .ft__line { margin-top: 45px; border-top: 1px solid rgba(255,255,255,0.15); }
+  .ft__legal { margin-top: 24px; font-size: 14px; line-height: 21px; font-weight: 300; color: #E8E8E8; }
+</style>

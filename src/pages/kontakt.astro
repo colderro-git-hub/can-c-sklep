@@ -1,6 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import Arrow from '../components/Arrow.astro';
 import { site, TURNSTILE_SITE_KEY } from '../config';
 
 const topics = [
@@ -9,88 +8,86 @@ const topics = [
   { value: 'zwrot', label: 'Zwrot lub reklamacja', order: true },
   { value: 'wspolpraca', label: 'Współpraca', order: false },
 ];
+const ICON: Record<string, string> = {
+  box: 'M3 7l9-4 9 4v10l-9 4-9-4V7zm0 0l9 4 9-4M12 11v10',
+  back: 'M9 14L4 9l5-5M4 9h11a5 5 0 010 10h-3',
+  drop: 'M12 3s6 7 6 11a6 6 0 01-12 0c0-4 6-11 6-11z',
+  mail: 'M3 6h18v12H3zM3 6l9 7 9-7',
+  tel: 'M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2',
+  clock: 'M12 3a9 9 0 100 18 9 9 0 000-18zm0 4v5l3 3',
+  fb: 'M14 8h3V4h-3a4 4 0 00-4 4v3H7v4h3v6h4v-6h3l1-4h-4V8z',
+  shop: 'M4 9l1-5h14l1 5M4 9v11h16V9M4 9h16M9 20v-6h6v6',
+};
 const quick = [
-  { href: '/konto/', title: 'Gdzie jest moja paczka?', text: 'Status i numer przesyłki znajdziesz w swoim koncie i w e-mailu z potwierdzeniem wysyłki.', cta: 'Sprawdź zamówienie' },
-  { href: site.returnsUrl, title: 'Chcę zwrócić produkt', text: 'Masz 14 dni. Zgłoś zwrot online, wydrukuj etykietę i nadaj paczkę.', cta: 'Zgłoś zwrot' },
-  { href: '/faq/', title: 'Jak stosować krople?', text: 'Dawkowanie, czas kuracji i soczewki kontaktowe w najczęstszych pytaniach.', cta: 'Zobacz FAQ' },
+  { icon: 'box', href: '/konto/', title: 'Gdzie jest moja paczka?', text: 'Status i numer przesyłki znajdziesz w swoim koncie i w e-mailu z potwierdzeniem wysyłki.', cta: 'Sprawdź zamówienie' },
+  { icon: 'back', href: site.returnsUrl || '/odstapienie-od-umowy/', title: 'Chcę zwrócić produkt', text: 'Masz 14 dni. Zgłoś zwrot online, wydrukuj etykietę i nadaj paczkę.', cta: 'Zgłoś zwrot' },
+  { icon: 'drop', href: '/faq/', title: 'Jak stosować krople?', text: 'Dawkowanie, czas kuracji i soczewki kontaktowe w najczęstszych pytaniach.', cta: 'Zobacz FAQ' },
 ];
 ---
-<Base title="Kontakt | Can-C" description="Kontakt z obsługą klienta sklepu Can-C: pytania o produkty, zamówienia, zwroty i współpracę.">
+<Base title="Kontakt | Can-C" description="Kontakt z obsługą klienta sklepu Can-C: pytania o produkty, zamówienia, zwroty i współpracę." nav="kontakt">
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
-  <section class="page-hero">
-    <div class="container page-hero__inner">
-      <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / Kontakt</nav>
-      <h1>Kontakt</h1>
-      <p class="lead">Pytania o produkty, zamówienia i zwroty. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
+  <section class="w kt-top">
+    <div class="row kt-head">
+      <div class="kt-head__l">
+        <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Kontakt</nav>
+        <h1 class="h1">Kontakt</h1>
+      </div>
+      <p class="p p--lg fl" style="width:533px">Pytania o produkty, zamówienia i zwroty. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
     </div>
-  </section>
-
-  <section class="quick-wrap">
-    <div class="container quick">
+    <div class="g3 kt-quick">
       {quick.map((q) => (
-        <a href={q.href} class="quick__card">
-          <span class="quick__title">{q.title}</span>
-          <span class="muted">{q.text}</span>
-          <span class="quick__cta">{q.cta} <Arrow /></span>
-        </a>
+        <div class="kt-q">
+          <span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON[q.icon]} /></svg></span>
+          <h2 class="kt-q__t">{q.title}</h2>
+          <p class="p">{q.text}</p>
+          <a href={q.href} class="lnk" style="margin-top:10px"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>{q.cta}</a>
+        </div>
       ))}
     </div>
   </section>
 
-  <section class="section section--tint">
-    <div class="container layout">
-      <div class="info">
-        <h2 class="h3">Obsługa klienta</h2>
-        <dl>
-          <div><dt>E-mail</dt><dd><a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></dd></div>
-          <div><dt>Telefon</dt><dd><a href={`tel:${site.phone.replace(/\s/g, '')}`} data-site-href="tel:{phone}"><span data-site="phone">{site.phone}</span></a></dd></div>
-          <div><dt>Godziny</dt><dd><span data-site="hours">{site.hours}</span></dd></div>
-          <div><dt>Facebook</dt><dd><a href={site.facebook} data-site-href="{facebook}">krople.canc</a></dd></div>
-          <div><dt>Sprzedawca</dt><dd class="small"><span data-site="company">{site.company}</span><br /><span data-site="address">{site.address}</span><br />NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span></dd></div>
-        </dl>
+  <section class="kt-band">
+    <div class="w row kt-pad">
+      <div class="fl kt-info">
+        <h2 class="h2">Obsługa<br />klienta</h2>
+        <div class="kt-list">
+          <div class="kt-row"><span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON.mail} /></svg></span>
+            <div><div class="kt-l">E-mail</div><a class="kt-v" href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></div></div>
+          <div class="kt-row"><span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON.tel} /></svg></span>
+            <div><div class="kt-l">Telefon</div><a class="kt-v" href={`tel:${site.phone.replace(/\s/g, '')}`} data-site-href="tel:{phone}"><span data-site="phone">{site.phone}</span></a></div></div>
+          <div class="kt-row"><span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON.clock} /></svg></span>
+            <div><div class="kt-l">Godziny</div><div class="kt-v"><span data-site="hours">{site.hours}</span></div></div></div>
+          <div class="kt-row"><span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON.fb} /></svg></span>
+            <div><div class="kt-l">Facebook</div><a class="kt-v" href={site.facebook} data-site-href="{facebook}" rel="noopener">krople.canc</a></div></div>
+          <div class="kt-row"><span class="kt-ico" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d={ICON.shop} /></svg></span>
+            <div><div class="kt-l">Sprzedawca</div><div class="kt-v"><span data-site="company">{site.company}</span><br /><span data-site="address">{site.address}</span><br /><span class="p">NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span></span></div></div></div>
+        </div>
       </div>
 
-      <form class="form" method="post" action="/api/kontakt" data-contact novalidate>
-        <h2>Napisz do nas</h2>
-
-        <fieldset>
-          <legend>Czego dotyczy wiadomość?</legend>
-          <div class="pill-group">
+      <form id="formularz" class="kt-form" method="post" action="/api/kontakt" data-contact novalidate>
+        <h2 class="kt-form__t">Napisz do nas</h2>
+        <fieldset class="kt-fs">
+          <legend class="kt-lbl">Czego dotyczy wiadomość?</legend>
+          <div class="kt-chips">
             {topics.map((t, i) => (
-              <label class="pill"><input type="radio" name="topic" value={t.value} checked={i === 0} data-order={t.order ? '1' : ''} /> {t.label}</label>
+              <label class="chip kt-chip"><input type="radio" name="topic" value={t.value} checked={i === 0} data-order={t.order ? '1' : ''} />{t.label}</label>
             ))}
           </div>
         </fieldset>
-
-        <div class="grid2">
-          <label class="field">Imię i nazwisko
-            <input class="input" type="text" name="name" autocomplete="name" required maxlength="100" />
-          </label>
-          <label class="field">E-mail
-            <input class="input" type="email" name="email" autocomplete="email" required maxlength="200" placeholder="jan@przyklad.pl" />
-          </label>
+        <div class="g2 kt-g2">
+          <div><label class="kt-lbl" for="k-name">Imię i nazwisko</label><input id="k-name" class="fld" type="text" name="name" autocomplete="name" required maxlength="100" /></div>
+          <div><label class="kt-lbl" for="k-mail">E-mail</label><input id="k-mail" class="fld" type="email" name="email" autocomplete="email" required maxlength="200" placeholder="jan@przyklad.pl" /></div>
         </div>
-
-        <label class="field order" data-order-field hidden>Numer zamówienia
-          <input class="input" type="text" name="order" inputmode="numeric" maxlength="20" placeholder="np. 10482" />
-        </label>
-
-        <label class="field">Wiadomość
-          <textarea class="input textarea" name="message" rows="6" required minlength="10" maxlength="5000"></textarea>
-        </label>
-
-        <!-- Pułapka na boty: pole niewidoczne dla ludzi -->
+        <div data-order-field hidden><label class="kt-lbl" for="k-order">Numer zamówienia</label><input id="k-order" class="fld" type="text" name="order" inputmode="numeric" maxlength="20" placeholder="np. 10482" /></div>
+        <div><label class="kt-lbl" for="k-msg">Wiadomość</label><textarea id="k-msg" class="fld" name="message" rows="6" required minlength="10" maxlength="5000" style="height:178px"></textarea></div>
         <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-
-        <p class="small muted">Administratorem danych jest <span data-site="company">{site.company}</span>. Dane z formularza wykorzystamy tylko do odpowiedzi na Twoją wiadomość. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</p>
-        <label class="consent"><input type="checkbox" name="marketing" value="1" /> <span>Chcę też otrzymywać informacje o promocjach (opcjonalnie).</span></label>
-
+        <p class="k">Administratorem danych jest <span data-site="company">{site.company}</span>. Dane z formularza wykorzystamy tylko do odpowiedzi na Twoją wiadomość. Szczegóły w <a href="/polityka-prywatnosci/" style="color:var(--ink)">Polityce prywatności</a>.</p>
+        <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="marketing" value="1" /><span>Chcę też otrzymywać informacje o promocjach (opcjonalnie).</span></label>
         <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>
-
-        <div class="actions">
-          <button type="submit" class="btn btn--lg" data-submit>Wyślij wiadomość</button>
-          <p class="status" role="status" data-status></p>
+        <div class="kt-actions">
+          <button type="submit" class="btn" data-submit>Wyślij wiadomość</button>
+          <p class="msg" role="status" data-status></p>
         </div>
       </form>
     </div>
@@ -103,27 +100,31 @@ const quick = [
     const orderField = form.querySelector<HTMLElement>('[data-order-field]')!;
     const status = form.querySelector<HTMLElement>('[data-status]')!;
     const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
-
     form.querySelectorAll<HTMLInputElement>('input[name="topic"]').forEach((r) =>
       r.addEventListener('change', () => { orderField.hidden = !r.dataset.order; }),
     );
+    // Link z koszyka / konta: /kontakt/?temat=zwrot&nr=123
+    const qs = new URLSearchParams(location.search);
+    const t = qs.get('temat');
+    if (t) { const r = form.querySelector<HTMLInputElement>(`input[name="topic"][value="${CSS.escape(t)}"]`); if (r) { r.checked = true; r.dispatchEvent(new Event('change')); } }
+    if (qs.get('nr')) (form.elements.namedItem('order') as HTMLInputElement).value = qs.get('nr')!;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!form.reportValidity()) return;
       submit.disabled = true;
-      status.className = 'status';
+      status.className = 'msg';
       status.textContent = 'Wysyłanie…';
       try {
         const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-        const data = await res.json().catch(() => ({}));
+        const data: any = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error || 'Nie udało się wysłać wiadomości. Spróbuj ponownie albo napisz e-mail.');
-        status.className = 'status status--ok';
+        status.className = 'msg msg--ok';
         status.textContent = 'Wysłano. Odpowiemy na podany adres e-mail.';
         form.reset();
         orderField.hidden = true;
       } catch (err) {
-        status.className = 'status status--err';
+        status.className = 'msg msg--err';
         status.textContent = (err as Error).message;
       } finally {
         submit.disabled = false;
@@ -134,39 +135,34 @@ const quick = [
 </script>
 
 <style>
-  .h3 { font-size: var(--fs-h3); }
-  .small { font-size: var(--fs-small); line-height: 24px; }
-
-  .quick-wrap { padding-bottom: var(--s-6); }
-  .quick { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s-2); }
-  .quick__card { padding: 32px; background: var(--c-gray-100); color: var(--c-ink); text-decoration: none; display: flex; flex-direction: column; gap: 12px; }
-  .quick__title { font-size: var(--fs-h4); }
-  .quick__cta { display: inline-flex; align-items: center; gap: 12px; padding-top: 8px; }
-
-  .layout { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-start; }
-  .info { flex: 1 1 340px; display: flex; flex-direction: column; gap: var(--s-3); }
-  .info dl { margin: 0; }
-  .info dl div { padding: 20px 0; border-top: 1px solid var(--c-ink-10); display: flex; flex-direction: column; gap: 4px; }
-  .info dl div:last-child { border-bottom: 1px solid var(--c-ink-10); }
-  .info dt { font-size: var(--fs-small); color: var(--c-ink-75); }
-  .info dd { margin: 0; font-size: 1.25rem; }
-  .info dd.small { font-size: 1rem; line-height: 1.6; }
-  .info dd a { color: var(--c-ink); }
-
-  .form { flex: 2 1 560px; min-width: 0; background: var(--c-white); padding: clamp(24px, 4vw, 48px); display: flex; flex-direction: column; gap: var(--s-2); }
-  .form h2 { font-size: var(--fs-h4); font-weight: 400; }
-  .form fieldset { margin: 0; padding: 0; border: 0; }
-  .form legend { font-size: var(--fs-small); padding-bottom: var(--s-1); }
-  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .order { max-width: 320px; }
-  .order[hidden] { display: none; }
-  .textarea { height: auto; padding: 14px 16px; line-height: 1.5; resize: vertical; }
-  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-  .consent { display: flex; gap: 12px; align-items: flex-start; font-size: var(--fs-small); line-height: 24px; color: var(--c-ink-75); }
-  .consent input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
-  .actions { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
-  .actions .btn:disabled { opacity: 0.5; cursor: wait; }
-  .status { font-size: 1rem; }
-  .status--ok { color: var(--c-ok); }
-  .status--err { color: var(--c-err); }
+  [hidden] { display: none !important; }
+  .kt-top { margin-top: 45px; }
+  .kt-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
+  .kt-head__l { display: flex; flex-direction: column; gap: 24px; }
+  .kt-quick { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 45px; }
+  .kt-q { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .kt-q__t { margin-top: 10px; font-size: 28px; line-height: 32px; font-weight: 400; }
+  .kt-ico { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: var(--peach); color: #1F1F1F; display: flex; align-items: center; justify-content: center; }
+  .kt-band { margin-top: 90px; background: var(--band); }
+  .kt-pad { padding-top: 90px; padding-bottom: 90px; display: flex; align-items: flex-start; gap: 45px; }
+  .kt-info { width: 493px; flex-shrink: 0; display: flex; flex-direction: column; }
+  .kt-list { margin-top: 45px; border-bottom: 1px solid var(--image); }
+  .kt-row { display: flex; gap: 14px; padding: 24px 0; border-top: 1px solid var(--image); }
+  .kt-l { font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); }
+  .kt-v { font-size: 18px; line-height: 28px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  a.kt-v:hover { color: var(--muted); }
+  .kt-form { flex-grow: 1; min-width: 0; margin: 0; background: var(--surface); border-radius: 50px; padding: 45px; display: flex; flex-direction: column; gap: 24px; }
+  .kt-form__t { font-size: 28px; line-height: 32px; font-weight: 400; }
+  .kt-fs { margin: 0; padding: 0; border: none; }
+  .kt-lbl { display: block; padding: 0; font-size: 18px; line-height: 27px; font-weight: 400; margin-bottom: 7px; }
+  .kt-chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .kt-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .kt-chip:has(input:checked) { background: var(--ink); color: var(--surface); }
+  .kt-chip:has(input:focus-visible) { outline: 2px solid var(--ink); outline-offset: 3px; }
+  .kt-g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .kt-actions { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  @media (max-width: 1000px) {
+    .kt-form { padding: 28px; border-radius: 32px; }
+    .kt-g2 { grid-template-columns: minmax(0, 1fr); }
+  }
 </style>

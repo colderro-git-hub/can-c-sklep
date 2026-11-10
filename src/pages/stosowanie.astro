@@ -1,28 +1,39 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getEnv } from '../lib/env';
-import Arrow from '../components/Arrow.astro';
-import { products, lineTotal, formatPrice } from '../data/shop';
+import { products } from '../data/shop';
+import { getCatalog } from '../lib/catalog';
+import { discountRate } from '../lib/pricing';
 import { getPageContent, getSection } from '../lib/page-content';
 
 export const prerender = false;
 
-const drops = products.find((p) => p.slug === 'krople-can-c')!;
+const env = await getEnv(Astro.locals);
+// Cena kropli z bazy (zapas: dane z kodu)
+const catalog = await getCatalog(env).catch(() => []);
+const dropsDb = catalog.find((p) => p.id === 'krople-can-c');
+const unit = dropsDb?.current ?? (products.find((p) => p.slug === 'krople-can-c')?.price ?? 0) * 100; // grosze
+const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
+const word = (n: number) => (n === 1 ? 'opakowanie' : n < 5 ? 'opakowania' : 'opakowań');
 const plan = [
-  { label: '1 miesiąc', qty: 1 }, { label: '2 miesiące', qty: 2 },
-  { label: '3–4 miesiące', qty: 4 }, { label: '6 miesięcy', qty: 6 },
+  { label: '1 miesiąc', qty: 1, set: 1 }, { label: '2 miesiące', qty: 2, set: 2 },
+  { label: '3–4 miesiące', qty: 4, set: 4 }, { label: '6 miesięcy', qty: 6, set: 4 },
 ].map((p) => {
-  const total = lineTotal(drops, p.qty);
-  const regular = drops.price !== null ? drops.price * p.qty : null;
-  const saved = total !== null && regular ? Math.round((1 - total / regular) * 100) : 0;
-  return { ...p, price: `${formatPrice(total)}${saved ? ` · oszczędzasz ${saved}%` : ''}` };
+  const regular = unit * p.qty;
+  const total = Math.round(regular * (1 - discountRate(p.qty, true)));
+  const saved = regular - total;
+  return {
+    ...p,
+    packs: p.qty === 6 ? '6 opakowań (4 + 2)' : `${p.qty} ${word(p.qty)}`,
+    price: pln(total),
+    save: saved ? `Oszczędzasz ${pln(saved)} (${Math.round(discountRate(p.qty, true) * 100)}%)` : 'Cena regularna',
+  };
 });
 const defaultPlan = 2;
 const toc = [
-  { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#otwieranie', label: 'Otwieranie fiolki' },
-  { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#kuracja', label: 'Ile opakowań potrzebujesz' },
+  { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#fiolka', label: 'Otwieranie fiolki' },
+  { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#ile', label: 'Ile opakowań potrzebujesz' },
 ];
-const env = await getEnv(Astro.locals);
 const rows = await getPageContent(env, 'how_to_use').catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
@@ -31,101 +42,108 @@ const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolk
 const applying = at('how_to_use.applying', { h2: 'Zakraplanie', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }], image_url: null as string|null, image_alt: 'Zakraplanie kropli Can-C' });
 const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.h1, step: (applying.steps as {title:string;desc:string}[]).map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.desc })) };
 ---
-<Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację.">
+<Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację." nav="stosowanie">
   <script type="application/ld+json" set:html={JSON.stringify(howTo)} />
 
-  <section class="page-hero">
-    <div class="container hero-split">
-      <div class="page-hero__inner">
-        <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / Stosowanie</nav>
-        <h1>{intro.h1}</h1>
-        <p class="lead">{intro.lead}</p>
-      </div>
-      <nav class="toc" aria-label="Na tej stronie">
-        {toc.map((t) => (
-          <a href={t.href}>{t.label}
-            <svg width="10" height="16" viewBox="0 0 10 16" fill="none" aria-hidden="true"><path d="M5 0v14M1 10l4 4 4-4" stroke="currentColor" stroke-width="1.2" /></svg>
-          </a>
-        ))}
-      </nav>
+  <section class="w row us-hero">
+    <div class="fl us-hero__l">
+      <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Stosowanie</nav>
+      <h1 class="h1">{intro.h1}</h1>
+      <p class="p p--lg" style="max-width:560px">{intro.lead}</p>
     </div>
+    <nav class="fl us-toc" aria-label="Spis treści">
+      {toc.map((t) => <a href={t.href} class="us-anc">{t.label} <span aria-hidden="true">↓</span></a>)}
+    </nav>
   </section>
 
-  <section id="dawkowanie" class="section section--dark">
-    <div class="container stack">
-      <h2>{dosage.h2}</h2>
-      <div class="dose-grid">
-        {(dosage.doses as {num:string;title:string;desc:string}[]).map((d) => <div class="dose"><span class="dose__num">{d.num}</span><span class="dose__t">{d.title}</span><span class="dose__d">{d.desc}</span></div>)}
-      </div>
-      <p class="note-dark">{dosage.note}</p>
-    </div>
-  </section>
-
-  <section id="otwieranie" class="section">
-    <div class="container stack">
-      <div class="intro">
-        <h2>{opening.h2}</h2>
-        <p class="lead">{opening.lead}</p>
-      </div>
-      <ol class="open-steps">
-        {(opening.steps as string[]).map((t, i) => (
-          <li>
-            {(opening.step_images as (string|null)[])?.[i]
-              ? <img src={(opening.step_images as (string|null)[])[i]!} alt={`Krok ${i + 1}: ${t}`} class="open-steps__img" width="400" height="400" loading="lazy" />
-              : <div class="ph open-steps__img">[Ilustracja {i + 1}]</div>}
-            <span class="open-steps__n">{i + 1}</span>
-            <span class="open-steps__t">{t}</span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <section id="zakraplanie" class="section section--tint">
-    <div class="container split">
-      <div class="split__aside">
-        <h2>{applying.h2}</h2>
-        <p class="lead">Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.</p>
-        {applying.image_url
-          ? <img src={applying.image_url} alt={applying.image_alt || 'Zakraplanie'} class="apply-img" width="600" height="450" loading="lazy" />
-          : <div class="ph apply-img">[Ilustracja: odchylona głowa, zakraplanie]</div>}
-      </div>
-      <ol class="apply split__main">
-        {(applying.steps as {title:string;desc:string}[]).map((s, i) => (
-          <li>
-            <span class="apply__n">{i + 1}</span>
-            <span class="apply__text"><span class="apply__t">{s.title}</span><span class="muted">{s.desc}</span></span>
-          </li>
-        ))}
-      </ol>
-    </div>
-  </section>
-
-  <section id="kuracja" class="section">
-    <div class="container split">
-      <div class="split__aside">
-        <h2 class="h3">Ile opakowań potrzebujesz</h2>
-        <p class="lead">Jedno opakowanie (2 × 5 ml) wystarcza na około miesiąc przy standardowym dawkowaniu.</p>
-      </div>
-      <div class="calc split__main" data-calc>
-        <fieldset>
-          <legend>Jak długo planujesz kurację?</legend>
-          <div class="pill-group">
-            {plan.map((p, i) => (
-              <label class="pill">
-                <input type="radio" name="plan" value={p.qty} checked={i === defaultPlan} data-rec={p.rec} data-price={p.price} />
-                {p.label}
-              </label>
-            ))}
+  <section id="dawkowanie" class="us-dark">
+    <div class="w us-pad">
+      <h2 class="h2">{dosage.h2}</h2>
+      <div class="g3 us-doses">
+        {(dosage.doses as { num: string; title: string; desc: string }[]).map((d) => (
+          <div class="us-dose">
+            <span class="us-dose__n">{d.num}</span>
+            <span class="us-dose__t">{d.title}</span>
+            <span class="us-dose__d">{d.desc}</span>
           </div>
-        </fieldset>
-        <div class="calc__result" aria-live="polite">
-          <span class="muted">Polecamy</span>
-          <span class="calc__rec" data-rec-out>{plan[defaultPlan].rec}</span>
-          <span data-price-out>{plan[defaultPlan].price}</span>
-        </div>
-        <a href={`/produkt/krople-can-c/?zestaw=${plan[defaultPlan].qty}`} class="btn" data-go>Przejdź do zamówienia <Arrow /></a>
+        ))}
       </div>
+      {dosage.note && (
+        <div class="us-note">
+          <span aria-hidden="true" class="us-note__i">!</span>
+          <p>{dosage.note}</p>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <section id="fiolka" class="w us-sec">
+    <div class="row us-sechead">
+      <h2 class="h2">{opening.h2}</h2>
+      <p class="p fl justify" style="width:517px">{opening.lead}</p>
+    </div>
+    <ol class="g4 us-steps">
+      {(opening.steps as string[]).map((t, i) => {
+        const img = (opening.step_images as (string | null)[])?.[i];
+        return (
+          <li class="us-step">
+            <div class="notch us-step__img">
+              {img ? <img src={img} alt={`Krok ${i + 1}: ${t}`} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[ilustracja: krok {i + 1}]</span>}
+              <span aria-hidden="true" class="us-step__n">{i + 1}</span>
+            </div>
+            <p class="us-step__t"><span class="crumb" style="display:block">Krok {i + 1}</span>{t}</p>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+
+  <section id="zakraplanie" class="us-band">
+    <div class="w row us-pad us-split">
+      <div class="fl us-split__l">
+        <h2 class="h2">{applying.h2}</h2>
+        <p class="p p--lg">Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.</p>
+        <div class="us-arch">
+          {applying.image_url ? <img src={applying.image_url} alt={applying.image_alt || 'Zakraplanie'} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
+        </div>
+      </div>
+      <ol class="us-drops">
+        {(applying.steps as { title: string; desc: string }[]).map((st, i) => (
+          <li>
+            <span aria-hidden="true" class="us-drops__n">{i + 1}</span>
+            <div class="us-drops__t"><h3>{st.title}</h3><p class="p">{st.desc}</p></div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section id="ile" class="w row us-split us-last">
+    <div class="fl us-split__l">
+      <h2 class="h2">Ile opakowań<br />potrzebujesz</h2>
+      <p class="p p--lg">Jedno opakowanie (2 × 5 ml) wystarcza na około miesiąc przy standardowym dawkowaniu.</p>
+      <div class="us-leaf" aria-hidden="true"></div>
+    </div>
+    <div class="us-calc" data-calc>
+      <span class="us-calc__q" id="kuracja-label">Jak długo planujesz kurację?</span>
+      <div role="group" aria-labelledby="kuracja-label" class="us-calc__chips">
+        {plan.map((p, i) => (
+          <button type="button" class="chip" aria-pressed={i === defaultPlan ? 'true' : 'false'}
+            data-packs={p.packs} data-price={p.price} data-save={p.save} data-set={p.set}>{p.label}</button>
+        ))}
+      </div>
+      <div class="us-calc__res" aria-live="polite">
+        <span class="k">Polecamy</span>
+        <span class="us-calc__packs" data-packs-out>{plan[defaultPlan].packs}</span>
+        <div class="us-calc__row">
+          <span class="us-calc__price" data-price-out>{plan[defaultPlan].price}</span>
+          <span class="peach" data-save-out>{plan[defaultPlan].save}</span>
+        </div>
+      </div>
+      <a href={`/produkt/krople-can-c/?zestaw=${plan[defaultPlan].set}`} class="btn" style="align-self:flex-start" data-go>
+        Przejdź do zamówienia
+        <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </a>
     </div>
   </section>
 </Base>
@@ -133,58 +151,67 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
 <script>
   const calc = document.querySelector<HTMLElement>('[data-calc]');
   if (calc) {
-    const rec = calc.querySelector<HTMLElement>('[data-rec-out]')!;
-    const price = calc.querySelector<HTMLElement>('[data-price-out]')!;
+    const out = (s: string) => calc.querySelector<HTMLElement>(s)!;
     const go = calc.querySelector<HTMLAnchorElement>('[data-go]')!;
-    calc.querySelectorAll<HTMLInputElement>('input[name="plan"]').forEach((r) =>
-      r.addEventListener('change', () => {
-        rec.textContent = r.dataset.rec ?? '';
-        price.textContent = r.dataset.price ?? '';
-        go.href = `/produkt/krople-can-c/?zestaw=${r.value}`;
-      }),
-    );
+    const chips = calc.querySelectorAll<HTMLButtonElement>('.chip');
+    chips.forEach((b) => b.addEventListener('click', () => {
+      chips.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      out('[data-packs-out]').textContent = b.dataset.packs ?? '';
+      out('[data-price-out]').textContent = b.dataset.price ?? '';
+      out('[data-save-out]').textContent = b.dataset.save ?? '';
+      go.href = `/produkt/krople-can-c/?zestaw=${b.dataset.set}`;
+    }));
   }
 </script>
 
 <style>
-  .stack { display: flex; flex-direction: column; gap: var(--s-4); }
-  .intro { display: flex; flex-direction: column; gap: 16px; max-width: 600px; }
-  .h3 { font-size: var(--fs-h3); }
-  .split { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-start; }
-  .split__aside { flex: 1 1 360px; display: flex; flex-direction: column; gap: var(--s-2); }
-  .split__main { flex: 1 1 480px; min-width: 0; }
-
-  .hero-split { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-6); align-items: flex-end; }
-  .hero-split .page-hero__inner { flex: 2 1 560px; }
-  .toc { flex: 1 1 280px; display: flex; flex-direction: column; border-top: 1px solid var(--c-ink-10); }
-  .toc a { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--c-ink-10); color: var(--c-ink); text-decoration: none; font-size: 1.125rem; }
-
-  section[id] { scroll-margin-top: 80px; }
-
-  .dose-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--s-2); }
-  .dose { padding: var(--s-3); box-shadow: inset 0 0 0 1px var(--c-white-20); display: flex; flex-direction: column; gap: 16px; }
-  .dose__num { font-size: clamp(3rem, 5vw, 4.1875rem); line-height: 1; font-weight: 300; color: var(--c-bright); }
-  .dose__t { font-size: var(--fs-h4); line-height: 1.3; }
-  .dose__d, .note-dark { color: var(--c-white-70); }
-  .note-dark { max-width: 720px; }
-
-  .open-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--s-2); }
-  .open-steps li { display: flex; flex-direction: column; gap: 16px; }
-  .open-steps__img { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; background: var(--c-gray-200); }
-  .open-steps__n { font-size: 2.125rem; line-height: 1; font-weight: 300; color: var(--c-link); }
-  .open-steps__t { font-size: 1.125rem; }
-
-  .apply-img { aspect-ratio: 4 / 3; width: 100%; object-fit: cover; background: var(--c-gray-200); }
-  .apply { list-style: none; margin: 0; padding: 0; }
-  .apply li { display: flex; gap: var(--s-2); padding: var(--s-2) 0; border-top: 1px solid var(--c-ink-10); }
-  .apply__n { flex: 0 0 48px; height: 48px; border-radius: 24px; background: var(--c-white); box-shadow: inset 0 0 0 1px var(--c-gray-400); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; }
-  .apply__text { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; }
-  .apply__t { font-size: 1.25rem; }
-
-  .calc { padding: var(--s-3); background: var(--c-tint); display: flex; flex-direction: column; gap: var(--s-2); }
-  .calc fieldset { margin: 0; padding: 0; border: 0; }
-  .calc legend { padding-bottom: var(--s-1); }
-  .calc__result { padding-top: var(--s-2); border-top: 1px solid var(--c-ink-20); display: flex; flex-direction: column; gap: 8px; }
-  .calc__rec { font-size: 2.125rem; line-height: 1.15; font-weight: 300; }
-  .calc .btn { align-self: flex-start; }
+  .us-hero { margin-top: 45px; display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
+  .us-hero__l { width: 819px; display: flex; flex-direction: column; gap: 24px; }
+  .us-toc { width: 408px; border-bottom: 1px solid var(--line); }
+  .us-anc { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 18px 0; border-top: 1px solid var(--line); font-size: 18px; line-height: 27px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  .us-anc:hover { color: var(--muted); }
+  section[id] { scroll-margin-top: 24px; }
+  .us-pad { padding-top: 90px; padding-bottom: 90px; }
+  .us-dark { margin-top: 90px; background: #1F1F1F; color: #FFFFFF; }
+  .us-doses { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 45px; }
+  .us-dose { border: 1px solid rgba(255,255,255,0.18); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .us-dose__n { font-size: 88px; line-height: 88px; font-weight: 200; }
+  .us-dose__t { font-size: 24px; line-height: 28px; font-weight: 400; }
+  .us-dose__d { font-size: 16px; line-height: 24px; font-weight: 300; color: #E8E8E8; }
+  .us-note { display: flex; align-items: center; gap: 14px; margin-top: 45px; max-width: 737px; }
+  .us-note__i { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; background: var(--peach); color: #1F1F1F; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; }
+  .us-note p { font-size: 16px; line-height: 24px; font-weight: 300; color: #E8E8E8; }
+  .us-sec { margin-top: 90px; }
+  .us-sechead { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
+  .us-steps { list-style: none; margin: 45px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .us-step { display: flex; flex-direction: column; gap: 24px; }
+  .us-step__img { height: 300px; }
+  .us-step__img img { object-fit: cover; padding: 0; }
+  .us-step__n { position: absolute; z-index: 2; right: 0; top: 0; width: 84px; height: 84px; border: 1px solid var(--ink); border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 48px; line-height: 48px; font-weight: 200; }
+  .us-step__t { font-size: 18px; line-height: 28px; font-weight: 400; }
+  .us-band { margin-top: 90px; background: var(--band); }
+  .us-split { display: flex; align-items: flex-start; gap: 45px; }
+  .us-split__l { width: 533px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
+  .us-arch { height: 431px; margin-top: 21px; background: var(--image); border-radius: 500px 500px 40px 40px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .us-arch img { width: 100%; height: 100%; object-fit: cover; }
+  .us-drops { flex-grow: 1; min-width: 0; list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--image); }
+  .us-drops li { display: flex; gap: 24px; padding: 32px 0; border-top: 1px solid var(--image); }
+  .us-drops__n { width: 66px; height: 66px; flex-shrink: 0; border-radius: 50%; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 300; }
+  .us-drops__t { display: flex; flex-direction: column; gap: 10px; padding-top: 6px; }
+  .us-drops__t h3 { font-size: 28px; line-height: 28px; font-weight: 400; }
+  .us-last { margin-top: 90px; margin-bottom: 90px; }
+  .us-leaf { width: 269px; height: 169px; margin-top: 21px; background: var(--image); border-radius: 20px 500px 20px 20px; }
+  .us-calc { flex-grow: 1; min-width: 0; border: 1px solid var(--line); border-radius: 50px; padding: 45px; display: flex; flex-direction: column; gap: 24px; }
+  .us-calc__q { font-size: 18px; line-height: 27px; font-weight: 400; }
+  .us-calc__chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .us-calc__res { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-direction: column; gap: 6px; }
+  .us-calc__packs { font-size: 48px; line-height: 72px; font-weight: 300; }
+  .us-calc__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .us-calc__price { font-size: 28px; line-height: 42px; font-weight: 500; }
+  @media (max-width: 1000px) {
+    .us-dose__n { font-size: 64px; line-height: 64px; }
+    .us-calc { padding: 28px; border-radius: 32px; }
+    .us-calc__packs { font-size: 36px; line-height: 48px; }
+    .us-leaf { display: none; }
+  }
 </style>

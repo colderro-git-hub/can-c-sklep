@@ -1,76 +1,92 @@
 ---
+// Potwierdzenie zamówienia wg „S9 · Potwierdzenie” (Laluna). Dane z /api/zamowienie/status.
 import Base from '../../layouts/Base.astro';
 ---
 <Base title="Dziękujemy za zamówienie | Can-C" description="Potwierdzenie zamówienia w sklepie Can-C." noindex noReferrer>
-  <section class="section">
-    <div class="container thanks" data-thanks>
-      <div class="state" data-state="checking">
-        <h1>Sprawdzamy płatność…</h1>
-        <p class="lead">To zwykle trwa kilka sekund. Nie zamykaj tej strony.</p>
-      </div>
+  <section class="w ty" data-thanks>
+    <ol class="steps" aria-label="Etapy zamówienia">
+      <li class="steps__i steps__i--done"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Koszyk</li>
+      <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
+      <li class="steps__i steps__i--done"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Dostawa i płatność</li>
+      <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
+      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">3</span>Potwierdzenie</li>
+    </ol>
 
-      <div class="state" data-state="paid" hidden>
-        <p class="badge">Płatność przyjęta</p>
-        <h1>Dziękujemy za zamówienie</h1>
-        <p class="lead">Numer zamówienia: <strong data-number></strong>. Potwierdzenie wysłaliśmy na <strong data-email>Twój e-mail</strong>.</p>
-        <p class="muted">Gdy paczka zostanie nadana, wyślemy e-mail z numerem przesyłki.</p>
-      </div>
-
-      <div class="state" data-state="pending" hidden>
-        <p class="badge badge--wait">Czekamy na płatność</p>
-        <h1 data-pending-title></h1>
-        <div data-pending-body></div>
-      </div>
-
-      <div class="state" data-state="error" hidden>
-        <h1>Nie znaleźliśmy zamówienia</h1>
-        <p class="lead">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> – wyjaśnimy to od razu.</p>
-      </div>
-
-      <p class="notice" data-notice-box hidden role="status"></p>
-
-      <div class="order" data-order hidden>
-        <div class="order__main">
-          <div class="order__head">
-            <h2>Twoje zamówienie</h2>
-            <p class="muted" data-meta></p>
-          </div>
-          <ul class="items" data-items aria-label="Zamówione produkty"></ul>
-          <dl class="totals" data-totals></dl>
+    <div class="row ty__hero">
+      <div class="ty__head">
+        <div class="ty__state" data-state="checking">
+          <h1 class="h1">Sprawdzamy płatność…</h1>
+          <p class="p p--lg">To zwykle trwa kilka sekund. Nie zamykaj tej strony.</p>
         </div>
-
-        <div class="order__side">
-          <section class="box">
-            <h3>Dostawa</h3>
-            <div data-delivery></div>
-          </section>
-          <section class="box">
-            <h3>Płatność</h3>
-            <div data-payment></div>
-          </section>
-          <section class="box" data-invoice-box hidden>
-            <h3>Dane do faktury</h3>
-            <div data-invoice></div>
-          </section>
-          <section class="box" data-note-box hidden>
-            <h3>Uwagi do zamówienia</h3>
-            <p class="pre" data-note></p>
-          </section>
+        <div class="ty__state" data-state="paid" hidden>
+          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>Płatność przyjęta</span>
+          <h1 class="h1">Dziękujemy<br />za zamówienie</h1>
+          <p class="p p--lg ty__lead">Zamówienie nr <strong data-number></strong> jest opłacone. Potwierdzenie wysłaliśmy na <strong data-email>Twój e-mail</strong>. Gdy paczka zostanie nadana, wyślemy numer przesyłki.</p>
         </div>
-
-        <div class="order__foot">
-          <p>Masz pytanie albo widzisz błąd w danych? Napisz na <a data-contact-mail href="/kontakt/">adres sklepu</a> i podaj numer zamówienia.</p>
-          <p class="muted">Możesz odstąpić od umowy w ciągu 14 dni od otrzymania paczki. <a href="/odstapienie-od-umowy/">Jak zwrócić produkt</a></p>
+        <div class="ty__state" data-state="pending" hidden>
+          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>Czekamy na płatność</span>
+          <h1 class="h1" data-pending-title></h1>
+          <div class="p p--lg ty__lead" data-pending-body></div>
+        </div>
+        <div class="ty__state" data-state="error" hidden>
+          <h1 class="h1">Nie znaleźliśmy<br />zamówienia</h1>
+          <p class="p p--lg">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> – wyjaśnimy to od razu.</p>
         </div>
       </div>
+      <div class="fl ty__leaf" aria-hidden="true"></div>
+    </div>
 
-      <p class="muted" data-no-details hidden>Szczegóły zamówienia znajdziesz w e-mailu z potwierdzeniem i na <a href="/konto/">koncie w sklepie</a>.</p>
+    <p class="ty__notice" data-notice-box hidden role="status"></p>
 
-      <div class="actions" data-actions hidden>
-        <a href="/" class="btn" data-act="shop">Wróć do sklepu</a>
-        <a href="/konto/" class="btn btn--ghost" data-act="account">Moje zamówienia</a>
-        <a href="/koszyk/" class="btn btn--ghost" data-act="cart" hidden>Wróć do koszyka</a>
+    <ol class="g4 ty__track" aria-label="Status zamówienia" data-track hidden></ol>
+
+    <div class="row ty__grid" data-order hidden>
+      <div class="ty__main">
+        <div class="ty__mhead">
+          <h2 class="ty__h2">Twoje zamówienie</h2>
+          <span class="k" data-meta></span>
+        </div>
+        <div class="ty__items" data-items role="list" aria-label="Zamówione produkty"></div>
+        <div class="ty__sum" data-totals></div>
+        <div class="ty__foot">
+          <span>Masz pytanie albo widzisz błąd w danych? Napisz na <a data-contact-mail href="/kontakt/">adres sklepu</a> i podaj numer zamówienia.</span>
+          <span class="ty__muted">Możesz odstąpić od umowy w ciągu 14 dni od otrzymania paczki. <a href="/odstapienie-od-umowy/">Jak zwrócić produkt</a></span>
+        </div>
+        <div class="ty__actions" data-actions-in></div>
       </div>
+
+      <aside class="fl ty__side">
+        <div class="ty__dark" data-bank-box hidden>
+          <h2 class="ty__ct">Dane do przelewu</h2>
+          <span class="ty__soft">Przelew bankowy · czeka na potwierdzenie</span>
+          <div data-bank-rows></div>
+          <span class="ty__soft" style="padding-top:10px">Przelej dokładną kwotę na powyższy numer. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty.</span>
+        </div>
+        <div class="ty__card" data-pay-box>
+          <h2 class="ty__ct">Płatność</h2>
+          <div data-payment></div>
+        </div>
+        <div class="ty__card">
+          <h2 class="ty__ct">Dostawa</h2>
+          <div data-delivery></div>
+        </div>
+        <div class="ty__card" data-invoice-box hidden>
+          <h2 class="ty__ct">Dane do faktury</h2>
+          <div data-invoice></div>
+        </div>
+        <div class="ty__card" data-note-box hidden>
+          <h2 class="ty__ct">Uwagi do zamówienia</h2>
+          <p class="ty__pre" data-note></p>
+        </div>
+      </aside>
+    </div>
+
+    <p class="p" data-no-details hidden style="margin-top:45px">Szczegóły zamówienia znajdziesz w e-mailu z potwierdzeniem i na <a href="/konto/">koncie w sklepie</a>.</p>
+
+    <div class="ty__actions" data-actions hidden>
+      <a href="/" class="btn" data-act="shop">Wróć do sklepu</a>
+      <a href="/konto/" class="btn btn-o" data-act="account">Moje zamówienia</a>
+      <a href="/koszyk/" class="btn btn-o" data-act="cart" hidden>Wróć do koszyka</a>
     </div>
   </section>
 </Base>
@@ -108,40 +124,66 @@ import Base from '../../layouts/Base.astro';
     q('[data-meta]').textContent = `Nr ${o.number} · złożone ${when(d.createdAt)}`;
 
     q('[data-items]').innerHTML = d.items.map((i) => `
-      <li class="item">
-        <a class="item__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(i.image)}" alt="" width="72" height="72" loading="lazy" />` : '<span class="ph">[foto]</span>'}</a>
-        <span class="item__info">
-          <a class="item__name" href="/produkt/${esc(i.slug)}/">${esc(i.name)}</a>
-          <span class="muted small">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat za zestaw −${zl(i.discount)}` : ''}</span>
-          ${d.shippingTime ? '' : `<span class="muted small">${esc(i.leadTime)}</span>`}
+      <div class="ty__item" role="listitem">
+        <a class="ty__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(i.image)}" alt="" width="66" height="66" loading="lazy" />` : ''}</a>
+        <span class="ty__info">
+          <a class="ty__name" href="/produkt/${esc(i.slug)}/">${esc(i.name)}</a>
+          <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat za zestaw −${zl(i.discount)}` : ''}</span>
+          ${d.shippingTime ? '' : `<span class="k">${esc(i.leadTime)}</span>`}
         </span>
-        <span class="item__total">${zl(i.total)}</span>
-      </li>`).join('');
+        <span class="ty__itotal">${zl(i.total)}</span>
+      </div>`).join('');
 
     const rows: [string, string, string?][] = [['Produkty', zl(d.subtotal)]];
     if (d.bundleDiscount) rows.push(['Rabat za zestaw', `−${zl(d.bundleDiscount)}`]);
     if (d.code && d.codeAmount) rows.push([`Kod rabatowy ${d.code}`, `−${zl(d.codeAmount)}`]);
-    rows.push(['Dostawa', d.shipping ? zl(d.shipping) : 'Bezpłatna', d.shipping ? '' : 'ok']);
-    q('[data-totals]').innerHTML = rows.map(([k, v, c]) => `<div><dt>${esc(k)}</dt><dd${c ? ` class="${c}"` : ''}>${esc(v)}</dd></div>`).join('')
-      + `<div class="totals__sum"><dt>Razem${paid ? ' zapłacono' : ' do zapłaty'}</dt><dd>${zl(o.total)}</dd></div>`
-      + '<p class="muted small">Ceny zawierają podatek VAT.</p>';
+    rows.push(['Dostawa', d.shipping ? zl(d.shipping) : 'Bezpłatna', d.shipping ? '' : 'b']);
+    q('[data-totals]').innerHTML = rows.map(([k, v, c]) => `<div class="srow"><span>${esc(k)}</span><span${c ? ' style="font-weight:400"' : ''}>${esc(v)}</span></div>`).join('')
+      + `<div class="total-row" style="margin-top:4px;border-color:var(--image)"><span>Razem${paid ? ' zapłacono' : ' do zapłaty'}</span><span>${zl(o.total)}</span></div>`
+      + '<span class="k">Ceny zawierają podatek VAT.</span>';
 
     const dv = d.delivery;
     const who = [dv.name, dv.phone ? `tel. ${phone(dv.phone)}` : ''].filter(Boolean).map(esc).join('<br>');
     q('[data-delivery]').innerHTML = dv.method === 'inpost_locker'
-      ? `<p><strong>Paczkomat InPost ${esc(dv.point || '')}</strong>${dv.pointName ? `<br>${esc(dv.pointName)}` : ''}</p><p class="muted">${who}</p>`
-      : `<p><strong>Kurier DPD</strong></p><p>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}</p>${dv.phone ? `<p class="muted">tel. ${esc(phone(dv.phone))}</p>` : ''}`;
-    if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<p class="lead-time">${esc(d.shippingTime)}${paid ? '' : ' Termin liczymy od zaksięgowania płatności.'}</p>`);
+      ? `<span class="ty__strong">Paczkomat InPost ${esc(dv.point || '')}</span>${dv.pointName ? `<span>${esc(dv.pointName)}</span>` : ''}<span>${who}</span>`
+      : `<span class="ty__strong">Kurier DPD</span><span>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}${dv.phone ? `<br>tel. ${esc(phone(dv.phone))}` : ''}</span>`;
+    if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<span class="k">${esc(d.shippingTime)}${paid ? '' : ' Termin liczymy od zaksięgowania płatności.'}</span>`);
 
     const bankData = d.payment.bank;
-    q('[data-payment]').innerHTML = `<p><strong>${esc(d.payment.provider)}</strong>${d.payment.method ? `<br>${esc(d.payment.method)}` : ''}</p>`
-      + `<p class="${paid ? 'ok' : 'warn'}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</p>`
-      + (bankData ? `<dl class="bank-dl">
-          <div><dt>Numer rachunku</dt><dd class="bank-nr">${esc(bankData.account)}</dd></div>
-          <div><dt>Tytuł przelewu</dt><dd><strong>${esc(bankData.title)}</strong></dd></div>
-          <div><dt>Kwota</dt><dd><strong>${zl(bankData.amount)}</strong></dd></div>
-        </dl>
-        <p class="muted small">Przelej dokładną kwotę na powyższy numer. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty.</p>` : '');
+    // Przelew nieopłacony: ciemna karta z danymi do skopiowania; w pozostałych przypadkach zwykła karta płatności
+    const showBank = Boolean(bankData) && !paid;
+    q('[data-bank-box]').hidden = !showBank;
+    q('[data-pay-box]').hidden = showBank;
+    if (showBank && bankData) {
+      const rowsB: [string, string][] = [['Numer rachunku', bankData.account], ['Tytuł przelewu', bankData.title], ['Kwota', zl(bankData.amount)]];
+      q('[data-bank-rows]').innerHTML = rowsB.map(([k, v]) => `
+        <div class="ty__brow"><span class="ty__soft">${esc(k)}</span>
+          <div class="ty__copy"><span class="ty__bval">${esc(v)}</span><button type="button" class="ty__cb" data-copy="${esc(v)}" aria-label="Kopiuj: ${esc(k)}">Kopiuj</button></div>
+        </div>`).join('');
+    }
+    q('[data-payment]').innerHTML = `<span class="ty__strong">${esc(d.payment.provider)}</span>${d.payment.method ? `<span>${esc(d.payment.method)}</span>` : ''}`
+      + `<span class="${paid ? 'ty__ok' : ''}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</span>`;
+
+    // Oś statusu
+    const stepNo = paid ? (['shipped', 'completed'].includes(o.status) ? (o.status === 'completed' ? 4 : 3) : 2) : 1;
+    const ship = dv.method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD';
+    const steps: [string, string][] = [
+      ['Przyjęte', when(d.createdAt)],
+      ['Opłacone', paid ? (d.paidAt ? when(d.paidAt) : 'opłacone') : (bankData ? 'czekamy na przelew' : 'czekamy na potwierdzenie')],
+      ['Wysłane', stepNo >= 3 ? 'w drodze' : (bankData && !paid ? '1 dzień roboczy po wpłacie' : (d.shippingTime || 'wkrótce'))],
+      ['Dostarczone', ship],
+    ];
+    const track = q('[data-track]');
+    track.hidden = false;
+    track.innerHTML = steps.map(([t, sub], i) => {
+      const n = i + 1;
+      const done = n <= stepNo;
+      const now = n === stepNo + 1 || (stepNo === 4 && n === 4);
+      const icon = done
+        ? '<span class="ty__tn ty__tn--done" aria-hidden="true"><svg width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>'
+        : `<span class="ty__tn${now ? ' ty__tn--now' : ''}" aria-hidden="true">${n}</span>`;
+      return `<li class="ty__t${done || now ? '' : ' ty__t--off'}"${now && !done ? ' aria-current="step"' : ''}>${icon}<span class="ty__tt"><span class="ty__tl">${esc(t)}</span><span class="k">${esc(sub)}</span></span></li>`;
+    }).join('');
 
     q('[data-invoice-box]').hidden = !d.invoice;
     if (d.invoice) q('[data-invoice]').innerHTML = `<p>${esc(d.invoice.company)}<br>NIP ${esc(d.invoice.nip)}<br>${esc(d.invoice.street)}<br>${esc(d.invoice.postcode)} ${esc(d.invoice.city)}</p><p class="muted small">Fakturę wyślemy e-mailem.</p>`;
@@ -151,6 +193,9 @@ import Base from '../../layouts/Base.astro';
     const box = q('[data-notice-box]');
     box.hidden = !d.notice; if (d.notice) box.textContent = d.notice;
 
+    // Przyciski pod zamówieniem (jak w projekcie)
+    const acts = q('[data-actions]');
+    q('[data-actions-in]').append(...[...acts.children]);
     const mail = q<HTMLAnchorElement>('[data-contact-mail]');
     mail.textContent = d.contact.email; mail.href = `mailto:${d.contact.email}?subject=${encodeURIComponent(`Zamówienie nr ${o.number}`)}`;
   }
@@ -158,11 +203,11 @@ import Base from '../../layouts/Base.astro';
   const fillPending = (o: Status | undefined, el: HTMLElement, bodyEl: HTMLElement) => {
     const bank = !!(o?.details?.payment?.bank);
     if (bank) {
-      el.textContent = 'Zamówienie przyjęte – czekamy na przelew';
-      bodyEl.innerHTML = `<p>Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu.</p><p>Wysłaliśmy e-mail z danymi do przelewu. Sprawdź też folder spam.</p>`;
+      el.innerHTML = 'Zamówienie przyjęte —<br>czekamy na przelew';
+      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu. Dane do przelewu wysłaliśmy e-mailem — sprawdź też folder spam.`;
     } else {
-      el.textContent = 'Zamówienie jest zapisane';
-      bodyEl.innerHTML = `<p>Zamówienie nr <strong>${o?.number}</strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.</p><p class="muted">Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.</p>`;
+      el.innerHTML = 'Zamówienie jest<br>zapisane';
+      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.<br><br>Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.`;
     }
   };
 
@@ -177,8 +222,16 @@ import Base from '../../layouts/Base.astro';
     const pendingTitle = document.querySelector<HTMLElement>('[data-pending-title]');
     const pendingBody = document.querySelector<HTMLElement>('[data-pending-body]');
     if (state === 'pending' && pendingTitle && pendingBody) fillPending(o, pendingTitle, pendingBody);
-    else { q('[data-order]').hidden = true; q('[data-no-details]').hidden = true; }
+    else if (state !== 'paid') { q('[data-order]').hidden = true; q('[data-no-details]').hidden = true; q('[data-track]').hidden = true; }
   };
+
+  // Kopiowanie danych do przelewu
+  root.addEventListener('click', async (e) => {
+    const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-copy]');
+    if (!b) return;
+    try { await navigator.clipboard.writeText(b.dataset.copy!.replace(/\s+zł$/, '')); } catch { /* brak uprawnień */ }
+    root.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((x) => { x.textContent = x === b ? 'Skopiowano' : 'Kopiuj'; });
+  });
 
   const id = new URLSearchParams(location.search).get('id');
   let tries = 0;
@@ -224,47 +277,54 @@ import Base from '../../layouts/Base.astro';
 </script>
 
 <style>
-  .thanks { display: flex; flex-direction: column; gap: var(--s-4); }
-  .state { max-width: 720px; display: flex; flex-direction: column; gap: var(--s-2); }
-  .state[hidden], [hidden] { display: none !important; }
-  .badge { align-self: flex-start; padding: 6px 14px; border-radius: var(--r-pill); background: var(--c-ok-bg); color: var(--c-ok); font-size: var(--fs-small); }
-  .badge--wait { background: var(--c-warn-bg); color: var(--c-warn-ink); }
-  .notice { max-width: 720px; padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); }
-  .actions { display: flex; flex-wrap: wrap; gap: var(--s-1); }
-  .small { font-size: var(--fs-small); }
-  .ok { color: var(--c-ok); }
-  .warn { color: var(--c-warn-ink); }
-  .pre { white-space: pre-wrap; }
-
-  .order { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }
-  .order__main { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
-  .order__head { display: flex; flex-direction: column; gap: 6px; }
-  .order__head h2 { font-size: var(--fs-h4); font-weight: 400; }
-  .order__side { flex: 1 1 300px; display: flex; flex-direction: column; gap: var(--s-1); }
-  .order__foot { flex: 1 1 100%; display: flex; flex-direction: column; gap: 8px; padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); font-size: var(--fs-small); }
-
-  .items { list-style: none; margin: 0; padding: 0; box-shadow: inset 0 0 0 1px var(--c-gray-400); }
-  .items :global(.item) { display: flex; align-items: center; gap: 16px 20px; padding: var(--s-2); border-bottom: 1px solid var(--c-gray-400); }
-  .items :global(.item:last-child) { border-bottom: 0; }
-  .items :global(.item__img) { flex-shrink: 0; width: 72px; height: 72px; display: block; }
-  .items :global(.item__img img) { width: 72px; height: 72px; object-fit: contain; background: var(--c-photo-bg); }
-  .items :global(.item__img .ph) { width: 72px; height: 72px; padding: 4px; font-size: 0.6875rem; }
-  .items :global(.item__info) { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-  .items :global(.item__name) { font-size: 1.125rem; color: var(--c-ink); text-decoration: none; }
-  .items :global(.item__total) { font-size: 1.125rem; white-space: nowrap; }
-
-  .totals { margin: 0; display: flex; flex-direction: column; gap: 10px; padding: var(--s-2); background: var(--c-gray-100); }
-  .totals :global(div) { display: flex; justify-content: space-between; gap: 12px; }
-  .totals :global(dd) { margin: 0; white-space: nowrap; }
-  .totals :global(.totals__sum) { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
-
-  .box { padding: var(--s-2); box-shadow: inset 0 0 0 1px var(--c-gray-400); display: flex; flex-direction: column; gap: 10px; }
-  .box h3 { font-size: 1.125rem; }
-  .box :global(p) { line-height: 1.5; }
-  .box :global(.lead-time) { font-size: var(--fs-small); color: var(--c-ink-75); }
-  .box :global(.bank-dl) { margin: 10px 0 0; display: flex; flex-direction: column; gap: 8px; }
-  .box :global(.bank-dl div) { display: flex; flex-direction: column; gap: 2px; }
-  .box :global(.bank-dl dt) { font-size: var(--fs-small); color: var(--c-ink-75); }
-  .box :global(.bank-dl dd) { margin: 0; }
-  .box :global(.bank-nr) { font-size: 1rem; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; word-break: break-all; }
+  [hidden] { display: none !important; }
+  .ty { margin-top: 45px; margin-bottom: 90px; }
+  .ty__hero { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; margin-top: 45px; }
+  .ty__state { display: flex; flex-direction: column; gap: 24px; }
+  .ty__badge { align-self: flex-start; height: 36px; padding: 0 16px; font-size: 16px; }
+  .ty__lead { max-width: 737px; }
+  .ty__lead :global(strong), .ty__state strong { font-weight: 500; color: var(--ink); }
+  .ty__leaf { width: 269px; height: 169px; flex-shrink: 0; background: var(--image); border-radius: 20px 500px 20px 20px; }
+  .ty__notice { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); font-size: 14px; }
+  .ty__track { list-style: none; margin: 45px 0 0; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  :global(.ty__t) { display: flex; align-items: center; gap: 14px; }
+  :global(.ty__t--off) { color: var(--muted); }
+  :global(.ty__tn) { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 400; }
+  :global(.ty__tn--done) { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+  :global(.ty__tn--now) { background: var(--peach); border-color: #1F1F1F; color: #1F1F1F; }
+  :global(.ty__tt) { display: flex; flex-direction: column; }
+  :global(.ty__tl) { font-size: 18px; line-height: 28px; font-weight: 400; }
+  .ty__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 45px; }
+  .ty__main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ty__mhead { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .ty__h2 { font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ty__items { display: flex; flex-direction: column; gap: 14px; }
+  :global(.ty__item) { border: 1px solid var(--line); border-radius: var(--r-md); padding: 24px; display: flex; align-items: center; gap: 24px; }
+  :global(.ty__img) { width: 66px; height: 66px; flex-shrink: 0; border-radius: 14px; background: var(--image); overflow: hidden; }
+  :global(.ty__img img) { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
+  :global(.ty__info) { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
+  :global(.ty__name) { font-size: 18px; line-height: 27px; font-weight: 400; color: var(--ink); text-decoration: none; }
+  :global(.ty__itotal) { font-size: 18px; line-height: 27px; font-weight: 500; white-space: nowrap; }
+  .ty__sum { background: var(--band); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .ty__foot { margin-top: 31px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ty__muted { color: var(--muted); }
+  .ty__actions { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 21px; }
+  .ty__side { width: 436px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
+  .ty__dark { background: #1F1F1F; color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ty__soft { color: #E8E8E8; font-size: 14px; line-height: 21px; }
+  :global(.ty__brow) { display: flex; flex-direction: column; gap: 2px; padding-top: 10px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.15); }
+  :global(.ty__copy) { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  :global(.ty__bval) { font-size: 18px; line-height: 27px; font-weight: 400; letter-spacing: 0; word-break: break-word; }
+  :global(.ty__cb) { flex-shrink: 0; height: 36px; padding: 0 14px; border: 1px solid #FFFFFF; border-radius: var(--r-pill); background: #FFFFFF; font-family: var(--font); font-size: 14px; font-weight: 400; letter-spacing: var(--ls); color: #1F1F1F; cursor: pointer; }
+  :global(.ty__cb:hover) { background: #ECECEC; }
+  .ty__card { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .ty__card > div { display: flex; flex-direction: column; gap: 6px; }
+  .ty__ct { margin: 0 0 4px; font-size: 24px; line-height: 28px; font-weight: 400; }
+  :global(.ty__strong) { font-weight: 400; }
+  :global(.ty__ok) { color: var(--ok); }
+  .ty__pre { white-space: pre-wrap; }
+  @media (max-width: 1000px) {
+    .ty__leaf { display: none; }
+    :global(.ty__item) { flex-wrap: wrap; }
+  }
 </style>

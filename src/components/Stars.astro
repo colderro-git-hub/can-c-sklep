@@ -1,0 +1,12 @@
+---
+// Gwiazdki oceny wg projektu (#FFB800). value: 0–5, size: px.
+interface Props { value: number; size?: number; label?: string }
+const { value, size = 14, label } = Astro.props;
+const n = Math.round(value);
+const path = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
+---
+<span class="stars" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'}>
+  {[1, 2, 3, 4, 5].map((i) => (
+    <svg class={i > n ? 'off' : undefined} width={size} height={size} viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d={path} /></svg>
+  ))}
+</span>

@@ -5,112 +5,118 @@ import { FURGONETKA_MAP_KEY } from '../../config';
 
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
-<Base title="Dostawa i płatność | Can-C" description="Złóż zamówienie w sklepie Can-C.">
+<Base title="Dostawa i płatność | Can-C" description="Złóż zamówienie w sklepie Can-C." noindex>
   {FURGONETKA_MAP_KEY && <script is:inline src="https://furgonetka.pl/js/dist/map/map.js" async></script>}
-  <section class="section checkout-wrap">
-    <div class="container">
+  <section class="co">
+    <div class="w co__in">
       <ol class="steps" aria-label="Etapy zamówienia">
-        <li><a href="/koszyk/">1. Koszyk</a></li><li aria-current="step">2. Dostawa i płatność</li><li>3. Potwierdzenie</li>
+        <li class="steps__i steps__i--done"><a href="/koszyk/"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Koszyk</a></li>
+        <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
+        <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">2</span>Dostawa i płatność</li>
+        <li class="steps__sep" aria-hidden="true"></li>
+        <li class="steps__i"><span class="steps__n">3</span>Potwierdzenie</li>
       </ol>
 
-      <div data-empty hidden class="empty">
-        <h1>Koszyk jest pusty</h1>
+      <div data-empty hidden class="empty co__empty">
+        <h1 class="co__emptyt">Koszyk jest pusty</h1>
         <a href="/#produkty" class="btn">Przejdź do produktów</a>
       </div>
 
-      <form class="checkout" data-checkout novalidate hidden>
-        <div class="checkout__main">
-          <h1 class="title">Dostawa i płatność</h1>
-      <p class="cart-notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
+      <form class="co__form" data-checkout novalidate hidden>
+        <h1 class="h2 co__title">Dostawa i płatność</h1>
+        <p class="co__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
-          <fieldset class="box">
-            <legend>1. Twoje dane</legend>
-            <div class="grid2">
-              <label class="field">E-mail<input class="input" type="email" name="email" autocomplete="email" required /></label>
-              <label class="field">Telefon (do powiadomień o paczce)<input class="input" type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="np. 600 100 200" /></label>
-              <label class="field">Imię<input class="input" type="text" name="firstName" autocomplete="given-name" required /></label>
-              <label class="field">Nazwisko<input class="input" type="text" name="lastName" autocomplete="family-name" required /></label>
-            </div>
-          </fieldset>
-
-          <fieldset class="box">
-            <legend>2. Dostawa</legend>
-            <label class="choice"><input type="radio" name="shippingMethod" value="inpost_locker" checked />
-              <span class="choice__text"><span>InPost Paczkomat 24/7</span><span class="muted">Odbiór o dowolnej porze</span></span><span class="ok">0,00 zł</span></label>
-            <label class="choice"><input type="radio" name="shippingMethod" value="dpd" />
-              <span class="choice__text"><span>Kurier DPD</span><span class="muted">Dostawa pod wskazany adres</span></span><span class="ok">0,00 zł</span></label>
-
-            <div class="sub" data-locker data-map-key={FURGONETKA_MAP_KEY}>
-              <div class="locker-pick" data-map-wrap hidden>
-                <div class="locker-pick__info">
-                  <span data-locker-label>Nie wybrano Paczkomatu</span>
-                  <span class="muted" data-locker-name></span>
-                </div>
-                <button type="button" class="btn" data-map-open>Wybierz Paczkomat na mapie</button>
+        <div class="row co__grid">
+          <div class="co__main">
+            <fieldset class="co__card">
+              <legend class="co__ct">1. Twoje dane</legend>
+              <div class="g2 co__g2">
+                <div><label class="lbl" for="c-mail">E-mail</label><input id="c-mail" class="fld" type="email" name="email" autocomplete="email" required /></div>
+                <div><label class="lbl" for="c-tel">Telefon (do powiadomień o paczce)</label><input id="c-tel" class="fld" type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="np. 600 100 200" /></div>
+                <div><label class="lbl" for="c-fn">Imię</label><input id="c-fn" class="fld" type="text" name="firstName" autocomplete="given-name" required /></div>
+                <div><label class="lbl" for="c-ln">Nazwisko</label><input id="c-ln" class="fld" type="text" name="lastName" autocomplete="family-name" required /></div>
               </div>
-              <label class="field" data-locker-manual>Kod Paczkomatu<input class="input" type="text" name="locker" placeholder="np. WRO01M" autocapitalize="characters" maxlength="15" /></label>
-              <input type="hidden" name="lockerName" />
-              <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener" data-locker-link>Znajdź Paczkomat na mapie InPost</a>
-            </div>
-            <div class="sub grid3" data-address hidden>
-              <label class="field">Ulica i numer<input class="input" type="text" name="street" autocomplete="street-address" /></label>
-              <label class="field">Kod pocztowy<input class="input" type="text" name="postcode" autocomplete="postal-code" placeholder="00-000" maxlength="6" /></label>
-              <label class="field">Miejscowość<input class="input" type="text" name="city" autocomplete="address-level2" /></label>
-            </div>
-          </fieldset>
+            </fieldset>
 
-          <fieldset class="box">
-            <legend>3. Płatność</legend>
-            <label class="choice"><input type="radio" name="paymentMethod" value="p24" checked />
-              <span class="choice__text"><span>Przelewy24</span><span class="muted">BLIK, karta, przelew online – ponad 150 metod</span></span></label>
-            <label class="choice"><input type="radio" name="paymentMethod" value="bank_transfer" />
-              <span class="choice__text"><span>Przelew bankowy</span><span class="muted">Realizacja po zaksięgowaniu wpłaty</span></span></label>
-            <div class="sub" data-bank hidden>
-              <p class="bank-info">Prosimy o wpłatę bezpośrednio na nasze konto bankowe. Prosimy podać numer zamówienia w tytule płatności. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.<br><br><strong>Numer rachunku:</strong><br><span class="bank-nr" data-bank-nr></span></p>
-            </div>
-          </fieldset>
+            <fieldset class="co__card">
+              <legend class="co__ct">2. Dostawa</legend>
+              <label class="opt"><input type="radio" name="shippingMethod" value="inpost_locker" checked />
+                <span class="opt__txt"><span class="opt__t">InPost Paczkomat 24/7</span><span class="opt__s">Odbiór o dowolnej porze</span></span><span class="opt__p">0,00 zł</span></label>
+              <label class="opt"><input type="radio" name="shippingMethod" value="dpd" />
+                <span class="opt__txt"><span class="opt__t">Kurier DPD</span><span class="opt__s">Dostawa pod wskazany adres</span></span><span class="opt__p">0,00 zł</span></label>
 
-          <fieldset class="box">
-            <legend>4. Faktura i uwagi</legend>
-            <label class="check"><input type="checkbox" name="invoice" data-invoice-toggle /> Chcę fakturę na firmę</label>
-            <div class="sub grid2" data-invoice hidden>
-              <label class="field">Nazwa firmy<input class="input" type="text" name="company" autocomplete="organization" /></label>
-              <label class="field">NIP<input class="input" type="text" name="nip" inputmode="numeric" maxlength="13" /></label>
-              <label class="field">Ulica i numer<input class="input" type="text" name="invStreet" /></label>
-              <label class="field">Kod pocztowy<input class="input" type="text" name="invPostcode" placeholder="00-000" maxlength="6" /></label>
-              <label class="field">Miejscowość<input class="input" type="text" name="invCity" /></label>
-            </div>
-            <label class="field">Uwagi do zamówienia (opcjonalnie)<textarea class="input textarea" name="note" rows="3" maxlength="500"></textarea></label>
-          </fieldset>
-          <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-          <style>
-            .bank-info { line-height: 1.6; }
-            .bank-nr { font-size: 1.0625rem; letter-spacing: 0.5px; font-variant-numeric: tabular-nums; color: var(--c-ink); }
-          </style>
-        </div>
+              <div class="co__sub" data-locker data-map-key={FURGONETKA_MAP_KEY}>
+                <div class="co__pick" data-map-wrap hidden>
+                  <div class="co__pickinfo">
+                    <span data-locker-label>Nie wybrano Paczkomatu</span>
+                    <span class="k" data-locker-name></span>
+                  </div>
+                  <button type="button" class="btn btn-m" data-map-open>Wybierz Paczkomat na mapie</button>
+                </div>
+                <div data-locker-manual><label class="lbl" for="c-pk">Kod Paczkomatu</label><input id="c-pk" class="fld" type="text" name="locker" placeholder="np. WRO01M" autocapitalize="characters" maxlength="15" /></div>
+                <input type="hidden" name="lockerName" />
+                <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener" class="co__link" data-locker-link>Znajdź Paczkomat na mapie InPost</a>
+              </div>
+              <div class="co__sub co__addr" data-address hidden>
+                <div><label class="lbl" for="c-st">Ulica i numer</label><input id="c-st" class="fld" type="text" name="street" autocomplete="street-address" /></div>
+                <div><label class="lbl" for="c-zip">Kod pocztowy</label><input id="c-zip" class="fld" type="text" name="postcode" autocomplete="postal-code" placeholder="00-000" maxlength="6" /></div>
+                <div><label class="lbl" for="c-city">Miejscowość</label><input id="c-city" class="fld" type="text" name="city" autocomplete="address-level2" /></div>
+              </div>
+            </fieldset>
 
-        <aside class="summary">
-          <h2>Podsumowanie</h2>
-          <ul class="lines" data-lines></ul>
-          <div class="promo" data-promo>
-            <label class="field">Kod rabatowy
-              <span class="promo__row"><input class="input" type="text" name="discountCode" autocomplete="off" maxlength="30" /><button type="button" class="btn btn--ghost" data-apply-code>Użyj</button></span>
-            </label>
-            <p class="promo__msg small" role="status" data-code-msg></p>
+            <fieldset class="co__card">
+              <legend class="co__ct">3. Płatność</legend>
+              <label class="opt"><input type="radio" name="paymentMethod" value="p24" checked />
+                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">BLIK, karta, przelew online – ponad 150 metod</span></span></label>
+              <label class="opt"><input type="radio" name="paymentMethod" value="bank_transfer" />
+                <span class="opt__txt"><span class="opt__t">Przelew bankowy</span><span class="opt__s">Realizacja po zaksięgowaniu wpłaty</span></span></label>
+              <div class="co__sub" data-bank hidden>
+                <span class="co__banktxt">Wpłać na nasze konto i podaj numer zamówienia w tytule. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty. Pełne dane do przelewu pokażemy po złożeniu zamówienia i wyślemy e-mailem.</span>
+                <span class="k" style="color:#1F1F1F">Numer rachunku</span>
+                <span class="co__banknr" data-bank-nr></span>
+              </div>
+            </fieldset>
+
+            <fieldset class="co__card">
+              <legend class="co__ct">4. Faktura i uwagi</legend>
+              <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="invoice" data-invoice-toggle />Chcę fakturę na firmę</label>
+              <div class="co__sub co__inv" data-invoice hidden>
+                <div><label class="lbl" for="c-co">Nazwa firmy</label><input id="c-co" class="fld" type="text" name="company" autocomplete="organization" /></div>
+                <div><label class="lbl" for="c-nip">NIP</label><input id="c-nip" class="fld" type="text" name="nip" inputmode="numeric" maxlength="13" /></div>
+                <div><label class="lbl" for="c-ist">Ulica i numer</label><input id="c-ist" class="fld" type="text" name="invStreet" /></div>
+                <div><label class="lbl" for="c-izip">Kod pocztowy</label><input id="c-izip" class="fld" type="text" name="invPostcode" placeholder="00-000" maxlength="6" /></div>
+                <div><label class="lbl" for="c-icity">Miejscowość</label><input id="c-icity" class="fld" type="text" name="invCity" /></div>
+              </div>
+              <div style="margin-top:10px"><label class="lbl" for="c-note">Uwagi do zamówienia (opcjonalnie)</label><textarea id="c-note" class="fld" name="note" rows="3" maxlength="500"></textarea></div>
+            </fieldset>
+            <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
           </div>
-          <dl>
-            <div><dt>Produkty</dt><dd data-subtotal></dd></div>
-            <div><dt>Rabat za zestaw</dt><dd data-discount></dd></div>
-            <div data-code-line hidden><dt data-code-name>Kod rabatowy</dt><dd data-code-amount></dd></div>
-            <div><dt>Dostawa</dt><dd class="ok">0,00 zł</dd></div>
-            <div class="total"><dt>Razem</dt><dd data-total></dd></div>
-          </dl>
-          <label class="check small"><input type="checkbox" name="terms" required /> <span>Akceptuję <a href="/regulamin/" target="_blank">Regulamin</a> i zapoznałem się z <a href="/polityka-prywatnosci/" target="_blank">Polityką prywatności</a>.</span></label>
-          <label class="check small"><input type="checkbox" name="marketing" /> <span>Chcę otrzymywać informacje o promocjach (opcjonalnie).</span></label>
-          <button type="submit" class="btn btn--lg" data-submit>Zamawiam i płacę</button>
-          <p class="error" role="alert" data-error></p>
-          <p class="muted note" data-pay-note>Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.</p>
-        </aside>
+
+          <aside class="fl co__card co__side">
+            <h2 class="co__ct">Podsumowanie</h2>
+            <ul class="co__lines" data-lines></ul>
+            <div>
+              <label class="lbl" for="c-code">Kod rabatowy</label>
+              <div class="co__code">
+                <input id="c-code" class="fld" type="text" name="discountCode" autocomplete="off" maxlength="30" />
+                <button type="button" class="btn btn-o co__codebtn" data-apply-code>Użyj</button>
+              </div>
+              <p class="msg k" role="status" data-code-msg style="margin-top:6px"></p>
+            </div>
+            <div class="co__sums">
+              <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
+              <div class="srow"><span>Rabat za zestaw</span><span data-discount></span></div>
+              <div class="srow" data-code-line hidden><span data-code-name>Kod rabatowy</span><span data-code-amount></span></div>
+              <div class="srow"><span>Dostawa · <span data-ship-name>InPost</span></span><span style="font-weight:400">Darmowa</span></div>
+            </div>
+            <div class="total-row"><span>Razem</span><span data-total></span></div>
+            <label class="ck"><input type="checkbox" name="terms" required /><span>Akceptuję <a href="/regulamin/" target="_blank">Regulamin</a> i zapoznałem się z <a href="/polityka-prywatnosci/" target="_blank">Polityką prywatności</a>.</span></label>
+            <label class="ck"><input type="checkbox" name="marketing" /><span>Chcę otrzymywać informacje o promocjach (opcjonalnie).</span></label>
+            <button type="submit" class="btn btn--wide" style="margin-top:10px" data-submit>Zamawiam i płacę</button>
+            <p class="msg msg--err" role="alert" data-error></p>
+            <span class="k" data-pay-note>Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.</span>
+          </aside>
+        </div>
       </form>
     </div>
   </section>
@@ -129,7 +135,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 <script>
   import { getCart } from '../../lib/cart';
   import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
-  import { BANK_ACCOUNT, BANK_PROVIDER, bankTitle } from '../../lib/bank-transfer';
+  import { BANK_ACCOUNT, BANK_PROVIDER } from '../../lib/bank-transfer';
 
   (async () => {
   await (window as any).__CANC_READY__;
@@ -156,9 +162,11 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const d = gross * rate(it.qty, p.bundles);
       subtotal += gross; discount += d;
       const li = document.createElement('li');
-      li.innerHTML = '<span></span><span></span>';
-      li.children[0].textContent = `${p.name} × ${it.qty}`;
-      li.children[1].textContent = pln.format(gross - d);
+      const img = (p as any).image as string | undefined;
+      li.innerHTML = (img ? '<img class="co__thumb" alt="" width="54" height="54" loading="lazy">' : '<span class="co__thumb"></span>') + '<span class="co__lname"></span><span class="co__lprice"></span>';
+      if (img) li.querySelector('img')!.src = img;
+      li.querySelector('.co__lname')!.textContent = `${p.name} × ${it.qty}`;
+      li.querySelector('.co__lprice')!.textContent = pln.format(gross - d);
       ul.append(li);
     }
     form.querySelector('[data-subtotal]')!.textContent = pln.format(subtotal);
@@ -235,9 +243,13 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     const locker = form.querySelector<HTMLElement>('[data-locker]')!;
     const address = form.querySelector<HTMLElement>('[data-address]')!;
     form.querySelectorAll<HTMLInputElement>('input[name="shippingMethod"]').forEach((r) =>
-      r.addEventListener('change', () => { locker.hidden = r.value !== 'inpost_locker'; address.hidden = r.value !== 'dpd'; }),
+      r.addEventListener('change', () => {
+        locker.hidden = r.value !== 'inpost_locker'; address.hidden = r.value !== 'dpd';
+        form.querySelector('[data-ship-name]')!.textContent = r.value === 'dpd' ? 'DPD' : 'InPost';
+      }),
     );
 
+    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
     // Przelew bankowy: pokaż numer konta, zmień opis przycisku i noty
     const bankPanel = form.querySelector<HTMLElement>('[data-bank]')!;
     const bankNr = form.querySelector<HTMLElement>('[data-bank-nr]')!;
@@ -247,7 +259,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       r.addEventListener('change', () => {
         const bank = r.value === 'bank_transfer';
         bankPanel.hidden = !bank;
-        submit.textContent = bank ? 'Złóż zamówienie' : 'Zamawiam i płacę';
+        submit.textContent = bank ? 'Zamawiam z obowiązkiem zapłaty' : 'Zamawiam i płacę';
         payNote.textContent = bank
           ? 'Po złożeniu zamówienia wyślemy e-mail z numerem konta i kwotą do przelania. Realizacja po zaksięgowaniu wpłaty.'
           : 'Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.';
@@ -289,8 +301,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       });
     }
 
-    const error = form.querySelector<HTMLElement>('[data-error]')!;
-    const submit = form.querySelector<HTMLButtonElement>('[data-submit]')!;
+    const error = errorEl;
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -303,7 +314,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const list: any[] = (window as any).__CANC_CATALOG__ || [];
       const gaItems = items.flatMap((it: any) => {
         const cp = list.find((x: any) => x.slug === it.slug);
-        return (cp && cp.price !== null) ? [{ item_id: it.slug, item_name: cp.name, price: cp.price / 100, quantity: it.qty, item_brand: 'Can-C' }] : [];
+        return (cp && cp.price !== null) ? [{ item_id: it.slug, item_name: cp.name, price: cp.price, quantity: it.qty, item_brand: 'Can-C' }] : [];
       });
       const gaValue = gaItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
       const gaCode = (window as any).__cancCode?.() || undefined;
@@ -359,7 +370,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       } catch (err) {
         error.textContent = (err as Error).message;
         submit.disabled = false;
-        submit.textContent = paymentMethod === BANK_PROVIDER ? 'Złóż zamówienie' : 'Zamawiam i płacę';
+        submit.textContent = paymentMethod === BANK_PROVIDER ? 'Zamawiam z obowiązkiem zapłaty' : 'Zamawiam i płacę';
       }
     });
   }
@@ -367,57 +378,43 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <style>
-  .cart-notice { padding: 14px 18px; background: var(--c-warn-bg); color: var(--c-warn-ink); }
-  .cart-notice[hidden] { display: none; }
-  .checkout-wrap { background: var(--c-gray-100); padding-top: var(--s-3); }
-  .steps { list-style: none; margin: 0 0 var(--s-3); padding: 0; display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: var(--fs-small); color: var(--c-ink-70); }
-  .steps [aria-current] { color: var(--c-ink); }
-  .steps a { color: inherit; }
-  .empty { display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-2); }
-  .empty[hidden], .checkout[hidden] { display: none; }
-  .title { font-size: var(--fs-h3); margin-bottom: var(--s-1); }
-
-  .checkout { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: flex-start; }
-  .checkout__main { flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: var(--s-2); }
-  .box { margin: 0; border: 0; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: 16px; }
-  .box legend { float: left; width: 100%; font-size: var(--fs-h4); padding: 0 0 8px; }
-  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
-  .sub { padding: var(--s-2); background: var(--c-tint); display: flex; flex-direction: column; gap: 12px; }
-  .sub.grid2, .sub.grid3 { display: grid; }
-  .sub[hidden] { display: none !important; }
-  .choice { min-height: 72px; padding: 16px 24px; border-radius: var(--r-field); box-shadow: inset 0 0 0 1px var(--c-gray-300); display: flex; align-items: center; gap: 16px; cursor: pointer; }
-  .choice:has(input:checked) { box-shadow: inset 0 0 0 1px var(--c-ink); }
-  .choice input { width: 20px; height: 20px; margin: 0; accent-color: var(--c-ink); }
-  .choice__text { flex: 1; display: flex; flex-direction: column; gap: 2px; font-size: 1.125rem; }
-  .choice__text .muted { font-size: var(--fs-small); }
-  .ok { color: var(--c-ok); }
-  .locker-pick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
-  .locker-pick[hidden], [data-locker-manual][hidden], [data-locker-link][hidden] { display: none; }
-  .locker-pick__info { display: flex; flex-direction: column; gap: 2px; font-size: 1.125rem; }
-  .locker-pick__info .muted { font-size: var(--fs-small); }
-  .check { display: flex; gap: 12px; align-items: flex-start; }
-  .check input { width: 18px; height: 18px; margin: 3px 0 0; accent-color: var(--c-ink); flex-shrink: 0; }
-  .small { font-size: var(--fs-small); line-height: 24px; color: var(--c-ink-75); }
-  .textarea { height: auto; padding: 12px 16px; resize: vertical; }
-  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
-
-  .summary { flex: 1 1 340px; position: sticky; top: 90px; background: var(--c-white); padding: var(--s-3); display: flex; flex-direction: column; gap: var(--s-2); }
-  .summary h2 { font-size: var(--fs-h4); font-weight: 400; }
-  .lines { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-  :global(.lines li) { display: flex; justify-content: space-between; gap: 12px; }
-  .summary dl { margin: 0; display: flex; flex-direction: column; gap: 12px; padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); }
-  .summary dl div { display: flex; justify-content: space-between; }
-  .summary dd { margin: 0; }
-  .summary .total { padding-top: 12px; border-top: 1px solid var(--c-ink-10); font-size: var(--fs-h4); }
-  .summary .btn:disabled { opacity: 0.5; cursor: wait; }
-  .error { color: var(--c-err); }
-  .promo { padding-top: var(--s-2); border-top: 1px solid var(--c-ink-10); display: flex; flex-direction: column; gap: 6px; }
-  .promo__row { display: flex; gap: 8px; }
-  .promo__row .input { flex: 1; min-width: 0; text-transform: uppercase; }
-  .promo__row .btn { min-height: 52px; padding: 0 18px; }
-  .promo__msg:empty { display: none; }
-  [data-code-line][hidden] { display: none !important; }
-  .error:empty { display: none; }
-  .note { font-size: 0.8125rem; }
+  .co { background: var(--band); }
+  .co__in { padding-top: 45px; padding-bottom: 90px; }
+  .co__empty { margin-top: 45px; background: var(--surface); }
+  .co__emptyt { font-size: 28px; line-height: 32px; font-weight: 400; }
+  [data-empty][hidden], .co__form[hidden], .co__notice[hidden], .co__sub[hidden], [data-code-line][hidden],
+  [data-map-wrap][hidden], [data-locker-manual][hidden], [data-locker-link][hidden] { display: none !important; }
+  .co__title { margin-top: 45px; }
+  .co__notice { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); font-size: 14px; }
+  .co__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 45px; }
+  .co__main { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 14px; }
+  .co__card { margin: 0; border: none; background: var(--surface); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .co__ct { float: left; width: 100%; margin: 0 0 10px; padding: 0; font-size: 28px; line-height: 32px; font-weight: 400; }
+  .co__ct + * { clear: both; }
+  .co__g2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .co__sub { background: var(--peach); color: #1F1F1F; border-radius: var(--r-md); padding: 23px; display: flex; flex-direction: column; gap: 10px; }
+  .co__addr { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; }
+  .co__inv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .co__link { font-size: 14px; line-height: 21px; font-weight: 400; color: #1F1F1F; text-underline-offset: 3px; }
+  .co__pick { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+  .co__pickinfo { display: flex; flex-direction: column; font-size: 18px; line-height: 27px; }
+  .co__banktxt { font-size: 14px; line-height: 21px; font-weight: 300; }
+  .co__banknr { font-size: 18px; line-height: 27px; font-weight: 400; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+  .co__side { width: 436px; flex-shrink: 0; position: sticky; top: 14px; }
+  .co__lines { list-style: none; margin: 0; padding: 0 0 14px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 10px; }
+  :global(.co__lines li) { display: flex; align-items: center; gap: 14px; }
+  :global(.co__thumb) { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: contain; padding: 4px; }
+  :global(.co__lname) { flex-grow: 1; font-size: 16px; line-height: 24px; font-weight: 300; }
+  :global(.co__lprice) { font-size: 16px; line-height: 24px; font-weight: 400; white-space: nowrap; }
+  .co__code { display: flex; gap: 10px; }
+  .co__code .fld { height: 54px; text-transform: uppercase; }
+  .co__codebtn { height: 54px; font-size: 18px; padding: 0 20px; border-radius: 14px; }
+  .co__sums { display: flex; flex-direction: column; gap: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .co__side .total-row { border-color: var(--line); }
+  [data-submit]:disabled { opacity: 0.5; cursor: wait; }
+  @media (max-width: 1000px) {
+    .co__card { padding: 24px; border-radius: 28px; }
+    .co__g2, .co__addr, .co__inv { grid-template-columns: minmax(0, 1fr); }
+    .co__side { position: static; }
+  }
 </style>

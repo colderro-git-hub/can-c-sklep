@@ -1,0 +1,82 @@
+---
+// Karta produktu wg projektu (S1 · Produkty). Ceny w złotych. Kontener listy: [data-list="Nazwa listy"].
+import { AVAIL_LABEL } from '../lib/catalog';
+import { formatPrice } from '../data/shop';
+import type { Availability } from '../lib/pricing';
+interface Props {
+  slug: string; name: string; tag?: string; flag?: string; image?: string | null; alt?: string;
+  avail: Availability; price: number | null; regular?: number | null; onSale?: boolean;
+}
+const { slug, name, tag, flag, image, alt, avail, price, regular, onSale } = Astro.props;
+const href = `/produkt/${slug}/`;
+---
+<article class="pc" data-slug={slug} data-name={name} data-price={price ?? 0}>
+  <div class="notch pc__img">
+    {image ? <img src={image} alt={alt || name} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[zdjęcie produktu]</span>}
+    {avail !== 'in_stock'
+      ? <span class={`p-badge p-badge--${avail}`}>{AVAIL_LABEL[avail]}</span>
+      : flag && <span class="peach pc__flag">{flag}</span>}
+    <a href={href} aria-label={`Zobacz: ${name}`} class="notch__btn" data-select>
+      <svg aria-hidden="true" width="32" height="32" viewBox="0 0 42 42"><path d="M9 33L31 11M13 9.5h19.5V29" fill="none" stroke="currentColor" stroke-width="5"/></svg>
+    </a>
+  </div>
+  <div class="pc__body">
+    {tag && <span class="k">{tag}</span>}
+    <h3 class="pc__name"><a href={href} data-select>{name}</a></h3>
+    <div class="pc__foot">
+      <span class="pc__price">
+        {price !== null ? formatPrice(price) : '—'}
+        {onSale && regular != null && <s class="k">{formatPrice(regular)}</s>}
+      </span>
+      {avail !== 'out_of_stock' && price !== null
+        ? <button type="button" class="pc__add" aria-label={`Dodaj do koszyka: ${name}`} data-quick-add={slug}>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path d="M8 1v14M1 8h14" stroke="currentColor" stroke-width="2"/></svg>
+          </button>
+        : <a href={href} class="pc__add" aria-label={`Zobacz produkt: ${name}`} data-select>
+            <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16"><path d="M2 8h12M9 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          </a>}
+    </div>
+  </div>
+</article>
+
+<script>
+  import { addItem } from '../lib/cart';
+  import { trackViewItemList, trackSelectItem, trackAddToCart } from '../lib/analytics';
+  import { flyToCart, announceAdded } from '../lib/cart-fx';
+
+  // Jedna obsługa dla wszystkich list kart na stronie
+  document.querySelectorAll<HTMLElement>('[data-list]').forEach((list) => {
+    const listName = list.dataset.list || 'Produkty';
+    const cards = [...list.querySelectorAll<HTMLElement>('.pc')];
+    const item = (c: HTMLElement, i: number) => ({ item_id: c.dataset.slug!, item_name: c.dataset.name || '', price: Number(c.dataset.price || 0), quantity: 1, index: i, item_brand: 'Can-C' });
+    if (cards.length) trackViewItemList(cards.map(item), listName);
+    cards.forEach((c, i) => {
+      c.querySelectorAll('[data-select]').forEach((a) => a.addEventListener('click', () => trackSelectItem(item(c, i), listName)));
+      const b = c.querySelector<HTMLButtonElement>('[data-quick-add]');
+      b?.addEventListener('click', () => {
+        const slug = b.dataset.quickAdd!;
+        addItem(slug, 1);
+        b.classList.add('is-added');
+        setTimeout(() => b.classList.remove('is-added'), 1600);
+        const img = c.querySelector<HTMLImageElement>('img');
+        flyToCart(img || b, img?.src).then(() => announceAdded({ slug, qty: 1 }));
+        trackAddToCart(item(c, i));
+      });
+    });
+  });
+</script>
+
+<style>
+  .pc { background: var(--surface); border-radius: 40px; padding: 14px; display: flex; flex-direction: column; gap: 14px; }
+  .pc__img { height: 300px; }
+  .pc__flag { position: absolute; z-index: 2; left: 14px; bottom: 14px; }
+  .pc__body { border: 1px solid var(--line); border-radius: 32px; padding: 23px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1; }
+  .pc__name { margin: 0; font-size: 22px; line-height: 30px; font-weight: 500; }
+  .pc__name a { color: var(--ink); text-decoration: none; }
+  .pc__name a:hover { color: var(--muted); }
+  .pc__foot { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: auto; padding-top: 14px; }
+  .pc__price { display: flex; flex-direction: column; font-size: 28px; line-height: 42px; font-weight: 500; white-space: nowrap; }
+  .pc__add { width: 44px; height: 44px; border-radius: 50%; background: var(--ink); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--surface); flex-shrink: 0; text-decoration: none; }
+  .pc__add:hover { background: #3A3A3A; color: var(--surface); }
+  .pc__add.is-added { background: var(--ok); }
+</style>

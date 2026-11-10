@@ -1,53 +1,56 @@
 ---
+// Wszystkie produkty – karty jak na stronie głównej (projekt Laluna)
 import Base from '../layouts/Base.astro';
+import ProductCard from '../components/ProductCard.astro';
 import { getEnv } from '../lib/env';
-import { getCatalog, AVAIL_LABEL } from '../lib/catalog';
-import AvailBadge from '../components/AvailBadge.astro';
-import ProductTags from '../components/ProductTags.astro';
+import { getCatalog } from '../lib/catalog';
 
 export const prerender = false;
 const list = await getCatalog(await getEnv(Astro.locals)).catch(() => []);
-const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+const zl = (g: number | null) => (g === null ? null : g / 100);
+const cap = (t?: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : undefined);
+const groups = [
+  { id: 'krople', title: 'Krople do oczu', lead: 'Krople Can-C z N-acetylokarnozyną dla ludzi i w wersji dla psów.', items: list.filter((p) => !p.id.startsWith('kapsulki')) },
+  { id: 'kapsulki', title: 'Kapsułki', lead: 'Uzupełnienie kuracji kroplami.', items: list.filter((p) => p.id.startsWith('kapsulki')) },
+].filter((g) => g.items.length);
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 ---
 <Base title="Sklep | Can-C" description="Wszystkie produkty Can-C: krople do oczu, krople dla psów i kapsułki. Darmowa dostawa w Polsce.">
-  <section class="page-hero"><div class="container page-hero__inner">
-    <nav class="crumbs" aria-label="Ścieżka"><a href="/">Strona główna</a> / Sklep</nav>
-    <h1>Sklep</h1>
-    <p class="lead">Oryginalne produkty Can-C z darmową dostawą w Polsce.</p>
-  </div></section>
-  <section class="section"><div class="container grid">
-    {list.map((p) => (
-      <a class="card" href={`/produkt/${p.id}/`}>
-        <span class={`media media--${p.avail}`}>
-          {p.images[0] ? <img src={p.images[0].url} alt={p.images[0].alt || p.name} width="400" height="300" loading="lazy" /> : <span class="ph">[{p.name}]</span>}
-          <AvailBadge avail={p.avail} />
-        </span>
-        <span class="card__body">
-          {p.subtitle && <span class="card__tag">{p.subtitle}</span>}
-          <span class="card__name">{p.name}</span>
-          <ProductTags tags={p.tags} max={3} />
-          {p.short_description && <span class="muted">{p.short_description}</span>}
-          <span class="card__foot">
-            <span class="card__price">{pln(p.current)}{p.onSale && <s class="muted"> {pln(p.price)}</s>}</span>
-            <span class={p.avail === 'in_stock' ? 'ok' : p.avail === 'out_of_stock' ? 'err' : 'muted'}>{p.rating.count ? `★ ${p.rating.avg.toLocaleString('pl-PL')} · ` : ''}{AVAIL_LABEL[p.avail]}</span>
-          </span>
-        </span>
-      </a>
-    ))}
-  </div></section>
+  <section class="w sk-head">
+    <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Sklep</nav>
+    <div class="row sk-head__row">
+      <h1 class="h1">Sklep</h1>
+      <p class="p p--lg fl" style="width:517px">Oryginalne produkty Can-C. Wysyłamy za darmo InPostem i kurierem DPD.</p>
+    </div>
+  </section>
+
+  {groups.map((g, gi) => (
+    <section id={g.id} class="sk-band" style={gi ? 'margin-top:14px' : 'margin-top:90px'}>
+      <div class="w sk-pad">
+        <div class="row sk-gh">
+          <h2 class="h2">{g.title}</h2>
+          <p class="p fl" style="width:517px">{g.lead}</p>
+        </div>
+        <div class="sk-grid" data-list={`Sklep – ${g.title}`}>
+          {g.items.map((p) => (
+            <ProductCard slug={p.id} name={p.name} tag={p.subtitle || undefined} image={p.images[0]?.url} alt={p.images[0]?.alt}
+              avail={p.avail} price={zl(p.current)} regular={zl(p.price)} onSale={p.onSale} flag={cap(p.tags[0])} />
+          ))}
+        </div>
+      </div>
+    </section>
+  ))}
+  {!groups.length && <section class="w"><div class="empty" style="margin-top:45px"><p class="p">Nie udało się wczytać produktów. Odśwież stronę za chwilę.</p></div></section>}
+  <div style="height:90px"></div>
 </Base>
+
 <style>
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--s-2); }
-  .card { display: flex; flex-direction: column; background: var(--c-gray-100); color: var(--c-ink); text-decoration: none; }
-  .card img, .card .ph { aspect-ratio: 4 / 3; width: 100%; }
-  .card img { object-fit: contain; padding: 16px; background: var(--c-photo-bg); }
-  .card .ph { background: var(--c-gray-300); }
-  .card__body { padding: var(--s-2); display: flex; flex-direction: column; gap: 10px; flex: 1; }
-  .card__tag { font-size: 0.8125rem; letter-spacing: 0.08em; color: var(--c-ink-70); }
-  .card__name { font-size: 1.375rem; }
-  .card__foot { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-top: 8px; font-size: var(--fs-small); }
-  .card__price { font-size: 1.25rem; }
-  .ok { color: var(--c-ok); }
-  .err { color: var(--c-err); }
+  .sk-head { margin-top: 45px; display: flex; flex-direction: column; gap: 24px; }
+  .sk-head__row { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
+  .sk-band { background: var(--band); scroll-margin-top: 24px; }
+  .sk-pad { padding-top: 90px; padding-bottom: 90px; }
+  .sk-gh { display: flex; align-items: flex-end; justify-content: space-between; gap: 45px; }
+  .sk-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 45px; }
+  @media (max-width: 1100px) { .sk-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .sk-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>
