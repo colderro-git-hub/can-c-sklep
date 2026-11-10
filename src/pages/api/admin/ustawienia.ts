@@ -41,6 +41,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
+  // Logo (nagłówek / stopka) – osobny zapis; adres musi wskazywać na folder logo/ we własnym magazynie zdjęć
+  if (b.action === 'logo') {
+    const field = b.target === 'footer' ? 'logoFooter' : b.target === 'header' ? 'logoHeader' : '';
+    if (!field) return json(400, { error: 'Nieznane miejsce logo.' });
+    const url = String(b.url ?? '').trim();
+    const base = (env.SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
+    if (url && !url.startsWith(`${base}/storage/v1/object/public/products/logo/`)) return json(422, { error: 'Nieprawidłowy adres logo. Wyślij plik przez panel.' });
+    try {
+      const sb = db(env);
+      const [row] = await sb.select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');
+      await sb.upsert('settings', { key: 'site', value: { ...(row?.value ?? {}), [field]: url }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+      clearSiteCache();
+      console.log(`Admin ${admin} zmienił ${field}: ${url || '(usunięte)'}`);
+      return json(200, { ok: true, [field]: url });
+    } catch (e) {
+      console.error('Zapis logo: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Nie udało się zapisać logo.' });
+    }
+  }
+
   if (b.action === 'robots') {
     const text = String(b.text ?? '').replace(/\r/g, '').replace(/\t/g, ' ').trim();
     if (text.length > ROBOTS_MAX) return json(422, { error: `robots.txt może mieć maks. ${ROBOTS_MAX} znaków.` });
@@ -84,7 +104,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (!v.shippingTime) return json(422, { error: 'Podaj czas wysyłki.' });
 
   try {
-    await db(env).upsert('settings', { key: 'site', value: v, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+    // Pola, których ten formularz nie wysyła (GTM ID z zakładki Analityka, logo), zostają bez zmian
+    const [row] = await db(env).select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');
+    const prev = row?.value ?? {};
+    for (const k of CONTENT_KEYS) if (!(k in b) && k !== 'noticeEnabled' && typeof prev[k] === 'string') v[k] = prev[k] as string;
+    await db(env).upsert('settings', { key: 'site', value: { ...prev, ...v }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
     clearSiteCache();
     console.log(`Admin ${admin} zmienił ustawienia sklepu`);
     return json(200, { site: v });

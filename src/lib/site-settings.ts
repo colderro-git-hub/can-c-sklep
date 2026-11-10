@@ -16,7 +16,11 @@ export const CONTENT_DEFAULTS = {
   noticeTo: '',           // ISO, puste = bez końca
 };
 
-const defaults = { ...configSite, ...CONTENT_DEFAULTS };
+// Logo jako obraz (adres w Supabase Storage); puste = logo tekstowe. Zapisywane osobną akcją w panelu.
+export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '' };
+export const LOGO_KEYS = Object.keys(LOGO_DEFAULTS) as (keyof typeof LOGO_DEFAULTS)[];
+
+const defaults = { ...configSite, ...CONTENT_DEFAULTS, ...LOGO_DEFAULTS };
 export type Site = typeof defaults & { noticeActive?: boolean };
 export const SITE_KEYS = ['email', 'phone', 'hours', 'replyTime', 'facebook', 'company', 'address', 'nip', 'regon', 'returnsUrl'] as const;
 export const CONTENT_KEYS = Object.keys(CONTENT_DEFAULTS) as (keyof typeof CONTENT_DEFAULTS)[];

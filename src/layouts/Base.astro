@@ -93,6 +93,15 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
           else if (el.hasAttribute('data-site-hide-empty')) el.hidden = true;
         });
         document.querySelectorAll<HTMLElement>('[data-notice]').forEach((el) => { el.hidden = !(s as any).noticeActive; });
+        // Logo z panelu: obraz zamiast logo tekstowego (osobno nagłówek i stopka)
+        document.querySelectorAll<HTMLImageElement>('img[data-logo]').forEach((img) => {
+          const key = img.dataset.logo!;
+          const url = typeof s[key] === 'string' ? s[key] : undefined;
+          if (url === undefined) return;
+          if (url && img.getAttribute('src') !== url) img.src = url;
+          img.hidden = !url;
+          document.querySelectorAll<HTMLElement>(`[data-logo-text="${key}"]`).forEach((t) => { t.hidden = !!url; });
+        });
         document.querySelectorAll<HTMLAnchorElement>('[data-site-href]').forEach((el) => {
           const href = el.dataset.siteHref!.replace(/\{(\w+)\}/g, (_, k) => (s[k] ?? '').replace(k === 'phone' ? /\s/g : /$^/, ''));
           if (!/\{|:$/.test(href)) el.href = href;

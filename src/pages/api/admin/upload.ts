@@ -35,23 +35,36 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const file = form?.get('file');
   const product = String(form?.get('product') || 'produkt').replace(/[^a-z0-9-]/g, '').slice(0, 60) || 'produkt';
   if (!(file instanceof File)) return json(400, { error: 'Brak pliku.' });
-  const ext = TYPES[file.type];
-  if (!ext) return json(415, { error: 'Dozwolone formaty: WebP, JPG, PNG.' });
-  if (file.size > 5 * 1024 * 1024) return json(413, { error: 'Plik jest większy niż 5 MB.' });
+  // Logo sklepu: dodatkowo SVG (sprawdzone pod kątem skryptów), limit 1 MB, folder logo/
+  const isLogo = product === 'logo';
+  const isSvg = isLogo && (file.type === 'image/svg+xml' || /\.svg$/i.test(file.name));
+  const ext = isSvg ? 'svg' : TYPES[file.type];
+  if (!ext) return json(415, { error: isLogo ? 'Dozwolone formaty logo: SVG, PNG, JPG, WebP.' : 'Dozwolone formaty: WebP, JPG, PNG.' });
+  if (file.size > (isLogo ? 1 : 5) * 1024 * 1024) return json(413, { error: `Plik jest większy niż ${isLogo ? 1 : 5} MB.` });
+  let body: ReadableStream | string = file.stream();
+  if (isSvg) {
+    const text = await file.text();
+    // SVG to kod: odrzucamy skrypty, zdarzenia JavaScript, osadzone strony i zewnętrzne zasoby
+    if (!/<svg[\s>]/i.test(text)) return json(415, { error: 'To nie jest prawidłowy plik SVG.' });
+    if (/<script|<foreignObject|<iframe|<embed|<object|\son\w+\s*=|javascript:|<!ENTITY|xlink:href\s*=\s*["']\s*(?!#|data:image\/)|\shref\s*=\s*["']\s*(?!#|data:image\/)/i.test(text))
+      return json(422, { error: 'Plik SVG zawiera skrypty lub odwołania do zewnętrznych zasobów. Wyeksportuj logo jako „czysty” SVG albo PNG.' });
+    body = text;
+  }
 
   const base = (env.SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
   const key = env.SUPABASE_SECRET_KEY || '';
   const name = `${product}/${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${ext}`;
+  const contentType = isSvg ? 'image/svg+xml' : file.type;
   const res = await fetch(`${base}/storage/v1/object/products/${name}`, {
     method: 'POST',
-    headers: { apikey: key, ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}), 'Content-Type': file.type, 'Cache-Control': 'max-age=31536000', 'x-upsert': 'false' },
-    body: file.stream(),
+    headers: { apikey: key, ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}), 'Content-Type': contentType, 'Cache-Control': 'max-age=31536000', 'x-upsert': 'false' },
+    body,
     // @ts-ignore – wymagane przy wysyłaniu strumienia
     duplex: 'half',
   });
   if (!res.ok) {
     console.error('Upload zdjęcia: ' + res.status + ' ' + (await res.text()));
-    return json(502, { error: 'Nie udało się zapisać zdjęcia. Czy istnieje bucket „products” w Supabase Storage?' });
+    return json(502, { error: isSvg ? 'Nie udało się zapisać pliku SVG. Czy uruchomiono skrypt 016_logo_svg.sql?' : 'Nie udało się zapisać zdjęcia. Czy istnieje bucket „products” w Supabase Storage?' });
   }
   return json(200, { url: `${base}/storage/v1/object/public/products/${name}` });
 };

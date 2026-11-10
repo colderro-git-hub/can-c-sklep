@@ -311,6 +311,28 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <section data-view="settings" class="stack" hidden>
 
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
+            <div class="card" data-logos>
+              <div class="card__head"><h2 class="card__title">Logo sklepu</h2><span class="muted small">SVG, PNG, JPG lub WebP · do 1 MB · na stronie szerokość 120 px</span></div>
+              <p class="muted">Bez obrazu na stronie jest logo tekstowe „Can-C”. Do stopki wgraj jasną wersję logo – stopka ma ciemne tło. Zmiana pojawi się na stronie w ciągu kilku minut.</p>
+              <div class="logo-grid">
+                <div class="logo-slot" data-logo-slot="header">
+                  <span class="logo-slot__t">Menu górne</span>
+                  <div class="logo-prev logo-prev--light"><img data-logo-img alt="Podgląd logo w menu górnym" hidden /><span class="logo-prev__txt" data-logo-empty>○ Can-C</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń logo</button>
+                  </div>
+                </div>
+                <div class="logo-slot" data-logo-slot="footer">
+                  <span class="logo-slot__t">Stopka</span>
+                  <div class="logo-prev logo-prev--dark"><img data-logo-img alt="Podgląd logo w stopce" hidden /><span class="logo-prev__txt" data-logo-empty>○ Can-C</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń logo</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <form class="stack" data-settings-form novalidate>
             <div class="card">
               <div class="card__head"><h2 class="card__title">Komunikat na stronie</h2><span class="st" data-notice-state></span></div>
@@ -470,6 +492,16 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .kpi__value { font: 500 20px/1 var(--display); color: var(--ink-60); white-space: nowrap; }
 
   /* Karta z tabelą */
+  .logo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .logo-slot { display: flex; flex-direction: column; gap: 10px; }
+  .logo-slot__t { font-weight: 500; font-size: 14px; }
+  .logo-prev { height: 120px; border-radius: var(--r-md); display: flex; align-items: center; padding: 0 24px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+  .logo-prev--light { background: #FFFFFF; color: #141C2B; }
+  .logo-prev--dark { background: #4E5A7C; color: #FFFFFF; }
+  .logo-prev img { width: 120px; height: auto; max-height: 100px; object-fit: contain; }
+  .logo-prev__txt { font: 300 28px/1 'Poppins', sans-serif; letter-spacing: -0.05em; }
+  .logo-slot label.btn { cursor: pointer; }
+  @media (max-width: 700px) { .logo-grid { grid-template-columns: minmax(0, 1fr); } }
   .card { background: var(--card); border-radius: var(--r-lg); padding: 20px 21px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .card__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
   .card__title { margin: 0; font: 500 16px/1.2 var(--font); color: var(--ink-60); }
@@ -2231,11 +2263,47 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         else if (el.type === 'datetime-local') el.value = local(String(v || ''));
         else el.value = String(v ?? '');
       }
+      fillLogo('header', String((site as any).logoHeader || ''));
+      fillLogo('footer', String((site as any).logoFooter || ''));
       const st = $('[data-notice-state]');
       st.textContent = site.noticeActive ? 'Widoczny teraz' : 'Niewidoczny';
       st.className = `st ${site.noticeActive ? 'st--on_hold' : 'st--pending_payment'}`;
     } catch (e) { toast((e as Error).message, true); }
   }
+  // Logo sklepu (menu górne i stopka)
+  function fillLogo(target: string, url: string) {
+    const slot = document.querySelector<HTMLElement>(`[data-logo-slot="${target}"]`);
+    if (!slot) return;
+    const img = slot.querySelector<HTMLImageElement>('[data-logo-img]')!;
+    img.hidden = !url; if (url) img.src = url; else img.removeAttribute('src');
+    slot.querySelector<HTMLElement>('[data-logo-empty]')!.hidden = !!url;
+    slot.querySelector<HTMLElement>('[data-logo-remove]')!.hidden = !url;
+  }
+  document.querySelectorAll<HTMLElement>('[data-logo-slot]').forEach((slot) => {
+    const target = slot.dataset.logoSlot!;
+    const input = slot.querySelector<HTMLInputElement>('[data-logo-file]')!;
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file) return;
+      try {
+        toast(`Wysyłanie ${file.name}…`);
+        const fd = new FormData(); fd.append('file', file); fd.append('product', 'logo');
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(d.error || 'Błąd wysyłania pliku.');
+        await api('/api/admin/ustawienia', { action: 'logo', target, url: d.url });
+        fillLogo(target, d.url);
+        toast(`Zapisano logo (${target === 'header' ? 'menu górne' : 'stopka'}).`);
+      } catch (err) { toast((err as Error).message, true); }
+    });
+    slot.querySelector<HTMLButtonElement>('[data-logo-remove]')!.addEventListener('click', async () => {
+      if (!confirm('Usunąć logo? Na stronie wróci logo tekstowe „Can-C”.')) return;
+      try { await api('/api/admin/ustawienia', { action: 'logo', target, url: '' }); fillLogo(target, ''); toast('Usunięto logo.'); }
+      catch (err) { toast((err as Error).message, true); }
+    });
+  });
+
   // robots.txt
   const robotsForm = $<HTMLFormElement>('[data-robots-form]');
   const robotsText = $<HTMLTextAreaElement>('[data-robots-text]');

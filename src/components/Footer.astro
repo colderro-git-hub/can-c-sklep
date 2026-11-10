@@ -3,12 +3,15 @@
 import { site } from '../config';
 import { getEnv } from '../lib/env';
 import { getPageContent, getSection } from '../lib/page-content';
+import { getSite } from '../lib/site-settings';
 
 type Col = { title: string; links: { href: string; label: string }[] };
 let columns: Col[] = [];
 let badges: string[] = [];
+let logo = '';
 try {
   const env = await getEnv(Astro.locals);
+  if (env.SUPABASE_URL) logo = (await getSite(env)).logoFooter || '';
   const rows = await getPageContent(env, 'footer');
   const c = getSection<{ columns: Col[] }>(rows, 'footer.columns');
   const b = getSection<{ items: string[] }>(rows, 'footer.badges');
@@ -42,7 +45,10 @@ const year = new Date().getFullYear();
   <div class="ft__in">
     <div class="ft__top">
       <div class="ft__brand">
-        <a href="/" class="ft__logo"><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></a>
+        <a href="/" class="ft__logo" aria-label="Can-C – strona główna">
+          <img class="ft__img" data-logo="logoFooter" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
+          <span class="ft__txt" data-logo-text="logoFooter" hidden={!!logo}><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></span>
+        </a>
         <p class="ft__contact"><span data-site="email">{site.email}</span><br /><span data-site="hours">{site.hours}</span></p>
       </div>
       <div class="ft__cols">
@@ -74,7 +80,9 @@ const year = new Date().getFullYear();
   .ft__in { max-width: var(--container); margin: 0 auto; padding: 90px var(--page-px) 45px; }
   .ft__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 45px; flex-wrap: wrap; }
   .ft__brand { width: 408px; max-width: 100%; display: flex; flex-direction: column; gap: 24px; }
-  .ft__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: #FFFFFF; }
+  .ft__logo { display: flex; align-items: center; gap: 14px; min-height: 54px; text-decoration: none; color: #FFFFFF; }
+  .ft__txt { display: flex; align-items: center; gap: 14px; }
+  .ft__img { display: block; width: 120px; height: auto; }
   .ft__ring { width: 24px; height: 24px; border: 1px solid #FFFFFF; border-radius: 50%; }
   .ft__name { font-size: 36px; line-height: 54px; font-weight: 300; }
   .ft__contact { font-size: 14px; line-height: 21px; font-weight: 300; color: var(--on-dark-soft); }

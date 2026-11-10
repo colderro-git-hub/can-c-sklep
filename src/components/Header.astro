@@ -1,7 +1,8 @@
 ---
 // Nagłówek sklepu wg „Komponent · Nagłówek sklepu” (Laluna).
 // Treści paska i komunikatu: domyślne z kodu, podmieniane w przeglądarce z /api/ustawienia (Base.astro).
-import { CONTENT_DEFAULTS } from '../lib/site-settings';
+import { CONTENT_DEFAULTS, getSite } from '../lib/site-settings';
+import { getEnv } from '../lib/env';
 
 interface Props { nav?: string }
 const { nav = '' } = Astro.props;
@@ -15,6 +16,10 @@ const items = [
   { key: 'kontakt', label: 'Kontakt', href: '/kontakt/' },
 ];
 const promos = ['promo1', 'promo2', 'promo3'] as const;
+
+// Logo jako obraz z panelu (Ustawienia sklepu). Strony statyczne podmieniają je w przeglądarce (Base.astro).
+let logo = '';
+try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (await getSite(env)).logoHeader || ''; } catch { /* strona statyczna */ }
 ---
 <div class="hd-notice" data-notice hidden><span data-site="noticeText"></span></div>
 
@@ -27,8 +32,8 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
 <header class="hd">
   <div class="hd__in">
     <a href="/" class="hd__logo" aria-label="Can-C – strona główna">
-      <span class="hd__ring" aria-hidden="true"></span>
-      <span class="hd__name">Can-C</span>
+      <img class="hd__img" data-logo="logoHeader" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
+      <span class="hd__txt" data-logo-text="logoHeader" hidden={!!logo}><span class="hd__ring" aria-hidden="true"></span><span class="hd__name">Can-C</span></span>
     </a>
 
     <div class="hd__right">
@@ -83,7 +88,9 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     display: flex; align-items: center; justify-content: space-between; gap: 24px 45px; flex-wrap: wrap;
   }
   .hd__line { border-top: 1px solid var(--line); }
-  .hd__logo { display: flex; align-items: center; gap: 14px; height: 54px; text-decoration: none; color: var(--ink); }
+  .hd__logo { display: flex; align-items: center; gap: 14px; min-height: 54px; text-decoration: none; color: var(--ink); }
+  .hd__txt { display: flex; align-items: center; gap: 14px; }
+  .hd__img { display: block; width: 120px; height: auto; }
   .hd__ring { width: 24px; height: 24px; border: 1px solid var(--primary); border-radius: 50%; }
   .hd__name { font-size: 36px; line-height: 54px; font-weight: 300; }
   .hd__right { display: flex; align-items: center; gap: 24px 28px; flex-wrap: wrap; }
