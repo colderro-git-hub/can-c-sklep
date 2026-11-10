@@ -20,7 +20,7 @@
   --primary-hover: #3F4A68;
   --on-dark: #FFFFFF;          /* tekst na --primary */
   --on-dark-soft: #DCE3F0;     /* tekst pomocniczy na --primary */
-  --on-dark-line: var(--on-dark-line);
+  --on-dark-line: rgba(255,255,255,0.28);   /* linie i ramki na tle --primary */
 
   /* Stany */
   --ok:      #007B28;
