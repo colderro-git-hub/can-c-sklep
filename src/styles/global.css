@@ -140,7 +140,9 @@ body {
 }
 
 img, video { max-width: 100%; display: block; }
-[hidden] { display: none !important; } /* atrybut hidden wygrywa z display ustawionym w klasach */
+[hidden] { display: none !important; }
+/* Wyróżnienie w tekście: jedna waga w całym sklepie */
+strong, b { font-weight: 500; color: var(--ink); } /* atrybut hidden wygrywa z display ustawionym w klasach */
 h1, h2, h3, h4, h5, h6 { margin: 0; letter-spacing: var(--ls); }
 p { margin: 0; }
 a { color: var(--ink); }
