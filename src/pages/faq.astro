@@ -71,7 +71,7 @@ const jsonLd = {
               <svg class="fq-minus" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
             </span>
           </summary>
-          <div class="fq-a">{f.a.split('\n\n').map((t) => <p class="p justify" set:html={withTokens(t)} />)}</div>
+          <div class="fq-a">{f.a.split('\n\n').map((t) => <p class="p" set:html={withTokens(t)} />)}</div>
         </details>
       ))}
       <p class="p" data-empty hidden>Brak pytań pasujących do wyszukiwania. <a href="/kontakt/">Zapytaj nas bezpośrednio</a>.</p>

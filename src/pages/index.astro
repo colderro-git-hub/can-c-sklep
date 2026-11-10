@@ -110,7 +110,7 @@ const bundleRows = bundles.map((b) => {
         </h1>
       </div>
       <span aria-hidden="true" style="position:absolute;left:9px;top:169px;width:50px;height:2px;background:var(--ink)"></span>
-      <p style="position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:justify">{hero.lead}</p>
+      <p style="position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{hero.lead}</p>
     </div>
 
     <!-- Bloki zaufania + CTA -->
@@ -191,7 +191,7 @@ const bundleRows = bundles.map((b) => {
     <div style="border-top:1px solid var(--line);padding-top:90px"></div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:45px;flex-wrap:wrap">
       <h2 class="h2">Kupuj więcej,<br/>płać mniej</h2>
-      <p class="lead" style="width:517px;text-align:justify;max-width:100%">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
+      <p class="lead" style="width:517px;text-align:left;max-width:100%">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
     </div>
     <div class="bundles-grid" style="margin-top:45px">
       {bundleRows.map((b, i) => (
@@ -227,7 +227,7 @@ const bundleRows = bundles.map((b) => {
     <div style="width:408px;flex-shrink:0;display:flex;flex-direction:column;gap:24px">
       <div style="width:269px;height:169px;background:var(--image);border-radius:20px 500px 20px 20px"></div>
       <h2 class="h2">{why.h2}</h2>
-      {why.lead && <p class="lead" style="text-align:justify">{why.lead}</p>}
+      {why.lead && <p class="lead" style="text-align:left">{why.lead}</p>}
       {why.link_label && <a href={why.link_href} class="link-arrow">
         <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
         {why.link_label}
@@ -238,7 +238,7 @@ const bundleRows = bundles.map((b) => {
         <div style="border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:14px">
           <span style="font-size:3rem;line-height:72px;font-weight:200">0{i+1}</span>
           <h3 style="margin:0;font-size:1.5rem;line-height:28px;font-weight:400">{f.title}</h3>
-          <p class="lead" style="text-align:justify">{f.text}</p>
+          <p class="lead" style="text-align:left">{f.text}</p>
         </div>
       ))}
     </div>
@@ -265,7 +265,7 @@ const bundleRows = bundles.map((b) => {
               <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
             </div>
             <svg aria-hidden="true" width="15" height="11" viewBox="5 7 14 10"><path fill="var(--muted)" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
-            <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:justify">{r.quote}</blockquote>
+            <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{r.quote}</blockquote>
           </figure>
         ))}
         <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
@@ -286,7 +286,7 @@ const bundleRows = bundles.map((b) => {
     <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:24px">
       {k9.tag && <span class="tag tag--peach" style="align-self:flex-start">{k9.tag}</span>}
       <h2 class="h2">{k9.h2}</h2>
-      {k9.lead && <p class="lead" style="text-align:justify">{k9.lead}</p>}
+      {k9.lead && <p class="lead" style="text-align:left">{k9.lead}</p>}
       <div style="display:flex;align-items:center;gap:24px;margin-top:21px;flex-wrap:wrap">
         <a href={k9.cta_href} class="btn">
           {k9.cta_label}
@@ -316,7 +316,7 @@ const bundleRows = bundles.map((b) => {
                 <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
               </span>
             </summary>
-            <p class="lead" style="max-width:680px;padding-bottom:24px;text-align:justify">{f.a}</p>
+            <p class="lead" style="max-width:680px;padding-bottom:24px;text-align:left">{f.a}</p>
           </details>
         </div>
       ))}

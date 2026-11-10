@@ -121,7 +121,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
             <Stars value={p.rating.avg} /> {p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })} · {p.rating.count} {reviewsWord(p.rating.count)}
           </a>
         )}
-        {p.short_description && <p class="p justify pr-lead">{p.short_description}</p>}
+        {p.short_description && <p class="p pr-lead">{p.short_description}</p>}
 
         <div class="pr-price">
           <div class="pr-price__row" aria-live="polite">
@@ -232,7 +232,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
                 <span class="k">{dateLabel(r.created_at)}</span>
               </div>
               {r.title && <h3 class="pr-review__title">{r.title}</h3>}
-              <p class="p justify">{r.body}</p>
+              <p class="p">{r.body}</p>
               {r.reply && <p class="pr-review__reply"><strong>Odpowiedź sklepu:</strong> {r.reply}</p>}
             </article>
           ))}
@@ -428,7 +428,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-chips { display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 14px; z-index: 5; }
   .pr-sec { display: flex; flex-direction: column; gap: 24px; padding-top: 45px; border-top: 1px solid var(--image); scroll-margin-top: 90px; }
   .pr-chips + .pr-sec { padding-top: 0; border-top: none; }
-  .md :global(p), .md :global(li) { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); text-align: justify; }
+  .md :global(p), .md :global(li) { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); text-align: left; }
   .md :global(p + p) { margin-top: 24px; }
   .md :global(h2), .md :global(h3) { font-size: 24px; line-height: 28px; font-weight: 400; margin: 24px 0 10px; }
   .md :global(strong) { font-weight: 500; color: var(--ink); }
