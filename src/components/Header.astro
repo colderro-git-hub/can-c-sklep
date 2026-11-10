@@ -59,6 +59,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
           </div>
         </div>
 
+        <a href="#" lang="en" class="hd__lang" aria-label="English version">EN</a>
         <button type="button" class="hd__icon hd__burger" aria-controls="hd-nav" aria-expanded="false" aria-label="Menu" data-burger>
           <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
         </button>
@@ -87,10 +88,10 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__name { font-size: 36px; line-height: 54px; font-weight: 300; }
   .hd__right { display: flex; align-items: center; gap: 24px 28px; flex-wrap: wrap; }
   .hd__nav { display: flex; align-items: center; gap: 12px 28px; flex-wrap: wrap; }
-  .hd__link { font-size: 24px; line-height: 36px; font-weight: 300; color: var(--muted); text-decoration: none; white-space: nowrap; }
+  .hd__link { font-size: 18px; line-height: 27px; font-weight: 300; color: var(--muted); text-decoration: none; white-space: nowrap; }
   .hd__link:hover { color: var(--ink); }
   .hd__link[aria-current='page'] {
-    display: inline-block; height: 36px; padding: 0 15px; line-height: 34px;
+    display: inline-block; height: 32px; padding: 0 14px; line-height: 30px;
     border: 1px solid var(--ink); border-radius: var(--r-pill); font-weight: 400; color: var(--ink);
   }
   .hd__actions { display: flex; align-items: center; gap: 14px; }
@@ -101,9 +102,9 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__icon:hover { background: var(--band); }
   .hd__cartwrap { position: relative; }
   .hd__cart {
-    display: inline-flex; align-items: center; gap: 12px; height: 54px; padding: 0 14px 0 24px;
+    display: inline-flex; align-items: center; gap: 10px; height: 48px; padding: 0 12px 0 20px;
     border-radius: var(--r-md); background: var(--ink); color: var(--surface);
-    font-size: 24px; line-height: 36px; font-weight: 500; text-decoration: none;
+    font-size: 18px; line-height: 27px; font-weight: 500; text-decoration: none;
   }
   .hd__cart:hover { background: #3A3A3A; color: var(--surface); }
   .hd__count {
@@ -116,6 +117,8 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg);
     padding: 24px; display: flex; flex-direction: column; gap: 14px;
   }
+  .hd__lang { font-size: 16px; line-height: 24px; font-weight: 400; color: var(--ink); text-decoration: none; padding: 0 4px; }
+  .hd__lang:hover { color: var(--muted); }
   .hd__pvhead { font-size: 18px; line-height: 27px; font-weight: 400; }
   .hd__pvlist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow: auto; }
   .hd__pvlist :global(li) { display: flex; align-items: center; gap: 14px; font-size: 14px; line-height: 21px; font-weight: 300; }
@@ -127,10 +130,10 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
   .hd__pvbtn { height: 54px; font-size: 18px; }
   .hd__burger { display: none; }
 
-  /* Pełne menu z projektu potrzebuje ok. 1300 px ekranu – poniżej menu mobilne */
-  @media (max-width: 1320px) {
+  /* Pełne menu potrzebuje ok. 1150 px ekranu – poniżej menu mobilne */
+  @media (max-width: 1180px) {
     .hd__name { font-size: 28px; }
-    .hd__cart { font-size: 18px; height: 48px; padding: 0 10px 0 18px; }
+    .hd__cart { font-size: 16px; height: 44px; padding: 0 10px 0 16px; }
     .hd__burger { display: flex; }
     .hd__right { flex: 1; justify-content: flex-end; }
     .hd__nav {
@@ -197,7 +200,7 @@ const promos = ['promo1', 'promo2', 'promo3'] as const;
     return true;
   }
   async function show(added = false, autoHide = false) {
-    if (window.matchMedia('(max-width: 1320px)').matches) return;
+    if (window.matchMedia('(max-width: 1180px)').matches) return;
     if (!(await render(added)) || !pv) return;
     clearTimeout(hideT);
     pv.hidden = false;

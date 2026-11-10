@@ -93,14 +93,14 @@ const bundleRows = bundles.map((b) => {
   <section class="container" style="margin-top: 45px">
     <div class="hero" style="position:relative;height:638px">
       <!-- Kształty tła -->
-      <div class="hero-shape" style="position:absolute;left:838px;top:0;width:462px;height:545px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:941px;height:324px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:462px;height:417px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:788px;top:171px;width:50px;height:50px;background:radial-gradient(circle at 0 0,transparent 49.5px,var(--image) 50px)"></div>
-      <div class="hero-shape" style="position:absolute;left:462px;top:545px;width:50px;height:50px;background:radial-gradient(circle at 100% 100%,transparent 49.5px,var(--image) 50px)"></div>
+      <div class="hero-shape" style="position:absolute;left:64.46%;right:0;top:0;height:545px;background:var(--image);border-radius:50px"></div>
+      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:72.38%;height:324px;background:var(--image);border-radius:50px"></div>
+      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:35.54%;height:417px;background:var(--image);border-radius:50px"></div>
+      <div class="hero-shape" style="position:absolute;left:calc(64.46% - 50px);top:171px;width:50px;height:50px;background:radial-gradient(circle at 0 0,transparent 49.5px,var(--image) 50px)"></div>
+      <div class="hero-shape" style="position:absolute;left:35.54%;top:545px;width:50px;height:50px;background:radial-gradient(circle at 100% 100%,transparent 49.5px,var(--image) 50px)"></div>
       {hero.image_url
-        ? <img src={hero.image_url} alt={hero.image_alt} class="hero-shape" style="position:absolute;left:838px;top:0;width:462px;height:545px;object-fit:cover;border-radius:50px" width="462" height="545" loading="eager" />
-        : <span class="hero-shape" style="position:absolute;left:838px;top:300px;width:462px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: opakowanie Can-C]</span>}
+        ? <img src={hero.image_url} alt={hero.image_alt} class="hero-shape" style="position:absolute;left:64.46%;right:0;top:0;width:auto;height:545px;object-fit:cover;border-radius:50px" width="462" height="545" loading="eager" />
+        : <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: opakowanie Can-C]</span>}
       <!-- Tekst -->
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
         <span class="tag" style="align-self:flex-start;height:36px;padding:0 16px;font-size:16px">{hero.kicker}</span>
@@ -110,7 +110,7 @@ const bundleRows = bundles.map((b) => {
         </h1>
       </div>
       <span aria-hidden="true" style="position:absolute;left:9px;top:169px;width:50px;height:2px;background:var(--ink)"></span>
-      <p style="position:absolute;left:507px;top:590px;width:793px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:justify">{hero.lead}</p>
+      <p style="position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:justify">{hero.lead}</p>
     </div>
 
     <!-- Bloki zaufania + CTA -->

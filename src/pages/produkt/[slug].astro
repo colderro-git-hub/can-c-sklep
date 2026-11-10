@@ -399,7 +399,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
   .pr-thumb[aria-pressed='true'] { border-color: var(--ink); }
 
-  .pr-buy { width: 619px; display: flex; flex-direction: column; }
+  .pr-buy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .pr-title { margin-top: 10px; }
   .pr-tags { margin-top: 24px; }
   .pr-rating { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); text-decoration: none; }
@@ -424,7 +424,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
   .pr-band { margin-top: 90px; background: var(--band); }
   .pr-band__in { padding-top: 90px; padding-bottom: 90px; display: flex; align-items: flex-start; gap: 45px; }
-  .pr-details { width: 819px; display: flex; flex-direction: column; gap: 45px; }
+  .pr-details { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 45px; }
   .pr-chips { display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 14px; z-index: 5; }
   .pr-sec { display: flex; flex-direction: column; gap: 24px; padding-top: 45px; border-top: 1px solid var(--image); scroll-margin-top: 90px; }
   .pr-chips + .pr-sec { padding-top: 0; border-top: none; }

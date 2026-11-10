@@ -95,7 +95,8 @@
   --r-search: var(--r-md);
 
   /* Siatka */
-  --container: 1440px;   /* blok strony: 1300 px treści + 2 × 70 px marginesu (jak w projekcie) */
+  --content: 1440px;                                        /* szerokość treści na każdej stronie */
+  --container: calc(var(--content) + 2 * var(--page-px));   /* treść + marginesy boczne */
   --page-px:   70px;
 
   color-scheme: light;
@@ -132,6 +133,7 @@ body {
 }
 
 img, video { max-width: 100%; display: block; }
+[hidden] { display: none !important; } /* atrybut hidden wygrywa z display ustawionym w klasach */
 h1, h2, h3, h4, h5, h6 { margin: 0; letter-spacing: var(--ls); }
 p { margin: 0; }
 a { color: var(--ink); }
