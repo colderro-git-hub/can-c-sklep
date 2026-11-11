@@ -319,6 +319,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="org">Dane firmy</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="bots">Roboty i AI</button>
               <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="redirects">Przekierowania</button>
+              <button type="button" role="tab" class="seo-tab" aria-selected="false" data-seo-tab="verify">Weryfikacje</button>
             </div>
             <div data-seo-pane="pages" role="tabpanel">
               <p class="notice">Tytuł i opis widać w wynikach Google i w odpowiedziach wyszukiwarek AI. Puste pole = tekst domyślny (szary podgląd w polu). Zmiany działają na stronie w ciągu minuty. Produkty mają własne pola SEO w zakładce <strong>Produkty</strong>.</p>
@@ -423,6 +424,42 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                   <tbody data-nf-list><tr><td colspan="5" class="muted">Ładowanie…</td></tr></tbody>
                 </table></div>
               </div>
+            </div>
+            <div data-seo-pane="verify" role="tabpanel" class="stack" hidden>
+              <form class="card stack" data-verify-form novalidate>
+                <div class="card__head"><h2 class="card__title">Weryfikacja własności strony</h2></div>
+                <p class="muted">Wklej kod albo cały znacznik <code>&lt;meta …&gt;</code> – zapiszemy sam kod i dodamy go do strony. Weryfikację w narzędziu kliknij <strong>po starcie sklepu na can-c.pl</strong> (na stagingu adres jest inny).</p>
+                <div class="verify-row">
+                  <label class="field"><span>Google Search Console <span class="pill" data-v-st="google"></span></span><input class="input mono" name="google" placeholder='&lt;meta name="google-site-verification" content="…"&gt;' /></label>
+                  <p class="small muted">Search Console → Dodaj usługę → <strong>Prefiks adresu URL</strong> https://can-c.pl → Metoda „Tag HTML”. Wygodniej: usługa „Domena” z rekordem TXT w DNS Cloudflare – wtedy to pole jest niepotrzebne. Po weryfikacji dodaj mapę strony: <code>https://can-c.pl/sitemap.xml</code>.</p>
+                </div>
+                <div class="verify-row">
+                  <label class="field"><span>Bing Webmaster Tools <span class="pill" data-v-st="bing"></span></span><input class="input mono" name="bing" placeholder='&lt;meta name="msvalidate.01" content="…"&gt;' /></label>
+                  <p class="small muted">Bing Webmaster Tools → Dodaj witrynę → „Tag HTML”. Najszybciej: „Importuj z Google Search Console” – wtedy kod nie jest potrzebny. Bing zasila też Copilota i wyszukiwarkę w ChatGPT.</p>
+                </div>
+                <div class="verify-row">
+                  <label class="field"><span>Meta (Facebook, Instagram) <span class="pill" data-v-st="meta"></span></span><input class="input mono" name="meta" placeholder='&lt;meta name="facebook-domain-verification" content="…"&gt;' /></label>
+                  <p class="small muted">Meta Business Suite → Ustawienia firmy → Bezpieczeństwo marki → Domeny → „Metatag”. Potrzebne m.in. do konfiguracji zdarzeń konwersji (Meta CAPI).</p>
+                </div>
+                <div class="actions"><button class="btn btn--sm">Zapisz kody</button></div>
+              </form>
+
+              <form class="card stack" data-indexnow-form novalidate>
+                <div class="card__head"><h2 class="card__title">IndexNow <span class="pill" data-in-st></span></h2></div>
+                <p class="muted">Natychmiastowe powiadamianie wyszukiwarek o nowych i zmienionych stronach – zamiast czekać, aż robot sam je odwiedzi. Obsługują to Bing (a przez niego Copilot i ChatGPT), Yandex, Seznam i Naver. Google nie korzysta z IndexNow – dla niego wystarczy mapa strony w Search Console. <strong>Włącz po starcie sklepu</strong>: wyszukiwarki sprawdzają plik klucza na can-c.pl.</p>
+                <label class="check"><input type="checkbox" name="enabled" /> Włącz IndexNow</label>
+                <label class="check"><input type="checkbox" name="auto" /> Zgłaszaj automatycznie po zapisaniu produktu i strony w zakładce SEO</label>
+                <div class="field">Klucz <span class="muted small">publikowany pod adresem poniżej (wymóg IndexNow – to nie jest hasło)</span>
+                  <div class="actions"><code class="in-key" data-in-key>—</code><a class="btn btn--outline btn--sm" data-in-keylink target="_blank" rel="noopener">Otwórz plik klucza</a><button type="button" class="btn btn--outline btn--sm" data-in-regen>Wygeneruj nowy</button></div></div>
+                <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
+              </form>
+
+              <form class="card stack" data-indexnow-submit novalidate>
+                <div class="card__head"><h2 class="card__title">Zgłoś adresy</h2></div>
+                <label class="field">Adresy <span class="muted small">jeden w linii, np. https://can-c.pl/faq/ albo /faq/</span><textarea class="input mono" name="urls" rows="4" spellcheck="false"></textarea></label>
+                <div class="actions"><button class="btn btn--sm">Zgłoś adresy</button><button type="button" class="btn btn--outline btn--sm" data-in-all>Zgłoś wszystkie strony i produkty</button></div>
+                <div class="table-wrap"><table class="table"><thead><tr><th>Kiedy</th><th class="r">Adresów</th><th>Wynik</th><th>Kto</th></tr></thead><tbody data-in-log><tr><td colspan="4" class="muted">Brak zgłoszeń.</td></tr></tbody></table></div>
+              </form>
             </div>
             <div data-seo-pane="share" role="tabpanel" hidden>
               <form class="card" data-seo-share novalidate>
@@ -621,7 +658,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
   /* Karta z tabelą */
   .input--sm { height: 36px; font-size: 13px; }
-  .ok { color: #146c43; }
+  .ok { color: #146c43 !important; }
+  .verify-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: end; padding-top: 12px; border-top: 1px solid var(--line-soft); }
+  .verify-row .field > span:first-child { display: flex; align-items: center; gap: 8px; }
+  .in-key { padding: 8px 12px; border-radius: var(--r-md); background: var(--line-soft); font: 13px ui-monospace, Menlo, Consolas, monospace; }
+  @media (max-width: 900px) { .verify-row { grid-template-columns: minmax(0, 1fr); } }
   .rd-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 180px; gap: 12px; }
   .rd-table td { vertical-align: top; }
   .rd-path { max-width: 380px; word-break: break-all; }
@@ -2745,6 +2786,54 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     fbPrev();
     fillOrg(seoData as any);
     fillBots(seoData as any);
+    fillVerify(seoData as any);
+  }
+
+  // Weryfikacje i IndexNow
+  function fillVerify(d: any) {
+    const vf = $<HTMLFormElement>('[data-verify-form]');
+    const v = d.seo.verify || {};
+    for (const k of ['google', 'bing', 'meta']) {
+      (vf.elements.namedItem(k) as HTMLInputElement).value = v[k] || '';
+      const st = vf.querySelector<HTMLElement>(`[data-v-st="${k}"]`)!;
+      st.textContent = v[k] ? 'Kod na stronie' : 'Brak'; st.className = `pill ${v[k] ? 'pill--ok' : ''}`;
+    }
+    vf.onsubmit = async (e) => {
+      e.preventDefault();
+      const fd = new FormData(vf);
+      try { const r = await api('/api/admin/seo', { action: 'verify', google: fd.get('google'), bing: fd.get('bing'), meta: fd.get('meta') }); seoData!.seo = r.seo; fillVerify(seoData); toast('Zapisano kody weryfikacyjne.'); }
+      catch (err) { toast((err as Error).message, true); }
+    };
+    const inf = $<HTMLFormElement>('[data-indexnow-form]');
+    const ix = d.seo.indexnow || {};
+    (inf.elements.namedItem('enabled') as HTMLInputElement).checked = !!ix.enabled;
+    (inf.elements.namedItem('auto') as HTMLInputElement).checked = ix.auto !== false;
+    const st = $<HTMLElement>('[data-in-st]');
+    const last = (ix.log || [])[0];
+    st.textContent = !ix.enabled ? 'Wyłączony' : last ? (last.ok ? 'Działa' : 'Błąd ostatniego zgłoszenia') : 'Włączony';
+    st.className = `pill ${!ix.enabled ? '' : last && !last.ok ? 'pill--warn' : 'pill--ok'}`;
+    $('[data-in-key]').textContent = ix.key || 'zostanie wygenerowany przy zapisie';
+    const link = $<HTMLAnchorElement>('[data-in-keylink]');
+    link.hidden = !ix.key; if (ix.key) link.href = `/${ix.key}.txt`;
+    const saveIx = async (regenerate = false) => {
+      const fd = new FormData(inf);
+      const r = await api('/api/admin/seo', { action: 'indexnow', enabled: fd.get('enabled') !== null, auto: fd.get('auto') !== null, regenerate });
+      seoData!.seo = r.seo; fillVerify(seoData);
+    };
+    inf.onsubmit = async (e) => { e.preventDefault(); try { await saveIx(); toast('Zapisano ustawienia IndexNow.'); } catch (err) { toast((err as Error).message, true); } };
+    ($('[data-in-regen]') as HTMLButtonElement).onclick = async () => {
+      if (!confirm('Wygenerować nowy klucz? Stary przestanie działać od razu.')) return;
+      try { await saveIx(true); toast('Wygenerowano nowy klucz.'); } catch (err) { toast((err as Error).message, true); }
+    };
+    $('[data-in-log]').innerHTML = (ix.log || []).length ? ix.log.map((l: any) => `<tr><td class="nowrap">${fmtDate(l.at)}${l.auto ? ' <span class="muted small">auto</span>' : ''}</td><td class="r">${l.count}</td><td class="${l.ok ? 'ok' : 'err'}">${esc(l.message)}${l.status ? ` (${l.status})` : ''}</td><td class="small muted">${esc(l.by)}</td></tr>`).join('')
+      : '<tr><td colspan="4" class="muted">Brak zgłoszeń.</td></tr>';
+    const sf = $<HTMLFormElement>('[data-indexnow-submit]');
+    const submit = async (body: any) => {
+      try { const r = await api('/api/admin/seo', { action: 'indexnow-submit', ...body }); seoData!.seo = r.seo; fillVerify(seoData); toast(`Zgłoszono ${r.count} adres(ów): ${r.message}.`); return true; }
+      catch (err) { toast((err as Error).message, true); try { seoData = await api('/api/admin/seo'); fillVerify(seoData); } catch { /* bez odświeżenia */ } return false; }
+    };
+    sf.onsubmit = async (e) => { e.preventDefault(); if (await submit({ urls: new FormData(sf).get('urls') })) sf.reset(); };
+    ($('[data-in-all]') as HTMLButtonElement).onclick = () => submit({ all: true });
   }
 
   // Roboty i AI

@@ -3,6 +3,8 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { clearCatalogCache, PRODUCT_FIELDS } from '../../../lib/catalog';
+import { submitIndexNow } from '../../../lib/indexnow';
+import { later } from '../../../lib/background';
 import { availabilityOf } from '../../../lib/pricing';
 import { sendBackInStock } from '../../../lib/stock-notify';
 
@@ -113,11 +115,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (wasOut && availabilityOf(row) !== 'out_of_stock' && row.active && row.price !== null) {
         clearCatalogCache();
         const r = await sendBackInStock(env, id, new URL(request.url).origin);
-        if (r.sent) { console.log(`Admin ${admin} zapisał produkt ${id}; powiadomienia: ${r.sent}`); return json(200, { id, notified: r.sent }); }
+        if (r.sent) {
+          console.log(`Admin ${admin} zapisał produkt ${id}; powiadomienia: ${r.sent}`);
+          await later(locals, submitIndexNow(env, [`/produkt/${id}/`, '/sklep/', '/'], admin, true));
+          return json(200, { id, notified: r.sent });
+        }
       }
     }
     clearCatalogCache();
     console.log(`Admin ${admin} zapisał produkt ${id}`);
+    // IndexNow (jeśli włączony): karta produktu, sklep i strona główna – po wysłaniu odpowiedzi
+    await later(locals, submitIndexNow(env, [`/produkt/${id}/`, '/sklep/', '/'], admin, true));
     return json(200, { id });
   } catch (e) {
     console.error('Admin product save: ' + (e instanceof Error ? e.message : String(e)));

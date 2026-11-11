@@ -3,20 +3,7 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getEnv } from './lib/env';
 import { matchRedirect, targetUrl, isProbe, logNotFound, countRedirectHit } from './lib/redirects';
-
-// Zapis „w tle” po wysłaniu odpowiedzi (ctx.waitUntil); gdy niedostępne – czekamy na zapis
-async function later(locals: unknown, task: Promise<unknown>) {
-  const safe = task.catch((e) => console.error('SEO w tle: ' + (e instanceof Error ? e.message : String(e))));
-  try {
-    const ctx = (locals as any)?.runtime?.ctx ?? (locals as any)?.cfContext;
-    if (ctx?.waitUntil) return ctx.waitUntil(safe);
-  } catch { /* Astro 6+: brak locals.runtime */ }
-  try {
-    const mod: any = await import('cloudflare:workers');
-    if (typeof mod.waitUntil === 'function') return mod.waitUntil(safe);
-  } catch { /* poza Workers */ }
-  await safe;
-}
+import { later } from './lib/background';
 
 const SKIP = /^\/(api|admin|_astro|_image|_server-islands)(\/|$)/;
 

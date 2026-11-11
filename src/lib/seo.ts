@@ -14,7 +14,10 @@ export type SeoSettings = {
   org: SeoOrg;
   ai: { block?: string[] };
   llms: { enabled?: boolean; summary?: string; extra?: string };
+  verify: { google?: string; bing?: string; meta?: string };
+  indexnow: { enabled?: boolean; key?: string; auto?: boolean; log?: IndexNowLog[] };
 };
+export type IndexNowLog = { at: string; count: number; status: number; ok: boolean; by: string; auto: boolean; message: string };
 
 // Strony z treścią, którymi zarządza zakładka SEO → Strony. Domyślne tytuły i opisy = wartości z kodu stron
 // (używane, gdy w panelu pole jest puste). Produkty mają własne pola SEO w zakładce Produkty.
@@ -33,7 +36,7 @@ export const SEO_PAGES: { path: string; label: string; title: string; descriptio
 ];
 
 export const SEO_LIMITS = { title: 60, description: 155 };
-const EMPTY: SeoSettings = { pages: {}, share: {}, org: {}, ai: {}, llms: {} };
+const EMPTY: SeoSettings = { pages: {}, share: {}, org: {}, ai: {}, llms: {}, verify: {}, indexnow: {} };
 let cache: { at: number; value: SeoSettings } | null = null;
 
 export async function getSeo(env: Env): Promise<SeoSettings> {
@@ -42,7 +45,7 @@ export async function getSeo(env: Env): Promise<SeoSettings> {
   try {
     const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
     const v = row?.value ?? {};
-    const value: SeoSettings = { pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {} };
+    const value: SeoSettings = { pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {}, verify: v.verify ?? {}, indexnow: v.indexnow ?? {} };
     cache = { at: Date.now(), value };
     return value;
   } catch (e) {

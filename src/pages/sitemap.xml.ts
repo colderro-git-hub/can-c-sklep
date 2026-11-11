@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
+import { getSeo } from '../lib/seo';
 
 export const prerender = false;
 
@@ -11,11 +12,18 @@ const x = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt
 export const GET: APIRoute = async ({ locals, url }) => {
   const origin = url.origin;
   let products: Awaited<ReturnType<typeof getCatalog>> = [];
-  try { products = await getCatalog(await getEnv(locals)); } catch (e) { console.error('Sitemap: ' + (e instanceof Error ? e.message : String(e))); }
+  let pages = PAGES;
+  try {
+    const env = await getEnv(locals);
+    products = await getCatalog(env);
+    // Strony oznaczone w panelu jako „Nie indeksuj” nie trafiają do mapy (spójny sygnał dla Google)
+    const seo = await getSeo(env);
+    pages = PAGES.filter((p) => !seo.pages[p]?.noindex);
+  } catch (e) { console.error('Sitemap: ' + (e instanceof Error ? e.message : String(e))); }
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">',
-    ...PAGES.map((p) => `  <url><loc>${x(origin + p)}</loc></url>`),
+    ...pages.map((p) => `  <url><loc>${x(origin + p)}</loc></url>`),
     ...products.map((p) => [
       '  <url>',
       `    <loc>${x(`${origin}/produkt/${p.id}/`)}</loc>`,

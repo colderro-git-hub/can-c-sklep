@@ -8,6 +8,8 @@ import { SEO_PAGES, SEO_LIMITS, clearSeoCache, orgData, orgJsonLd, breadcrumbJso
 import { getSite } from '../../../lib/site-settings';
 import { AI_BOTS, AI_BOT_IDS, getCustomRobots, defaultRobots, renderRobots } from '../../../lib/robots';
 import { buildLlms } from '../../../lib/llms';
+import { submitIndexNow, newIndexNowKey, allUrls, SITE_HOST } from '../../../lib/indexnow';
+import { later } from '../../../lib/background';
 
 export const prerender = false;
 
@@ -17,7 +19,7 @@ async function readSeo(env: Parameters<typeof db>[0]): Promise<SeoSettings> {
   const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
   // Cały wpis (także działy, których ta akcja nie zmienia) – zapis jednego działu nie kasuje pozostałych
   const v: any = row?.value ?? {};
-  return { ...v, pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {} };
+  return { ...v, pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {}, verify: v.verify ?? {}, indexnow: v.indexnow ?? {} };
 }
 
 // Wartości domyślne (z Ustawień sklepu) i podgląd danych strukturalnych dla działu „Dane firmy”
@@ -46,7 +48,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   try {
     const seo = await readSeo(env);
-    return json(200, { seo, pages: SEO_PAGES, limits: SEO_LIMITS, ...orgPreview(seo, await getSite(env)), ...(await botsPreview(env, seo)) });
+    return json(200, { seo, pages: SEO_PAGES, limits: SEO_LIMITS, host: SITE_HOST, ...orgPreview(seo, await getSite(env)), ...(await botsPreview(env, seo)) });
   } catch (e) {
     console.error('SEO GET: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Nie udało się wczytać ustawień SEO.' });
@@ -101,6 +103,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (org.foundingDate && !/^\d{4}(-\d{2}(-\d{2})?)?$/.test(org.foundingDate)) return json(422, { error: 'Data założenia: rok (np. 2012) albo RRRR-MM-DD.' });
     // Zapisujemy tylko pola różne od pustych; okruszki zapisujemy tylko gdy wyłączone
     seo.org = Object.fromEntries(Object.entries(org).filter(([k, v]) => (k === 'breadcrumbs' ? v === false : Array.isArray(v) ? v.length : v !== '')));
+  } else if (b.action === 'verify') {
+    // Przyjmujemy sam kod albo cały wklejony znacznik <meta … content="…">
+    const code = (v: unknown) => { const t = String(v ?? '').trim(); const m = t.match(/content\s*=\s*["']([^"']+)["']/i); return (m ? m[1] : t).trim(); };
+    const verify = { google: code(b.google), bing: code(b.bing), meta: code(b.meta) };
+    const bad = Object.entries(verify).find(([, v]) => v && !/^[A-Za-z0-9_\-=.:+\/]{6,120}$/.test(v));
+    if (bad) return json(422, { error: `Nieprawidłowy kod weryfikacyjny (${bad[0] === 'google' ? 'Google' : bad[0] === 'bing' ? 'Bing' : 'Meta'}). Wklej sam kod albo cały znacznik <meta>.` });
+    seo.verify = Object.fromEntries(Object.entries(verify).filter(([, v]) => v));
+  } else if (b.action === 'indexnow') {
+    const cur: any = seo.indexnow || {};
+    seo.indexnow = { ...cur, enabled: b.enabled === true, auto: b.auto !== false, key: b.regenerate || !cur.key ? newIndexNowKey() : cur.key };
+  } else if (b.action === 'indexnow-submit') {
+    const noindex = new Set(Object.entries(seo.pages).filter(([, v]: any) => v?.noindex).map(([k]) => k));
+    const urls = b.all ? await allUrls(env, noindex) : String(b.urls || '').split(/\s+/).filter(Boolean);
+    const r = await submitIndexNow(env, urls, admin, false);
+    const fresh = await readSeo(env);
+    return json(r.ok ? 200 : r.skipped ? 409 : 502, { ...r, error: r.ok ? undefined : r.message, seo: fresh });
   } else if (b.action === 'ai') {
     const block = Array.isArray(b.block) ? b.block.map(String).filter((id: string) => AI_BOT_IDS.has(id)) : [];
     seo.ai = block.length ? { block } : {};
@@ -116,6 +134,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await db(env).upsert('settings', { key: 'seo', value: seo, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
     clearSeoCache();
     console.log(`Admin ${admin} zmienił SEO (${b.action}${b.path ? ' ' + b.path : ''})`);
+    if (b.action === 'page' && !seo.pages[b.path]?.noindex) await later(locals, submitIndexNow(env, [b.path], admin, true));
     const extra = b.action === 'org' ? orgPreview(seo, await getSite(env)) : b.action === 'ai' || b.action === 'llms' ? await botsPreview(env, seo) : {};
     return json(200, { seo, ...extra });
   } catch (e) {

@@ -22,7 +22,7 @@ const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
 
 // SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
 // Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu – zostają wartości z kodu.
-let seo: Awaited<ReturnType<typeof getSeo>> = { pages: {}, share: {}, org: {} };
+let seo: Awaited<ReturnType<typeof getSeo>> = { pages: {}, share: {}, org: {}, ai: {}, llms: {}, verify: {}, indexnow: {} };
 let site: Record<string, any> = {};
 try {
   const env = await getEnv(Astro.locals);
@@ -79,6 +79,9 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     {ogImage && <meta property="og:image:alt" content={title} />}
     <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     {twitter.length > 1 && <meta name="twitter:site" content={twitter} />}
+    {seo.verify?.google && <meta name="google-site-verification" content={seo.verify.google} />}
+    {seo.verify?.bing && <meta name="msvalidate.01" content={seo.verify.bing} />}
+    {seo.verify?.meta && <meta name="facebook-domain-verification" content={seo.verify.meta} />}
     {orgLd && <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />}
     {crumbLd && <script type="application/ld+json" set:html={JSON.stringify(crumbLd)} />}
     <!-- Consent Mode v2 + GTM: ID pobierany z /api/ustawienia (działa na stronach statycznych i SSR) -->
