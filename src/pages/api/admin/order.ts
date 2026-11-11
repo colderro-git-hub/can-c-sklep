@@ -4,7 +4,9 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { sendMail } from '../../../lib/mail';
 import { trackingUrl, carrierLabel } from '../../../lib/tracking';
-import { orderShippedHtml } from '../../../lib/email-templates';
+import { orderShippedHtml, orderRefundedHtml } from '../../../lib/email-templates';
+import { clearCatalogCache } from '../../../lib/catalog';
+import { BANK_PROVIDER } from '../../../lib/bank-transfer';
 import { getSite } from '../../../lib/site-settings';
 import { p24Config, getTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
@@ -31,7 +33,8 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   }
 };
 
-// Akcje: { id, action: 'ship'|'complete'|'hold'|'unhold'|'cancel'|'note', carrier?, tracking?, note?, notify? }
+// Akcje: { id, action: 'ship'|'complete'|'hold'|'unhold'|'cancel'|'refund'|'note', carrier?, tracking?, note?, notify? }
+// refund: { amount (grosze, domyślnie całość), restock, notify, message (do klienta) }
 const ALLOWED: Record<string, { from: string[]; to?: string }> = {
   ship: { from: ['paid', 'on_hold'], to: 'shipped' },
   complete: { from: ['paid', 'shipped'], to: 'completed' },
@@ -39,6 +42,8 @@ const ALLOWED: Record<string, { from: string[]; to?: string }> = {
   hold: { from: ['paid'], to: 'on_hold' },
   unhold: { from: ['on_hold'], to: 'paid' },
   cancel: { from: ['pending_payment', 'paid', 'on_hold'], to: 'cancelled' },
+  // Zwrot: tylko zamówienia opłacone (także anulowane po opłaceniu); pieniądze oddaje admin w P24 / banku
+  refund: { from: ['paid', 'on_hold', 'shipped', 'completed', 'cancelled'], to: 'refunded' },
   note: { from: [] },
   check_payment: { from: ['pending_payment', 'cancelled'] },
   update: { from: ['pending_payment', 'paid', 'on_hold', 'shipped', 'completed', 'cancelled'] },
@@ -134,6 +139,57 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(409, { error: 'To zamówienie pochodzi z WooCommerce – obsłuż je w obecnym sklepie.' });
     }
     if (!rule.from.includes(order.status)) return json(409, { error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` });
+
+    if (b.action === 'refund') {
+      const [full] = await sb.select<any>(`orders?select=paid_at,payment_provider,customers(first_name)&id=eq.${order.id}`);
+      if (!full?.paid_at) return json(409, { error: 'Zamówienie nie zostało opłacone – nie ma czego zwracać. Użyj „Anuluj”.' });
+      const amount = b.amount === undefined || b.amount === null || b.amount === '' ? order.total : Math.round(Number(b.amount));
+      if (!Number.isFinite(amount) || amount <= 0 || amount > order.total) return json(422, { error: `Kwota zwrotu: od 0,01 zł do ${(order.total / 100).toFixed(2).replace('.', ',')} zł.` });
+      const message = String(b.message ?? '').replace(/\r/g, '').trim().slice(0, 1000);
+      const now = new Date().toISOString();
+      const updated = await sb.update(`orders?id=eq.${order.id}&status=eq.${order.status}`, { status: 'refunded', refunded_amount: amount, refunded_at: now }, 'id');
+      if (!updated.length) return json(409, { error: 'Zamówienie zostało w międzyczasie zmienione. Odśwież.' });
+      await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: 'refunded', by: admin, amount, restock: b.restock === true, ...(message ? { note: message } : {}) } }, 'id');
+
+      const warnings: string[] = [];
+      if (b.restock === true) {
+        try { await sb.rpc('restore_order_stock', { p_order: order.id }); clearCatalogCache(); await sb.insert('order_events', { order_id: order.id, type: 'stock_restored', data: { by: admin } }, 'id'); }
+        catch (e) { console.error('Zwrot – stan magazynowy: ' + (e instanceof Error ? e.message : String(e))); warnings.push('Nie udało się przywrócić stanów magazynowych (czy uruchomiono 018_zwroty.sql?).'); }
+      }
+      if (b.notify !== false) {
+        const method = full.payment_provider === BANK_PROVIDER ? 'przelewem na konto, z którego otrzymaliśmy wpłatę'
+          : full.payment_provider === 'przelewy24' ? 'tą samą metodą, którą zapłacono (przez Przelewy24)' : 'tą samą metodą, którą zapłacono';
+        const firstName = full.customers?.first_name || null;
+        const kwota = (amount / 100).toFixed(2).replace('.', ',') + ' zł';
+        try {
+          await sendMail(env, {
+            to: order.email,
+            subject: `Zwrot środków – zamówienie nr ${order.number} – Can-C`,
+            replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+            html: orderRefundedHtml({ site: await getSite(env), origin: new URL(request.url).origin, number: order.number, firstName, amount, total: order.total, method, note: message }),
+            text: [
+              firstName ? `Dzień dobry ${firstName},` : 'Dzień dobry,',
+              '',
+              `${amount < order.total ? 'zleciliśmy częściowy zwrot' : 'zleciliśmy zwrot'} pieniędzy za zamówienie nr ${order.number}.`,
+              `Kwota zwrotu: ${kwota}`,
+              ...(message ? ['', message] : []),
+              '',
+              `Pieniądze wrócą ${method}. Zwykle trwa to do 5 dni roboczych, w zależności od banku.`,
+              '',
+              'Zespół Can-C',
+            ].join('\n'),
+          });
+          await sb.insert('order_events', { order_id: order.id, type: 'mail_refunded', data: { amount } }, 'id');
+        } catch (e) {
+          console.error('Mail o zwrocie: ' + (e instanceof Error ? e.message : String(e)));
+          await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { error: 'mail o zwrocie' } }, 'id').catch(() => {});
+          warnings.push('Nie udało się wysłać e-maila do klienta.');
+        }
+      }
+      if (full.payment_provider !== BANK_PROVIDER) warnings.unshift('Pamiętaj o zleceniu zwrotu w panelu Przelewy24 – zmiana statusu nie przelewa pieniędzy.');
+      else warnings.unshift('Pamiętaj o wykonaniu przelewu zwrotnego – zmiana statusu nie przelewa pieniędzy.');
+      return json(200, { ok: true, warning: warnings.join(' ') });
+    }
 
     const patch: Record<string, unknown> = { status: rule.to };
     let carrier = '', tracking = '';

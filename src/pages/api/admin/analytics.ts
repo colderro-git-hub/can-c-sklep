@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
 
   try {
     const [orders, codes] = await Promise.all([
-      sb.select<any>(`orders?select=id,number,status,total,subtotal,discount,shipping_cost,discount_code,discount_code_amount,shipping_method,payment_provider,source,created_at,paid_at,shipped_at,customer_id,email&created_at=gte.${from}&order=created_at.asc`),
+      sb.select<any>(`orders?select=id,number,status,total,refunded_amount,subtotal,discount,shipping_cost,discount_code,discount_code_amount,shipping_method,payment_provider,source,created_at,paid_at,shipped_at,customer_id,email&created_at=gte.${from}&order=created_at.asc`),
       sb.select<any>(`discount_codes?select=id,code,type,value,used_count,description,active`),
     ]);
 
@@ -50,10 +50,15 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
       completed: allShop.filter((o: any) => o.status === 'completed').length,
       cancelled: allShop.filter((o: any) => o.status === 'cancelled').length,
       pending: allShop.filter((o: any) => o.status === 'pending_payment').length,
+      refunded: allShop.filter((o: any) => o.status === 'refunded').length,
     };
 
     // ---- KPI ----
-    const revenue = paidOrders.reduce((s: number, o: any) => s + o.total, 0);
+    // Zwroty częściowe: w przychodzie zostaje część niezwrócona
+    const refundedOrders = allShop.filter((o: any) => o.status === 'refunded');
+    const kept = (o: any) => Math.max(0, o.total - (o.refunded_amount ?? o.total));
+    const refunds = { count: refundedOrders.length, amount: refundedOrders.reduce((s: number, o: any) => s + (o.refunded_amount ?? o.total), 0) };
+    const revenue = paidOrders.reduce((s: number, o: any) => s + o.total, 0) + refundedOrders.reduce((s: number, o: any) => s + kept(o), 0);
     const avgOrder = paidOrders.length ? Math.round(revenue / paidOrders.length) : 0;
     const convRate = allShop.length ? Math.round((paidOrders.length / allShop.length) * 1000) / 10 : 0;
 
@@ -135,7 +140,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
 
     return json(200, {
       range: days, from, ga4,
-      kpi: { revenue, orders: paidOrders.length, avgOrder, convRate, avgPayMin, newCustomers, returning, guests },
+      kpi: { revenue, refunds, orders: paidOrders.length, avgOrder, convRate, avgPayMin, newCustomers, returning, guests },
       prev: { revenue: prevRevenue, orders: prevPaid.length },
       funnel, daily, topProducts, byShipping, byPayment, topCodes,
     });

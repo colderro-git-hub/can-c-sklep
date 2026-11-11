@@ -44,11 +44,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   // Logo (nagłówek / stopka) – osobny zapis; adres musi wskazywać na folder logo/ we własnym magazynie zdjęć
   if (b.action === 'logo') {
-    const field = b.target === 'footer' ? 'logoFooter' : b.target === 'header' ? 'logoHeader' : '';
+    const FIELDS: Record<string, string> = {
+      header: 'logoHeader', footer: 'logoFooter',
+      'favicon-light': 'faviconLight', 'favicon-dark': 'faviconDark', 'favicon-apple': 'faviconApple',
+    };
+    const field = FIELDS[String(b.target)] ?? '';
     if (!field) return json(400, { error: 'Nieznane miejsce logo.' });
     const url = String(b.url ?? '').trim();
     const base = (env.SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
     if (url && !url.startsWith(`${base}/storage/v1/object/public/products/logo/`)) return json(422, { error: 'Nieprawidłowy adres logo. Wyślij plik przez panel.' });
+    // Ikona Apple musi być bitmapą (iOS nie obsługuje SVG na ekranie głównym)
+    if (url && field === 'faviconApple' && !/\.(png|jpg)$/i.test(url)) return json(422, { error: 'Ikona Apple: wgraj plik PNG (najlepiej 180 × 180 px).' });
     try {
       const sb = db(env);
       const [row] = await sb.select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');

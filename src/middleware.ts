@@ -1,13 +1,26 @@
 // Przekierowania ze starych adresów (np. WordPress) i dziennik błędów 404 – panel: SEO → Przekierowania.
 // Pliki statyczne Cloudflare serwuje bez udziału tego kodu, więc nie spowalnia to zwykłych stron.
 import { defineMiddleware } from 'astro:middleware';
+import type { APIContext, MiddlewareNext } from 'astro';
 import { getEnv } from './lib/env';
 import { matchRedirect, targetUrl, isProbe, logNotFound, countRedirectHit } from './lib/redirects';
 import { later } from './lib/background';
+import { typoResponse } from './lib/typography';
 
-const SKIP = /^\/(api|admin|_astro|_image|_server-islands)(\/|$)/;
+const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon)(\/|$|\.ico$)/;
+
+// Typografia (twarde spacje po spójnikach, wyrazy z łącznikiem w jednym wierszu) dla wszystkich stron sklepu –
+// SSR przy każdym żądaniu, statycznych raz przy budowaniu. Panel admina i API bez zmian.
+const NO_TYPO = /^\/(api|admin)(\/|$)/;
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const res = await route(context, next);
+  if (NO_TYPO.test(context.url.pathname)) return res;
+  try { return await typoResponse(res); }
+  catch (e) { console.error('Typografia: ' + (e instanceof Error ? e.message : String(e))); return res; }
+});
+
+async function route(context: APIContext, next: MiddlewareNext): Promise<Response> {
   if (context.isPrerendered) return next();
   const { pathname, search } = context.url;
   const method = context.request.method;
@@ -33,4 +46,4 @@ export const onRequest = defineMiddleware(async (context, next) => {
     await later(context.locals, logNotFound(env, pathname + search, ref, context.request.headers.get('user-agent')));
   }
   return res;
-});
+}

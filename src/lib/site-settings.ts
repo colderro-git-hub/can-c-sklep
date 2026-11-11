@@ -17,7 +17,8 @@ export const CONTENT_DEFAULTS = {
 };
 
 // Logo jako obraz (adres w Supabase Storage); puste = logo tekstowe. Zapisywane osobną akcją w panelu.
-export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '' };
+// Favicon: osobno dla jasnego i ciemnego motywu przeglądarki + ikona Apple (ekran główny iPhone'a); serwowane przez /favicon/*.
+export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '', faviconLight: '', faviconDark: '', faviconApple: '' };
 export const LOGO_KEYS = Object.keys(LOGO_DEFAULTS) as (keyof typeof LOGO_DEFAULTS)[];
 
 const defaults = { ...configSite, ...CONTENT_DEFAULTS, ...LOGO_DEFAULTS };

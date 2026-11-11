@@ -99,6 +99,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 <script>
   import { getCart, setQty, onCartChange } from '../lib/cart';
   import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
+  import { typoSafe } from '../lib/typography';
 
   (async () => {
     await (window as any).__CANC_READY__;
@@ -131,7 +132,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         const el = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = `/produkt/${p.slug}/`; });
         if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = p.image; img.hidden = false; }
-        el.querySelector('.ct__name')!.textContent = p.name;
+        el.querySelector('.ct__name')!.innerHTML = typoSafe(p.name);
         const unit = p.price !== null ? `${pln.format(p.price)} / szt.` : '';
         el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat ${Math.round(d * 100)}%` : ''].filter(Boolean).join(' · ');
         if (p.leadTime && !out) { const lt = el.querySelector<HTMLElement>('[data-lead]')!; lt.lastElementChild!.textContent = p.leadTime; lt.hidden = false; }

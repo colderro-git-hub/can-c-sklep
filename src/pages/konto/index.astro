@@ -139,6 +139,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 
 <script>
   import { sb } from '../../lib/sb-client';
+  import { typoSafe } from '../../lib/typography';
   import { addItem } from '../../lib/cart';
   import { trackLogin, trackSignUp, setUserId, clearUserData, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
 
@@ -294,7 +295,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
         </div>
         <div class="ac__oitems">
           ${thumb ? `<img class="ac__othumb" src="${esc(thumb)}" alt="" width="66" height="66" loading="lazy">` : '<span class="ac__othumb"></span>'}
-          <span>${o.order_items.map((i: any) => `${esc(i.name)} × ${i.qty}`).join('<br>')}</span>
+          <span>${o.order_items.map((i: any) => `${typoSafe(i.name)} × ${i.qty}`).join('<br>')}</span>
         </div>
         <div class="ac__ofoot">
           <div class="ac__opay">

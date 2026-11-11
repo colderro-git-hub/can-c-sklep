@@ -63,6 +63,20 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
       })();
     </script>
     <meta name="color-scheme" content="light" />
+    <!-- Favicon z panelu (Ustawienia sklepu): wersja zależna od motywu przeglądarki/systemu.
+         Atrybut media nie działa we wszystkich przeglądarkach, więc przełączamy go też skryptem. -->
+    <link rel="icon" href="/favicon/light" data-favicon />
+    <link rel="apple-touch-icon" href="/favicon/apple" />
+    <script is:inline>
+      (function () {
+        var link = document.querySelector('link[data-favicon]');
+        if (!link || !window.matchMedia) return;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        var set = function () { link.href = mq.matches ? '/favicon/dark' : '/favicon/light'; };
+        set();
+        if (mq.addEventListener) mq.addEventListener('change', set); else if (mq.addListener) mq.addListener(set);
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />

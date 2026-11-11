@@ -196,8 +196,8 @@ const bundleRows = bundles.map((b) => {
       <h2 class="h2">{benefits.h2}</h2>
       <ul class="benefits-list" style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 45px">
         {(benefits.items as string[]).map((item: string) => (
-          <li style="display:flex;align-items:flex-start;gap:14px;padding-top:14px;border-top:1px solid var(--line);font-size:16px;line-height:24px;font-weight:300">
-            <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10" style="flex-shrink:0;margin-top:7px"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <li class="lead" style="display:flex;align-items:flex-start;gap:14px;padding-top:14px;border-top:1px solid var(--line)">
+            <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10" style="flex-shrink:0;margin-top:9px"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
             <span set:html={item.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')} />
           </li>
         ))}

@@ -162,6 +162,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 <script>
   import { getCart, onCartChange, type CartItem } from '../lib/cart';
   import { ADDED_EVENT } from '../lib/cart-fx';
+  import { typoSafe } from '../lib/typography';
 
   type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string };
   const zl = (gr: number) => (gr / 100).toFixed(2).replace('.', ',') + ' zł';
@@ -200,7 +201,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
       const line = (p.price ?? 0) * i.qty;
       sum += line;
       const img = p.image ? `<img class="pv-img" src="${esc(p.image)}" alt="" loading="lazy">` : '<span class="pv-img"></span>';
-      return `<li>${img}<span class="pv-name">${esc(p.name)} × ${i.qty}</span><span class="pv-price">${zl(line)}</span></li>`;
+      return `<li>${img}<span class="pv-name">${typoSafe(p.name)} × ${i.qty}</span><span class="pv-price">${zl(line)}</span></li>`;
     }).join('');
     total.textContent = zl(sum);
     if (head) head.textContent = added ? 'Dodano do koszyka' : 'Twój koszyk';

@@ -9,6 +9,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>Panel Can-C</title>
+    <link rel="icon" href="/favicon/light" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@400;500&display=swap" rel="stylesheet" />
@@ -128,6 +129,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <button type="button" class="tab" data-status="pending_payment" aria-pressed="false">Czekają na płatność <span data-count="pending_payment"></span></button>
                 <button type="button" class="tab" data-status="completed" aria-pressed="false">Zrealizowane</button>
                 <button type="button" class="tab" data-status="cancelled" aria-pressed="false">Anulowane</button>
+                <button type="button" class="tab" data-status="refunded" aria-pressed="false">Zwrócone</button>
                 <button type="button" class="tab" data-status="" aria-pressed="false">Wszystkie</button>
               </div>
               <div class="table-wrap">
@@ -505,6 +507,36 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 </div>
               </div>
             </div>
+            <div class="card" data-favicons>
+              <div class="card__head"><h2 class="card__title">Favicon</h2><span class="muted small">SVG lub PNG · kwadrat, min. 48 × 48 px (PNG najlepiej 512 × 512) · do 1 MB</span></div>
+              <p class="muted">Ikona na karcie przeglądarki i w zakładkach. Przeglądarka wybiera wersję według swojego motywu (jasny/ciemny), a nie przełącznika na stronie. Bez wersji ciemnej wszędzie będzie jasna. Przeglądarki długo pamiętają favicon – zmianę zobaczysz po kilku minutach, czasem dopiero po odświeżeniu z wyczyszczeniem pamięci (Ctrl+F5).</p>
+              <div class="logo-grid logo-grid--3">
+                <div class="logo-slot" data-logo-slot="favicon-light">
+                  <span class="logo-slot__t">Jasny motyw</span>
+                  <div class="logo-prev logo-prev--fav logo-prev--tab-light"><img data-logo-img alt="Podgląd favicon na jasnej karcie" hidden /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>brak</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".svg,.png,image/svg+xml,image/png" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń</button>
+                  </div>
+                </div>
+                <div class="logo-slot" data-logo-slot="favicon-dark">
+                  <span class="logo-slot__t">Ciemny motyw</span>
+                  <div class="logo-prev logo-prev--fav logo-prev--tab-dark"><img data-logo-img alt="Podgląd favicon na ciemnej karcie" hidden /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>jak jasny</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".svg,.png,image/svg+xml,image/png" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń</button>
+                  </div>
+                </div>
+                <div class="logo-slot" data-logo-slot="favicon-apple">
+                  <span class="logo-slot__t">iPhone / iPad <span class="muted small">PNG 180 × 180, bez przezroczystości</span></span>
+                  <div class="logo-prev logo-prev--fav logo-prev--tab-light"><img data-logo-img alt="Podgląd ikony Apple" hidden style="border-radius:22%" /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>jak jasny (PNG)</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".png,image/png" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń</button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <form class="stack" data-settings-form novalidate>
             <div class="card">
               <div class="card__head"><h2 class="card__title">Komunikat na stronie</h2><span class="st" data-notice-state></span></div>
@@ -730,7 +762,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .logo-prev img { width: 120px; height: auto; max-height: 100px; object-fit: contain; }
   .logo-prev__txt { font: 300 28px/1 'Poppins', sans-serif; letter-spacing: -0.05em; }
   .logo-slot label.btn { cursor: pointer; }
-  @media (max-width: 700px) { .logo-grid { grid-template-columns: minmax(0, 1fr); } }
+  .logo-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .logo-prev--fav { justify-content: center; padding: 0; }
+  .logo-prev--fav img { width: 64px; height: 64px; max-height: none; }
+  .logo-prev--tab-light { background: #F1F3F4; color: #5F6368; }
+  .logo-prev--tab-dark { background: #202124; color: #BDC1C6; }
+  .logo-prev__txt--sm { font: 400 13px/1.3 'Inter', sans-serif; letter-spacing: 0; }
+  @media (max-width: 700px) { .logo-grid, .logo-grid--3 { grid-template-columns: minmax(0, 1fr); } }
   .card { background: var(--card); border-radius: var(--r-lg); padding: 20px 21px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
   .card__head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
   .card__title { margin: 0; font: 500 16px/1.2 var(--font); color: var(--ink-60); }
@@ -934,7 +972,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki' };
+  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', stock_restored: 'Przywrócono stany magazynowe' };
   const BANK_ACCOUNT = '39 2490 0005 0000 4600 5185 0492';
   const BANK_PROVIDER = 'bank_transfer';
   const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed', 'withdrawal']);
@@ -1079,6 +1117,26 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <span class="muted small">Tytuł przelewu: <strong>Zamówienie nr ${o.number} – can-c.pl</strong></span>
         </div>` : ''}
 
+        ${o.status === 'refunded' ? `<div class="box box--warn">
+          <strong>Zwrot środków</strong>
+          <span>${o.refunded_amount ? `Kwota zwrotu: <strong>${pln(o.refunded_amount)}</strong>${o.refunded_amount < o.total ? ` z ${pln(o.total)} (zwrot częściowy)` : ''}` : 'Zamówienie oznaczone jako zwrócone.'}${o.refunded_at ? ` · ${date(o.refunded_at)}` : ''}</span>
+        </div>` : ''}
+
+        ${can(['paid', 'on_hold', 'shipped', 'completed', 'cancelled']) && o.paid_at ? `<details class="manual" data-refund-wrap>
+          <summary>Zwrot środków</summary>
+          <form class="sec" data-refund>
+            <p class="muted small">Zmiana statusu nie przelewa pieniędzy – ${o.payment_provider === BANK_PROVIDER ? 'wykonaj przelew zwrotny z konta firmowego' : 'zleć zwrot w panelu Przelewy24'}. Przy zwrocie częściowym w przychodzie zostaje różnica.</p>
+            <div class="row2">
+              <label class="field">Kwota zwrotu (zł)<input class="input" name="amount" inputmode="decimal" value="${(o.total / 100).toFixed(2).replace('.', ',')}" /></label>
+              <span class="field muted small" style="align-self:end">Zamówienie: ${pln(o.total)}</span>
+            </div>
+            <label class="field">Wiadomość do klienta (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="1000" placeholder="Np. zwrot po odstąpieniu od umowy – otrzymaliśmy paczkę 12.11."></textarea></label>
+            <label class="check"><input type="checkbox" name="restock" /> Przywróć stany magazynowe (produkty wróciły nienaruszone)</label>
+            <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail o zwrocie</label>
+            <div class="actions"><button class="btn btn--danger btn--sm">Oznacz jako zwrócone</button></div>
+          </form>
+        </details>` : ''}
+
         <div class="actions">
           ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="complete">Zrealizowane</button>' : ''}
           ${can(['paid']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="hold">Wstrzymaj</button>' : ''}
@@ -1108,7 +1166,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         </details>`}
 
         <div class="sec"><h3 class="sec__t">Historia</h3>
-          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.message ? ` (${esc(e.data.topic || '')}): <span class="note">${esc(e.data.message)}</span>` : ''}${e.data?.code ? ` · kod ${esc(e.data.code)}` : ''}${e.data?.scope ? `: ${esc(e.data.items)}${e.data.note ? ` – ${esc(e.data.note)}` : ''}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
+          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.amount && e.type !== 'p24_check' ? ` · ${pln(e.data.amount)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.message ? ` (${esc(e.data.topic || '')}): <span class="note">${esc(e.data.message)}</span>` : ''}${e.data?.code ? ` · kod ${esc(e.data.code)}` : ''}${e.data?.scope ? `: ${esc(e.data.items)}${e.data.note ? ` – ${esc(e.data.note)}` : ''}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
         </div>
 
         <form class="sec" data-note>
@@ -1129,6 +1187,16 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           await act({ id, action: 'update', ...p });
         });
       }
+      body.querySelector<HTMLFormElement>('[data-refund]')?.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const f = new FormData(ev.target as HTMLFormElement);
+        const zlote = Number(String(f.get('amount') || '').replace(/\s/g, '').replace(',', '.'));
+        if (!Number.isFinite(zlote) || zlote <= 0) { toast('Podaj kwotę zwrotu.', true); return; }
+        const amount = Math.round(zlote * 100);
+        const notify = f.get('notify') !== null;
+        if (!confirm(`Oznaczyć zamówienie jako zwrócone (${pln(amount)})?${notify ? ' Klient dostanie e-mail.' : ''}`)) return;
+        await act({ id, action: 'refund', amount, restock: f.get('restock') !== null, notify, message: f.get('message') });
+      });
       body.querySelector<HTMLFormElement>('[data-ship]')?.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const f = new FormData(ev.target as HTMLFormElement);
@@ -2402,9 +2470,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           ${funnelBar('Wysłane', funnel.shipped, funnel.placed, 'an__funnel_fill--ok')}
           ${funnelBar('Zrealizowane', funnel.completed, funnel.placed, 'an__funnel_fill--ok')}
           ${funnelBar('Anulowane', funnel.cancelled, funnel.placed, 'an__funnel_fill--err')}
+          ${funnel.refunded ? funnelBar('Zwrócone', funnel.refunded, funnel.placed, 'an__funnel_fill--err') : ''}
           ${funnelBar('Oczekujące na płatność', funnel.pending, funnel.placed)}
         </div>
         <p class="muted small" style="padding-top:8px">Konwersja (złożone→opłacone): <strong>${pct(funnel.paid,funnel.placed)}</strong></p>
+        ${kpi.refunds?.count ? `<p class="muted small">Zwroty: <strong>${kpi.refunds.count}</strong> na kwotę <strong>${zl_an(kpi.refunds.amount)}</strong> (nie wliczone do przychodu)</p>` : ''}
       </div>
 
       <!-- Top produkty -->
@@ -2556,6 +2626,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       }
       fillLogo('header', String((site as any).logoHeader || ''));
       fillLogo('footer', String((site as any).logoFooter || ''));
+      fillLogo('favicon-light', String((site as any).faviconLight || ''));
+      fillLogo('favicon-dark', String((site as any).faviconDark || ''));
+      fillLogo('favicon-apple', String((site as any).faviconApple || ''));
       const st = $('[data-notice-state]');
       st.textContent = site.noticeActive ? 'Widoczny teraz' : 'Niewidoczny';
       st.className = `st ${site.noticeActive ? 'st--on_hold' : 'st--pending_payment'}`;
@@ -2570,6 +2643,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     slot.querySelector<HTMLElement>('[data-logo-empty]')!.hidden = !!url;
     slot.querySelector<HTMLElement>('[data-logo-remove]')!.hidden = !url;
   }
+  const LOGO_LABEL: Record<string, string> = {
+    header: 'logo (menu górne)', footer: 'logo (stopka)',
+    'favicon-light': 'favicon (jasny motyw)', 'favicon-dark': 'favicon (ciemny motyw)', 'favicon-apple': 'ikonę Apple',
+  };
   document.querySelectorAll<HTMLElement>('[data-logo-slot]').forEach((slot) => {
     const target = slot.dataset.logoSlot!;
     const input = slot.querySelector<HTMLInputElement>('[data-logo-file]')!;
@@ -2585,12 +2662,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         if (!res.ok) throw new Error(d.error || 'Błąd wysyłania pliku.');
         await api('/api/admin/ustawienia', { action: 'logo', target, url: d.url });
         fillLogo(target, d.url);
-        toast(`Zapisano logo (${target === 'header' ? 'menu górne' : 'stopka'}).`);
+        toast(`Zapisano ${LOGO_LABEL[target] ?? 'logo'}.`);
       } catch (err) { toast((err as Error).message, true); }
     });
     slot.querySelector<HTMLButtonElement>('[data-logo-remove]')!.addEventListener('click', async () => {
-      if (!confirm('Usunąć logo? Na stronie wróci logo tekstowe „Can-C”.')) return;
-      try { await api('/api/admin/ustawienia', { action: 'logo', target, url: '' }); fillLogo(target, ''); toast('Usunięto logo.'); }
+      const isFav = target.startsWith('favicon');
+      if (!confirm(isFav ? `Usunąć ${LOGO_LABEL[target]}?` : 'Usunąć logo? Na stronie wróci logo tekstowe „Can-C”.')) return;
+      try { await api('/api/admin/ustawienia', { action: 'logo', target, url: '' }); fillLogo(target, ''); toast(`Usunięto ${LOGO_LABEL[target] ?? 'logo'}.`); }
       catch (err) { toast((err as Error).message, true); }
     });
   });

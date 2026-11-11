@@ -249,3 +249,23 @@ export function backInStockHtml(o: Base & { productName: string; productUrl: str
     ].join(''),
   });
 }
+
+// Zwrot środków (admin: akcja „Zwrot” w zamówieniu)
+export function orderRefundedHtml(o: Base & { number: number; firstName: string | null; amount: number; total: number; method: string; note: string }) {
+  const partial = o.amount < o.total;
+  return layout({
+    ...o, preheader: `Zwrot ${zl(o.amount)} za zamówienie nr ${o.number}.`,
+    body: [
+      h1('Zwrot środków'),
+      p(o.firstName ? `Dzień dobry ${esc(o.firstName)},` : 'Dzień dobry,'),
+      p(`${partial ? 'zleciliśmy częściowy zwrot' : 'zleciliśmy zwrot'} pieniędzy za zamówienie <strong>nr ${o.number}</strong>.`),
+      rows([
+        ...(partial ? [{ label: 'Wartość zamówienia', value: zl(o.total), muted: true }] : []),
+        { label: 'Kwota zwrotu', value: zl(o.amount), strong: true },
+      ]),
+      ...(o.note ? [box(esc(o.note).replace(/\n/g, '<br>'), 'plain')] : []),
+      p(`Pieniądze wrócą ${esc(o.method)}. Zwykle trwa to do 5 dni roboczych, w zależności od banku.`, { muted: true, size: 14 }),
+      p('Masz pytania? Odpowiedz na tę wiadomość.', { muted: true, size: 14 }),
+    ].join(''),
+  });
+}
