@@ -45,7 +45,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         <div class="ct__sum">
           <h2 class="ct__sumh">Podsumowanie</h2>
           <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
-          <div class="srow"><span>Rabat za zestaw</span><span data-discount></span></div>
+          <div data-promos></div>
           <div class="srow"><span>Dostawa</span><span style="font-weight:400">Darmowa</span></div>
           <div class="total-row" style="border-color:var(--image)"><span>Razem</span><span data-total></span></div>
           <a href="/zamowienie/" class="btn btn--wide" style="margin-top:10px" data-checkout>Realizuj zamówienie</a>
@@ -94,12 +94,15 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     // API podaje ceny w groszach, a ta strona liczy w złotych (jak dane zapasowe z buildu)
     .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.map((p) => ({ ...p, price: p.price === null ? null : p.price / 100 })); })
     .catch(() => {});
+  // Promocje (rabaty ilościowe i zestawy) do podglądu ceny
+  window.__CANC_PROMOS__ = fetch('/api/promocje').then((r) => (r.ok ? r.json() : [])).catch(() => []);
 </script>
 
 <script>
   import { getCart, setQty, onCartChange } from '../lib/cart';
   import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
   import { typoSafe } from '../lib/typography';
+  import { applyPromotions, nextTier, normalizePromotion, promoActive, promoLabel, describeDiscount } from '../lib/promotions';
 
   (async () => {
     await (window as any).__CANC_READY__;
@@ -107,7 +110,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string; image?: string | null; imageAlt?: string; avail?: string; leadTime?: string };
     const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
     const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
-    const discountFor = (qty: number, p: P) => (!p.bundles ? 0 : qty >= 4 ? 0.1 : qty >= 2 ? 0.08 : 0);
+    const promos = (((await (window as any).__CANC_PROMOS__) || []) as any[]).map(normalizePromotion);
+    const gr = (zl: number) => Math.round(zl * 100);
+    const many = (n: number, one: string, few: string, lots: string) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : lots);
+    const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
     const $ = <T extends Element>(sel: string) => document.querySelector<T>(sel)!;
     const lines = $<HTMLElement>('[data-lines]');
     const tpl = $<HTMLTemplateElement>('[data-line-tpl]');
@@ -119,22 +125,28 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       lines.replaceChildren();
 
       let subtotal = 0, discount = 0, blocked = false;
+      // Rabaty z promocji – ten sam silnik co na serwerze (kwoty w groszach)
+      const isOut = (p: P) => p.price === null || p.avail === 'out_of_stock';
+      const promo = applyPromotions(items.flatMap((i) => {
+        const p = catalog.find((c) => c.slug === i.slug)!;
+        return isOut(p) ? [] : [{ product_id: p.slug, qty: i.qty, unit_price: gr(p.price as number) }];
+      }), promos);
       for (const item of items) {
         const p = catalog.find((c) => c.slug === item.slug)!;
         // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy – serwer i tak by go odrzucił
         const out = p.price === null || p.avail === 'out_of_stock';
         if (out) blocked = true;
         const base = out ? 0 : (p.price as number) * item.qty;
-        const d = out ? 0 : discountFor(item.qty, p);
+        const d = out ? 0 : (promo.discounts[p.slug] ?? 0) / 100; // zł
         subtotal += base;
-        discount += base * d;
+        discount += d;
 
         const el = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = `/produkt/${p.slug}/`; });
         if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = p.image; img.hidden = false; }
         el.querySelector('.ct__name')!.innerHTML = typoSafe(p.name);
         const unit = p.price !== null ? `${pln.format(p.price)} / szt.` : '';
-        el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat ${Math.round(d * 100)}%` : ''].filter(Boolean).join(' · ');
+        el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat −${pln.format(d)}` : ''].filter(Boolean).join(' · ');
         if (p.leadTime && !out) { const lt = el.querySelector<HTMLElement>('[data-lead]')!; lt.lastElementChild!.textContent = p.leadTime; lt.hidden = false; }
         if (out) {
           el.classList.add('ct__line--out');
@@ -143,7 +155,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           el.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
         }
         el.querySelector('[data-qty]')!.textContent = String(item.qty);
-        el.querySelector('[data-ltotal]')!.textContent = out ? '—' : pln.format(base * (1 - d));
+        el.querySelector('[data-ltotal]')!.textContent = out ? '—' : pln.format(base - d);
         el.querySelector('[data-dec]')!.addEventListener('click', () => {
           if (item.qty === 1 && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price, quantity: 1, item_brand: 'Can-C' });
           setQty(p.slug, item.qty - 1);
@@ -156,21 +168,49 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         lines.append(el);
       }
 
-      // Propozycja zestawu: pierwszy produkt z rabatem zestawowym, którego jest mniej niż 4 szt.
+      // Podpowiedź: najbliższy próg rabatu ilościowego albo brakujący produkt do zestawu
       const up = $<HTMLElement>('[data-upsell]');
-      const cand = items.find((i) => { const p = catalog.find((c) => c.slug === i.slug)!; return p.bundles && p.avail !== 'out_of_stock' && p.price !== null && i.qty < 4; });
-      up.hidden = !cand;
-      if (cand) {
-        const next = cand.qty < 2 ? 2 : 4;
-        $('[data-up-title]').textContent = next === 2 ? 'Dodaj drugie opakowanie i zapłać 8% mniej' : 'Przy 4 opakowaniach rabat rośnie do 10%';
-        $('[data-up-text]').textContent = next === 2 ? '2 opakowania to około 2 miesiące kuracji.' : '4 opakowania to około 4 miesiące kuracji.';
-        const btn = $<HTMLButtonElement>('[data-up-btn]');
-        btn.textContent = next - cand.qty === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${next}`;
-        btn.onclick = () => setQty(cand.slug, next);
+      const btn = $<HTMLButtonElement>('[data-up-btn]');
+      let shown = false;
+      for (const i of items) {
+        const p = catalog.find((c) => c.slug === i.slug)!;
+        if (isOut(p)) continue;
+        const nt = nextTier(p.slug, i.qty, promos);
+        if (!nt) continue;
+        const t = nt.tier;
+        const add = t.min - i.qty;
+        const unitWord = p.bundles ? many(t.min, 'opakowanie', 'opakowania', 'opakowań') : 'szt.';
+        $('[data-up-title]').textContent = t.type === 'percent'
+          ? `Przy ${t.min} ${unitWord} zapłacisz ${t.value}% mniej`
+          : `Przy ${t.min} ${unitWord} zapłacisz ${describeDiscount('amount', t.value).slice(1)} mniej za każde`;
+        $('[data-up-text]').textContent = p.bundles ? `${t.min} ${many(t.min, 'opakowanie', 'opakowania', 'opakowań')} to około ${t.min} ${many(t.min, 'miesiąc', 'miesiące', 'miesięcy')} kuracji.` : `Dotyczy: ${p.name}.`;
+        btn.textContent = add === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${t.min}`;
+        btn.onclick = () => setQty(p.slug, t.min);
+        shown = true;
+        break;
       }
+      if (!shown) {
+        for (const b of promos) {
+          if (b.kind !== 'bundle' || !promoActive(b) || !b.items.length || promo.applied.some((a) => a.id === b.id)) continue;
+          const have = b.items.filter((it) => (items.find((x) => x.slug === it.product_id)?.qty ?? 0) >= it.qty);
+          if (!have.length || have.length === b.items.length) continue;
+          const missing = b.items.filter((it) => !have.includes(it));
+          const prods = missing.map((it) => catalog.find((c) => c.slug === it.product_id));
+          if (prods.some((x) => !x || isOut(x))) continue;
+          $('[data-up-title]').textContent = `${promoLabel(b)}: ${describeDiscount(b.type, b.value)} za zestaw`;
+          $('[data-up-text]').textContent = `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty > 1 ? ` × ${it.qty}` : ''}`).join(', ')} i odbierz rabat.`;
+          btn.textContent = 'Dodaj do koszyka';
+          btn.onclick = () => missing.forEach((it) => setQty(it.product_id, Math.max(it.qty, items.find((x) => x.slug === it.product_id)?.qty ?? 0)));
+          shown = true;
+          break;
+        }
+      }
+      up.hidden = !shown;
+
+      // Naliczone promocje w podsumowaniu (po nazwie)
+      $('[data-promos]').innerHTML = promo.applied.map((a) => `<div class="srow"><span>${escHtml(a.label)}</span><span>−${pln.format(a.amount / 100)}</span></div>`).join('');
 
       $('[data-subtotal]').textContent = pln.format(subtotal);
-      $('[data-discount]').textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
       $('[data-total]').textContent = pln.format(subtotal - discount);
       const cta = $<HTMLAnchorElement>('[data-checkout]');
       if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');

@@ -105,7 +105,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             </div>
             <div class="co__sums">
               <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
-              <div class="srow"><span>Rabat za zestaw</span><span data-discount></span></div>
+              <div data-promos></div>
               <div class="srow" data-code-line hidden><span data-code-name>Kod rabatowy</span><span data-code-amount></span></div>
               <div class="srow"><span>Dostawa · <span data-ship-name>InPost</span></span><span style="font-weight:400">Darmowa</span></div>
             </div>
@@ -130,6 +130,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     // API podaje ceny w groszach, a ta strona liczy w złotych; niedostępne produkty bez ceny
     .then((list) => { if (Array.isArray(list) && list.length) window.__CANC_CATALOG__ = list.map((p) => ({ ...p, price: p.price === null || p.avail === 'out_of_stock' ? null : p.price / 100 })); })
     .catch(() => {});
+  window.__CANC_PROMOS__ = fetch('/api/promocje').then((r) => (r.ok ? r.json() : [])).catch(() => []);
 </script>
 
 <script>
@@ -137,6 +138,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
   import { BANK_ACCOUNT, BANK_PROVIDER } from '../../lib/bank-transfer';
   import { typoSafe } from '../../lib/typography';
+  import { applyPromotions, normalizePromotion } from '../../lib/promotions';
 
   (async () => {
   await (window as any).__CANC_READY__;
@@ -144,7 +146,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   type P = { slug: string; name: string; price: number | null; bundles: boolean };
   const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
   const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
-  const rate = (q: number, b: boolean) => (!b ? 0 : q >= 4 ? 0.1 : q >= 2 ? 0.08 : 0);
+  const promos = (((await (window as any).__CANC_PROMOS__) || []) as any[]).map(normalizePromotion);
+  const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
   const form = document.querySelector<HTMLFormElement>('[data-checkout]')!;
   const items = getCart().filter((i) => catalog.some((p) => p.slug === i.slug && p.price !== null));
@@ -157,10 +160,11 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     // Podgląd sumy (ostateczną kwotę liczy serwer)
     let subtotal = 0, discount = 0;
     const ul = form.querySelector('[data-lines]')!;
+    const promo = applyPromotions(items.map((it) => ({ product_id: it.slug, qty: it.qty, unit_price: Math.round((catalog.find((c) => c.slug === it.slug)!.price ?? 0) * 100) })), promos);
     for (const it of items) {
       const p = catalog.find((c) => c.slug === it.slug)!;
       const gross = (p.price ?? 0) * it.qty;
-      const d = gross * rate(it.qty, p.bundles);
+      const d = (promo.discounts[p.slug] ?? 0) / 100;
       subtotal += gross; discount += d;
       const li = document.createElement('li');
       const img = (p as any).image as string | undefined;
@@ -171,7 +175,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       ul.append(li);
     }
     form.querySelector('[data-subtotal]')!.textContent = pln.format(subtotal);
-    form.querySelector('[data-discount]')!.textContent = discount ? `−${pln.format(discount)}` : pln.format(0);
+    form.querySelector('[data-promos]')!.innerHTML = promo.applied.map((a) => `<div class="srow"><span>${escHtml(a.label)}</span><span>−${pln.format(a.amount / 100)}</span></div>`).join('');
     form.querySelector('[data-total]')!.textContent = pln.format(subtotal - discount);
 
     // ---------- Kod rabatowy (podgląd liczy serwer) ----------

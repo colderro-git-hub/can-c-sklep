@@ -8,6 +8,7 @@ import { sendMail } from '../../../lib/mail';
 import { getSite } from '../../../lib/site-settings';
 import { orderConfirmationBankHtml } from '../../../lib/email-templates';
 import { checkCode } from '../../../lib/discounts';
+import { getPromotions } from '../../../lib/promotions-db';
 import { gaIdsFromCookies } from '../../../lib/ga4-mp';
 
 export const prerender = false;
@@ -83,7 +84,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const ids = [...new Set(lines.map((l: any) => l.slug))].map((s) => `"${String(s).replace(/"/g, '')}"`).join(',');
     const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     let priced;
-    try { priced = priceCart(lines, products); } catch (e) {
+    try { priced = priceCart(lines, products, await getPromotions(env)); } catch (e) {
       return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' });
     }
 
@@ -91,6 +92,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     let codeName: string | null = null;
     let codeAmount = 0;
     if (str(body.discountCode, 30)) {
+      if (priced.codesBlockedBy) return json(422, { error: `Kod rabatowy nie łączy się z promocją „${priced.codesBlockedBy}”. Usuń kod, aby skorzystać z promocji.` });
       const r = await checkCode(sb, body.discountCode, priced.total, email);
       if (!r.ok) return json(422, { error: r.error });
       codeName = r.code.code;
@@ -133,7 +135,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }, 'id,number');
 
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
-    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total, paymentMethod, ...(codeName ? { code: codeName, codeAmount } : {}) } }, 'id');
+    // Naliczone promocje – do statystyk w panelu (błąd zapisu nie blokuje zamówienia)
+    if (priced.promotions.length) {
+      await sb.insert('order_promotions', priced.promotions.map((p) => ({ order_id: order.id, promotion_id: p.id, name: p.label, kind: p.kind, amount: p.amount })), 'id')
+        .catch((e) => console.error('Promocje zamówienia: ' + (e instanceof Error ? e.message : String(e))));
+    }
+    await sb.insert('order_events', { order_id: order.id, type: 'created', data: { total, paymentMethod, ...(codeName ? { code: codeName, codeAmount } : {}), ...(priced.promotions.length ? { promotions: priced.promotions.map((p) => `${p.label} −${(p.amount / 100).toFixed(2)} zł`) } : {}) } }, 'id');
 
     // ---------- Płatność ----------
     if (paymentMethod === BANK_PROVIDER) {

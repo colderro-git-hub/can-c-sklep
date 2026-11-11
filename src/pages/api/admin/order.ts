@@ -28,7 +28,9 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const [order] = await sb.select(`orders?select=*,order_items(name,qty,unit_price,discount,total,product_id),customers(id,first_name,last_name,phone,marketing_consent,admin_note)&id=eq.${id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
     const events = await sb.select(`order_events?select=type,data,created_at&order_id=eq.${id}&order=created_at.asc`);
-    return json(200, { order, events });
+    // Promocje naliczone w zamówieniu (tabela z migracji 019 – bez niej pusta lista)
+    const promotions = await sb.select(`order_promotions?select=promotion_id,name,amount&order_id=eq.${id}&order=created_at.asc`).catch(() => []);
+    return json(200, { order: { ...order, promotions }, events });
   } catch (e) {
     console.error('Admin order: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Błąd pobierania zamówienia.' });

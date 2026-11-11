@@ -3,6 +3,7 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../../lib/pricing';
+import { getPromotions } from '../../../lib/promotions-db';
 import { p24Config, registerTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
 import { sendMail, zl } from '../../../lib/mail';
@@ -50,12 +51,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const sb = db(env);
   const origin = new URL(request.url).origin;
   try {
-    // Łączymy pozycje tego samego produktu (rabat zestawowy liczy się od łącznej liczby sztuk)
+    // Łączymy pozycje tego samego produktu (rabaty ilościowe liczą się od łącznej liczby sztuk)
     const merged = Object.values(lines.reduce((acc: Record<string, any>, l: any) => { (acc[l.slug] ??= { slug: l.slug, qty: 0 }).qty += l.qty; return acc; }, {}));
     const ids = merged.map((l: any) => `"${l.slug.replace(/"/g, '')}"`).join(',');
     const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     let priced;
-    try { priced = priceCart(merged as any, products); } catch { return json(409, { error: 'Któryś z produktów jest nieaktywny albo nie ma ceny.' }); }
+    try { priced = priceCart(merged as any, products, await getPromotions(env)); } catch { return json(409, { error: 'Któryś z produktów jest nieaktywny albo nie ma ceny.' }); }
     if (extraDiscount > priced.total) return json(422, { error: 'Rabat jest większy niż wartość zamówienia.' });
     const total = priced.total - extraDiscount;
 
@@ -75,6 +76,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       source: 'admin',
     }, 'id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice');
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
+    if (priced.promotions.length) {
+      await sb.insert('order_promotions', priced.promotions.map((p) => ({ order_id: order.id, promotion_id: p.id, name: p.label, kind: p.kind, amount: p.amount })), 'id')
+        .catch((e) => console.error('Promocje zamówienia: ' + (e instanceof Error ? e.message : String(e))));
+    }
     await sb.insert('order_events', { order_id: order.id, type: 'created', data: { by: admin, manual: true, payment, ...(extraDiscount ? { extraDiscount } : {}) } }, 'id');
 
     let paymentUrl: string | null = null;

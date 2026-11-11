@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
-import { products as fallback, bundles, features, reviews, faqs, formatPrice } from '../data/shop';
+import { products as fallback, features, reviews, faqs, formatPrice } from '../data/shop';
+import { applyPromotions, qtyOptions } from '../lib/promotions';
+import { getPromotions } from '../lib/promotions-db';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
 import { db } from '../lib/supabase';
@@ -98,13 +100,23 @@ const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string }>
 const faqList: { q: string; a: string; cat?: string }[] = faqCms.length ? faqCms : faqs;
 
 const dropsPrice = products.find((p) => p.slug === 'krople-can-c')?.price ?? fallback[0].price ?? 0;
-const bundleRows = bundles.map((b) => {
-  const total = dropsPrice * b.qty * (1 - b.discount);
+// Zestawy kropli: progi i rabaty z promocji ilościowych (panel: Kody rabatowe → Promocje)
+const promos = await getPromotions(env).catch(() => []);
+const many = (n: number, one: string, few: string, lots: string) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : lots);
+const dropsUnit = Math.round((dropsPrice ?? 0) * 100); // grosze
+const setQtys = (() => { const q = qtyOptions('krople-can-c', promos); return q.join() === '1,2,3' ? [1, 2, 4] : q.slice(0, 3); })();
+const bundleRows = setQtys.map((qty) => {
+  const gross = dropsUnit * qty;
+  const disc = applyPromotions([{ product_id: 'krople-can-c', qty, unit_price: dropsUnit }], promos).total;
+  const pct = gross ? Math.round((disc / gross) * 100) : 0;
+  const total = (gross - disc) / 100;
   return {
-    ...b,
+    qty, pct,
+    label: `${qty} ${many(qty, 'opakowanie', 'opakowania', 'opakowań')}`,
+    months: `${qty} ${many(qty, 'miesiąc', 'miesiące', 'miesięcy')} kuracji`,
     total: formatPrice(total),
-    unit: `${formatPrice(total / b.qty)} za sztukę`,
-    save: b.discount ? `Oszczędzasz ${Math.round(b.discount * 100)}%` : 'Cena regularna',
+    unit: `${formatPrice(total / qty)} za sztukę`,
+    save: pct ? `Oszczędzasz ${pct}%` : 'Cena regularna',
   };
 });
 ---
@@ -216,8 +228,8 @@ const bundleRows = bundles.map((b) => {
     <div class="bundles-grid" style="margin-top:45px">
       {bundleRows.map((b, i) => (
         <div class={`bundle-card${i === 1 ? ' bundle-card--featured' : ''}`}>
-          {i > 0 && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{i === 1 ? 'Polecany · −8%' : '−10%'}</span>}
-          <span style="font-size:18px;line-height:27px;font-weight:400">{b.qty === 1 ? '1 opakowanie' : b.qty === 2 ? '2 opakowania' : '4 opakowania'}</span>
+          {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? 'Polecany' : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' · ')}</span>}
+          <span style="font-size:18px;line-height:27px;font-weight:400">{b.label}</span>
           <div>
             <div style="font-size:3rem;line-height:72px;font-weight:300">{b.total}</div>
             <div style={`font-size:14px;line-height:21px;font-weight:300;color:${i === 1 ? 'rgba(255,255,255,0.65)' : 'var(--muted)'}`}>{b.unit}</div>
@@ -225,7 +237,7 @@ const bundleRows = bundles.map((b) => {
           <ul style={`list-style:none;margin:0;padding:14px 0 0;border-top:1px solid ${i === 1 ? 'var(--on-dark-line)' : 'var(--line)'};display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:24px;font-weight:300`}>
             <li style="display:flex;align-items:center;gap:14px">
               <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
-              {b.qty === 1 ? '1 miesiąc kuracji' : b.qty === 2 ? '2 miesiące kuracji' : '4 miesiące kuracji'}
+              {b.months}
             </li>
             {i > 0 && <li style="display:flex;align-items:center;gap:14px">
               <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>

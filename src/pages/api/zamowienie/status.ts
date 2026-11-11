@@ -36,12 +36,13 @@ export const GET: APIRoute = async ({ url, locals }) => {
     const fresh = Date.now() - new Date(o.created_at).getTime() < DETAILS_DAYS * 864e5;
     if (!fresh || CLOSED.includes(o.status)) return json(200, { ...base, details: null });
 
-    const [items, catalog, site] = await Promise.all([
+    const [items, catalog, site, promos] = await Promise.all([
       sb.select<{ product_id: string; name: string; qty: number; unit_price: number; discount: number; total: number }>(
         `order_items?select=product_id,name,qty,unit_price,discount,total&order_id=eq.${id}`,
       ),
       getCatalog(env).catch(() => []),
       getSite(env),
+      sb.select<{ name: string; amount: number }>(`order_promotions?select=name,amount&order_id=eq.${id}&order=created_at.asc`).catch(() => []),
     ]);
 
     // Termin wysyłki: jeden dla całego zamówienia albo przy każdym produkcie, gdy się różnią
@@ -77,6 +78,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       items: lines,
       subtotal: o.subtotal,
       bundleDiscount: Math.max(0, o.discount - (o.discount_code_amount || 0)),
+      promotions: promos.filter((p) => p.amount > 0).map((p) => ({ name: p.name, amount: p.amount })),
       code: o.discount_code,
       codeAmount: o.discount_code_amount || 0,
       shipping: o.shipping_cost,

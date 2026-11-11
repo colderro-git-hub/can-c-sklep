@@ -6,7 +6,8 @@ import ProductTags from '../../components/ProductTags.astro';
 import Stars from '../../components/Stars.astro';
 import { getEnv } from '../../lib/env';
 import { getProductPage, AVAIL_LABEL, leadTimeText } from '../../lib/catalog';
-import { discountRate } from '../../lib/pricing';
+import { applyPromotions, qtyOptions } from '../../lib/promotions';
+import { getPromotions } from '../../lib/promotions-db';
 import { markdown, plainText } from '../../lib/markdown';
 import { getSite } from '../../lib/site-settings';
 import { TURNSTILE_SITE_KEY } from '../../config';
@@ -24,17 +25,23 @@ const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('p
 const buyable = p.current !== null && p.avail !== 'out_of_stock';
 // Termin realizacji: zdanie z produktu, a gdy puste – czas wysyłki z ustawień sklepu
 const leadTime = p.lead_time ? leadTimeText(p.lead_time, site.shippingTime) : site.shippingTime;
-const options = (p.bundles ? [1, 2, 4] : [1, 2, 3]).map((qty) => {
-  const rate = discountRate(qty, p.bundles);
-  const total = p.current === null ? null : Math.round(p.current * qty * (1 - rate));
+// Opcje ilości i ceny z promocji ilościowych (panel: Kody rabatowe → Promocje)
+const promos = await getPromotions(env);
+const many = (n: number, one: string, few: string, lots: string) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : lots);
+const qtys = qtyOptions(p.id, promos);
+const options = qtys.map((qty, i) => {
+  const gross = p.current === null ? null : p.current * qty;
+  const disc = gross === null ? 0 : applyPromotions([{ product_id: p.id, qty, unit_price: p.current! }], promos).total;
+  const total = gross === null ? null : gross - disc;
+  const rate = gross ? disc / gross : 0;
   return {
     qty, rate, total,
-    label: p.bundles ? (qty === 1 ? '1 opakowanie' : `${qty} opakowania`) : `${qty} szt.`,
-    sub: p.bundles ? `${qty} ${qty === 1 ? 'miesiąc' : 'miesiące'} kuracji` : (p.subtitle || ''),
-    rec: p.bundles && qty === 2,
+    label: p.bundles ? `${qty} ${many(qty, 'opakowanie', 'opakowania', 'opakowań')}` : `${qty} szt.`,
+    sub: p.bundles ? `${qty} ${many(qty, 'miesiąc', 'miesiące', 'miesięcy')} kuracji` : (p.subtitle || ''),
+    rec: p.bundles && i === 1 && disc > 0,
   };
 });
-const defaultQty = p.bundles ? 2 : 1;
+const defaultQty = p.bundles && options[1] && options[1].rate > 0 ? options[1].qty : 1;
 const def = options.find((o) => o.qty === defaultQty)!;
 const salePct = p.onSale && p.price ? Math.round((1 - p.current! / p.price) * 100) : 0;
 const images = p.images.length ? p.images : [];
@@ -127,7 +134,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <div class="pr-price__row" aria-live="polite">
             <span class="pr-price__v" data-price>{pln(def.total)}</span>
             {p.onSale && <s class="pr-price__old" data-regular>{pln(p.price === null ? null : p.price * def.qty)}</s>}
-            <span class="peach" data-save hidden={!def.rate && !salePct}>{salePct ? `−${salePct}%` : ''}{def.rate ? ` −${Math.round(def.rate * 100)}% za zestaw` : ''}</span>
+            <span class="peach" data-save hidden={!def.rate && !salePct}>{salePct ? `−${salePct}%` : ''}{def.rate ? ` −${Math.round(def.rate * 100)}% rabatu` : ''}</span>
           </div>
           <span class="k"><span data-unit>{def.total !== null ? `${pln(Math.round(def.total / def.qty))} / szt.` : ''}</span>{p.unitPrice && <> · {p.unitPrice}</>}</span>
           {p.lowest30 !== null && <span class="k">{p.onSale ? 'Najniższa cena z 30 dni przed obniżką' : 'Najniższa cena z ostatnich 30 dni'}: {pln(p.lowest30)}</span>}
@@ -142,7 +149,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
                 <input type="radio" name="qty" value={o.qty} checked={o.qty === defaultQty}
                   data-total={pln(o.total)} data-regular={p.onSale && p.price ? pln(p.price * o.qty) : ''}
                   data-unit={o.total !== null ? `${pln(Math.round(o.total / o.qty))} / szt.` : ''}
-                  data-save={[salePct ? `−${salePct}%` : '', o.rate ? `−${Math.round(o.rate * 100)}% za zestaw` : ''].filter(Boolean).join(' ')} />
+                  data-save={[salePct ? `−${salePct}%` : '', o.rate ? `−${Math.round(o.rate * 100)}% rabatu` : ''].filter(Boolean).join(' ')} />
                 <span class="opt__txt">
                   <span class="opt__t">{o.label}{o.rec && <span class="peach peach--s">polecany</span>}</span>
                   {o.sub && <span class="opt__s">{o.sub}</span>}

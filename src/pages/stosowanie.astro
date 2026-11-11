@@ -3,7 +3,8 @@ import Base from '../layouts/Base.astro';
 import { getEnv } from '../lib/env';
 import { products } from '../data/shop';
 import { getCatalog } from '../lib/catalog';
-import { discountRate } from '../lib/pricing';
+import { applyPromotions } from '../lib/promotions';
+import { getPromotions } from '../lib/promotions-db';
 import { getPageContent, getSection } from '../lib/page-content';
 
 export const prerender = false;
@@ -15,18 +16,19 @@ const dropsDb = catalog.find((p) => p.id === 'krople-can-c');
 const unit = dropsDb?.current ?? (products.find((p) => p.slug === 'krople-can-c')?.price ?? 0) * 100; // grosze
 const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
 const word = (n: number) => (n === 1 ? 'opakowanie' : n < 5 ? 'opakowania' : 'opakowań');
+const promos = await getPromotions(env).catch(() => []);
 const plan = [
   { label: '1 miesiąc', qty: 1, set: 1 }, { label: '2 miesiące', qty: 2, set: 2 },
   { label: '3–4 miesiące', qty: 4, set: 4 }, { label: '6 miesięcy', qty: 6, set: 4 },
 ].map((p) => {
   const regular = unit * p.qty;
-  const total = Math.round(regular * (1 - discountRate(p.qty, true)));
-  const saved = regular - total;
+  const saved = applyPromotions([{ product_id: 'krople-can-c', qty: p.qty, unit_price: unit }], promos).total;
+  const total = regular - saved;
   return {
     ...p,
     packs: p.qty === 6 ? '6 opakowań (4 + 2)' : `${p.qty} ${word(p.qty)}`,
     price: pln(total),
-    save: saved ? `Oszczędzasz ${pln(saved)} (${Math.round(discountRate(p.qty, true) * 100)}%)` : 'Cena regularna',
+    save: saved ? `Oszczędzasz ${pln(saved)} (${Math.round((saved / regular) * 100)}%)` : 'Cena regularna',
   };
 });
 const defaultPlan = 2;

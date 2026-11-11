@@ -3,6 +3,7 @@ import { getEnv, json } from '../../lib/env';
 import { db } from '../../lib/supabase';
 import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../lib/pricing';
 import { checkCode } from '../../lib/discounts';
+import { getPromotions } from '../../lib/promotions-db';
 
 export const prerender = false;
 
@@ -15,11 +16,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     : [];
   if (!lines.length) return json(422, { error: 'Koszyk jest pusty.' });
   try {
-    const sb = db(await getEnv(locals));
+    const env = await getEnv(locals);
+    const sb = db(env);
     const ids = [...new Set(lines.map((l: any) => `"${String(l.slug).replace(/"/g, '')}"`))].join(',');
     const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     let priced;
-    try { priced = priceCart(lines, products); } catch { return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' }); }
+    try { priced = priceCart(lines, products, await getPromotions(env)); } catch { return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' }); }
+    if (priced.codesBlockedBy) return json(422, { error: `Kod rabatowy nie łączy się z promocją „${priced.codesBlockedBy}”.` });
     const email = typeof b.email === 'string' && b.email.includes('@') ? b.email.trim().toLowerCase().slice(0, 200) : null;
     const r = await checkCode(sb, b.code, priced.total, email);
     if (!r.ok) return json(422, { error: r.error });

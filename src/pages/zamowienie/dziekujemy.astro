@@ -99,7 +99,7 @@ import Base from '../../layouts/Base.astro';
   type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
   type Details = {
     createdAt: string; paidAt: string | null; email: string; items: Line[];
-    subtotal: number; bundleDiscount: number; code: string | null; codeAmount: number; shipping: number;
+    subtotal: number; bundleDiscount: number; promotions?: { name: string; amount: number }[]; code: string | null; codeAmount: number; shipping: number;
     delivery: { method: string; point: string | null; pointName: string | null; name: string | null; phone: string | null; street: string | null; postcode: string | null; city: string | null };
     invoice: { company: string; nip: string; street: string; postcode: string; city: string } | null;
     note: string | null; payment: { provider: string; method: string | null; bank: { account: string; title: string; amount: number } | null };
@@ -129,14 +129,17 @@ import Base from '../../layouts/Base.astro';
         <a class="ty__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(i.image)}" alt="" width="66" height="66" loading="lazy" />` : ''}</a>
         <span class="ty__info">
           <a class="ty__name" href="/produkt/${esc(i.slug)}/">${typoSafe(i.name)}</a>
-          <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat za zestaw −${zl(i.discount)}` : ''}</span>
+          <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat −${zl(i.discount)}` : ''}</span>
           ${d.shippingTime ? '' : `<span class="k">${esc(i.leadTime)}</span>`}
         </span>
         <span class="ty__itotal">${zl(i.total)}</span>
       </div>`).join('');
 
     const rows: [string, string, string?][] = [['Produkty', zl(d.subtotal)]];
-    if (d.bundleDiscount) rows.push(['Rabat za zestaw', `−${zl(d.bundleDiscount)}`]);
+    // Promocje po nazwie; starsze zamówienia (bez zapisanych promocji) – jedna suma
+    const promos = d.promotions || [];
+    if (promos.length) promos.forEach((p) => rows.push([p.name, `−${zl(p.amount)}`]));
+    else if (d.bundleDiscount) rows.push(['Rabat', `−${zl(d.bundleDiscount)}`]);
     if (d.code && d.codeAmount) rows.push([`Kod rabatowy ${d.code}`, `−${zl(d.codeAmount)}`]);
     rows.push(['Dostawa', d.shipping ? zl(d.shipping) : 'Bezpłatna', d.shipping ? '' : 'b']);
     q('[data-totals]').innerHTML = rows.map(([k, v, c]) => `<div class="srow"><span>${esc(k)}</span><span${c ? ' style="font-weight:400"' : ''}>${esc(v)}</span></div>`).join('')
