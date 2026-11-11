@@ -972,7 +972,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', stock_restored: 'Przywrócono stany magazynowe' };
+  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', ga4_refund: 'Zwrot wysłany do GA4', stock_restored: 'Przywrócono stany magazynowe' };
   const BANK_ACCOUNT = '39 2490 0005 0000 4600 5185 0492';
   const BANK_PROVIDER = 'bank_transfer';
   const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed', 'withdrawal']);
@@ -1064,7 +1064,6 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try {
       const { order: o, events } = await api(`/api/admin/order?id=${id}`);
-      (window as any).__gaCurrentOrder = o;
       $('[data-d-title]').textContent = `Zamówienie ${o.number}`;
       const a = o.shipping_address || {};
       const wc = o.source === 'woocommerce';
@@ -1204,16 +1203,6 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       });
       body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
         if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;
-        if (b.dataset.act === 'cancel') {
-          const gaO = (window as any).__gaCurrentOrder;
-          if (gaO?.total && gaO.status !== 'pending_payment') {
-            try {
-              window.dataLayer = window.dataLayer || [];
-              window.dataLayer.push({ ecommerce: null });
-              window.dataLayer.push({ event: 'refund', ecommerce: { transaction_id: gaO.id, currency: 'PLN', value: gaO.total / 100 } });
-            } catch {}
-          }
-        }
         if (b.dataset.act === 'finalize_bank') { if (!confirm('Oznacz zamówienie jako opłacone? Użyj po zaksięgowaniu przelewu na koncie bankowym.')) return; await act({ id, action: 'finalize_bank' }); return; }
         await act({ id, action: b.dataset.act });
       }));

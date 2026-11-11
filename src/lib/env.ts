@@ -20,7 +20,9 @@ export type Env = {
   ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
   FURGONETKA_API_KEY?: string; // klucz integracji własnej (ten sam wpisujesz w panelu Furgonetki)
   CRON_SECRET?;
-  GA4_PRIVATE_KEY?; GA4_CLIENT_EMAIL?; GA4_PROPERTY_ID?: string;        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
+  GA4_PRIVATE_KEY?; GA4_CLIENT_EMAIL?; GA4_PROPERTY_ID?: string;
+  GA4_MEASUREMENT_ID?: string; // G-XXXXXXX – Measurement Protocol (zwroty z panelu)
+  GA4_API_SECRET?: string;     // klucz tajny Measurement Protocol dla strumienia www        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
 export async function getEnv(locals: unknown): Promise<Env> {

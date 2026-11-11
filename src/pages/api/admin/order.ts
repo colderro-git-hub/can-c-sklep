@@ -7,6 +7,8 @@ import { trackingUrl, carrierLabel } from '../../../lib/tracking';
 import { orderShippedHtml, orderRefundedHtml } from '../../../lib/email-templates';
 import { clearCatalogCache } from '../../../lib/catalog';
 import { BANK_PROVIDER } from '../../../lib/bank-transfer';
+import { sendGa4Refund, ga4MpConfigured } from '../../../lib/ga4-mp';
+import { later } from '../../../lib/background';
 import { getSite } from '../../../lib/site-settings';
 import { p24Config, getTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
@@ -141,7 +143,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!rule.from.includes(order.status)) return json(409, { error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` });
 
     if (b.action === 'refund') {
-      const [full] = await sb.select<any>(`orders?select=paid_at,payment_provider,customers(first_name)&id=eq.${order.id}`);
+      const [full] = await sb.select<any>(`orders?select=paid_at,payment_provider,attribution,customers(first_name)&id=eq.${order.id}`);
       if (!full?.paid_at) return json(409, { error: 'Zamówienie nie zostało opłacone – nie ma czego zwracać. Użyj „Anuluj”.' });
       const amount = b.amount === undefined || b.amount === null || b.amount === '' ? order.total : Math.round(Number(b.amount));
       if (!Number.isFinite(amount) || amount <= 0 || amount > order.total) return json(422, { error: `Kwota zwrotu: od 0,01 zł do ${(order.total / 100).toFixed(2).replace('.', ',')} zł.` });
@@ -152,6 +154,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: 'refunded', by: admin, amount, restock: b.restock === true, ...(message ? { note: message } : {}) } }, 'id');
 
       const warnings: string[] = [];
+      // GA4: zdarzenie refund z serwera (panel nie ładuje GTM); wynik w historii zamówienia
+      if (ga4MpConfigured(env) && order.source !== 'woocommerce') {
+        await later(locals, sendGa4Refund(env, { id: order.id, amount, attribution: full.attribution }).then((r) =>
+          sb.insert('order_events', { order_id: order.id, type: 'ga4_refund', data: r.ok ? { amount } : { amount, error: r.error } }, 'id')));
+      }
       if (b.restock === true) {
         try { await sb.rpc('restore_order_stock', { p_order: order.id }); clearCatalogCache(); await sb.insert('order_events', { order_id: order.id, type: 'stock_restored', data: { by: admin } }, 'id'); }
         catch (e) { console.error('Zwrot – stan magazynowy: ' + (e instanceof Error ? e.message : String(e))); warnings.push('Nie udało się przywrócić stanów magazynowych (czy uruchomiono 018_zwroty.sql?).'); }

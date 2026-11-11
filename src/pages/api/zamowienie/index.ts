@@ -8,6 +8,7 @@ import { sendMail } from '../../../lib/mail';
 import { getSite } from '../../../lib/site-settings';
 import { orderConfirmationBankHtml } from '../../../lib/email-templates';
 import { checkCode } from '../../../lib/discounts';
+import { gaIdsFromCookies } from '../../../lib/ga4-mp';
 
 export const prerender = false;
 
@@ -127,6 +128,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       customer_note: note || null,
       payment_provider: paymentMethod === BANK_PROVIDER ? BANK_PROVIDER : 'przelewy24',
       source: 'shop',
+      // Identyfikatory GA4 (tylko gdy klient zgodził się na analitykę) – do zdarzeń z serwera, np. zwrotu
+      attribution: (() => { const ga = gaIdsFromCookies(request.headers.get('Cookie')); return Object.keys(ga).length ? ga : null; })(),
     }, 'id,number');
 
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
