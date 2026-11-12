@@ -31,7 +31,7 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     if (order.tracking_number === tracking) return json(200, {}); // powtórzone powiadomienie
 
     const patch: Record<string, unknown> = { tracking_number: tracking, carrier: carrier || null };
-    const becomesShipped = ['paid', 'on_hold'].includes(order.status);
+    const becomesShipped = ['paid', 'packing', 'on_hold'].includes(order.status);
     if (becomesShipped) Object.assign(patch, { status: 'shipped', shipped_at: new Date().toISOString() });
     await sb.update(`orders?id=eq.${order.id}`, patch, 'id');
     if (becomesShipped) {

@@ -5,7 +5,7 @@ import { requireAdmin } from '../../../lib/admin-auth';
 
 export const prerender = false;
 
-const STATUSES = ['pending_payment', 'paid', 'on_hold', 'shipped', 'completed', 'cancelled', 'refunded', 'failed'];
+const STATUSES = ['pending_payment', 'paid', 'packing', 'on_hold', 'shipped', 'completed', 'cancelled', 'refunded', 'failed'];
 const PAGE = 50;
 
 // Lista zamówień: ?status=paid&q=18772|email&page=1
@@ -31,14 +31,14 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     );
     // Liczniki do zakładek (tylko statusy wymagające działania)
     const counts: Record<string, number> = {};
-    for (const s of ['paid', 'on_hold', 'pending_payment', 'shipped']) {
+    for (const s of ['paid', 'packing', 'on_hold', 'pending_payment', 'shipped']) {
       counts[s] = (await sb.selectCount(`orders?select=id&status=eq.${s}&limit=1`)).total;
     }
     // Sprzedaż: ostatnie 30 dni i dzisiaj (opłacone, wysłane, zrealizowane)
     const day = 24 * 60 * 60 * 1000;
     const since30 = new Date(Date.now() - 30 * day).toISOString();
     const paidRows = await sb.select<{ total: number; paid_at: string }>(
-      `orders?select=total,paid_at&status=in.(paid,shipped,completed)&paid_at=gte.${encodeURIComponent(since30)}&limit=5000`,
+      `orders?select=total,paid_at&status=in.(paid,packing,shipped,completed)&paid_at=gte.${encodeURIComponent(since30)}&limit=5000`,
     );
     const todayStart = new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Warsaw' }));
     todayStart.setHours(0, 0, 0, 0);

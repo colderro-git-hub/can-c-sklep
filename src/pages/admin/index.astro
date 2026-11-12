@@ -124,6 +124,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               </div>
               <div class="tabs" role="tablist" aria-label="Status">
                 <button type="button" class="tab" data-status="paid" aria-pressed="true">Do wysłania <span data-count="paid"></span></button>
+                <button type="button" class="tab" data-status="packing" aria-pressed="false">Kompletowanie <span data-count="packing"></span></button>
                 <button type="button" class="tab" data-status="on_hold" aria-pressed="false">Wstrzymane <span data-count="on_hold"></span></button>
                 <button type="button" class="tab" data-status="shipped" aria-pressed="false">Wysłane</button>
                 <button type="button" class="tab" data-status="pending_payment" aria-pressed="false">Czekają na płatność <span data-count="pending_payment"></span></button>
@@ -132,9 +133,22 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <button type="button" class="tab" data-status="refunded" aria-pressed="false">Zwrócone</button>
                 <button type="button" class="tab" data-status="" aria-pressed="false">Wszystkie</button>
               </div>
+              <div class="bulk" data-bulk hidden>
+                <strong data-bulk-count></strong>
+                <select class="input" data-bulk-to aria-label="Zmień status zaznaczonych">
+                  <option value="pack">→ Kompletowanie (mail do klienta)</option>
+                  <option value="complete">→ Zrealizowane</option>
+                  <option value="hold">→ Wstrzymane</option>
+                  <option value="unhold">→ Przywróć do wysłania</option>
+                  <option value="cancel">→ Anuluj</option>
+                </select>
+                <label class="check" data-bulk-notify-wrap><input type="checkbox" data-bulk-notify checked /> Wyślij e-maile</label>
+                <button type="button" class="btn btn--sm" data-bulk-go>Zmień status</button>
+                <button type="button" class="link" data-bulk-clear>Odznacz</button>
+              </div>
               <div class="table-wrap">
                 <table class="table">
-                  <thead><tr><th>Nr</th><th>Data</th><th>Klient</th><th>Produkty</th><th>Dostawa</th><th class="r">Kwota</th><th>Status</th></tr></thead>
+                  <thead><tr><th class="cb" data-stop><input type="checkbox" data-sel-all aria-label="Zaznacz wszystkie na stronie" /></th><th>Nr</th><th>Data</th><th>Klient</th><th>Produkty</th><th>Dostawa</th><th class="r">Kwota</th><th>Status</th></tr></thead>
                   <tbody data-rows></tbody>
                 </table>
               </div>
@@ -802,6 +816,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .table td { padding: 12px; color: var(--ink-30); vertical-align: top; border-bottom: 1px solid var(--line-soft); }
   .table td strong { color: var(--ink-100); font-weight: 500; }
   .table tr[data-id] { cursor: pointer; }
+  .table th.cb, .table td.cb { width: 36px; padding-right: 0; }
+  .table td.cb input, .table th.cb input { width: 18px; height: 18px; cursor: pointer; accent-color: #4E5A7C; }
+  .table tr.is-sel td { background: #F3F5FB; }
+  .bulk { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--r-md); background: var(--primary-a16); margin-bottom: 10px; }
+  .bulk[hidden], [data-bulk-notify-wrap][hidden] { display: none; }
+  .bulk .input { width: auto; min-width: 240px; }
   .table tr[data-id]:hover td, .table tr[data-id]:focus td { background: #FAFAFD; }
   .table tr[data-id]:focus { outline: none; }
   .table .r { text-align: right; }
@@ -815,6 +835,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .st--pending_payment { background: var(--muted-bg); color: var(--ink-50); }
   .st--paid { background: var(--primary-a16); color: var(--primary-ink); }
   .st--on_hold { background: var(--amber-bg); color: var(--amber-ink); }
+  .st--packing { background: rgba(22,144,137,.14); color: #0F6B66; }
   .st--shipped { background: var(--success-a12); color: var(--success-ink); }
   .st--completed { background: var(--success-a24); color: #1F5E46; }
   .st--cancelled, .st--failed, .st--refunded { background: var(--danger-a16); color: var(--danger-ink); }
@@ -988,8 +1009,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   type Order = any;
   const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-  const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
-  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', ga4_refund: 'Zwrot wysłany do GA4', stock_restored: 'Przywrócono stany magazynowe' };
+  const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', packing: 'Kompletowanie', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
+  const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', mail_packing: 'Mail o kompletowaniu', ga4_purchase: 'Zakup wysłany do GA4', ga4_refund: 'Zwrot wysłany do GA4', stock_restored: 'Przywrócono stany magazynowe' };
   const BANK_ACCOUNT = '39 2490 0005 0000 4600 5185 0492';
   const BANK_PROVIDER = 'bank_transfer';
   const BAD = new Set(['mail_failed', 'amount_mismatch', 'p24_verify_failed', 'withdrawal']);
@@ -1028,7 +1049,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   // ---------- Lista zamówień ----------
   async function loadOrders() {
     const tbody = $('[data-rows]');
-    tbody.innerHTML = '<tr><td colspan="7" class="empty">Ładowanie…</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="empty">Ładowanie…</td></tr>';
     try {
       const p = new URLSearchParams({ status: state.status, q: state.q, page: String(state.page) });
       const d = await api(`/api/admin/orders?${p}`);
@@ -1045,7 +1066,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       $<HTMLButtonElement>('[data-prev]').disabled = d.page <= 1;
       $<HTMLButtonElement>('[data-next]').disabled = d.page >= d.pages;
       tbody.innerHTML = d.rows.length ? d.rows.map((o: Order) => `
-        <tr data-id="${o.id}" tabindex="0">
+        <tr data-id="${o.id}" tabindex="0" class="${selected.has(o.id) ? 'is-sel' : ''}">
+          <td class="cb" data-stop><input type="checkbox" data-sel="${o.id}" ${selected.has(o.id) ? 'checked' : ''} aria-label="Zaznacz zamówienie ${o.number}" /></td>
           <td class="nowrap"><strong>${o.number}</strong>${o.source === 'woocommerce' ? '<span class="wc">WC</span>' : ''}</td>
           <td class="nowrap">${date(o.created_at)}</td>
           <td><strong>${esc(o.shipping_address?.name || '—')}</strong><br>${esc(o.email)}</td>
@@ -1053,11 +1075,60 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td>${delivery(o)}${o.tracking_number ? `<br>${trackLink(o.carrier || o.shipping_method, o.tracking_number)}` : ''}</td>
           <td class="r nowrap"><strong>${pln(o.total)}</strong></td>
           <td><span class="st st--${o.status}">${STATUS[o.status] || esc(o.status)}</span></td>
-        </tr>`).join('') : '<tr><td colspan="7" class="empty">Brak zamówień w tym widoku.</td></tr>';
+        </tr>`).join('') : '<tr><td colspan="8" class="empty">Brak zamówień w tym widoku.</td></tr>';
+      syncBulk();
     } catch (e) {
-      tbody.innerHTML = `<tr><td colspan="7" class="empty err">${esc((e as Error).message)}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="empty err">${esc((e as Error).message)}</td></tr>`;
     }
   }
+
+  // ---------- Zaznaczanie i zbiorcza zmiana statusu ----------
+  const selected = new Set<string>();
+  function syncBulk() {
+    const boxes = [...document.querySelectorAll<HTMLInputElement>('[data-rows] [data-sel]')];
+    const all = $<HTMLInputElement>('[data-sel-all]');
+    all.checked = boxes.length > 0 && boxes.every((b) => b.checked);
+    all.indeterminate = !all.checked && boxes.some((b) => b.checked);
+    $('[data-bulk]').hidden = selected.size === 0;
+    $('[data-bulk-count]').textContent = `Zaznaczone: ${selected.size}`;
+    const to = $<HTMLSelectElement>('[data-bulk-to]').value;
+    $('[data-bulk-notify-wrap]').hidden = to !== 'pack';
+  }
+  $('[data-rows]').addEventListener('change', (e) => {
+    const cb = (e.target as HTMLElement).closest<HTMLInputElement>('[data-sel]');
+    if (!cb) return;
+    if (cb.checked) selected.add(cb.dataset.sel!); else selected.delete(cb.dataset.sel!);
+    cb.closest('tr')?.classList.toggle('is-sel', cb.checked);
+    syncBulk();
+  });
+  $<HTMLInputElement>('[data-sel-all]').addEventListener('change', (e) => {
+    const on = (e.target as HTMLInputElement).checked;
+    document.querySelectorAll<HTMLInputElement>('[data-rows] [data-sel]').forEach((b) => {
+      b.checked = on; b.closest('tr')?.classList.toggle('is-sel', on);
+      if (on) selected.add(b.dataset.sel!); else selected.delete(b.dataset.sel!);
+    });
+    syncBulk();
+  });
+  $('[data-bulk-to]').addEventListener('change', syncBulk);
+  $('[data-bulk-clear]').addEventListener('click', () => { selected.clear(); document.querySelectorAll<HTMLInputElement>('[data-rows] [data-sel]').forEach((b) => { b.checked = false; b.closest('tr')?.classList.remove('is-sel'); }); syncBulk(); });
+  $('[data-bulk-go]').addEventListener('click', async () => {
+    const to = $<HTMLSelectElement>('[data-bulk-to]').value;
+    const notify = $<HTMLInputElement>('[data-bulk-notify]').checked;
+    const label = $<HTMLSelectElement>('[data-bulk-to]').selectedOptions[0].textContent!.replace('→ ', '');
+    if (!confirm(`Zmienić status ${selected.size} zamówień: ${label}?${to === 'pack' && notify ? ' Klienci dostaną e-mail.' : ''}${to === 'cancel' ? ' Opłacone zamówienia wymagają zwrotu pieniędzy.' : ''}`)) return;
+    const btn = $<HTMLButtonElement>('[data-bulk-go]');
+    btn.disabled = true;
+    try {
+      const r = await api('/api/admin/order', { action: 'bulk', ids: [...selected], to, notify });
+      const parts = [`Zmieniono: ${r.done}`];
+      if (r.failed.length) parts.push(`pominięto ${r.failed.length} (${r.failed.slice(0, 5).map((f: any) => `nr ${f.number}: ${f.error}`).join('; ')}${r.failed.length > 5 ? '…' : ''})`);
+      if (r.mailFailed.length) parts.push(`e-mail nie wysłany: nr ${r.mailFailed.join(', ')}`);
+      toast(parts.join(' · '), r.failed.length > 0 || r.mailFailed.length > 0);
+      selected.clear();
+      loadOrders();
+    } catch (e) { toast((e as Error).message, true); }
+    finally { btn.disabled = false; }
+  });
 
   // ---------- Szczegóły ----------
   // Historia panelu szczegółów: zamówienie → klient → zamówienie… z przyciskiem „Wstecz”
@@ -1110,7 +1181,17 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           ${o.customer_note ? `<div class="note">${esc(o.customer_note)}</div>` : ''}
         </div>
 
-        ${can(['paid', 'on_hold']) ? `
+        ${can(['paid', 'on_hold']) && !wc ? `<details class="manual" data-pack-wrap>
+          <summary>Kompletowanie zamówienia</summary>
+          <form class="sec" data-pack>
+            <p class="muted small">Status „Kompletowanie” informuje klienta, że zamówienie jest przygotowywane do wysyłki. Furgonetka nadal widzi je jako do nadania.</p>
+            <label class="field">Dodatkowa wiadomość w e-mailu (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="600" placeholder="Np. kapsułki dosyłamy w osobnej paczce."></textarea></label>
+            <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail</label>
+            <div class="actions"><button class="btn btn--sm">Oznacz: Kompletowanie</button></div>
+          </form>
+        </details>` : ''}
+
+        ${can(['paid', 'packing', 'on_hold']) ? `
           <div class="box box--blue">
             <strong>Wysyłka</strong>
             <span class="muted">Zamówienie trafia do Furgonetki automatycznie. Po nadaniu numer przesyłki wróci tu sam, status zmieni się na „Wysłane”, a klient dostanie e-mail.</span>
@@ -1139,7 +1220,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <span>${o.refunded_amount ? `Kwota zwrotu: <strong>${pln(o.refunded_amount)}</strong>${o.refunded_amount < o.total ? ` z ${pln(o.total)} (zwrot częściowy)` : ''}` : 'Zamówienie oznaczone jako zwrócone.'}${o.refunded_at ? ` · ${date(o.refunded_at)}` : ''}</span>
         </div>` : ''}
 
-        ${can(['paid', 'on_hold', 'shipped', 'completed', 'cancelled']) && o.paid_at ? `<details class="manual" data-refund-wrap>
+        ${can(['paid', 'packing', 'on_hold', 'shipped', 'completed', 'cancelled']) && o.paid_at ? `<details class="manual" data-refund-wrap>
           <summary>Zwrot środków</summary>
           <form class="sec" data-refund>
             <p class="muted small">Zmiana statusu nie przelewa pieniędzy – ${o.payment_provider === BANK_PROVIDER ? 'wykonaj przelew zwrotny z konta firmowego' : 'zleć zwrot w panelu Przelewy24'}. Przy zwrocie częściowym w przychodzie zostaje różnica.</p>
@@ -1155,12 +1236,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         </details>` : ''}
 
         <div class="actions">
-          ${can(['paid', 'shipped']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="complete">Zrealizowane</button>' : ''}
-          ${can(['paid']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="hold">Wstrzymaj</button>' : ''}
+          ${can(['paid', 'packing', 'shipped']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="complete">Zrealizowane</button>' : ''}
+          ${can(['paid', 'packing']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="hold">Wstrzymaj</button>' : ''}
           ${can(['on_hold']) ? '<button type="button" class="btn btn--outline btn--sm" data-act="unhold">Przywróć</button>' : ''}
           ${can(['pending_payment', 'cancelled']) && o.payment_provider !== BANK_PROVIDER ? '<button type="button" class="btn btn--sm" data-act="check_payment">Sprawdź płatność w P24</button>' : ''}
           ${o.payment_provider === BANK_PROVIDER && o.status === 'pending_payment' ? '<button type="button" class="btn btn--sm" data-act="finalize_bank">Oznacz jako opłacone</button>' : ''}
-          ${can(['pending_payment', 'paid', 'on_hold']) ? '<button type="button" class="btn btn--danger btn--sm" data-act="cancel">Anuluj</button>' : ''}
+          ${can(['pending_payment', 'paid', 'packing', 'on_hold']) ? '<button type="button" class="btn btn--danger btn--sm" data-act="cancel">Anuluj</button>' : ''}
         </div>
 
         ${wc ? '' : `<details class="sec manual" data-edit-wrap>
@@ -1204,6 +1285,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           await act({ id, action: 'update', ...p });
         });
       }
+      body.querySelector<HTMLFormElement>('[data-pack]')?.addEventListener('submit', async (ev) => {
+        ev.preventDefault();
+        const f = new FormData(ev.target as HTMLFormElement);
+        await act({ id, action: 'pack', notify: f.get('notify') !== null, message: f.get('message') });
+      });
       body.querySelector<HTMLFormElement>('[data-refund]')?.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const f = new FormData(ev.target as HTMLFormElement);
@@ -1678,7 +1764,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         const future = p.starts_at && new Date(p.starts_at).getTime() > now;
         const past = p.ends_at && new Date(p.ends_at).getTime() < now;
         return `<tr data-pmid="${p.id}" tabindex="0" class="clickrow" title="Edytuj promocję i zobacz, kto z niej skorzystał">
-          <td><strong>${esc(p.name)}</strong><br><span class="muted">${p.kind === 'bundle' ? 'Zestaw' : 'Rabat ilościowy'}${p.label && p.label !== p.name ? ` · klient widzi: „${esc(p.label)}”` : ''}</span></td>
+          <td><strong>${esc(p.name)}</strong><br><span class="muted">${p.kind === 'bundle' ? 'Zestaw' : 'Rabat ilościowy'}${p.label && p.label !== p.name ? ` · klient widzi: „${esc(p.label)}”` : ''}</span>${p.code ? `<br><span class="wc" style="margin-left:0">kod ${esc(p.code)}</span>` : ''}</td>
           <td>${promoSummary(p)}</td>
           <td class="nowrap">${p.starts_at || p.ends_at ? `${d(p.starts_at) || '…'} – ${d(p.ends_at) || '…'}` : 'bezterminowo'}${future ? '<br><span class="muted">zaplanowana</span>' : past ? '<br><span class="err">zakończona</span>' : ''}</td>
           <td class="r">${p.stats.orders}${p.stats.last ? `<br><span class="muted">ost. ${new Date(p.stats.last).toLocaleDateString('pl-PL')}</span>` : ''}</td>
@@ -1731,7 +1817,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       : { name: '', label: '', kind, items: [{ product_id: '', qty: 1 }, { product_id: '', qty: 1 }], type: 'percent', value: 10, max_sets: null, with_codes: true, sort_order: 5, active: true };
     $('[data-d-title]').textContent = id ? p.name : kind === 'bundle' ? 'Nowy zestaw' : 'Nowy rabat ilościowy';
     const day = (iso: string | null) => (iso ? new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '');
-    const paidSt = new Set(['paid', 'shipped', 'completed']);
+    const paidSt = new Set(['paid', 'packing', 'shipped', 'completed']);
     const paidUses = uses.filter((u) => paidSt.has(u.status));
     const custs = new Set(paidUses.map((u) => u.customer_id || u.email)).size;
 
@@ -1743,7 +1829,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <label class="field">Nazwa dla klienta<input class="input" name="label" value="${esc(p.label || '')}" maxlength="60" placeholder="puste = jak w panelu" /></label>
           <label class="field">Ważna od<input class="input" name="starts_at" type="date" value="${day(p.starts_at)}" /></label>
           <label class="field">Ważna do<input class="input" name="ends_at" type="date" value="${day(p.ends_at)}" /></label>
+          <label class="field">Kod uruchamiający (opcjonalnie)<input class="input" name="code" value="${esc(p.code || '')}" maxlength="30" placeholder="puste = działa automatycznie" style="text-transform:uppercase" /></label>
         </div>
+        <p class="muted small">Z kodem promocja jest ukryta: nie pokazuje się w koszyku ani na stronie produktu i działa dopiero po wpisaniu kodu w zamówieniu (np. na kampanię lub newsletter).</p>
         ${kind === 'quantity' ? `
           <h3 class="sec__t">Produkty</h3>
           <div class="pm-prods">${promoProducts.map((x) => `<label class="check"><input type="checkbox" name="product_ids" value="${esc(x.id)}" ${p.product_ids.includes(x.id) ? 'checked' : ''} /> ${esc(x.name)}${x.active ? '' : ' <span class="muted">(nieaktywny)</span>'}</label>`).join('')}</div>
@@ -1806,6 +1894,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         starts_at: fd.get('starts_at') ? `${fd.get('starts_at')}T00:00:00` : '', ends_at: fd.get('ends_at') ? `${fd.get('ends_at')}T23:59:59` : '',
         sort_order: Number(fd.get('sort_order') || 0), description: String(fd.get('description') || ''),
         with_codes: fd.get('with_codes') !== null, active: id ? p.active : fd.get('active') !== null,
+        code: String(fd.get('code') || '').trim().toUpperCase(),
       };
       if (kind === 'quantity') {
         out.product_ids = fd.getAll('product_ids').map(String);
@@ -1834,6 +1923,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         tiers: (c.tiers || []).map((t: any) => ({ min: Number(t.min), type: t.type, value: t.type === 'amount' ? money(String(t.value)) : Number(String(t.value).replace(',', '.')) })),
         items: c.items, type: c.type, value: c.type === 'amount' ? money(String(c.value || '')) : Number(String(c.value || '').replace(',', '.')), max_sets: c.max_sets || null, with_codes: true,
       });
+      promo.code = null; // podgląd zawsze bez kodu
       let lines: { product_id: string; qty: number; unit_price: number }[][] = [];
       if (kind === 'quantity') {
         const pid = promo.product_ids.find((x) => price(x) > 0);
@@ -1921,7 +2011,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     $('[data-d-title]').textContent = `Kod ${c.code}`;
     const day = (iso: string | null) => (iso ? new Date(new Date(iso).getTime() - new Date(iso).getTimezoneOffset() * 60000).toISOString().slice(0, 10) : '');
     const val = c.type === 'percent' ? String(c.value) : (c.value / 100).toFixed(2).replace('.', ',');
-    const paidSt = new Set(['paid', 'shipped', 'completed']);
+    const paidSt = new Set(['paid', 'packing', 'shipped', 'completed']);
     const paidUses = uses.filter((u) => paidSt.has(u.status));
     const nameLocked = c.used_count > 0 || uses.length > 0;
     body.innerHTML = `
@@ -3328,7 +3418,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   document.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-status]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
     b.setAttribute('aria-pressed', 'true');
-    state.status = b.dataset.status || ''; state.page = 1; loadOrders();
+    state.status = b.dataset.status || ''; state.page = 1; selected.clear(); loadOrders();
   }));
   $('[data-search]').addEventListener('submit', (e) => {
     e.preventDefault();

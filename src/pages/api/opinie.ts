@@ -49,7 +49,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       const [c] = await sb.select<{ id: string }>(`customers?select=id&email=eq.${encodeURIComponent(email)}`);
       if (c) {
         customer_id = c.id;
-        const bought = await sb.select(`order_items?select=id,orders!inner(customer_id,status)&product_id=eq.${product}&orders.customer_id=eq.${c.id}&orders.status=in.(paid,shipped,completed)&limit=1`);
+        const bought = await sb.select(`order_items?select=id,orders!inner(customer_id,status)&product_id=eq.${product}&orders.customer_id=eq.${c.id}&orders.status=in.(paid,packing,shipped,completed)&limit=1`);
         verified = bought.length > 0;
         const pending = await sb.select(`reviews?select=id&product_id=eq.${product}&customer_id=eq.${c.id}&status=eq.pending`);
         if (pending.length) return json(429, { error: 'Twoja opinia o tym produkcie czeka już na moderację.' });

@@ -35,7 +35,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const rows = await sb.select<any>('discount_codes?select=*,customers(email)&order=created_at.desc&limit=200');
     // Skuteczność kodów: opłacone zamówienia z kodem
     const used = await sb.select<{ discount_code: string; total: number; discount_code_amount: number; created_at: string }>(
-      'orders?select=discount_code,total,discount_code_amount,created_at&discount_code=not.is.null&status=in.(paid,shipped,completed)&limit=10000',
+      'orders?select=discount_code,total,discount_code_amount,created_at&discount_code=not.is.null&status=in.(paid,packing,shipped,completed)&limit=10000',
     );
     const stats: Record<string, { orders: number; revenue: number; discount: number; last: string | null }> = {};
     for (const o of used) {
@@ -64,6 +64,9 @@ async function parseCodeFields(sb: Sb, b: any) {
   const starts_at = toIso(b.starts_at), ends_at = toIso(b.ends_at);
 
   if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' };
+  // Kod nie może być jednocześnie kodem promocji (zestaw / rabat ilościowy uruchamiany kodem)
+  const promoWithCode = await sb.select(`promotions?select=id&code=eq.${encodeURIComponent(code)}`).catch(() => []);
+  if (promoWithCode.length) return { error: 'Taki kod jest już przypisany do promocji (Promocje automatyczne).' };
   if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 100)) return { error: 'Nieprawidłowa wartość rabatu.' };
   if (!Number.isFinite(min_total) || min_total < 0) return { error: 'Nieprawidłowa minimalna kwota.' };
   if (max_uses !== null && (!Number.isInteger(max_uses) || max_uses < 1)) return { error: 'Nieprawidłowy limit użyć.' };

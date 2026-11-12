@@ -58,3 +58,47 @@ export async function sendGa4Refund(env: Env, o: { id: string; amount: number; a
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
+
+// Purchase z serwera – dla zamówień, przy których przeglądarka nie wyśle zdarzenia: przelew tradycyjny
+// (opłacany po wyjściu ze strony), zamówienia z panelu i płatności potwierdzone ręcznie.
+// GA4_SERVER_PURCHASE=all → wysyłaj dla wszystkich (GA4 scala zakupy o tym samym transaction_id).
+export function shouldSendServerPurchase(env: Env, o: { source?: string | null; payment_provider?: string | null }, byAdmin: boolean) {
+  if (!ga4MpConfigured(env) || o.source === 'woocommerce') return false;
+  if (env.GA4_SERVER_PURCHASE === 'all') return true;
+  return byAdmin || o.source === 'admin' || o.payment_provider === 'bank_transfer';
+}
+
+export async function sendGa4Purchase(env: Env, o: {
+  id: string; total: number; shipping_cost?: number | null; discount_code?: string | null; attribution?: GaIds | null;
+  items: { product_id: string | null; name: string; qty: number; unit_price: number; discount: number }[];
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!ga4MpConfigured(env)) return { ok: false, error: 'brak GA4_MEASUREMENT_ID / GA4_API_SECRET' };
+  const total = o.total / 100, shipping = (o.shipping_cost || 0) / 100;
+  const productGross = total - shipping;
+  const tax = Math.round((productGross - productGross / 1.23) * 100) / 100; // VAT 23% – jak na stronie podziękowania
+  const clientId = o.attribution?.ga_client_id || `${Math.floor(Math.random() * 2 ** 31)}.${Math.floor(Date.now() / 1000)}`;
+  const body = {
+    client_id: clientId,
+    non_personalized_ads: true,
+    events: [{
+      name: 'purchase',
+      params: {
+        transaction_id: o.id, currency: 'PLN', value: total, shipping, tax,
+        ...(o.discount_code ? { coupon: o.discount_code } : {}),
+        ...(o.attribution?.ga_session_id ? { session_id: o.attribution.ga_session_id } : {}),
+        engagement_time_msec: 1,
+        items: o.items.map((i) => ({
+          item_id: i.product_id || i.name, item_name: i.name, price: i.unit_price / 100, quantity: i.qty,
+          item_brand: 'Can-C', ...(i.discount ? { discount: i.discount / 100 } : {}),
+        })),
+      },
+    }],
+  };
+  const url = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(env.GA4_MEASUREMENT_ID!)}&api_secret=${encodeURIComponent(env.GA4_API_SECRET!)}`;
+  try {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    return res.ok ? { ok: true } : { ok: false, error: `HTTP ${res.status}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}

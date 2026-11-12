@@ -7,8 +7,9 @@ import { BANK_PROVIDER, BANK_ACCOUNT, BANK_INFO_TEXT, bankTitle } from '../../..
 import { sendMail } from '../../../lib/mail';
 import { getSite } from '../../../lib/site-settings';
 import { orderConfirmationBankHtml } from '../../../lib/email-templates';
-import { checkCode } from '../../../lib/discounts';
-import { getPromotions } from '../../../lib/promotions-db';
+import { checkCode, normalizeCode } from '../../../lib/discounts';
+import { getPromotions, findCodePromotion } from '../../../lib/promotions-db';
+import { promoActive } from '../../../lib/promotions';
 import { gaIdsFromCookies } from '../../../lib/ga4-mp';
 
 export const prerender = false;
@@ -83,15 +84,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // ---------- Cena z bazy ----------
     const ids = [...new Set(lines.map((l: any) => l.slug))].map((s) => `"${String(s).replace(/"/g, '')}"`).join(',');
     const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
+    const promos = await getPromotions(env);
+    // Kod uruchamiający promocję (zestaw / rabat ilościowy) – rabat trafia do pozycji, nie do kwoty kodu
+    const codePromo = str(body.discountCode, 30) ? await findCodePromotion(env, body.discountCode) : null;
+    const promoCode = codePromo ? normalizeCode(body.discountCode) : null;
     let priced;
-    try { priced = priceCart(lines, products, await getPromotions(env)); } catch (e) {
+    try { priced = priceCart(lines, products, promos, { code: promoCode }); } catch (e) {
       return json(409, { error: 'Któryś z produktów jest niedostępny. Odśwież koszyk.' });
     }
 
     // ---------- Kod rabatowy (sprawdzany ponownie po stronie serwera) ----------
     let codeName: string | null = null;
     let codeAmount = 0;
-    if (str(body.discountCode, 30)) {
+    if (codePromo) {
+      if (!promoActive(codePromo) || !priced.codePromo) return json(422, { error: 'Kod nie działa dla tego koszyka. Usuń go albo sprawdź warunki promocji.' });
+      codeName = promoCode; // do raportów; kwota rabatu jest w pozycjach i w order_promotions
+    } else if (str(body.discountCode, 30)) {
       if (priced.codesBlockedBy) return json(422, { error: `Kod rabatowy nie łączy się z promocją „${priced.codesBlockedBy}”. Usuń kod, aby skorzystać z promocji.` });
       const r = await checkCode(sb, body.discountCode, priced.total, email);
       if (!r.ok) return json(422, { error: r.error });

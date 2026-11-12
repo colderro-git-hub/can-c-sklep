@@ -3,11 +3,12 @@ import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { clearPromotionsCache } from '../../../lib/promotions-db';
+import { normalizeCode } from '../../../lib/discounts';
 
 export const prerender = false;
 
 const UUID = /^[0-9a-f-]{36}$/i;
-const PAID = 'paid,shipped,completed';
+const PAID = 'paid,packing,shipped,completed';
 type Sb = ReturnType<typeof db>;
 
 // Lista promocji ze statystykami; ?uses=<id> – promocja + zamówienia, w których ją naliczono
@@ -66,7 +67,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
 const money = (x: unknown) => Math.round(Number(String(x ?? '').replace(/\s/g, '').replace(',', '.')) * 100);
 
 // Pola z formularza → wiersz tabeli promotions albo komunikat błędu
-async function parse(sb: Sb, b: any): Promise<{ row: Record<string, unknown> } | { error: string }> {
+async function parse(sb: Sb, b: any, selfId: string | null = null): Promise<{ row: Record<string, unknown> } | { error: string }> {
   const name = String(b.name ?? '').trim().slice(0, 100);
   const label = String(b.label ?? '').trim().slice(0, 60) || null;
   const kind = b.kind === 'bundle' ? 'bundle' : 'quantity';
@@ -76,9 +77,18 @@ async function parse(sb: Sb, b: any): Promise<{ row: Record<string, unknown> } |
   try { starts_at = toIso(b.starts_at); ends_at = toIso(b.ends_at); } catch { return { error: 'Nieprawidłowa data.' }; }
   if (starts_at && ends_at && starts_at > ends_at) return { error: 'Data końca jest wcześniejsza niż początku.' };
 
+  // Kod uruchamiający promocję (opcjonalny) – unikalny wśród promocji i zwykłych kodów rabatowych
+  const code = normalizeCode(b.code) || null;
+  if (code) {
+    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' };
+    const [dc] = await sb.select(`discount_codes?select=id&code=eq.${encodeURIComponent(code)}`);
+    if (dc) return { error: 'Taki kod istnieje już w kodach rabatowych.' };
+    const [other] = await sb.select<{ id: string }>(`promotions?select=id&code=eq.${encodeURIComponent(code)}`);
+    if (other && other.id !== selfId) return { error: 'Inna promocja ma już ten kod.' };
+  }
   const known = new Set((await sb.select<{ id: string }>('products?select=id')).map((p) => p.id));
   const row: Record<string, unknown> = {
-    name, label, kind, starts_at, ends_at,
+    name, label, kind, starts_at, ends_at, code,
     with_codes: b.with_codes !== false,
     sort_order: Math.max(0, Math.min(9999, Math.round(Number(b.sort_order) || 0))),
     description: String(b.description ?? '').trim().slice(0, 300) || null,
@@ -150,7 +160,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(200, { ok: true });
     }
     if (b.action !== 'create' && b.action !== 'update') return json(400, { error: 'Nieznana akcja.' });
-    const parsed = await parse(sb, b);
+    const parsed = await parse(sb, b, b.action === 'update' ? String(b.id || '') : null);
     if ('error' in parsed) return json(422, { error: parsed.error });
     if (b.action === 'update') {
       if (!UUID.test(b.id || '')) return json(400, { error: 'Nieprawidłowa promocja.' });

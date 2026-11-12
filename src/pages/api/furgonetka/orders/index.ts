@@ -20,7 +20,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const rows = await db(env).select(
       `orders?select=id,number,created_at,updated_at,paid_at,email,status,total,shipping_cost,shipping_method,shipping_point,shipping_address,billing,customer_note,` +
         `order_items(product_id,name,qty,total,products(ean)),customers(first_name,last_name,phone)` +
-        `&source=in.(${sources})&status=in.(paid,on_hold,shipped,completed,cancelled)` +
+        `&source=in.(${sources})&status=in.(paid,packing,on_hold,shipped,completed,cancelled)` +
         `&updated_at=gt.${encodeURIComponent(since)}&order=updated_at.asc&limit=${limit}`,
     );
     return json(200, rows.map(toFurgonetkaOrder));

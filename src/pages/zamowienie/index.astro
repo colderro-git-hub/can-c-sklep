@@ -194,7 +194,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         if (!res.ok) { resetCode(); codeMsg.textContent = d.error || 'Nie udało się sprawdzić kodu.'; return; }
         appliedCode = d.code;
         codeLine.hidden = false;
-        form.querySelector('[data-code-name]')!.textContent = `Kod ${d.code}`;
+        form.querySelector('[data-code-name]')!.textContent = d.promo ? `${d.promo} (kod ${d.code})` : `Kod ${d.code}`;
         form.querySelector('[data-code-amount]')!.textContent = `−${pln.format(d.amount / 100)}`;
         form.querySelector('[data-total]')!.textContent = pln.format(d.total / 100);
         codeMsg.textContent = 'Kod dodany.';

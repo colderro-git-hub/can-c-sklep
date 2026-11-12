@@ -11,7 +11,7 @@ export const prerender = false;
 // Pełne podsumowanie pokazujemy tylko przez tyle dni od złożenia zamówienia.
 // Identyfikator to losowy UUID (122 bity), ale adres strony zostaje w historii przeglądarki.
 const DETAILS_DAYS = 7;
-const PAID = ['paid', 'shipped', 'completed'];
+const PAID = ['paid', 'packing', 'shipped', 'completed'];
 const CLOSED = ['cancelled', 'failed', 'refunded'];
 
 type Order = {
@@ -44,6 +44,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
       getSite(env),
       sb.select<{ name: string; amount: number }>(`order_promotions?select=name,amount&order_id=eq.${id}&order=created_at.asc`).catch(() => []),
     ]);
+    // Zakup wysłany do GA4 z serwera – strona podziękowania nie wysyła go drugi raz
+    const gaServer = (await sb.select(`order_events?select=id&order_id=eq.${id}&type=eq.ga4_purchase&limit=1`).catch(() => [])).length > 0;
 
     // Termin wysyłki: jeden dla całego zamówienia albo przy każdym produkcie, gdy się różnią
     const lines = items.map((i) => {
@@ -79,6 +81,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       subtotal: o.subtotal,
       bundleDiscount: Math.max(0, o.discount - (o.discount_code_amount || 0)),
       promotions: promos.filter((p) => p.amount > 0).map((p) => ({ name: p.name, amount: p.amount })),
+      gaServer,
       code: o.discount_code,
       codeAmount: o.discount_code_amount || 0,
       shipping: o.shipping_cost,

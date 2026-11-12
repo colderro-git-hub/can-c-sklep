@@ -30,7 +30,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
       sb.select<any>(`discount_codes?select=id,code,type,value,used_count,description,active`),
     ]);
 
-    const paid = ['paid', 'shipped', 'completed', 'on_hold'];
+    const paid = ['paid', 'packing', 'shipped', 'completed', 'on_hold'];
     const allShop = orders.filter((o: any) => o.source !== 'woocommerce');
     const paidOrders = allShop.filter((o: any) => paid.includes(o.status));
 

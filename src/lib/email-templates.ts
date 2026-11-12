@@ -2,12 +2,17 @@
 // w Gmailu, Outlooku i Apple Mail (programy pocztowe nie obsługują nowoczesnego CSS).
 import type { Site } from './site-settings';
 
-const INK = '#01080F';
-const MUTED = '#5B6168';
-const LINE = '#E6E6E6';
-const BG = '#F4F4F2';
-const TINT = '#EAF4FD';
-const FONT = "Arial, 'Helvetica Neue', Helvetica, sans-serif";
+// Kolory i krój jak na stronie (system Laluna, global.css). Poppins ładują Apple Mail, iOS i część
+// programów; Gmail i Outlook pokażą Arial – dlatego wagi i odstępy dobrane tak, żeby oba wyglądały dobrze.
+const INK = '#141C2B';          // --ink
+const MUTED = '#545D6E';        // --muted
+const LINE = '#DCE2EC';         // --line
+const BG = '#E8EDF5';           // --band
+const PRIMARY = '#4E5A7C';      // --primary (przyciski)
+const ACCENT = '#169089';       // --accent (znaczniki, numery kroków)
+const ACCENT_TEXT = '#107571';  // --accent-text (linki)
+const TINT = '#D4EEEB';         // --accent-soft (wyróżnione pola)
+const FONT = "Poppins, Arial, 'Helvetica Neue', Helvetica, sans-serif";
 
 export const esc = (s: unknown) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
@@ -15,21 +20,21 @@ const zl = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', cu
 
 // ---------- Klocki ----------
 export const h1 = (t: string) =>
-  `<h1 style="margin:0 0 16px;font-family:${FONT};font-size:26px;line-height:1.25;font-weight:normal;color:${INK};">${esc(t)}</h1>`;
+  `<h1 style="margin:0 0 18px;font-family:${FONT};font-size:30px;line-height:1.2;font-weight:300;color:${INK};">${esc(t)}</h1>`;
 export const p = (html: string, opts: { muted?: boolean; size?: number } = {}) =>
-  `<p style="margin:0 0 14px;font-family:${FONT};font-size:${opts.size ?? 16}px;line-height:1.55;color:${opts.muted ? MUTED : INK};">${html}</p>`;
+  `<p style="margin:0 0 14px;font-family:${FONT};font-size:${opts.size ?? 16}px;line-height:1.55;font-weight:300;color:${opts.muted ? MUTED : INK};">${html}</p>`;
 export const button = (href: string, label: string) => `
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 22px;"><tr>
-    <td style="border-radius:300px;background:${INK};">
-      <a href="${esc(href)}" style="display:inline-block;padding:15px 30px;font-family:${FONT};font-size:16px;color:#FFFFFF;text-decoration:none;border-radius:300px;">${esc(label)}</a>
+    <td style="border-radius:16px;background:${PRIMARY};">
+      <a href="${esc(href)}" style="display:inline-block;padding:16px 32px;font-family:${FONT};font-size:16px;font-weight:400;color:#FFFFFF;text-decoration:none;border-radius:16px;">${esc(label)}</a>
     </td></tr></table>`;
 export const box = (html: string, tone: 'tint' | 'warn' | 'plain' = 'tint') => {
-  const bg = tone === 'warn' ? '#FFF4D6' : tone === 'plain' ? BG : TINT;
-  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;"><tr><td style="background:${bg};padding:18px 20px;font-family:${FONT};font-size:15px;line-height:1.55;color:${INK};">${html}</td></tr></table>`;
+  const bg = tone === 'warn' ? '#F7EEDC' : tone === 'plain' ? BG : TINT;
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;"><tr><td style="background:${bg};border-radius:16px;padding:18px 22px;font-family:${FONT};font-size:15px;line-height:1.55;font-weight:300;color:${INK};">${html}</td></tr></table>`;
 };
 export const codeBox = (code: string, caption: string) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;"><tr>
-    <td align="center" style="border:2px dashed ${INK};padding:18px 16px;">
+    <td align="center" style="border:2px dashed ${ACCENT};border-radius:16px;background:${TINT};padding:18px 16px;">
       <div style="font-family:'Courier New',Courier,monospace;font-size:26px;letter-spacing:3px;color:${INK};font-weight:bold;">${esc(code)}</div>
       <div style="font-family:${FONT};font-size:13px;color:${MUTED};margin-top:6px;">${esc(caption)}</div>
     </td></tr></table>`;
@@ -37,38 +42,45 @@ export const codeBox = (code: string, caption: string) => `
 export const rows = (items: { label: string; value: string; strong?: boolean; muted?: boolean }[]) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;border-top:1px solid ${LINE};">
     ${items.map((r) => `<tr>
-      <td style="padding:12px 0;border-bottom:1px solid ${LINE};font-family:${FONT};font-size:${r.strong ? 17 : 15}px;color:${r.muted ? MUTED : INK};${r.strong ? 'font-weight:bold;' : ''}">${esc(r.label)}</td>
-      <td align="right" style="padding:12px 0 12px 12px;border-bottom:1px solid ${LINE};font-family:${FONT};font-size:${r.strong ? 17 : 15}px;color:${r.muted ? MUTED : INK};white-space:nowrap;${r.strong ? 'font-weight:bold;' : ''}">${esc(r.value)}</td>
+      <td style="padding:12px 0;border-bottom:1px solid ${LINE};font-family:${FONT};font-size:${r.strong ? 18 : 15}px;color:${r.muted ? MUTED : INK};font-weight:${r.strong ? 500 : 300};">${esc(r.label)}</td>
+      <td align="right" style="padding:12px 0 12px 12px;border-bottom:1px solid ${LINE};font-family:${FONT};font-size:${r.strong ? 18 : 15}px;color:${r.muted ? MUTED : INK};white-space:nowrap;font-weight:${r.strong ? 500 : 400};">${esc(r.value)}</td>
     </tr>`).join('')}
   </table>`;
 export const kv = (pairs: [string, string][]) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
-    ${pairs.map(([k, v]) => `<tr><td valign="top" style="padding:6px 16px 6px 0;font-family:${FONT};font-size:14px;color:${MUTED};white-space:nowrap;width:1%;">${esc(k)}</td><td style="padding:6px 0;font-family:${FONT};font-size:15px;color:${INK};">${v}</td></tr>`).join('')}
+    ${pairs.map(([k, v]) => `<tr><td valign="top" style="padding:6px 16px 6px 0;font-family:${FONT};font-size:14px;font-weight:300;color:${MUTED};white-space:nowrap;width:1%;">${esc(k)}</td><td style="padding:6px 0;font-family:${FONT};font-size:15px;font-weight:300;color:${INK};">${v}</td></tr>`).join('')}
   </table>`;
 export const steps = (items: string[]) => `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">
-    ${items.map((t, i) => `<tr><td valign="top" style="padding:0 12px 12px 0;width:28px;"><div style="width:26px;height:26px;border-radius:13px;background:${INK};color:#fff;font-family:${FONT};font-size:13px;line-height:26px;text-align:center;">${i + 1}</div></td><td style="padding:3px 0 12px;font-family:${FONT};font-size:15px;line-height:1.5;color:${INK};">${t}</td></tr>`).join('')}
+    ${items.map((t, i) => `<tr><td valign="top" style="padding:0 12px 12px 0;width:28px;"><div style="width:26px;height:26px;border-radius:13px;background:${TINT};color:${ACCENT_TEXT};font-family:${FONT};font-size:13px;line-height:26px;text-align:center;">${i + 1}</div></td><td style="padding:3px 0 12px;font-family:${FONT};font-size:15px;line-height:1.5;font-weight:300;color:${INK};">${t}</td></tr>`).join('')}
   </table>`;
 
 // ---------- Szkielet wiadomości ----------
 export function layout(o: { site: Site; origin: string; preheader: string; body: string; unsubscribe?: string; reason?: string }) {
   const s = o.site;
+  // Logo z panelu – tylko PNG/JPG/GIF (SVG i WebP nie działają w Gmailu i Outlooku); inaczej logo tekstowe
+  const logoUrl = String((s as any).logoHeader || '');
+  const logo = /\.(png|jpe?g|gif)$/i.test(logoUrl)
+    ? `<img src="${esc(logoUrl)}" alt="Can-C" height="36" style="display:block;height:36px;width:auto;border:0;">`
+    : `<span style="font-family:${FONT};font-size:28px;font-weight:400;color:${PRIMARY};letter-spacing:0.5px;">Can-C</span>`;
   return `<!doctype html>
-<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Can-C</title></head>
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Can-C</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+<style>a { color: ${ACCENT_TEXT}; } @media (max-width: 620px) { .px { padding-left: 22px !important; padding-right: 22px !important; } }</style></head>
 <body style="margin:0;padding:0;background:${BG};">
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:${BG};">${esc(o.preheader)}&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${BG};">
     <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;">
-        <tr><td style="background:${INK};padding:22px 32px;">
-          <a href="${esc(o.origin)}/" style="font-family:${FONT};font-size:26px;color:#FFFFFF;text-decoration:none;letter-spacing:0.5px;">Can-C</a>
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:24px;overflow:hidden;">
+        <tr><td class="px" style="padding:28px 40px 22px;border-bottom:1px solid ${LINE};">
+          <a href="${esc(o.origin)}/" style="text-decoration:none;">${logo}</a>
         </td></tr>
-        <tr><td style="padding:36px 32px 12px;">${o.body}</td></tr>
-        <tr><td style="padding:0 32px 28px;">
-          ${p(`Pytania? Odpisz na tę wiadomość albo napisz na <a href="mailto:${esc(s.email)}" style="color:${INK};">${esc(s.email)}</a>.`, { muted: true, size: 14 })}
+        <tr><td class="px" style="padding:36px 40px 12px;">${o.body}</td></tr>
+        <tr><td class="px" style="padding:0 40px 32px;">
+          ${p(`Pytania? Odpisz na tę wiadomość albo napisz na <a href="mailto:${esc(s.email)}" style="color:${ACCENT_TEXT};">${esc(s.email)}</a>.`, { muted: true, size: 14 })}
           ${p('Zespół Can-C', { size: 15 })}
         </td></tr>
-        <tr><td style="background:${BG};padding:20px 32px;border-top:1px solid ${LINE};">
+        <tr><td class="px" style="background:${BG};padding:22px 40px;">
           <p style="margin:0 0 8px;font-family:${FONT};font-size:12px;line-height:1.6;color:${MUTED};">
             <a href="${esc(o.origin)}/konto/" style="color:${MUTED};">Moje konto</a> &nbsp;·&nbsp;
             <a href="${esc(o.origin)}/kontakt/" style="color:${MUTED};">Kontakt</a> &nbsp;·&nbsp;
@@ -266,6 +278,22 @@ export function orderRefundedHtml(o: Base & { number: number; firstName: string 
       ...(o.note ? [box(esc(o.note).replace(/\n/g, '<br>'), 'plain')] : []),
       p(`Pieniądze wrócą ${esc(o.method)}. Zwykle trwa to do 5 dni roboczych, w zależności od banku.`, { muted: true, size: 14 }),
       p('Masz pytania? Odpowiedz na tę wiadomość.', { muted: true, size: 14 }),
+    ].join(''),
+  });
+}
+
+// Kompletowanie zamówienia (admin: status „Kompletowanie”)
+export function orderPackingHtml(o: Base & { number: number; firstName: string | null; items: Line[]; delivery: string; message?: string }) {
+  return layout({
+    ...o, preheader: `Kompletujemy zamówienie nr ${o.number}. Wkrótce wyślemy numer przesyłki.`,
+    body: [
+      h1('Kompletujemy Twoje zamówienie'),
+      p(o.firstName ? `Dzień dobry ${esc(o.firstName)},` : 'Dzień dobry,'),
+      p(`zamówienie <strong style="font-weight:500;">nr ${o.number}</strong> jest właśnie przygotowywane do wysyłki. Gdy paczka zostanie nadana, wyślemy numer przesyłki.`),
+      ...(o.message ? [box(esc(o.message).replace(/\n/g, '<br>'), 'plain')] : []),
+      rows(o.items.map((i) => ({ label: `${i.name} × ${i.qty}`, value: zl(i.total) }))),
+      kv([['Dostawa', esc(o.delivery)]]),
+      button(`${o.origin}/konto/`, 'Zobacz zamówienie'),
     ].join(''),
   });
 }

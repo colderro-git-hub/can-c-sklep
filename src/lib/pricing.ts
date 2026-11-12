@@ -24,14 +24,16 @@ export const availabilityOf = (p: Pick<DbProduct, 'availability'>): Availability
 export const isAvailable = (p: DbProduct) => availabilityOf(p) !== 'out_of_stock';
 
 // Rabaty ilościowe i zestawowe pochodzą z promocji (lib/promotions.ts, panel: Kody rabatowe → Promocje)
-export function priceCart(lines: CartLine[], products: DbProduct[], promos: Promotion[] = [], now = Date.now()) {
+// code – kod wpisany przez klienta: włącza promocję uruchamianą tym kodem (zwykłe kody rabatowe sprawdza checkCode)
+export function priceCart(lines: CartLine[], products: DbProduct[], promos: Promotion[] = [], opts: { now?: number; code?: string | null } = {}) {
+  const now = opts.now ?? Date.now();
   const base = lines.map((l) => {
     const p = products.find((x) => x.id === l.slug);
     const unit = p ? effectivePrice(p) : null;
     if (!p || !p.active || unit === null || !isAvailable(p)) throw new Error(`Produkt niedostępny: ${l.slug}`);
     return { p, qty: l.qty, unit };
   });
-  const promo = applyPromotions(base.map((b) => ({ product_id: b.p.id, qty: b.qty, unit_price: b.unit })), promos, now);
+  const promo = applyPromotions(base.map((b) => ({ product_id: b.p.id, qty: b.qty, unit_price: b.unit })), promos, now, opts.code ?? null);
   const items = base.map(({ p, qty, unit }) => {
     const gross = unit * qty;
     const discount = Math.min(gross, promo.discounts[p.id] ?? 0);
@@ -44,7 +46,9 @@ export function priceCart(lines: CartLine[], products: DbProduct[], promos: Prom
     items, subtotal, discount, shipping_cost, total: subtotal - discount + shipping_cost,
     promotions: promo.applied,
     // Kod rabatowy nie łączy się z promocją, która ma wyłączone „łączy się z kodami”
-    codesBlockedBy: promo.applied.find((a) => !a.with_codes)?.label ?? null,
+    codesBlockedBy: promo.applied.find((a) => !a.with_codes && !a.code)?.label ?? null,
+    // Promocja z kodu, jeśli kod ją uruchomił
+    codePromo: promo.applied.find((a) => a.code) ?? null,
   };
 }
 export const PRODUCT_PRICE_FIELDS = PRICING_COLS;

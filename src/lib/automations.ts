@@ -48,7 +48,7 @@ export async function findCandidates(env: Env, s: AutomationSettings) {
   // Ostatnie opłacone zamówienie każdego kandydata i czy przypomnienie już wysłano
   const ids = rows.map((r) => r.id).join(',');
   const lastOrders = await sb.select<{ id: string; customer_id: string; created_at: string }>(
-    `orders?select=id,customer_id,created_at&customer_id=in.(${ids})&status=in.(paid,shipped,completed)&order=created_at.desc&limit=2000`,
+    `orders?select=id,customer_id,created_at&customer_id=in.(${ids})&status=in.(paid,packing,shipped,completed)&order=created_at.desc&limit=2000`,
   );
   const lastByCustomer = new Map<string, string>();
   for (const o of lastOrders) if (!lastByCustomer.has(o.customer_id)) lastByCustomer.set(o.customer_id, o.id);

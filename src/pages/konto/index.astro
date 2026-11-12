@@ -155,7 +155,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   const catalog: { slug: string; price: number | null }[] = (window as any).__CANC_CATALOG__ ?? [];
 
   const STATUS: Record<string, [string, string, 'open' | 'done']> = {
-    pending_payment: ['Oczekuje na płatność', 'wait', 'open'], paid: ['Przyjęte do realizacji', 'new', 'open'], on_hold: ['W trakcie wyjaśniania', 'wait', 'open'],
+    pending_payment: ['Oczekuje na płatność', 'wait', 'open'], paid: ['Przyjęte do realizacji', 'new', 'open'], packing: ['Kompletujemy zamówienie', 'new', 'open'], on_hold: ['W trakcie wyjaśniania', 'wait', 'open'],
     shipped: ['Wysłane', 'sent', 'open'], completed: ['Zrealizowane', 'done', 'done'], cancelled: ['Anulowane', 'cancel', 'done'], refunded: ['Zwrócone', 'cancel', 'done'], failed: ['Nieudane', 'cancel', 'done'],
   };
   const imgOf = (slug: string) => ((catalog as any[]).find((c) => c.slug === slug)?.image as string | undefined) || '';
@@ -307,7 +307,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
         </div>
         <div class="ac__olinks">
           <button type="button" class="ac__linkbtn" data-ask aria-expanded="false">Napisz w sprawie zamówienia</button>
-          ${['paid', 'shipped', 'completed'].includes(o.status) ? `<a class="k" href="/odstapienie-od-umowy/?nr=${o.number}#odstapienie">Odstąp od umowy</a>` : ''}
+          ${['paid', 'packing', 'shipped', 'completed'].includes(o.status) ? `<a class="k" href="/odstapienie-od-umowy/?nr=${o.number}#odstapienie">Odstąp od umowy</a>` : ''}
         </div>
         <form class="ac__ask" data-ask-form hidden>
           <div><label class="lbl">Temat
@@ -394,7 +394,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 
   // ---------- Statystyki i wykres (12 miesięcy) ----------
   async function loadStats() {
-    const { data, error } = await sb().from('orders').select('created_at,total,status,order_items(qty,product_id)').in('status', ['paid', 'shipped', 'completed']).limit(1000);
+    const { data, error } = await sb().from('orders').select('created_at,total,status,order_items(qty,product_id)').in('status', ['paid', 'packing', 'shipped', 'completed']).limit(1000);
     if (error || !data?.length) return;
     $('[data-stats]').hidden = false;
     const total = data.reduce((s: number, o: any) => s + o.total, 0);
@@ -425,7 +425,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 
   // Przypomnienie: jedno opakowanie kropli ≈ 30 dni kuracji
   function renderReminder(orders: any[]) {
-    const last = orders.find((o) => ['paid', 'shipped', 'completed'].includes(o.status) && o.order_items.some((i: any) => i.product_id === 'krople-can-c'));
+    const last = orders.find((o) => ['paid', 'packing', 'shipped', 'completed'].includes(o.status) && o.order_items.some((i: any) => i.product_id === 'krople-can-c'));
     if (!last) return;
     const packs = last.order_items.filter((i: any) => i.product_id === 'krople-can-c').reduce((s: number, i: any) => s + i.qty, 0);
     const start = new Date(last.shipped_at || last.paid_at || last.created_at).getTime() + 3 * 864e5; // ok. 3 dni na dostawę

@@ -46,7 +46,7 @@ export function fromWarsaw(value: string) {
   return new Date(guess - (wall - guess)).toISOString();
 }
 
-const STATUS: Record<string, string> = { paid: 'paid', on_hold: 'on_hold', shipped: 'shipped', completed: 'completed', cancelled: 'cancelled' };
+const STATUS: Record<string, string> = { paid: 'paid', packing: 'paid', on_hold: 'on_hold', shipped: 'shipped', completed: 'completed', cancelled: 'cancelled' };
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
 function splitName(full: string) {

@@ -99,7 +99,7 @@ import Base from '../../layouts/Base.astro';
   type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
   type Details = {
     createdAt: string; paidAt: string | null; email: string; items: Line[];
-    subtotal: number; bundleDiscount: number; promotions?: { name: string; amount: number }[]; code: string | null; codeAmount: number; shipping: number;
+    subtotal: number; bundleDiscount: number; promotions?: { name: string; amount: number }[]; gaServer?: boolean; code: string | null; codeAmount: number; shipping: number;
     delivery: { method: string; point: string | null; pointName: string | null; name: string | null; phone: string | null; street: string | null; postcode: string | null; city: string | null };
     invoice: { company: string; nip: string; street: string; postcode: string; city: string } | null;
     note: string | null; payment: { provider: string; method: string | null; bank: { account: string; title: string; amount: number } | null };
@@ -247,10 +247,10 @@ import Base from '../../layouts/Base.astro';
       if (!res.ok) return show('error');
       const o: Status = await res.json();
       // Płatność potwierdzona → wyczyść koszyk i pokaż podsumowanie
-      if (['paid', 'shipped', 'completed'].includes(o.status)) {
+      if (['paid', 'packing', 'shipped', 'completed'].includes(o.status)) {
         clearCart();
         // GA4 purchase – wysyłamy tylko raz (tries === 1 = pierwsze udane sprawdzenie)
-        if (tries <= 1 && o.details) {
+        if (tries <= 1 && o.details && !o.details.gaServer) {
           const totalGross = o.total / 100;
           const shippingGross = (o.details.shipping || 0) / 100;
           const productGross = totalGross - shippingGross;

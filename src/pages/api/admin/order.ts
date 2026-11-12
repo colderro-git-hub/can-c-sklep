@@ -1,10 +1,10 @@
 import type { APIRoute } from 'astro';
-import { getEnv, json } from '../../../lib/env';
+import { getEnv, json, type Env } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { sendMail } from '../../../lib/mail';
 import { trackingUrl, carrierLabel } from '../../../lib/tracking';
-import { orderShippedHtml, orderRefundedHtml } from '../../../lib/email-templates';
+import { orderShippedHtml, orderRefundedHtml, orderPackingHtml } from '../../../lib/email-templates';
 import { clearCatalogCache } from '../../../lib/catalog';
 import { BANK_PROVIDER } from '../../../lib/bank-transfer';
 import { sendGa4Refund, ga4MpConfigured } from '../../../lib/ga4-mp';
@@ -37,21 +37,110 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   }
 };
 
-// Akcje: { id, action: 'ship'|'complete'|'hold'|'unhold'|'cancel'|'refund'|'note', carrier?, tracking?, note?, notify? }
+// Akcje: { id, action: 'ship'|'pack'|'complete'|'hold'|'unhold'|'cancel'|'refund'|'note', carrier?, tracking?, note?, notify?, message? }
 // refund: { amount (grosze, domyślnie całość), restock, notify, message (do klienta) }
+// bulk:   { action: 'bulk', ids: [...], to: 'pack'|'complete'|'hold'|'unhold'|'cancel', notify?, message? }
 const ALLOWED: Record<string, { from: string[]; to?: string }> = {
-  ship: { from: ['paid', 'on_hold'], to: 'shipped' },
-  complete: { from: ['paid', 'shipped'], to: 'completed' },
+  ship: { from: ['paid', 'packing', 'on_hold'], to: 'shipped' },
+  pack: { from: ['paid', 'on_hold'], to: 'packing' },          // kompletowanie + mail do klienta
+  complete: { from: ['paid', 'packing', 'shipped'], to: 'completed' },
   finalize_bank: { from: ['pending_payment'], to: 'paid' },  // przelew bankowy: admin potwierdza wpłatę
-  hold: { from: ['paid'], to: 'on_hold' },
+  hold: { from: ['paid', 'packing'], to: 'on_hold' },
   unhold: { from: ['on_hold'], to: 'paid' },
-  cancel: { from: ['pending_payment', 'paid', 'on_hold'], to: 'cancelled' },
+  cancel: { from: ['pending_payment', 'paid', 'packing', 'on_hold'], to: 'cancelled' },
   // Zwrot: tylko zamówienia opłacone (także anulowane po opłaceniu); pieniądze oddaje admin w P24 / banku
-  refund: { from: ['paid', 'on_hold', 'shipped', 'completed', 'cancelled'], to: 'refunded' },
+  refund: { from: ['paid', 'packing', 'on_hold', 'shipped', 'completed', 'cancelled'], to: 'refunded' },
   note: { from: [] },
   check_payment: { from: ['pending_payment', 'cancelled'] },
-  update: { from: ['pending_payment', 'paid', 'on_hold', 'shipped', 'completed', 'cancelled'] },
+  update: { from: ['pending_payment', 'paid', 'packing', 'on_hold', 'shipped', 'completed', 'cancelled'] },
 };
+const BULK = ['pack', 'complete', 'hold', 'unhold', 'cancel'];
+const ORDER_COLS = 'id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice,source,customers(first_name)';
+
+type Ctx = { env: Env; sb: ReturnType<typeof db>; admin: string; origin: string };
+type Result = { ok: true; warning?: string } | { ok: false; status: number; error: string };
+
+// Zmiana statusu (pojedyncza i zbiorcza): warunek na poprzedni status, wpis w historii, e-mail do klienta
+async function transition(ctx: Ctx, order: any, action: string, o: { notify?: boolean; carrier?: string; tracking?: string; message?: string } = {}): Promise<Result> {
+  const { env, sb, admin, origin } = ctx;
+  const rule = ALLOWED[action];
+  if (!rule?.to) return { ok: false, status: 400, error: 'Nieznana akcja.' };
+  // Zamówienia z WooCommerce obsługuje stary sklep aż do dnia startu (wtedy ustawimy ALLOW_WC_ACTIONS=true)
+  if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return { ok: false, status: 409, error: 'Zamówienie z WooCommerce – obsłuż je w obecnym sklepie.' };
+  if (!rule.from.includes(order.status)) return { ok: false, status: 409, error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` };
+
+  const patch: Record<string, unknown> = { status: rule.to };
+  let carrier = '', tracking = '';
+  if (action === 'ship') {
+    carrier = o.carrier === 'dpd' ? 'dpd' : 'inpost';
+    tracking = String(o.tracking || '').replace(/\s/g, '').slice(0, 40);
+    if (!/^[A-Za-z0-9-]{6,40}$/.test(tracking)) return { ok: false, status: 422, error: 'Podaj numer przesyłki.' };
+    Object.assign(patch, { carrier, tracking_number: tracking, shipped_at: new Date().toISOString() });
+  }
+  // Warunek na status chroni przed równoczesną zmianą przez dwie osoby
+  const updated = await sb.update(`orders?id=eq.${order.id}&status=eq.${order.status}`, patch, 'id');
+  if (!updated.length) return { ok: false, status: 409, error: 'Zamówienie zostało w międzyczasie zmienione. Odśwież.' };
+  const message = String(o.message ?? '').replace(/\r/g, '').trim().slice(0, 600);
+  await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: rule.to, by: admin, ...(tracking ? { carrier, tracking } : {}), ...(message && action === 'pack' ? { note: message } : {}) } }, 'id');
+
+  if (action === 'ship' && o.notify !== false) {
+    try {
+      await sendMail(env, {
+        to: order.email,
+        subject: `Zamówienie nr ${order.number} zostało wysłane – Can-C`,
+        replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+        html: orderShippedHtml({ site: await getSite(env), origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
+        text: [
+          'Dzień dobry,', '',
+          `Twoje zamówienie nr ${order.number} zostało nadane (${carrier === 'dpd' ? 'kurier DPD' : 'InPost'}).`,
+          `Numer przesyłki: ${tracking}`,
+          `Śledzenie: ${trackingUrl(carrier, tracking)}`, '',
+          'Dziękujemy za zakupy!', 'Zespół Can-C',
+        ].join('\n'),
+      });
+      await sb.insert('order_events', { order_id: order.id, type: 'mail_shipped', data: {} }, 'id');
+    } catch (e) {
+      console.error('Mail o wysyłce: ' + (e instanceof Error ? e.message : String(e)));
+      return { ok: true, warning: 'Status zmieniony, ale nie udało się wysłać e-maila do klienta.' };
+    }
+  }
+
+  if (action === 'pack' && o.notify !== false) {
+    try {
+      const items = await sb.select<{ name: string; qty: number; total: number }>(`order_items?select=name,qty,total&order_id=eq.${order.id}`);
+      const a = order.shipping_address || {};
+      const delivery = order.shipping_method === 'inpost_locker'
+        ? `Paczkomat InPost ${order.shipping_point || ''}${a.point_name ? ` (${a.point_name})` : ''}`
+        : `Kurier DPD: ${[a.street, `${a.postcode || ''} ${a.city || ''}`.trim()].filter(Boolean).join(', ')}`;
+      const firstName = order.customers?.first_name || null;
+      await sendMail(env, {
+        to: order.email,
+        subject: `Kompletujemy zamówienie nr ${order.number} – Can-C`,
+        replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
+        html: orderPackingHtml({ site: await getSite(env), origin, number: order.number, firstName, items, delivery, message }),
+        text: [
+          firstName ? `Dzień dobry ${firstName},` : 'Dzień dobry,', '',
+          `zamówienie nr ${order.number} jest właśnie przygotowywane do wysyłki.`,
+          'Gdy paczka zostanie nadana, wyślemy numer przesyłki.',
+          ...(message ? ['', message] : []), '',
+          ...items.map((i) => `• ${i.name} × ${i.qty}`), '',
+          `Dostawa: ${delivery}`,
+          `Twoje zamówienia: ${origin}/konto/`, '',
+          'Zespół Can-C',
+        ].join('\n'),
+      });
+      await sb.insert('order_events', { order_id: order.id, type: 'mail_packing', data: {} }, 'id');
+    } catch (e) {
+      console.error('Mail o kompletowaniu: ' + (e instanceof Error ? e.message : String(e)));
+      await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { error: 'mail o kompletowaniu' } }, 'id').catch(() => {});
+      return { ok: true, warning: 'Status zmieniony, ale nie udało się wysłać e-maila do klienta.' };
+    }
+  }
+  if (action === 'cancel' && order.status !== 'pending_payment') {
+    return { ok: true, warning: 'Zamówienie było opłacone – zwrot środków wykonaj w panelu Przelewy24 (albo użyj „Zwrot środków”).' };
+  }
+  return { ok: true };
+}
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
@@ -60,12 +149,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
+
+  // Zbiorcza zmiana statusu zaznaczonych zamówień – każde osobno, z tymi samymi regułami co pojedynczo
+  if (b?.action === 'bulk') {
+    const ids = [...new Set((Array.isArray(b.ids) ? b.ids : []).map(String))].filter((x) => UUID.test(x as string)).slice(0, 200) as string[];
+    if (!ids.length) return json(400, { error: 'Zaznacz zamówienia.' });
+    if (!BULK.includes(b.to)) return json(400, { error: 'Tej zmiany nie można wykonać zbiorczo.' });
+    try {
+      const sb = db(env);
+      const ctx: Ctx = { env, sb, admin, origin: new URL(request.url).origin };
+      const orders = await sb.select<any>(`orders?select=${ORDER_COLS}&id=in.(${ids.join(',')})&order=number.asc`);
+      let done = 0;
+      const failed: { number: number; error: string }[] = [];
+      const warned: number[] = [];
+      for (const order of orders) {
+        try {
+          const r = await transition(ctx, order, b.to, { notify: b.notify !== false, message: b.message });
+          if (r.ok) { done++; if (r.warning && b.to !== 'cancel') warned.push(order.number); }
+          else failed.push({ number: order.number, error: r.error });
+        } catch (e) {
+          console.error(`Zbiorczo ${order.number}: ` + (e instanceof Error ? e.message : String(e)));
+          failed.push({ number: order.number, error: 'Błąd zapisu.' });
+        }
+      }
+      console.log(`Admin ${admin}: zbiorczo ${b.to} – ${done}/${orders.length}`);
+      return json(200, { ok: true, done, failed, mailFailed: warned });
+    } catch (e) {
+      console.error('Admin zbiorczo: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Błąd zapisu.' });
+    }
+  }
+
   const rule = ALLOWED[b?.action];
   if (!rule || !UUID.test(b?.id || '')) return json(400, { error: 'Nieznana akcja.' });
 
   try {
     const sb = db(env);
-    const [order] = await sb.select<any>(`orders?select=id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice,source&id=eq.${b.id}`);
+    const [order] = await sb.select<any>(`orders?select=${ORDER_COLS}&id=eq.${b.id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
 
     // Edycja danych zamówienia (kontakt, dostawa, faktura, uwagi) – kwoty i produkty bez zmian
@@ -200,48 +320,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(200, { ok: true, warning: warnings.join(' ') });
     }
 
-    const patch: Record<string, unknown> = { status: rule.to };
-    let carrier = '', tracking = '';
-    if (b.action === 'ship') {
-      carrier = b.carrier === 'dpd' ? 'dpd' : 'inpost';
-      tracking = String(b.tracking || '').replace(/\s/g, '').slice(0, 40);
-      if (!/^[A-Za-z0-9-]{6,40}$/.test(tracking)) return json(422, { error: 'Podaj numer przesyłki.' });
-      Object.assign(patch, { carrier, tracking_number: tracking, shipped_at: new Date().toISOString() });
-    }
-
-    // Warunek na status chroni przed równoczesną zmianą przez dwie osoby
-    const updated = await sb.update(`orders?id=eq.${order.id}&status=eq.${order.status}`, patch, 'id');
-    if (!updated.length) return json(409, { error: 'Zamówienie zostało w międzyczasie zmienione. Odśwież.' });
-    await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: rule.to, by: admin, ...(tracking ? { carrier, tracking } : {}) } }, 'id');
-
-    if (b.action === 'ship' && b.notify !== false) {
-      try {
-        await sendMail(env, {
-          to: order.email,
-          subject: `Zamówienie nr ${order.number} zostało wysłane – Can-C`,
-          replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
-          html: orderShippedHtml({ site: await getSite(env), origin: new URL(request.url).origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
-          text: [
-            'Dzień dobry,',
-            '',
-            `Twoje zamówienie nr ${order.number} zostało nadane (${carrier === 'dpd' ? 'kurier DPD' : 'InPost'}).`,
-            `Numer przesyłki: ${tracking}`,
-            `Śledzenie: ${trackingUrl(carrier, tracking)}`,
-            '',
-            'Dziękujemy za zakupy!',
-            'Zespół Can-C',
-          ].join('\n'),
-        });
-        await sb.insert('order_events', { order_id: order.id, type: 'mail_shipped', data: {} }, 'id');
-      } catch (e) {
-        console.error('Mail o wysyłce: ' + (e instanceof Error ? e.message : String(e)));
-        return json(200, { ok: true, warning: 'Status zmieniony, ale nie udało się wysłać e-maila do klienta.' });
-      }
-    }
-    if (b.action === 'cancel' && order.status !== 'pending_payment') {
-      return json(200, { ok: true, warning: 'Zamówienie było opłacone – zwrot środków wykonaj w panelu Przelewy24.' });
-    }
-    return json(200, { ok: true });
+    const r = await transition({ env, sb, admin, origin: new URL(request.url).origin }, order, b.action, { notify: b.notify, carrier: b.carrier, tracking: b.tracking, message: b.message });
+    return r.ok ? json(200, { ok: true, ...(r.warning ? { warning: r.warning } : {}) }) : json(r.status, { error: r.error });
   } catch (e) {
     console.error('Admin akcja: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Błąd zapisu.' });

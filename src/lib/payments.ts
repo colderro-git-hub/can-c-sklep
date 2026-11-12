@@ -6,6 +6,7 @@ import { verifyTransaction, type p24Config } from './p24';
 import { sendMail, zl } from './mail';
 import { getSite } from './site-settings';
 import { orderConfirmationHtml } from './email-templates';
+import { sendGa4Purchase, shouldSendServerPurchase } from './ga4-mp';
 
 export async function finalizePayment(
   env: Env,
@@ -76,6 +77,16 @@ export async function finalizePayment(
     console.error('E-mail do klienta (potwierdzenie) nie wysłany: ' + errMsg(e));
     await sb.insert('order_events', { order_id: order.id, type: 'mail_failed', data: { to: 'klient', error: errMsg(e).slice(0, 300) } }, 'id').catch(() => {});
   }
+
+  // GA4 purchase z serwera (przelew tradycyjny, zamówienia z panelu, płatności potwierdzone ręcznie)
+  try {
+    const [o] = await sb.select<any>(`orders?select=source,payment_provider,attribution,discount_code,shipping_cost,total&id=eq.${order.id}`);
+    if (o && shouldSendServerPurchase(env, o, Boolean(opts.by))) {
+      const items = await sb.select<any>(`order_items?select=product_id,name,qty,unit_price,discount&order_id=eq.${order.id}`);
+      const r = await sendGa4Purchase(env, { id: order.id, total: o.total, shipping_cost: o.shipping_cost, discount_code: o.discount_code, attribution: o.attribution, items });
+      await sb.insert('order_events', { order_id: order.id, type: 'ga4_purchase', data: r.ok ? { value: o.total } : { value: o.total, error: r.error } }, 'id');
+    }
+  } catch (e) { console.error('GA4 purchase: ' + errMsg(e)); }
 
   if (env.CONTACT_TO) {
     try {

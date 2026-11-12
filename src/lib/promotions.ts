@@ -27,9 +27,10 @@ export type Promotion = {
   max_sets: number | null;    // bundle: maks. kompletów w zamówieniu (null = bez limitu)
   with_codes: boolean;        // czy łączy się z kodami rabatowymi
   sort_order: number;
+  code: string | null;        // promocja uruchamiana kodem (null = automatyczna)
 };
 export type PromoLine = { product_id: string; qty: number; unit_price: number };
-export type AppliedPromo = { id: string; name: string; label: string; kind: Promotion['kind']; amount: number; with_codes: boolean };
+export type AppliedPromo = { id: string; name: string; label: string; kind: Promotion['kind']; amount: number; with_codes: boolean; code: string | null };
 export type PromoResult = { discounts: Record<string, number>; applied: AppliedPromo[]; total: number };
 
 export const promoLabel = (p: Pick<Promotion, 'label' | 'name'>) => (p.label || '').trim() || p.name;
@@ -104,8 +105,10 @@ function runBundles(promos: Promotion[], lines: PromoLine[], remaining: Map<stri
   }
 }
 
-export function applyPromotions(lines: PromoLine[], all: Promotion[], now = Date.now()): PromoResult {
-  const promos = all.filter((p) => promoActive(p, now)).sort((a, b) => a.sort_order - b.sort_order);
+// code – kod wpisany w zamówieniu: włącza promocję z tym kodem (bez kodu działają tylko promocje automatyczne)
+export function applyPromotions(lines: PromoLine[], all: Promotion[], now = Date.now(), code: string | null = null): PromoResult {
+  const want = code ? code.trim().toUpperCase() : null;
+  const promos = all.filter((p) => promoActive(p, now) && (!p.code || (want !== null && p.code.toUpperCase() === want))).sort((a, b) => a.sort_order - b.sort_order);
   const empty: PromoResult = { discounts: {}, applied: [], total: 0 };
   if (!promos.length || !lines.length) return empty;
   const qtyMap = () => new Map(lines.map((l) => [l.product_id, l.qty]));
@@ -132,7 +135,7 @@ export function applyPromotions(lines: PromoLine[], all: Promotion[], now = Date
       if (amount <= 0) continue;
       discounts[l.product_id] = (discounts[l.product_id] ?? 0) + amount;
       const p = byId.get(pid)!;
-      const a = applied.get(pid) ?? { id: p.id, name: p.name, label: promoLabel(p), kind: p.kind, amount: 0, with_codes: p.with_codes };
+      const a = applied.get(pid) ?? { id: p.id, name: p.name, label: promoLabel(p), kind: p.kind, amount: 0, with_codes: p.with_codes, code: p.code };
       a.amount += amount;
       applied.set(pid, a);
     }
@@ -145,7 +148,7 @@ export function applyPromotions(lines: PromoLine[], all: Promotion[], now = Date
 export function nextTier(productId: string, qty: number, all: Promotion[], now = Date.now()) {
   let best: { promo: Promotion; tier: PromoTier } | null = null;
   for (const p of all) {
-    if (p.kind !== 'quantity' || !promoActive(p, now) || !p.product_ids.includes(productId) || p.combined) continue;
+    if (p.kind !== 'quantity' || p.code || !promoActive(p, now) || !p.product_ids.includes(productId) || p.combined) continue;
     for (const t of p.tiers) if (t.min > qty && (!best || t.min < best.tier.min)) best = { promo: p, tier: t };
   }
   return best;
@@ -155,7 +158,7 @@ export function nextTier(productId: string, qty: number, all: Promotion[], now =
 export function qtyOptions(productId: string, all: Promotion[], now = Date.now()) {
   const mins = new Set<number>([1]);
   for (const p of all) {
-    if (p.kind !== 'quantity' || !promoActive(p, now) || !p.product_ids.includes(productId)) continue;
+    if (p.kind !== 'quantity' || p.code || !promoActive(p, now) || !p.product_ids.includes(productId)) continue;
     for (const t of p.tiers) if (t.min > 1 && t.min <= 20) mins.add(t.min);
   }
   const list = [...mins].sort((a, b) => a - b).slice(0, 4);
@@ -179,5 +182,6 @@ export function normalizePromotion(r: any): Promotion {
     type: r.type === 'amount' ? 'amount' : 'percent', value: num(r.value),
     max_sets: r.max_sets === null || r.max_sets === undefined || r.max_sets === '' ? null : Math.max(1, Math.round(num(r.max_sets, 1))),
     with_codes: r.with_codes !== false, sort_order: num(r.sort_order),
+    code: r.code ? String(r.code).trim().toUpperCase() : null,
   };
 }

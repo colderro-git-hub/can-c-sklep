@@ -1,25 +1,26 @@
 <!-- Supabase → Authentication → Emails → Templates: „Magic Link” ORAZ „Confirm signup”
      Temat: Twój kod logowania do Can-C: {{ .Token }} -->
 <!doctype html>
-<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Can-C</title></head>
-<body style="margin:0;padding:0;background:#F4F4F2;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F4F4F2;">
+<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Can-C</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"></head>
+<body style="margin:0;padding:0;background:#E8EDF5;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#E8EDF5;">
     <tr><td align="center" style="padding:24px 12px;">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;">
-        <tr><td style="background:#01080F;padding:22px 32px;font-family:Arial,Helvetica,sans-serif;font-size:26px;color:#FFFFFF;">Can-C</td></tr>
-        <tr><td style="padding:36px 32px 28px;font-family:Arial,Helvetica,sans-serif;color:#01080F;">
-          <h1 style="margin:0 0 16px;font-size:26px;font-weight:normal;">Twój kod logowania</h1>
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#FFFFFF;border-radius:24px;overflow:hidden;">
+        <tr><td style="padding:28px 40px 22px;border-bottom:1px solid #DCE2EC;font-family:Poppins,Arial,Helvetica,sans-serif;font-size:28px;color:#4E5A7C;">Can-C</td></tr>
+        <tr><td style="padding:36px 40px 28px;font-family:Poppins,Arial,Helvetica,sans-serif;font-weight:300;color:#141C2B;">
+          <h1 style="margin:0 0 18px;font-size:30px;line-height:1.2;font-weight:300;">Twój kod logowania</h1>
           <p style="margin:0 0 14px;font-size:16px;line-height:1.55;">Wpisz ten kod na stronie logowania sklepu Can-C:</p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;"><tr>
-            <td align="center" style="border:2px dashed #01080F;padding:18px 16px;font-family:'Courier New',Courier,monospace;font-size:32px;letter-spacing:6px;font-weight:bold;">{{ .Token }}</td>
+            <td align="center" style="border:2px dashed #169089;border-radius:16px;background:#D4EEEB;color:#141C2B;padding:18px 16px;font-family:'Courier New',Courier,monospace;font-size:32px;letter-spacing:6px;font-weight:bold;">{{ .Token }}</td>
           </tr></table>
           <p style="margin:0 0 14px;font-size:16px;line-height:1.55;">albo kliknij przycisk:</p>
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 22px;"><tr>
-            <td style="border-radius:300px;background:#01080F;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:15px 30px;font-size:16px;color:#FFFFFF;text-decoration:none;border-radius:300px;">Zaloguj się do konta</a></td>
+            <td style="border-radius:16px;background:#4E5A7C;"><a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:16px 32px;font-size:16px;font-weight:400;color:#FFFFFF;text-decoration:none;border-radius:16px;">Zaloguj się do konta</a></td>
           </tr></table>
-          <p style="margin:0;font-size:14px;line-height:1.55;color:#5B6168;">Kod i przycisk są ważne przez godzinę i działają jednorazowo. Jeśli to nie Ty prosiłeś o logowanie, zignoruj tę wiadomość.</p>
+          <p style="margin:0;font-size:14px;line-height:1.55;color:#545D6E;">Kod i przycisk są ważne przez godzinę i działają jednorazowo. Jeśli to nie Ty prosiłeś o logowanie, zignoruj tę wiadomość.</p>
         </td></tr>
-        <tr><td style="background:#F4F4F2;padding:20px 32px;border-top:1px solid #E6E6E6;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#5B6168;">Colderro Ewa Zimna · sklep can-c.pl</td></tr>
+        <tr><td style="background:#E8EDF5;padding:22px 40px;font-family:Poppins,Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#545D6E;">Colderro Ewa Zimna · sklep can-c.pl</td></tr>
       </table>
     </td></tr>
   </table>

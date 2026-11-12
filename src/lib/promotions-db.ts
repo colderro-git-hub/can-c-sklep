@@ -23,9 +23,16 @@ export async function getPromotions(env: Env): Promise<Promotion[]> {
 export async function getPublicPromotions(env: Env): Promise<Promotion[]> {
   const now = Date.now();
   return (await getPromotions(env))
-    .filter((p) => p.active && (!p.ends_at || new Date(p.ends_at).getTime() > now))
+    .filter((p) => p.active && !p.code && (!p.ends_at || new Date(p.ends_at).getTime() > now)) // promocje z kodem są tajne
     .map((p) => ({ ...p, name: p.label || p.name }))
     .filter((p) => promoActive(p, now) || (p.starts_at && new Date(p.starts_at).getTime() > now));
+}
+
+// Promocja uruchamiana wpisanym kodem (aktywna lub nie – komunikat dobiera wywołujący)
+export async function findCodePromotion(env: Env, rawCode: unknown): Promise<Promotion | null> {
+  const code = String(rawCode ?? '').trim().toUpperCase().replace(/\s+/g, '');
+  if (!code) return null;
+  return (await getPromotions(env)).find((p) => p.code === code) ?? null;
 }
 
 export const clearPromotionsCache = () => { cache = null; };
