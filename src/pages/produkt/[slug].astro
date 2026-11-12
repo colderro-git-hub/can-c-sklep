@@ -441,12 +441,12 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .md :global(h2), .md :global(h3) { font-size: 24px; line-height: 28px; font-weight: 400; margin: 24px 0 10px; }
   .md :global(strong) { font-weight: 500; color: var(--ink); }
   .md :global(ul), .md :global(ol) { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
-  .md--checks :global(ul) { list-style: none; padding: 0; }
-  .md--checks :global(ul li) { display: flex; gap: 14px; color: var(--ink); text-align: left; }
-  .md--checks :global(ul li)::before {
-    content: ''; width: 14px; height: 10px; margin-top: 7px; flex-shrink: 0; background: var(--accent);
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M1 5l4 4 8-8' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") no-repeat center / contain;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M1 5l4 4 8-8' fill='none' stroke='black' stroke-width='2'/%3E%3C/svg%3E") no-repeat center / contain;
+  .md :global(ul) { list-style: none; padding: 0; }
+  .md :global(ul li) { position: relative; padding-left: 22px; text-align: left; }
+  .md--checks :global(ul li) { color: var(--ink); }
+  .md :global(ul li)::before {
+    content: ''; position: absolute; left: 0; top: 8px; top: calc(0.5lh - 4px);
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
   }
   .pr-spec { margin: 0; background: var(--surface); border-radius: var(--r-md); padding: 10px 24px; }
   .pr-spec .trow:first-child { border-top: none; }

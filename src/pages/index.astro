@@ -76,9 +76,14 @@ try {
 const homeReviews: HomeReview[] = latestReviews.length ? latestReviews : (reviewsCms.items as HomeReview[]).slice(0, 5);
 // Układ: 3 opinie, karta „Napisz opinię”, kolejne opinie
 const reviewSlots: (HomeReview | 'cta')[] = [...homeReviews.slice(0, 3), 'cta', ...homeReviews.slice(3)];
-const benefits = at('home.benefits', {
-  kicker: 'DLACZEGO KROPLE CAN-C?',
+const benefitsRaw = at('home.benefits', {
   h2: 'Korzyści używania kropli Can-C',
+  lead: 'Krople Can-C z N-acetylokarnozyną wspierają oczy na co dzień – szczególnie gdy wzrok zaczyna odczuwać upływ czasu i zmęczenie ekranem.',
+  card_title: 'Z N-acetylokarnozyną',
+  card_text: 'Opatentowana formuła, która dociera do soczewki oka. Jedno opakowanie wystarcza na około miesiąc kuracji.',
+  card_items: [] as string[],
+  card_image_url: null as string | null,
+  card_image_alt: 'Krople Can-C',
   items: [
     'Zmniejszają występowanie i rozwój zaćmy starczej.',
     'Korzystne przy dyskomforcie noszenia soczewek kontaktowych.',
@@ -93,6 +98,16 @@ const benefits = at('home.benefits', {
   image_url: null as string | null,
   image_alt: 'Korzyści stosowania kropli Can-C',
 });
+// Układ w 3 kolumnach (karta · zdjęcie · nagłówek z listą). Starsze dane z CMS mają tylko „items” –
+// wtedy pierwsze 3 punkty trafiają do karty, reszta do prawej kolumny.
+const benAll = ((benefitsRaw.items as string[]) || []).filter(Boolean);
+const benCardItems = ((benefitsRaw.card_items as string[]) || []).filter(Boolean);
+const benefits = {
+  ...benefitsRaw,
+  card_items: benCardItems.length ? benCardItems : benAll.slice(0, 3),
+  items: benCardItems.length ? benAll : benAll.slice(3),
+};
+const bold = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
 const faqCatLabel: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
 const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
@@ -199,30 +214,35 @@ const bundleRows = setQtys.map((qty) => {
     </div>
   </section>
 
-  <!-- KORZYŚCI -->
-  <section class="container home-split home-split--center sec-gap">
-    <div class="ben-img">
-      {benefits.image_url
-        ? <img src={benefits.image_url} alt={benefits.image_alt} style="width:100%;height:100%;object-fit:cover" />
-        : <span style="font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: zbliżenie oka]</span>}
+  <!-- KORZYŚCI: 3 kolumny – karta (3) · zdjęcie (4) · nagłówek, lista, przycisk (5) -->
+  <section class="container sec-gap ben">
+    <div class="ben__card">
+      <div class="ben__card-img">
+        {benefits.card_image_url
+          ? <img src={benefits.card_image_url} alt={benefits.card_image_alt || ''} loading="lazy" />
+          : <span class="ben__ph">[zdjęcie: krople]</span>}
+      </div>
+      {benefits.card_title && <h3 class="ben__card-t">{benefits.card_title}</h3>}
+      {benefits.card_text && <p class="ben__card-p">{benefits.card_text}</p>}
+      {benefits.card_items.length > 0 && <ul class="dots ben__card-list">{benefits.card_items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
     </div>
-    <div class="home-split__main" style="gap:45px">
+    <div class="ben__img">
+      {benefits.image_url
+        ? <img src={benefits.image_url} alt={benefits.image_alt} loading="lazy" />
+        : <span class="ben__ph">[zdjęcie: zbliżenie oka]</span>}
+    </div>
+    <div class="ben__head">
       <h2 class="h2">{benefits.h2}</h2>
-      <ul class="benefits-list">
-        {(benefits.items as string[]).map((item: string) => (
-          <li class="lead" style="display:flex;align-items:flex-start;gap:14px;padding-top:14px;border-top:1px solid var(--line)">
-            <Icon name="check" size={18} style="flex-shrink:0;margin-top:5px" />
-            <span set:html={item.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')} />
-          </li>
-        ))}
-      </ul>
-      {benefits.cta_label && <a href={benefits.cta_href} class="btn" style="align-self:flex-start">{benefits.cta_label}</a>}
+      {benefits.lead && <p class="lead">{benefits.lead}</p>}
+    </div>
+    <div class="ben__body">
+      {benefits.items.length > 0 && <ul class="dots ben__list">{benefits.items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
+      {benefits.cta_label && <a href={benefits.cta_href} class="btn">{benefits.cta_label}</a>}
     </div>
   </section>
 
   <!-- ZESTAWY -->
   <section class="container sec-gap">
-    <div class="sec-line"></div>
     <div class="bundles-head">
       <h2 class="h2">Kupuj więcej,<br/>płać mniej</h2>
       <p class="lead bundles-head__p">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
@@ -238,15 +258,15 @@ const bundleRows = setQtys.map((qty) => {
           </div>
           <ul style={`list-style:none;margin:0;padding:14px 0 0;border-top:1px solid ${i === 1 ? 'var(--on-dark-line)' : 'var(--line)'};display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:24px;font-weight:300`}>
             <li style="display:flex;align-items:center;gap:14px">
-              <Icon name="check" size={18} />
+              <span class="bullet" aria-hidden="true"></span>
               {b.months}
             </li>
             {i > 0 && <li style="display:flex;align-items:center;gap:14px">
-              <Icon name="check" size={18} />
+              <span class="bullet" aria-hidden="true"></span>
               {b.save !== 'Cena regularna' ? b.save : ''}
             </li>}
             <li style="display:flex;align-items:center;gap:14px">
-              <Icon name="check" size={18} />
+              <span class="bullet" aria-hidden="true"></span>
               Darmowa dostawa
             </li>
           </ul>
@@ -437,8 +457,8 @@ const bundleRows = setQtys.map((qty) => {
 
   /* Akcent: etykieta w hero, znaczniki list, ikony */
   .hero .tag { background: var(--accent-soft); border-color: var(--accent-soft); }
-  .bundle-card li :global(svg), .benefits-list :global(svg) { color: var(--accent); }
-  .bundle-card--featured li :global(svg) { color: var(--accent-soft); }
+
+  .bundle-card--featured .bullet { background: var(--accent-soft); }
   /* Miniatura produktu w opinii */
   .rv-thumb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; background: var(--image); overflow: hidden; display: block; }
   .rv-thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -456,11 +476,24 @@ const bundleRows = setQtys.map((qty) => {
   .home-split--center { align-items: center; }
   .home-split__main { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 24px; }
   .home-side { width: 408px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
-  .ben-img {
-    position: relative; width: 408px; height: 431px; flex-shrink: 0; background: var(--image); border-radius: 500px 500px 40px 40px;
-    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  /* Korzyści (wariant A): siatka z obszarami – na telefonie kolejność nagłówek → zdjęcie → lista → karta */
+  .ben {
+    display: grid; gap: 24px 45px; align-items: center;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
+    grid-template-rows: 1fr auto auto 1fr;
+    grid-template-areas: "card img ." "card img head" "card img body" "card img .";
   }
-  .benefits-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 45px; }
+  .ben__card { grid-area: card; align-self: stretch; background: var(--band); border-radius: 40px; padding: 24px 24px 32px; display: flex; flex-direction: column; gap: 14px; }
+  .ben__card-img { height: 200px; border-radius: 500px 500px 24px 24px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .ben__card-img img, .ben__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ben__card-t { margin: 10px 0 0; font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ben__card-p { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); }
+  .ben__card-list { margin-top: 10px; }
+  .ben__img { grid-area: img; align-self: stretch; min-height: 560px; border-radius: 300px 40px 40px 40px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .ben__head { grid-area: head; display: flex; flex-direction: column; gap: 24px; }
+  .ben__body { grid-area: body; display: flex; flex-direction: column; align-items: flex-start; gap: 32px; padding-top: 8px; }
+  .ben__list { font-size: 18px; line-height: 28px; gap: 14px; color: var(--muted); }
+  .ben__ph { font-size: 14px; font-weight: 300; color: var(--muted); }
   .why-shape { width: 269px; height: 169px; background: var(--image); border-radius: 20px 500px 20px 20px; }
   .why-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .why-card { border: 1px solid var(--line); border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px; }
@@ -471,6 +504,24 @@ const bundleRows = setQtys.map((qty) => {
     display: flex; align-items: center; justify-content: center; overflow: hidden;
   }
 
+  /* Tablet: zdjęcie i treść obok siebie, karta pod spodem (zdjęcie w karcie po lewej) */
+  @media (max-width: 1200px) {
+    .ben { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "img head" "img body" "card card"; gap: 24px 32px; }
+    .ben__img { min-height: 420px; border-radius: 240px 32px 32px 32px; }
+    .ben__card { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-auto-rows: auto; column-gap: 32px; align-items: start; }
+    .ben__card-img { grid-row: 1 / span 4; height: 220px; }
+    .ben__card-t { margin-top: 0; }
+  }
+  /* Telefon: nagłówek → zdjęcie → lista i przycisk → karta */
+  @media (max-width: 700px) {
+    .ben { grid-template-columns: minmax(0, 1fr); grid-template-areas: "head" "img" "body" "card"; gap: 24px; }
+    .ben__img { min-height: 0; aspect-ratio: 4 / 5; border-radius: 160px 28px 28px 28px; }
+    .ben__card { display: flex; border-radius: 28px; padding: 20px 20px 28px; }
+    .ben__card-img { height: 180px; }
+    .ben__list { font-size: 16px; line-height: 24px; }
+    .ben__body { gap: 24px; padding-top: 0; }
+    .ben__body .btn { width: 100%; }
+  }
   @media (max-width: 1380px) {
     .k9-img { width: 50%; height: auto; aspect-ratio: 636 / 420; }
   }
@@ -481,14 +532,12 @@ const bundleRows = setQtys.map((qty) => {
     .home-split { gap: 32px; }
     .home-side { width: 100%; }
     .home-split__main { min-width: 0; flex-basis: 100%; }
-    .ben-img { width: 100%; max-width: 460px; height: auto; aspect-ratio: 408 / 431; }
     .k9-img { width: 100%; border-radius: 300px 20px 20px 20px; }
     .why-shape { width: 180px; height: 112px; }
     .cta-box { flex-direction: column; align-items: stretch; padding: 32px 24px; border-radius: 32px; gap: 24px; }
     .cta-box__l, .cta-box__r { width: 100%; }
   }
   @media (max-width: 700px) {
-    .benefits-list { grid-template-columns: minmax(0, 1fr); gap: 0 45px; }
   }
   @media (max-width: 600px) {
     .sec-gap { margin-top: 56px; }
