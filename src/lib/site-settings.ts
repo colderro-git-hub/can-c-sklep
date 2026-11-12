@@ -18,10 +18,17 @@ export const CONTENT_DEFAULTS = {
 
 // Logo jako obraz (adres w Supabase Storage); puste = logo tekstowe. Zapisywane osobną akcją w panelu.
 // Favicon: osobno dla jasnego i ciemnego motywu przeglądarki + ikona Apple (ekran główny iPhone'a); serwowane przez /favicon/*.
-export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '', faviconLight: '', faviconDark: '', faviconApple: '' };
+// mailLogo: PNG/JPG do maili (SVG nie działa w Gmailu i Outlooku) – podpis w korespondencji i nagłówek maili sklepu.
+export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '', faviconLight: '', faviconDark: '', faviconApple: '', mailLogo: '' };
 export const LOGO_KEYS = Object.keys(LOGO_DEFAULTS) as (keyof typeof LOGO_DEFAULTS)[];
 
-const defaults = { ...configSite, ...CONTENT_DEFAULTS, ...LOGO_DEFAULTS };
+// Podpis pod odpowiedziami z panelu (Korespondencja): **pogrubienie**, [tekst](https://…), {email}, {company}
+export const SIGNATURE_DEFAULTS = {
+  mailSignature: 'Pozdrawiamy\n**Zespół Can-C**\n{email} · [can-c.pl](https://can-c.pl)',
+  mailSignatureLogo: '', // 'true' = logo do maili nad podpisem
+};
+
+const defaults = { ...configSite, ...CONTENT_DEFAULTS, ...LOGO_DEFAULTS, ...SIGNATURE_DEFAULTS };
 export type Site = typeof defaults & { noticeActive?: boolean };
 export const SITE_KEYS = ['email', 'phone', 'hours', 'replyTime', 'facebook', 'company', 'address', 'nip', 'regon', 'returnsUrl'] as const;
 export const CONTENT_KEYS = Object.keys(CONTENT_DEFAULTS) as (keyof typeof CONTENT_DEFAULTS)[];

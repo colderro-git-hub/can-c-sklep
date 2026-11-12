@@ -2,7 +2,8 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
-import { addMessage, inboxAddresses, parseAddr, putAttachment, receivingKey, signedAttachmentUrl } from '../../../lib/mailbox';
+import { addMessage, inboxAddresses, parseAddr, putAttachment, receivingKey, signatureHtml, signatureText, signedAttachmentUrl } from '../../../lib/mailbox';
+import { getSite } from '../../../lib/site-settings';
 
 export const prerender = false;
 
@@ -55,7 +56,9 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
       }
       const [customer] = thread.customer_id ? await sb.select<any>(`customer_stats?select=id,full_name,email,phone,orders_count,total_spent,city&id=eq.${thread.customer_id}`) : [];
       const orders = await sb.select<any>(`orders?select=id,number,status,total,created_at&email=eq.${encodeURIComponent(thread.contact_email)}&order=created_at.desc&limit=5`);
-      return json(200, { thread, messages, customer: customer ?? null, orders });
+      // Podgląd podpisu pod polem odpowiedzi
+      const signature = signatureHtml(await getSite(env));
+      return json(200, { thread, messages, customer: customer ?? null, orders, signature });
     }
 
     const folder = FOLDERS[url.searchParams.get('folder') || 'inbox'] ? url.searchParams.get('folder') || 'inbox' : 'inbox';
@@ -135,13 +138,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const quoteText = last?.text_body ? `\n\n${last.from_name || last.from_email} napisał(a) ${fmtDate(last.sent_at)}:\n${String(last.text_body).split('\n').slice(0, 200).map((l: string) => `> ${l}`).join('\n')}` : '';
       const quoteHtml = last ? `<p style="margin:16px 0 6px;color:#545D6E;font-size:13px;">${esc(last.from_name || last.from_email)} napisał(a) ${esc(fmtDate(last.sent_at))}:</p><blockquote style="margin:0;padding:0 0 0 12px;border-left:3px solid #DCE2EC;color:#545D6E;">${last.text_body ? toHtml(String(last.text_body).slice(0, 20000)) : String(last.html_body || '').replace(/<script[\s\S]*?<\/script>/gi, '').slice(0, 200000)}</blockquote>` : '';
-      const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#141C2B;">${toHtml(text)}${quoteHtml}</div>`;
+      // Prosty mail jak od człowieka + podpis ze stopką (Ustawienia sklepu → Podpis w korespondencji)
+      const site = await getSite(env);
+      const html = `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#141C2B;">${toHtml(text)}${signatureHtml(site)}${quoteHtml}</div>`;
+      const plain = `${text}\n\n-- \n${signatureText(site)}`;
 
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: env.CONTACT_FROM, to: [t.contact_email], subject, text: text + quoteText, html,
+          from: env.CONTACT_FROM, to: [t.contact_email], subject, text: plain + quoteText, html,
           ...(inbox ? { reply_to: inbox } : {}),
           headers: { 'Message-ID': ownId, ...(inReplyTo ? { 'In-Reply-To': inReplyTo } : {}), ...(refs.length ? { References: refs.join(' ') } : {}) },
           ...(files.length ? { attachments: files.map((f: any) => ({ filename: f.name, content: f.data })) } : {}),
@@ -163,7 +169,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const msgId = await addMessage(sb, t.id, {
         direction: 'out', source: 'panel', message_id: messageId, in_reply_to: inReplyTo, refs,
-        from: { email: inbox || parseAddr(env.CONTACT_FROM)?.email || 'sklep', name: 'Can-C' }, to: [t.contact_email], subject, text, html: null, sent_by: admin,
+        from: { email: inbox || parseAddr(env.CONTACT_FROM)?.email || 'sklep', name: 'Can-C' }, to: [t.contact_email], subject, text: plain, html: null, sent_by: admin,
         attachments: files.map((f: any) => ({ name: f.name, type: f.type, size: Math.floor(f.data.length * 0.75) })),
       });
       // Kopie wysłanych załączników w magazynie (podgląd w wątku)

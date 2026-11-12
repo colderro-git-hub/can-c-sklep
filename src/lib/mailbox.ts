@@ -220,3 +220,24 @@ export async function verifyResendWebhook(secret: string, headers: Headers, body
   const expected = btoa(String.fromCharCode(...mac));
   return sigs.split(' ').some((s) => s.split(',')[1] === expected);
 }
+
+// ---------- Podpis w odpowiedziach (Ustawienia sklepu → Podpis w korespondencji) ----------
+type SignatureSite = { mailSignature?: string; mailSignatureLogo?: string; mailLogo?: string; logoHeader?: string; email?: string; company?: string };
+const escHtml = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
+const fillTokens = (t: string, s: SignatureSite) => t.replace(/\{email\}/g, s.email || '').replace(/\{company\}/g, s.company || '');
+// Logo do maili: tylko PNG/JPG (SVG i WebP nie działają w Gmailu i Outlooku)
+export const mailLogoUrl = (s: SignatureSite) => [s.mailLogo, s.logoHeader].find((u) => u && /\.(png|jpe?g|gif)$/i.test(u)) || '';
+
+export function signatureText(s: SignatureSite) {
+  return fillTokens(s.mailSignature || '', s).replace(/\*\*(.+?)\*\*/g, '$1').replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '$1 ($2)');
+}
+export function signatureHtml(s: SignatureSite) {
+  const lines = fillTokens(s.mailSignature || '', s).split('\n').map((l) => escHtml(l)
+    .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:600;color:#141C2B;">$1</strong>')
+    .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, (_m, t: string, u: string) => `<a href="${u.replace(/&amp;/g, '&').replace(/"/g, '%22')}" style="color:#107571;text-decoration:none;">${t}</a>`)
+    .replace(/(^|[\s(])([^\s@<>()]+@[^\s@<>()]+\.[a-z]{2,})(?=$|[\s),.])/gi, '$1<a href="mailto:$2" style="color:#107571;text-decoration:none;">$2</a>'));
+  const logo = s.mailSignatureLogo === 'true' ? mailLogoUrl(s) : '';
+  return `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;border-collapse:collapse;"><tr>`
+    + (logo ? `<td valign="top" style="padding:2px 14px 0 0;"><img src="${escHtml(logo)}" alt="Can-C" height="28" style="display:block;height:28px;width:auto;border:0;"></td>` : '')
+    + `<td valign="top" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#545D6E;${logo ? 'padding-left:14px;border-left:1px solid #DCE2EC;' : ''}">${lines.join('<br>')}</td></tr></table>`;
+}

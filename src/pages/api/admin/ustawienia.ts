@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (b.action === 'logo') {
     const FIELDS: Record<string, string> = {
       header: 'logoHeader', footer: 'logoFooter',
-      'favicon-light': 'faviconLight', 'favicon-dark': 'faviconDark', 'favicon-apple': 'faviconApple',
+      'favicon-light': 'faviconLight', 'favicon-dark': 'faviconDark', 'favicon-apple': 'faviconApple', 'mail-logo': 'mailLogo',
     };
     const field = FIELDS[String(b.target)] ?? '';
     if (!field) return json(400, { error: 'Nieznane miejsce logo.' });
@@ -55,6 +55,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (url && !url.startsWith(`${base}/storage/v1/object/public/products/logo/`)) return json(422, { error: 'Nieprawidłowy adres logo. Wyślij plik przez panel.' });
     // Ikona Apple musi być bitmapą (iOS nie obsługuje SVG na ekranie głównym)
     if (url && field === 'faviconApple' && !/\.(png|jpg)$/i.test(url)) return json(422, { error: 'Ikona Apple: wgraj plik PNG (najlepiej 180 × 180 px).' });
+    if (url && field === 'mailLogo' && !/\.(png|jpg)$/i.test(url)) return json(422, { error: 'Logo do maili: wgraj PNG albo JPG (SVG i WebP nie wyświetlają się w Gmailu i Outlooku).' });
     try {
       const sb = db(env);
       const [row] = await sb.select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');
@@ -65,6 +66,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } catch (e) {
       console.error('Zapis logo: ' + (e instanceof Error ? e.message : String(e)));
       return json(500, { error: 'Nie udało się zapisać logo.' });
+    }
+  }
+
+  // Podpis w korespondencji (odpowiedzi z panelu)
+  if (b.action === 'signature') {
+    const text = String(b.text ?? '').replace(/\r/g, '').replace(/\t/g, ' ').trim().slice(0, 600);
+    if (!text) return json(422, { error: 'Wpisz treść podpisu.' });
+    if (text.split('\n').length > 8) return json(422, { error: 'Podpis może mieć maks. 8 linii.' });
+    try {
+      const sb = db(env);
+      const [row] = await sb.select<{ value: Record<string, unknown> }>('settings?select=value&key=eq.site');
+      const patch = { mailSignature: text, mailSignatureLogo: b.logo === true ? 'true' : '' };
+      await sb.upsert('settings', { key: 'site', value: { ...(row?.value ?? {}), ...patch }, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+      clearSiteCache();
+      return json(200, { ok: true, ...patch });
+    } catch (e) {
+      console.error('Zapis podpisu: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Nie udało się zapisać podpisu.' });
     }
   }
 

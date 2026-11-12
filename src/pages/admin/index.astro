@@ -600,6 +600,32 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 </div>
               </div>
             </div>
+            <div class="card" data-sig-card>
+              <div class="card__head"><h2 class="card__title">Podpis w korespondencji</h2><span class="muted small">pod odpowiedziami z zakładki Korespondencja</span></div>
+              <p class="muted">Odpowiedzi do klientów wychodzą jak zwykły mail (bez ramek i grafik), z tym podpisem na dole. <code>**tekst**</code> = pogrubienie, <code>[can-c.pl](https://can-c.pl)</code> = link, <code>{email}</code> i <code>{company}</code> = dane z ustawień sklepu. Maks. 8 linii.</p>
+              <div class="sig-grid">
+                <form class="stack" data-sig-form novalidate>
+                  <label class="field">Treść podpisu<textarea class="input" name="text" rows="5" maxlength="600"></textarea></label>
+                  <label class="check"><input type="checkbox" name="logo" /> Pokaż logo obok podpisu</label>
+                  <div class="actions"><button class="btn btn--sm">Zapisz podpis</button></div>
+                </form>
+                <div class="stack">
+                  <span class="muted small">Podgląd</span>
+                  <div class="sig-prev" data-sig-prev></div>
+                </div>
+              </div>
+              <div class="logo-grid" style="margin-top:14px">
+                <div class="logo-slot" data-logo-slot="mail-logo">
+                  <span class="logo-slot__t">Logo do maili <span class="muted small">PNG lub JPG, ok. 240 × 80 px – używane w podpisie i nagłówku maili sklepu (SVG nie działa w Gmailu i Outlooku)</span></span>
+                  <div class="logo-prev logo-prev--light"><img data-logo-img alt="Podgląd logo do maili" hidden style="max-height:40px" /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>brak – w mailach logo z menu, jeśli to PNG/JPG, inaczej tekst</span></div>
+                  <div class="actions">
+                    <label class="btn btn--sm">Wybierz plik<input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" data-logo-file hidden /></label>
+                    <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <form class="stack" data-settings-form novalidate>
             <div class="card">
               <div class="card__head"><h2 class="card__title">Komunikat na stronie</h2><span class="st" data-notice-state></span></div>
@@ -837,6 +863,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .logo-prev__txt { font: 300 28px/1 'Poppins', sans-serif; letter-spacing: -0.05em; }
   .logo-slot label.btn { cursor: pointer; }
   .logo-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sig-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .sig-prev { border: 1px solid var(--line); border-radius: var(--r-md); padding: 16px 18px; background: #FFFFFF; font-family: Arial, Helvetica, sans-serif; font-size: 15px; color: #141C2B; }
+  @media (max-width: 900px) { .sig-grid { grid-template-columns: minmax(0, 1fr); } }
   .logo-prev--fav { justify-content: center; padding: 0; }
   .logo-prev--fav img { width: 64px; height: 64px; max-height: none; }
   .logo-prev--tab-light { background: #F1F3F4; color: #5F6368; }
@@ -984,6 +1013,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .mb__att:hover { border-color: var(--primary); }
   .mb__reply { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
   .mb__reply textarea { min-height: 180px; resize: vertical; font-family: inherit; line-height: 1.5; }
+  .mb__sig { padding: 4px 2px 0; }
+  .mb__sig table { margin-top: 6px !important; }
   .mb__files { display: flex; gap: 6px; flex-wrap: wrap; }
   .mb__back { display: none; }
   @media (max-width: 900px) {
@@ -1864,6 +1895,31 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }));
   $('[data-new-review]').addEventListener('click', newReview);
 
+  // ---------- Podpis w korespondencji (podgląd jak w mailu) ----------
+  let sigSite: Record<string, string> = {};
+  function drawSig() {
+    const f = $<HTMLFormElement>('[data-sig-form]');
+    const text = (f.elements.namedItem('text') as HTMLTextAreaElement).value;
+    const withLogo = (f.elements.namedItem('logo') as HTMLInputElement).checked;
+    const logo = [sigSite.mailLogo, sigSite.logoHeader].find((u) => u && /\.(png|jpe?g|gif)$/i.test(u)) || '';
+    const lines = text.replace(/\{email\}/g, sigSite.email || '').replace(/\{company\}/g, sigSite.company || '').split('\n').map((l) => esc(l)
+      .replace(/\*\*(.+?)\*\*/g, '<strong style="font-weight:600;color:#141C2B">$1</strong>')
+      .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="#" style="color:#107571;text-decoration:none">$1</a>'));
+    $('[data-sig-prev]').innerHTML = `<p style="margin:0 0 12px">Dzień dobry,</p><p style="margin:0">dziękujemy za wiadomość…</p>
+      <table style="margin-top:20px;border-collapse:collapse"><tr>${withLogo && logo ? `<td style="padding:2px 14px 0 0;vertical-align:top"><img src="${esc(logo)}" alt="" style="height:28px;width:auto;display:block"></td>` : ''}
+      <td style="font-size:13px;line-height:1.55;color:#545D6E;vertical-align:top;${withLogo && logo ? 'padding-left:14px;border-left:1px solid #DCE2EC' : ''}">${lines.join('<br>')}</td></tr></table>
+      ${withLogo && !logo ? '<p class="muted small" style="margin-top:10px">Logo nie pojawi się – wgraj poniżej „Logo do maili” (PNG/JPG).</p>' : ''}`;
+  }
+  $('[data-sig-form]').addEventListener('input', drawSig);
+  $('[data-sig-form]').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target as HTMLFormElement;
+    try {
+      await api('/api/admin/ustawienia', { action: 'signature', text: (f.elements.namedItem('text') as HTMLTextAreaElement).value, logo: (f.elements.namedItem('logo') as HTMLInputElement).checked });
+      toast('Zapisano podpis.');
+    } catch (err) { toast((err as Error).message, true); }
+  });
+
   // ---------- Korespondencja ----------
   const mb = { folder: 'inbox', q: '', page: 1, current: '' as string };
   const mbDate = (iso: string) => {
@@ -1953,10 +2009,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       ${t.status === 'spam' ? '' : `<form class="mb__reply" data-mb-reply>
         <label class="field">Odpowiedź do ${esc(t.contact_email)}<textarea class="input" name="text" required>Dzień dobry,
 
-
-
-Pozdrawiam
-Zespół Can-C</textarea></label>
+</textarea></label>
+        <div class="mb__sig"><span class="muted small">Podpis (Ustawienia sklepu → Podpis w korespondencji):</span>${d.signature || ''}</div>
         <div class="mb__files" data-mb-files></div>
         <div class="actions" style="justify-content:space-between">
           <span class="actions"><label class="btn btn--outline btn--sm">Załącz pliki<input type="file" multiple hidden data-mb-file /></label>
@@ -3462,6 +3516,12 @@ Zespół Can-C</textarea></label>
       fillLogo('favicon-light', String((site as any).faviconLight || ''));
       fillLogo('favicon-dark', String((site as any).faviconDark || ''));
       fillLogo('favicon-apple', String((site as any).faviconApple || ''));
+      fillLogo('mail-logo', String((site as any).mailLogo || ''));
+      sigSite = site as any;
+      const sf = $<HTMLFormElement>('[data-sig-form]');
+      (sf.elements.namedItem('text') as HTMLTextAreaElement).value = String((site as any).mailSignature || '');
+      (sf.elements.namedItem('logo') as HTMLInputElement).checked = (site as any).mailSignatureLogo === 'true';
+      drawSig();
       const st = $('[data-notice-state]');
       st.textContent = site.noticeActive ? 'Widoczny teraz' : 'Niewidoczny';
       st.className = `st ${site.noticeActive ? 'st--on_hold' : 'st--pending_payment'}`;
@@ -3478,7 +3538,7 @@ Zespół Can-C</textarea></label>
   }
   const LOGO_LABEL: Record<string, string> = {
     header: 'logo (menu górne)', footer: 'logo (stopka)',
-    'favicon-light': 'favicon (jasny motyw)', 'favicon-dark': 'favicon (ciemny motyw)', 'favicon-apple': 'ikonę Apple',
+    'favicon-light': 'favicon (jasny motyw)', 'favicon-dark': 'favicon (ciemny motyw)', 'favicon-apple': 'ikonę Apple', 'mail-logo': 'logo do maili',
   };
   document.querySelectorAll<HTMLElement>('[data-logo-slot]').forEach((slot) => {
     const target = slot.dataset.logoSlot!;
@@ -3495,13 +3555,14 @@ Zespół Can-C</textarea></label>
         if (!res.ok) throw new Error(d.error || 'Błąd wysyłania pliku.');
         await api('/api/admin/ustawienia', { action: 'logo', target, url: d.url });
         fillLogo(target, d.url);
+        if (target === 'mail-logo') { sigSite.mailLogo = d.url; drawSig(); }
         toast(`Zapisano ${LOGO_LABEL[target] ?? 'logo'}.`);
       } catch (err) { toast((err as Error).message, true); }
     });
     slot.querySelector<HTMLButtonElement>('[data-logo-remove]')!.addEventListener('click', async () => {
       const isFav = target.startsWith('favicon');
       if (!confirm(isFav ? `Usunąć ${LOGO_LABEL[target]}?` : 'Usunąć logo? Na stronie wróci logo tekstowe „Can-C”.')) return;
-      try { await api('/api/admin/ustawienia', { action: 'logo', target, url: '' }); fillLogo(target, ''); toast(`Usunięto ${LOGO_LABEL[target] ?? 'logo'}.`); }
+      try { await api('/api/admin/ustawienia', { action: 'logo', target, url: '' }); fillLogo(target, ''); if (target === 'mail-logo') { sigSite.mailLogo = ''; drawSig(); } toast(`Usunięto ${LOGO_LABEL[target] ?? 'logo'}.`); }
       catch (err) { toast((err as Error).message, true); }
     });
   });

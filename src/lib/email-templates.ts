@@ -1,6 +1,7 @@
 // Maile HTML w stylu sklepu. Układ tabelowy i style w atrybutach – tak, żeby wyglądał dobrze
 // w Gmailu, Outlooku i Apple Mail (programy pocztowe nie obsługują nowoczesnego CSS).
 import type { Site } from './site-settings';
+import { mailLogoUrl } from './mailbox';
 
 // Kolory i krój jak na stronie (system Laluna, global.css). Poppins ładują Apple Mail, iOS i część
 // programów; Gmail i Outlook pokażą Arial – dlatego wagi i odstępy dobrane tak, żeby oba wyglądały dobrze.
@@ -59,8 +60,8 @@ export const steps = (items: string[]) => `
 export function layout(o: { site: Site; origin: string; preheader: string; body: string; unsubscribe?: string; reason?: string }) {
   const s = o.site;
   // Logo z panelu – tylko PNG/JPG/GIF (SVG i WebP nie działają w Gmailu i Outlooku); inaczej logo tekstowe
-  const logoUrl = String((s as any).logoHeader || '');
-  const logo = /\.(png|jpe?g|gif)$/i.test(logoUrl)
+  const logoUrl = mailLogoUrl(s as any);
+  const logo = logoUrl
     ? `<img src="${esc(logoUrl)}" alt="Can-C" height="36" style="display:block;height:36px;width:auto;border:0;">`
     : `<span style="font-family:${FONT};font-size:28px;font-weight:400;color:${PRIMARY};letter-spacing:0.5px;">Can-C</span>`;
   return `<!doctype html>
