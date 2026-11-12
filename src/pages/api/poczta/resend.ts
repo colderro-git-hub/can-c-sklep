@@ -4,7 +4,7 @@ import { db } from '../../../lib/supabase';
 import { later } from '../../../lib/background';
 import {
   addMessage, copyResendAttachments, findOrderNumber, isOurAddress, inboxAddresses, isSystemMail, msgIds,
-  notifyNewMail, parseAddr, parseList, snippetOf, threadFor, verifyResendWebhook,
+  notifyNewMail, parseAddr, parseList, receivingKey, snippetOf, threadFor, verifyResendWebhook,
 } from '../../../lib/mailbox';
 
 export const prerender = false;
@@ -15,8 +15,8 @@ const MAX_HTML = 1_000_000; // treść HTML do 1 MB (obrazy w treści jako cid:,
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   const body = await request.text();
-  if (!env.RESEND_WEBHOOK_SECRET || !env.RESEND_API_KEY) {
-    console.error('Poczta: brak RESEND_WEBHOOK_SECRET albo RESEND_API_KEY');
+  if (!env.RESEND_WEBHOOK_SECRET || !receivingKey(env)) {
+    console.error('Poczta: brak RESEND_WEBHOOK_SECRET albo RESEND_RECEIVING_KEY');
     return json(500, { error: 'Brak konfiguracji.' });
   }
   if (!(await verifyResendWebhook(env.RESEND_WEBHOOK_SECRET, request.headers, body))) return json(401, { error: 'Nieprawidłowy podpis.' });
@@ -34,7 +34,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (dup.length) return json(200, { ok: true, duplicate: true });
 
     const res = await fetch(`https://api.resend.com/emails/receiving/${encodeURIComponent(resendId)}?html_format=cid`, {
-      headers: { Authorization: `Bearer ${env.RESEND_API_KEY}` },
+      headers: { Authorization: `Bearer ${receivingKey(env)}` },
     });
     if (!res.ok) throw new Error(`Resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
     const m: any = await res.json();
@@ -88,7 +88,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json(200, { ok: true, thread: threadId });
   } catch (e) {
     // 500 → Resend ponowi doręczenie później (wiadomość nie zginie)
-    console.error('Poczta webhook: ' + (e instanceof Error ? e.message : String(e)));
-    return json(500, { error: 'Błąd zapisu wiadomości.' });
+    const detail = (e instanceof Error ? e.message : String(e)).slice(0, 500);
+    console.error('Poczta webhook: ' + detail);
+    // Szczegół błędu widać w Resend → Webhooks → zdarzenie → Response body (odpowiedź dostaje tylko podpisany nadawca)
+    return json(500, { error: 'Błąd zapisu wiadomości.', detail });
   }
 };

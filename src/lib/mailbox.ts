@@ -133,6 +133,9 @@ export async function addMessage(sb: Sb, threadId: string, m: NewMessage) {
   return row.id;
 }
 
+// Odczyt odebranej poczty wymaga klucza „Full access”; klucz do wysyłki („Sending access”) zostaje osobno
+export const receivingKey = (env: Env) => env.RESEND_RECEIVING_KEY || env.RESEND_API_KEY || '';
+
 // ---------- Załączniki (prywatny bucket „mail”) ----------
 const storageBase = (env: Env) => (env.SUPABASE_URL || '').replace(/\/+$/, '').replace(/\/rest\/v1$/, '');
 const authHeaders = (env: Env) => {
@@ -166,7 +169,7 @@ export async function signedAttachmentUrl(env: Env, path: string, seconds = 300)
 // Kopia załączników odebranej wiadomości z Resend do własnego magazynu (link z Resend działa tylko godzinę)
 export async function copyResendAttachments(env: Env, sb: Sb, o: { messageId: string; threadId: string; resendId: string }) {
   const res = await fetch(`https://api.resend.com/emails/receiving/${encodeURIComponent(o.resendId)}/attachments`, {
-    headers: { Authorization: `Bearer ${env.RESEND_API_KEY}` },
+    headers: { Authorization: `Bearer ${receivingKey(env)}` },
   });
   if (!res.ok) throw new Error(`Resend załączniki ${res.status}`);
   const list = ((await res.json()) as { data?: any[] }).data ?? [];

@@ -26,6 +26,7 @@ export type Env = {
   MAIL_INBOX?: string;            // adres(y) skrzynki sklepu, np. kontakt@can-c.pl (do testów adres *.resend.app)
   MAIL_NOTIFY?: string;           // prywatny adres na powiadomienia o nowej wiadomości (opcjonalnie)
   RESEND_WEBHOOK_SECRET?: string; // whsec_… z Resend → Webhooks (podpis zdarzeń email.received)
+  RESEND_RECEIVING_KEY?: string;  // klucz Resend „Full access” – tylko do odczytu odebranej poczty (wysyłka zostaje na RESEND_API_KEY)
   GA4_SERVER_PURCHASE?: string; // 'all' = purchase z serwera dla każdego zamówienia (domyślnie tylko przelew / panel)        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
