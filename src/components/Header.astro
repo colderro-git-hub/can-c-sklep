@@ -36,7 +36,14 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
       <span class="hd__txt" data-logo-text="logoHeader" hidden={!!logo}><span class="hd__ring" aria-hidden="true"></span><span class="hd__name">Can-C</span></span>
     </a>
 
-    <div class="hd__right">
+    <!-- Telefon/tablet: logo + hamburger; menu, koszyk, konto i EN w rozwijanym panelu -->
+    <button type="button" class="hd__icon hd__burger" aria-controls="hd-panel" aria-expanded="false" aria-label="Otwórz menu" data-burger>
+      <svg class="hd__bi hd__bi--open" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+      <svg class="hd__bi hd__bi--close" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      <span class="hd__bdot" data-cart-dot hidden></span>
+    </button>
+
+    <div class="hd__right" id="hd-panel">
       <nav aria-label="Menu sklepu" class="hd__nav" id="hd-nav">
         {items.map((i) => (
           <a href={i.href} class="hd__link" aria-current={nav === i.key ? 'page' : undefined}>{i.label}</a>
@@ -66,9 +73,6 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
         </div>
 
         <a href="#" lang="en" class="hd__lang" aria-label="English version">EN</a>
-        <button type="button" class="hd__icon hd__burger" aria-controls="hd-nav" aria-expanded="false" aria-label="Menu" data-burger>
-          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
-        </button>
       </div>
     </div>
   </div>
@@ -84,6 +88,11 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
     font-size: 14px; line-height: 21px; font-weight: 300;
   }
   .hd { background: var(--surface); position: relative; z-index: 30; }
+  /* Telefon: tylko pierwszy komunikat paska promocji (trzy linie zajmowały pół ekranu) */
+  @media (max-width: 700px) {
+    .hd-promo__in { min-height: 38px; padding-top: 8px; padding-bottom: 8px; font-size: 13px; line-height: 19px; text-align: center; }
+    .hd-promo__in > span ~ span { display: none; }
+  }
   .hd__in {
     max-width: var(--container); margin: 0 auto; padding: 24px var(--page-px);
     display: flex; align-items: center; justify-content: space-between; gap: 24px 45px; flex-wrap: wrap;
@@ -140,27 +149,35 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   .hd__pvsum { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 16px; }
   .hd__pvsum strong { font-weight: 500; }
   .hd__pvbtn { height: 54px; font-size: 18px; }
-  .hd__burger { display: none; }
+  .hd__burger { display: none; position: relative; }
+  .hd__bi--close { display: none; }
+  .hd__bdot { position: absolute; top: 9px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
+  .hd__bdot[hidden] { display: none; }
 
-  /* Pełne menu potrzebuje ok. 1150 px ekranu – poniżej menu mobilne */
+  /* Pełne menu potrzebuje ok. 1150 px ekranu – poniżej: logo + hamburger, reszta w panelu */
   @media (max-width: 1180px) {
+    .hd__in { flex-wrap: nowrap; padding-top: 14px; padding-bottom: 14px; }
     .hd__name { font-size: 28px; }
-    .hd__cart { font-size: 16px; height: 44px; padding: 0 10px 0 16px; }
-    .hd__burger { display: flex; }
-    .hd__right { flex: 1; justify-content: flex-end; }
-    .hd__nav {
+    .hd__burger { display: flex; margin-right: -10px; }
+    .hd__burger[aria-expanded='true'] .hd__bi--open { display: none; }
+    .hd__burger[aria-expanded='true'] .hd__bi--close { display: block; }
+    .hd__right {
       display: none; position: absolute; left: 0; right: 0; top: 100%;
-      background: var(--surface); border-bottom: 1px solid var(--line);
-      flex-direction: column; align-items: stretch; gap: 0; padding: 10px var(--page-px) 24px;
+      background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 24px 40px rgba(20, 28, 43, .08);
+      flex-direction: column; align-items: stretch; gap: 0; padding: 4px var(--page-px) 24px;
+      max-height: calc(100dvh - 80px); overflow-y: auto;
     }
-    .hd__nav.is-open { display: flex; }
-    .hd__link { padding: 10px 0; border-top: 1px solid var(--line); }
-    .hd__link[aria-current='page'] { border-radius: 0; border: none; border-top: 1px solid var(--line); padding: 10px 0; height: auto; line-height: 36px; }
+    .hd__right.is-open { display: flex; }
+    .hd__nav { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+    .hd__link { padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 20px; line-height: 30px; }
+    .hd__link[aria-current='page'] { border-radius: 0; border: none; border-bottom: 1px solid var(--line); padding: 12px 0; height: auto; line-height: 30px; color: var(--accent-text); }
+    .hd__actions { flex-wrap: wrap; gap: 10px; padding-top: 18px; }
+    /* Koszyk na całą szerokość na górze akcji, pod nim konto, motyw i EN */
+    .hd__cartwrap { order: -1; flex: 1 1 100%; }
+    .hd__cart { width: 100%; height: 54px; justify-content: space-between; padding: 0 14px 0 20px; font-size: 18px; }
+    .hd__actions > a[href='/konto/'], [data-theme-toggle] { border: 1px solid var(--line); }
+    .hd__lang { margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--r-pill); }
     .hd__preview { display: none !important; }
-  }
-  @media (max-width: 520px) {
-    .hd__in { padding-top: 14px; padding-bottom: 14px; }
-    [data-theme-toggle], .hd__actions > a[href='/konto/'] { display: none; }
   }
 </style>
 
@@ -190,6 +207,8 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   const count = (items: CartItem[]) => {
     const n = items.reduce((s, i) => s + i.qty, 0);
     document.querySelectorAll('[data-cart-count]').forEach((el) => { el.textContent = String(n); });
+    const dot = document.querySelector<HTMLElement>('[data-cart-dot]');
+    if (dot) dot.hidden = n === 0;
   };
   count(getCart());
   onCartChange(count);
@@ -246,14 +265,23 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && pv && !pv.hidden) pv.hidden = true; });
   window.addEventListener(ADDED_EVENT, () => show(true, true));
 
-  // Menu mobilne
+  // Menu mobilne: hamburger otwiera panel z menu, koszykiem, kontem, motywem i EN
   const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
-  const nav = document.getElementById('hd-nav');
-  burger?.addEventListener('click', () => {
-    const open = !nav?.classList.contains('is-open');
-    nav?.classList.toggle('is-open', open);
-    burger.setAttribute('aria-expanded', String(open));
+  const panel = document.getElementById('hd-panel');
+  const setMenu = (open: boolean) => {
+    panel?.classList.toggle('is-open', open);
+    burger?.setAttribute('aria-expanded', String(open));
+    burger?.setAttribute('aria-label', open ? 'Zamknij menu' : 'Otwórz menu');
+  };
+  burger?.addEventListener('click', () => setMenu(!panel?.classList.contains('is-open')));
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel?.classList.contains('is-open')) { setMenu(false); burger?.focus(); } });
+  document.addEventListener('click', (e) => {
+    if (!panel?.classList.contains('is-open')) return;
+    const t = e.target as Node;
+    if (!panel.contains(t) && !burger?.contains(t)) setMenu(false);
   });
+  panel?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+  window.matchMedia('(min-width: 1181px)').addEventListener?.('change', (m) => { if (m.matches) setMenu(false); });
 
   // Tryb ciemny (wybór zapamiętany w przeglądarce)
   const tBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');

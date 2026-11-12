@@ -27,7 +27,10 @@ export function typoText(text: string, opts: TypoOptions & { spans?: boolean } =
   if (t.includes('\u2013') || t.includes('\u2014')) t = t.replace(DASH, `${NBSP}$1`);
   if (opts.spans !== false && t.includes('-')) {
     const open = opts.nowrap ?? '<span class="nowrap">';
-    t = t.replace(HYPHENATED, (w) => `${open}${w}</span>`);
+    const wrapped = t.replace(HYPHENATED, (w) => `${open}${w}</span>`);
+    // Cały tekst w jednym <span>: w kontenerach flex (przyciski, tagi, etykiety) każdy element potomny
+    // staje się osobnym elementem flex i spacje między nimi znikają („kropli Can-C” → „kropliCan-C”)
+    if (wrapped !== t) t = `<span>${wrapped}</span>`;
   }
   return t;
 }

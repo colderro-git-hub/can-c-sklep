@@ -8,7 +8,9 @@ export function announceAdded(detail: AddedDetail) {
 }
 
 export function flyToCart(from: Element | null, imgSrc?: string | null): Promise<void> {
-  const target = document.querySelector('[data-cart-link]');
+  // Na telefonie koszyk jest w zwiniętym menu – animacja leci do przycisku hamburgera
+  const cart = document.querySelector<HTMLElement>('[data-cart-link]');
+  const target = cart && cart.getClientRects().length ? cart : document.querySelector<HTMLElement>('[data-burger]') ?? cart;
   if (!from || !target || window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('animate' in Element.prototype)) return Promise.resolve();
   const a = from.getBoundingClientRect();
   const b = target.getBoundingClientRect();

@@ -177,7 +177,7 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- PRODUKTY -->
-  <section class="section section--band" style="margin-top:90px" id="produkty">
+  <section class="section section--band sec-gap" id="produkty">
     <div class="container">
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:45px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:24px">
@@ -189,7 +189,7 @@ const bundleRows = setQtys.map((qty) => {
           Zobacz wszystkie
         </a>
       </div>
-      <div class="products-grid" style="margin-top:90px" data-list="Strona główna">
+      <div class="products-grid" data-list="Strona główna">
         {products.map((p) => (
           <ProductCard slug={p.slug} name={p.name} tag={p.tag} image={p.image} alt={p.alt} avail={p.avail}
             price={p.price} regular={p.regular} onSale={p.onSale} flag={p.tags[0] ? p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1) : undefined} />
@@ -199,15 +199,15 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- KORZYŚCI -->
-  <section class="container" style="margin-top:90px;display:flex;align-items:center;gap:45px;flex-wrap:wrap">
-    <div style="position:relative;width:408px;height:431px;flex-shrink:0;background:var(--image);border-radius:500px 500px 40px 40px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+  <section class="container home-split home-split--center sec-gap">
+    <div class="ben-img">
       {benefits.image_url
         ? <img src={benefits.image_url} alt={benefits.image_alt} style="width:100%;height:100%;object-fit:cover" />
         : <span style="font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: zbliżenie oka]</span>}
     </div>
-    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:45px">
+    <div class="home-split__main" style="gap:45px">
       <h2 class="h2">{benefits.h2}</h2>
-      <ul class="benefits-list" style="list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 45px">
+      <ul class="benefits-list">
         {(benefits.items as string[]).map((item: string) => (
           <li class="lead" style="display:flex;align-items:flex-start;gap:14px;padding-top:14px;border-top:1px solid var(--line)">
             <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10" style="flex-shrink:0;margin-top:9px"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
@@ -220,13 +220,13 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- ZESTAWY -->
-  <section class="container" style="margin-top:90px">
-    <div style="border-top:1px solid var(--line);padding-top:90px"></div>
+  <section class="container sec-gap">
+    <div class="sec-line"></div>
     <div class="bundles-head">
       <h2 class="h2">Kupuj więcej,<br/>płać mniej</h2>
       <p class="lead bundles-head__p">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
     </div>
-    <div class="bundles-grid" style="margin-top:45px">
+    <div class="bundles-grid">
       {bundleRows.map((b, i) => (
         <div class={`bundle-card${i === 1 ? ' bundle-card--featured' : ''}`}>
           {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? 'Polecany' : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' · ')}</span>}
@@ -256,9 +256,9 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- DLACZEGO -->
-  <section class="container" style="margin-top:90px;display:flex;align-items:flex-start;gap:45px;flex-wrap:wrap">
-    <div style="width:408px;flex-shrink:0;display:flex;flex-direction:column;gap:24px">
-      <div style="width:269px;height:169px;background:var(--image);border-radius:20px 500px 20px 20px"></div>
+  <section class="container home-split sec-gap">
+    <div class="home-side">
+      <div class="why-shape" aria-hidden="true"></div>
       <h2 class="h2">{why.h2}</h2>
       {why.lead && <p class="lead" style="text-align:left">{why.lead}</p>}
       {why.link_label && <a href={why.link_href} class="link-arrow">
@@ -266,10 +266,10 @@ const bundleRows = setQtys.map((qty) => {
         {why.link_label}
       </a>}
     </div>
-    <div style="flex:1;min-width:280px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+    <div class="home-split__main why-grid">
       {(why.features as {title:string;text:string}[]).map((f, i) => (
-        <div style="border:1px solid var(--line);border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:14px">
-          <span style="font-size:3rem;line-height:72px;font-weight:200;color:var(--accent)">0{i+1}</span>
+        <div class="why-card">
+          <span class="why-card__n">0{i+1}</span>
           <h3 style="margin:0;font-size:1.5rem;line-height:28px;font-weight:400">{f.title}</h3>
           <p class="lead" style="text-align:left">{f.text}</p>
         </div>
@@ -278,9 +278,9 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- OPINIE -->
-  <section class="section section--band" style="margin-top:90px">
-    <div class="container" style="display:flex;align-items:flex-start;gap:45px;flex-wrap:wrap">
-      <div style="width:408px;flex-shrink:0;display:flex;flex-direction:column;gap:24px">
+  <section class="section section--band sec-gap">
+    <div class="container home-split">
+      <div class="home-side">
         <h2 class="h2">{reviewsCms.h2}</h2>
         <div style="display:flex;align-items:center;gap:14px">
           <span style="font-size:4rem;line-height:64px;font-weight:300">{ratingAvg ? ratingAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}</span>
@@ -290,7 +290,7 @@ const bundleRows = setQtys.map((qty) => {
           </div>
         </div>
       </div>
-      <div style="flex:1;min-width:280px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+      <div class="home-split__main rv-grid">
         {reviewSlots.map((r) => r === 'cta' ? (
           <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
             <span style="font-size:1.5rem;line-height:28px;font-weight:400">Kupiłeś Can-C? Podziel się wrażeniami.</span>
@@ -315,13 +315,13 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- K9 -->
-  <section class="container" style="margin-top:90px;display:flex;align-items:center;gap:45px;flex-wrap:wrap">
-    <div style="width:636px;height:420px;flex-shrink:0;background:var(--image);border-radius:500px 20px 20px 20px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+  <section class="container home-split home-split--center sec-gap">
+    <div class="k9-img">
       {k9.image_url
         ? <img src={k9.image_url} alt={k9.image_alt} style="width:100%;height:100%;object-fit:cover" />
         : <span style="font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: pies]</span>}
     </div>
-    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:24px">
+    <div class="home-split__main">
       {k9.tag && <span class="tag tag--peach" style="align-self:flex-start">{k9.tag}</span>}
       <h2 class="h2">{k9.h2}</h2>
       {k9.lead && <p class="lead" style="text-align:left">{k9.lead}</p>}
@@ -335,15 +335,15 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- FAQ -->
-  <section class="container" style="margin-top:90px;display:flex;align-items:flex-start;gap:45px;flex-wrap:wrap">
-    <div style="width:408px;flex-shrink:0;display:flex;flex-direction:column;gap:24px">
+  <section class="container home-split sec-gap">
+    <div class="home-side">
       <h2 class="h2">Najczęstsze<br/>pytania</h2>
       <a href="/faq/" class="link-arrow">
         <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
         Wszystkie pytania
       </a>
     </div>
-    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:14px">
+    <div class="home-split__main" style="gap:14px">
       {faqList.map((f, i) => (
         <FaqItem cat={f.cat ? faqCatLabel[f.cat] : undefined} q={f.q} answer={escHtml(f.a)} open={i === 0} />
       ))}
@@ -351,13 +351,13 @@ const bundleRows = setQtys.map((qty) => {
   </section>
 
   <!-- NEWSLETTER (zapis z obowiązkową zgodą i potwierdzeniem e-mailem) -->
-  <section class="w" id="newsletter" style="margin-top:90px;margin-bottom:90px">
+  <section class="w sec-gap" id="newsletter" style="margin-bottom:90px">
     <div class="row cta-box">
-      <div class="fl" style="width:560px;display:flex;flex-direction:column;gap:24px">
+      <div class="fl cta-box__l">
         <h2 class="h2">Rabaty i nowości<br/>na Twój e-mail</h2>
         <p class="p">Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.</p>
       </div>
-      <div class="fl" style="width:493px">
+      <div class="fl cta-box__r">
         <NewsletterForm variant="light" title="" lead="" />
       </div>
     </div>
@@ -403,7 +403,16 @@ const bundleRows = setQtys.map((qty) => {
     .trust-box__num { font-size: 36px; line-height: 54px; }
     .trust-box__sub { font-size: 18px; line-height: 27px; }
   }
-  @media (max-width: 700px) { .trust { grid-template-columns: minmax(0, 1fr); } }
+  /* Telefon: boksy zaufania jako zwarte wiersze (liczba + opis po lewej, ikona po prawej) */
+  @media (max-width: 700px) {
+    .trust { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .trust-box { height: auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 16px 20px; }
+    .trust-box__num, .trust-box__icon, .trust-box__sub { position: static; }
+    .trust-box__num { font-size: 28px; line-height: 36px; }
+    .trust-box__sub { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); white-space: normal; }
+    .trust-box__icon { grid-column: 3; grid-row: 1; width: 28px; height: 28px; }
+    .hero-bottom { margin-top: 32px; gap: 24px; }
+  }
 
   /* Karty produktów */
   .products-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
@@ -434,6 +443,63 @@ const bundleRows = setQtys.map((qty) => {
   .rv-thumb img { width: 100%; height: 100%; object-fit: cover; }
   a.rv-thumb:hover { outline: 2px solid var(--primary); outline-offset: 2px; }
   .cta-box { position: relative; overflow: hidden; border: 1px solid var(--line); border-radius: 50px; padding: 45px; display: flex; align-items: center; justify-content: space-between; gap: 45px; }
+  .cta-box__l { width: 560px; display: flex; flex-direction: column; gap: 24px; }
+  .cta-box__r { width: 493px; }
+
+  /* Układ sekcji: kolumna boczna (408 px) + treść; poniżej 1000 px jedna kolumna */
+  .sec-gap { margin-top: 90px; }
+  .sec-line { border-top: 1px solid var(--line); padding-top: 90px; }
+  .bundles-grid { margin-top: 45px; }
+  .products-grid { margin-top: 90px; }
+  .home-split { display: flex; align-items: flex-start; gap: 45px; flex-wrap: wrap; }
+  .home-split--center { align-items: center; }
+  .home-split__main { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 24px; }
+  .home-side { width: 408px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
+  .ben-img {
+    position: relative; width: 408px; height: 431px; flex-shrink: 0; background: var(--image); border-radius: 500px 500px 40px 40px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+  .benefits-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 45px; }
+  .why-shape { width: 269px; height: 169px; background: var(--image); border-radius: 20px 500px 20px 20px; }
+  .why-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .why-card { border: 1px solid var(--line); border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px; }
+  .why-card__n { font-size: 3rem; line-height: 72px; font-weight: 200; color: var(--accent); }
+  .rv-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .k9-img {
+    width: 636px; height: 420px; flex-shrink: 0; background: var(--image); border-radius: 500px 20px 20px 20px;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+  }
+
+  @media (max-width: 1380px) {
+    .k9-img { width: 50%; height: auto; aspect-ratio: 636 / 420; }
+  }
+  @media (max-width: 1100px) {
+    .rv-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 1000px) {
+    .home-split { gap: 32px; }
+    .home-side { width: 100%; }
+    .home-split__main { min-width: 0; flex-basis: 100%; }
+    .ben-img { width: 100%; max-width: 460px; height: auto; aspect-ratio: 408 / 431; }
+    .k9-img { width: 100%; border-radius: 300px 20px 20px 20px; }
+    .why-shape { width: 180px; height: 112px; }
+    .cta-box { flex-direction: column; align-items: stretch; padding: 32px 24px; border-radius: 32px; gap: 24px; }
+    .cta-box__l, .cta-box__r { width: 100%; }
+  }
+  @media (max-width: 700px) {
+    .benefits-list { grid-template-columns: minmax(0, 1fr); gap: 0 45px; }
+  }
+  @media (max-width: 600px) {
+    .sec-gap { margin-top: 56px; }
+    .sec-line { padding-top: 56px; }
+    .products-grid { margin-top: 32px; }
+    .bundles-grid { margin-top: 32px; }
+    .why-grid, .rv-grid { grid-template-columns: minmax(0, 1fr); }
+    .why-card { padding: 24px; }
+    .why-card__n { font-size: 2.25rem; line-height: 48px; }
+    .bundle-card { border-radius: 28px; padding: 24px; }
+    #newsletter { margin-bottom: 56px !important; }
+  }
   /* FAQ */
   .faq-item summary { list-style: none; }
   .faq-item summary::-webkit-details-marker { display: none; }
