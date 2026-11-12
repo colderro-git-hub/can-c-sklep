@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
+import { logConsent } from '../../../lib/newsletter';
 import { str, EMAIL_RE, POSTCODE_RE, LOCKER_RE, cleanPhone, validPhone, validNip } from '../../../lib/validate';
 
 export const prerender = false;
@@ -144,7 +145,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (consent !== cur.marketing_consent) Object.assign(patch, consent ? { marketing_consent: true, consent_at: new Date().toISOString(), consent_source: `panel (${admin})` } : { marketing_consent: false });
     try {
       const [row] = await sb.update(`customers?id=eq.${b.id}`, patch, 'id');
-      if (email !== cur.email) await sb.update(`orders?customer_id=eq.${b.id}&status=in.(pending_payment,paid,on_hold)`, { email }, 'id');
+      if (email !== cur.email) await sb.update(`orders?customer_id=eq.${b.id}&status=in.(pending_payment,paid,packing,on_hold)`, { email }, 'id');
+      if (consent !== cur.marketing_consent) await logConsent(sb, { email, customer_id: b.id, action: consent ? 'granted' : 'withdrawn', source: `panel (${admin})` });
       console.log(`Admin ${admin} edytował klienta ${b.id}`);
       return json(200, { row });
     } catch (e) {

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireCustomer } from '../../../lib/user-auth';
+import { logConsent } from '../../../lib/newsletter';
 
 export const prerender = false;
 
@@ -24,7 +25,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
 };
 
 // Zapis profilu: tylko wybrane pola, e-mail się nie zmienia (to login)
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const env = await getEnv(locals);
   const c = await requireCustomer(request, env);
   if (!c) return json(401, { error: 'Zaloguj się ponownie.' });
@@ -57,12 +58,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
     default_address: addr.street || addr.city ? addr : null,
     billing: hasInvoice ? inv : null,
   };
-  // Zgoda marketingowa: zapisujemy datę i źródło przy włączeniu
-  if (b.marketing_consent === true) Object.assign(patch, { marketing_consent: true, consent_at: new Date().toISOString(), consent_source: 'konto' });
-  if (b.marketing_consent === false) Object.assign(patch, { marketing_consent: false });
+  // Zgoda marketingowa: data, źródło i wpis w dzienniku zgód tylko przy zmianie
+  const sb = db(env);
+  const [cur] = await sb.select<{ marketing_consent: boolean }>(`customers?select=marketing_consent&id=eq.${c.id}`).catch(() => []);
+  const changed = typeof b.marketing_consent === 'boolean' && b.marketing_consent !== Boolean(cur?.marketing_consent);
+  if (changed && b.marketing_consent === true) Object.assign(patch, { marketing_consent: true, consent_at: new Date().toISOString(), consent_source: 'konto' });
+  if (changed && b.marketing_consent === false) Object.assign(patch, { marketing_consent: false });
 
   try {
-    const [row] = await db(env).update(`customers?id=eq.${c.id}`, patch, FIELDS);
+    const [row] = await sb.update(`customers?id=eq.${c.id}`, patch, FIELDS);
+    if (changed) await logConsent(sb, { email: c.email, customer_id: c.id, action: b.marketing_consent ? 'granted' : 'withdrawn', source: 'konto', consent_text: b.marketing_consent ? 'Zgoda na informacje handlowe (ustawienia konta).' : null, ip: clientAddress, user_agent: request.headers.get('User-Agent') });
     return json(200, row);
   } catch (e) {
     console.error('Profil: ' + (e instanceof Error ? e.message : String(e)));

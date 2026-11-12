@@ -4,6 +4,7 @@ import { site } from '../config';
 import { getEnv } from '../lib/env';
 import { getPageContent, getSection } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
+import NewsletterForm from './NewsletterForm.astro';
 
 type Col = { title: string; links: { href: string; label: string }[] };
 let columns: Col[] = [];
@@ -50,6 +51,7 @@ const year = new Date().getFullYear();
           <span class="ft__txt" data-logo-text="logoFooter" hidden={!!logo}><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></span>
         </a>
         <p class="ft__contact"><span data-site="email">{site.email}</span><br /><span data-site="hours">{site.hours}</span></p>
+        <NewsletterForm variant="dark" />
       </div>
       <div class="ft__cols">
         {columns.map((c) => (

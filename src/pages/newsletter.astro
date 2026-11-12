@@ -1,0 +1,39 @@
+---
+// Strona newslettera: zapis (gdy ktoś trafi z linku) i wynik potwierdzenia z maila (?status=ok|blad)
+import Base from '../layouts/Base.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
+---
+<Base title="Newsletter | Can-C" description="Zapisz się na newsletter Can-C – promocje, kody rabatowe i nowości." noindex>
+  <section class="w nlp">
+    <div class="nlp__state" data-st="ok" hidden>
+      <h1 class="h1">Dziękujemy!</h1>
+      <p class="lead">Zapis na newsletter jest potwierdzony. Pierwsze promocje i kody rabatowe trafią na Twój e-mail. Z newslettera wypiszesz się w każdej chwili – link jest w każdej wiadomości.</p>
+      <a href="/sklep/" class="btn">Przejdź do sklepu</a>
+    </div>
+    <div class="nlp__state" data-st="blad" hidden>
+      <h1 class="h1">Link wygasł albo jest nieprawidłowy</h1>
+      <p class="lead">Link potwierdzający działa przez 7 dni. Zapisz się ponownie – wyślemy nowy.</p>
+    </div>
+    <div class="nlp__state" data-st="form">
+      <h1 class="h1" data-form-title>Newsletter Can-C</h1>
+      <NewsletterForm variant="light" title="" lead="Promocje, kody rabatowe i nowości w sklepie. Po zapisie wyślemy e-mail z linkiem potwierdzającym." />
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nlp { margin-top: 45px; margin-bottom: 90px; max-width: 760px; display: flex; flex-direction: column; gap: 45px; }
+  .nlp__state { display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
+  .nlp__state[hidden] { display: none; }
+</style>
+
+<script>
+  const st = new URLSearchParams(location.search).get('status');
+  if (st === 'ok') {
+    document.querySelector<HTMLElement>('[data-st="ok"]')!.hidden = false;
+    document.querySelector<HTMLElement>('[data-st="form"]')!.hidden = true;
+  } else if (st === 'blad') {
+    document.querySelector<HTMLElement>('[data-st="blad"]')!.hidden = false;
+    document.querySelector('[data-form-title]')!.textContent = 'Zapisz się ponownie';
+  }
+</script>

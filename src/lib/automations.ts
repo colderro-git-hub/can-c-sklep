@@ -27,6 +27,8 @@ async function hmac(secret: string, data: string) {
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(data));
   return [...new Uint8Array(sig)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 32);
 }
+// Podpis dowolnych danych (np. link potwierdzenia newslettera)
+export const signToken = (env: Env, data: string) => hmac(env.CRON_SECRET || '', data);
 export const unsubscribeToken = (env: Env, customerId: string) => hmac(env.CRON_SECRET || '', `unsub:${customerId}`);
 export async function unsubscribeUrl(env: Env, origin: string, customerId: string) {
   return `${origin}/api/wypisz?c=${customerId}&t=${await unsubscribeToken(env, customerId)}`;

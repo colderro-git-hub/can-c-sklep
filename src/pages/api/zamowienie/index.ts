@@ -11,6 +11,7 @@ import { checkCode, normalizeCode } from '../../../lib/discounts';
 import { getPromotions, findCodePromotion } from '../../../lib/promotions-db';
 import { promoActive } from '../../../lib/promotions';
 import { gaIdsFromCookies } from '../../../lib/ga4-mp';
+import { logConsent } from '../../../lib/newsletter';
 
 export const prerender = false;
 
@@ -28,7 +29,7 @@ function validNip(nip: string) {
   return sum % 11 === Number(nip[9]);
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const origin = request.headers.get('Origin');
   const self = new URL(request.url);
   if (origin && new URL(origin).host !== self.host) return json(403, { error: 'Niedozwolone źródło żądania.' });
@@ -117,6 +118,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (wantsInvoice) customerRow.billing = inv;
     if (body.marketing === true) Object.assign(customerRow, { marketing_consent: true, consent_at: new Date().toISOString(), consent_source: 'checkout' });
     const [customer] = await sb.upsert<{ id: string }>('customers', customerRow, 'email', 'id');
+    if (body.marketing === true) await logConsent(sb, { email, customer_id: customer.id, action: 'granted', source: 'checkout', consent_text: 'Chcę otrzymywać informacje o promocjach (formularz zamówienia).', ip: clientAddress, user_agent: request.headers.get('User-Agent') });
 
     // ---------- Zamówienie ----------
     const name = `${firstName} ${lastName}`;

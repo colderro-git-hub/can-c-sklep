@@ -1,0 +1,113 @@
+---
+// Zapis na newsletter z obowiązkową zgodą (checkbox niezaznaczony domyślnie) i potwierdzeniem e-mailem (double opt-in).
+// Turnstile ładuje się dopiero przy pierwszym kontakcie z formularzem – nie spowalnia stron.
+import { site } from '../config';
+import { TURNSTILE_SITE_KEY } from '../config';
+interface Props { variant?: 'dark' | 'light'; title?: string; lead?: string }
+const { variant = 'dark', title = 'Newsletter', lead = 'Promocje, kody rabatowe i nowości w sklepie Can-C prosto na Twój e-mail.' } = Astro.props;
+const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
+---
+<form class={`nl nl--${variant}`} data-nl data-sitekey={TURNSTILE_SITE_KEY || ''} novalidate>
+  <span class="nl__t">{title}</span>
+  {lead && <p class="nl__lead">{lead}</p>}
+  <div class="nl__row">
+    <label class="sr-only" for={`${uid}-e`}>Adres e-mail</label>
+    <input id={`${uid}-e`} class="nl__in" type="email" name="email" required autocomplete="email" placeholder="Twój adres e-mail" maxlength="200" />
+    <button class="btn nl__btn" type="submit">Zapisz się</button>
+  </div>
+  <label class="nl__ck">
+    <input type="checkbox" name="consent" required />
+    <span>Wyrażam zgodę na otrzymywanie od <span data-site="company">{site.company}</span> informacji handlowych (newslettera, promocji i kodów rabatowych) na podany adres e-mail. Zgodę mogę wycofać w każdej chwili – link „wypisz się” jest w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</span>
+  </label>
+  <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="nl__hp" />
+  <div class="nl__ts" data-nl-ts></div>
+  <p class="nl__msg" role="status" aria-live="polite" data-nl-msg></p>
+</form>
+
+<style>
+  .nl { display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
+  .nl__t { font-size: 24px; line-height: 29px; font-weight: 400; }
+  .nl--dark .nl__t { font-family: 'Montserrat', sans-serif; }
+  .nl__lead { margin: 0; font-size: 14px; line-height: 21px; font-weight: 300; }
+  .nl--dark .nl__lead, .nl--dark .nl__ck { color: var(--on-dark-soft); }
+  .nl--light .nl__lead { color: var(--muted); font-size: 16px; line-height: 24px; }
+  .nl__row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .nl__in {
+    flex: 1 1 220px; min-width: 0; height: 54px; padding: 0 20px; border-radius: var(--r-md, 16px); font: inherit; font-size: 16px; font-weight: 300;
+    border: 1px solid var(--line); background: #FFFFFF; color: var(--ink);
+  }
+  .nl--dark .nl__in { border-color: var(--on-dark-line); background: rgba(255,255,255,.08); color: #FFFFFF; }
+  .nl--dark .nl__in::placeholder { color: var(--on-dark-soft); }
+  .nl__btn { height: 54px; }
+  .nl--dark .nl__btn { background: #FFFFFF; color: var(--primary); }
+  .nl--dark .nl__btn:hover { background: var(--band); }
+  .nl__ck { display: flex; gap: 10px; align-items: flex-start; font-size: 12px; line-height: 18px; font-weight: 300; cursor: pointer; }
+  .nl--light .nl__ck { color: var(--muted); font-size: 14px; line-height: 21px; }
+  .nl__ck input { flex-shrink: 0; width: 18px; height: 18px; margin: 1px 0 0; accent-color: var(--accent); }
+  .nl__ck a { color: inherit; text-decoration: underline; }
+  .nl__hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+  .nl__ts:empty { display: none; }
+  .nl__msg { margin: 0; min-height: 21px; font-size: 14px; line-height: 21px; font-weight: 400; }
+  .nl__msg:empty { display: none; }
+  .nl--dark .nl__msg { color: #FFFFFF; }
+  .nl__msg.is-err { color: var(--err, #B3261E); }
+  .nl--dark .nl__msg.is-err { color: #FFD7D3; }
+  .nl.is-done .nl__row, .nl.is-done .nl__ck, .nl.is-done .nl__ts { display: none; }
+</style>
+
+<script>
+  // Turnstile w trybie „explicit”: jeden skrypt na stronę, widżet tworzony przy pierwszym fokusie
+  let tsLoad: Promise<any> | null = null;
+  const loadTurnstile = () => (tsLoad ??= new Promise((resolve) => {
+    const w = window as any;
+    if (w.turnstile) return resolve(w.turnstile);
+    if (!document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      s.async = true;
+      document.head.append(s);
+    }
+    const t = window.setInterval(() => { if (w.turnstile) { clearInterval(t); resolve(w.turnstile); } }, 100);
+    window.setTimeout(() => { clearInterval(t); resolve(null); }, 15000);
+  }));
+
+  document.querySelectorAll<HTMLFormElement>('[data-nl]').forEach((form) => {
+    const key = form.dataset.sitekey || '';
+    const msg = form.querySelector<HTMLElement>('[data-nl-msg]')!;
+    const box = form.querySelector<HTMLElement>('[data-nl-ts]')!;
+    let widget: string | null = null;
+    const say = (t: string, err = false) => { msg.textContent = t; msg.classList.toggle('is-err', err); };
+
+    const prepare = async () => {
+      if (!key || widget !== null) return;
+      widget = '';
+      const ts = await loadTurnstile();
+      if (ts) widget = ts.render(box, { sitekey: key, language: 'pl', size: 'flexible', appearance: 'interaction-only' });
+    };
+    form.addEventListener('focusin', prepare, { once: true });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const email = String(fd.get('email') || '').trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say('Podaj poprawny adres e-mail.', true);
+      if (fd.get('consent') === null) return say('Zaznacz zgodę – bez niej nie możemy wysyłać newslettera.', true);
+      await prepare();
+      const ts = (window as any).turnstile;
+      const token = key && ts && widget ? ts.getResponse(widget) : '';
+      if (key && !token) return say('Chwileczkę – trwa weryfikacja, spróbuj ponownie za moment.', true);
+      const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
+      btn.disabled = true;
+      say('Zapisywanie…');
+      try {
+        const res = await fetch('/api/newsletter', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, consent: true, token, website: fd.get('website') }) });
+        const d = await res.json().catch(() => ({}));
+        if (!res.ok) { say(d.error || 'Nie udało się zapisać.', true); if (key && ts && widget) ts.reset(widget); return; }
+        form.classList.add('is-done');
+        say(d.message || 'Sprawdź skrzynkę – wysłaliśmy link potwierdzający zapis.');
+        try { (window as any).dataLayer?.push({ event: 'generate_lead', lead_source: 'newsletter' }); } catch {}
+      } catch { say('Brak połączenia. Spróbuj ponownie.', true); }
+      finally { btn.disabled = false; }
+    });
+  });
+</script>
