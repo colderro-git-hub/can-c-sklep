@@ -229,7 +229,7 @@ const bundleRows = setQtys.map((qty) => {
     <div class="bundles-grid">
       {bundleRows.map((b, i) => (
         <div class={`bundle-card${i === 1 ? ' bundle-card--featured' : ''}`}>
-          {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? 'Polecany' : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' · ')}</span>}
+          {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? 'Polecany' : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' ')}</span>}
           <span style="font-size:18px;line-height:27px;font-weight:400">{b.label}</span>
           <div>
             <div style="font-size:3rem;line-height:72px;font-weight:300">{b.total}</div>

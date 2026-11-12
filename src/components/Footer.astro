@@ -69,8 +69,7 @@ const year = new Date().getFullYear();
     </ul>
     <div class="ft__line"></div>
     <p class="ft__legal">
-      <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>
-      · NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span> · © 2012–{year}
+      <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>{' · '}NIP <span data-site="nip">{site.nip}</span>{' · '}REGON <span data-site="regon">{site.regon}</span>{' · '}© 2012–{year}
     </p>
   </div>
 </footer>
@@ -106,5 +105,7 @@ const year = new Date().getFullYear();
     .ft__cols { gap: 32px 45px; }
     .ft__chips, .ft__line { margin-top: 32px; }
   }
+  /* Drobny tekst stopki bez ujemnego odstępu liter (−0,05 em z global.css przy 14 px zlewa litery) */
+  .ft__contact, .ft__links a, .ft__chips li, .ft__legal { letter-spacing: 0; }
   .ft__legal { margin-top: 24px; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--on-dark-soft); }
 </style>
