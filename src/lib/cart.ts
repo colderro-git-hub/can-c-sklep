@@ -39,11 +39,12 @@ export function addItem(slug: string, qty: number) {
   write(items);
 }
 
+// Ustawia liczbę sztuk; produkt, którego nie ma w koszyku, zostaje dodany (np. brakujący element zestawu)
 export function setQty(slug: string, qty: number) {
-  const items = read()
-    .map((i) => (i.slug === slug ? { ...i, qty: Math.min(Math.max(qty, 0), MAX_QTY) } : i))
-    .filter((i) => i.qty > 0);
-  write(items);
+  const n = Math.min(Math.max(Math.round(qty) || 0, 0), MAX_QTY);
+  const items = read();
+  if (n > 0 && !items.some((i) => i.slug === slug)) items.push({ slug, qty: n });
+  write(items.map((i) => (i.slug === slug ? { ...i, qty: n } : i)).filter((i) => i.qty > 0));
 }
 
 export function clearCart() {

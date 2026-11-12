@@ -193,8 +193,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         const prods = missing.map((it) => catalog.find((c) => c.slug === it.product_id));
         if (!missing.length || prods.some((x) => !x || isOut(x))) continue;
         offers.push({
-          title: `${promoLabel(b)}: ${describeDiscount(b.type, b.value)} za zestaw`,
-          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} i odbierz rabat.`,
+          title: promoLabel(b),
+          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} – za zestaw zapłacisz ${b.type === 'percent' ? `${b.value}%` : describeDiscount('amount', b.value).slice(1)} mniej.`,
           btn: missing.length === 1 ? 'Dodaj do koszyka' : 'Dodaj zestaw',
           apply: () => missing.forEach((it) => setQty(it.product_id, it.qty)),
         });
