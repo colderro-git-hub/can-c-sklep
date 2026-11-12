@@ -59,6 +59,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
           <div class="hd__preview" id="hd-preview" role="region" aria-label="Podgląd koszyka" data-cart-preview hidden>
             <p class="hd__pvhead" data-pv-head>Twój koszyk</p>
             <ul class="hd__pvlist" data-pv-list></ul>
+            <div class="hd__pvpromos" data-pv-promos hidden></div>
             <div class="hd__pvsum"><span>Razem</span><strong data-pv-total>0,00 zł</strong></div>
             <a href="/koszyk/" class="btn btn--wide hd__pvbtn">Przejdź do koszyka</a>
           </div>
@@ -132,6 +133,10 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   .hd__pvlist :global(.pv-img) { width: 54px; height: 54px; flex-shrink: 0; border-radius: 14px; background: var(--image); object-fit: cover; }
   .hd__pvlist :global(.pv-name) { flex: 1; min-width: 0; }
   .hd__pvlist :global(.pv-price) { font-weight: 400; white-space: nowrap; }
+  .hd__pvlist :global(.pv-price s) { display: block; font-weight: 300; color: var(--muted); font-size: 12px; line-height: 18px; text-align: right; }
+  .hd__pvpromos { display: flex; flex-direction: column; gap: 6px; padding-top: 14px; border-top: 1px solid var(--line); }
+  .hd__pvpromos :global(div) { display: flex; justify-content: space-between; gap: 14px; font-size: 14px; line-height: 21px; font-weight: 300; }
+  .hd__pvpromos :global(span:last-child) { color: var(--accent-text); font-weight: 400; white-space: nowrap; }
   .hd__pvsum { display: flex; justify-content: space-between; padding-top: 14px; border-top: 1px solid var(--line); font-size: 16px; }
   .hd__pvsum strong { font-weight: 500; }
   .hd__pvbtn { height: 54px; font-size: 18px; }
@@ -163,8 +168,9 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   import { getCart, onCartChange, type CartItem } from '../lib/cart';
   import { ADDED_EVENT } from '../lib/cart-fx';
   import { typoSafe } from '../lib/typography';
+  import { applyPromotions, normalizePromotion, type Promotion } from '../lib/promotions';
 
-  type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string };
+  type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string; avail?: string };
   const zl = (gr: number) => (gr / 100).toFixed(2).replace('.', ',') + ' zł';
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
@@ -173,6 +179,12 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
     if (catalog) return catalog;
     try { catalog = await fetch('/api/produkty').then((r) => (r.ok ? r.json() : [])); } catch { catalog = []; }
     return catalog!;
+  };
+  let promos: Promotion[] | null = null;
+  const loadPromos = async () => {
+    if (promos) return promos;
+    try { promos = ((await fetch('/api/promocje').then((r) => (r.ok ? r.json() : []))) as any[]).map(normalizePromotion); } catch { promos = []; }
+    return promos!;
   };
 
   const count = (items: CartItem[]) => {
@@ -193,16 +205,28 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   async function render(added = false) {
     const items = getCart();
     if (!items.length || !pv || !list || !total) return false;
-    const cat = await loadCatalog();
+    const [cat, pr] = await Promise.all([loadCatalog(), loadPromos()]);
+    // Rabaty z promocji (ten sam silnik co koszyk i serwer)
+    const priced = items.flatMap((i) => {
+      const p = cat.find((c) => c.slug === i.slug);
+      return p && p.price !== null && p.avail !== 'out_of_stock' ? [{ product_id: p.slug, qty: i.qty, unit_price: p.price }] : [];
+    });
+    const promo = applyPromotions(priced, pr);
     let sum = 0;
     list.innerHTML = items.map((i) => {
       const p = cat.find((c) => c.slug === i.slug);
       if (!p) return '';
-      const line = (p.price ?? 0) * i.qty;
-      sum += line;
+      const gross = (p.price ?? 0) * i.qty;
+      const disc = promo.discounts[p.slug] ?? 0;
+      sum += gross - disc;
       const img = p.image ? `<img class="pv-img" src="${esc(p.image)}" alt="" loading="lazy">` : '<span class="pv-img"></span>';
-      return `<li>${img}<span class="pv-name">${typoSafe(p.name)} × ${i.qty}</span><span class="pv-price">${zl(line)}</span></li>`;
+      return `<li>${img}<span class="pv-name">${typoSafe(p.name)} × ${i.qty}</span><span class="pv-price">${zl(gross - disc)}${disc ? `<s>${zl(gross)}</s>` : ''}</span></li>`;
     }).join('');
+    const pvPromos = document.querySelector<HTMLElement>('[data-pv-promos]');
+    if (pvPromos) {
+      pvPromos.innerHTML = promo.applied.map((a) => `<div><span>${esc(a.label)}</span><span>−${zl(a.amount)}</span></div>`).join('');
+      pvPromos.hidden = !promo.applied.length;
+    }
     total.textContent = zl(sum);
     if (head) head.textContent = added ? 'Dodano do koszyka' : 'Twój koszyk';
     return true;

@@ -28,13 +28,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       <div class="ct__main">
         <div class="ct__lines" data-lines aria-label="Produkty w koszyku" role="list"></div>
 
-        <div class="row ct__upsell" data-upsell hidden>
-          <div class="ct__upsell-t">
-            <span class="ct__upsell-h" data-up-title></span>
-            <span data-up-text></span>
-          </div>
-          <button type="button" class="btn btn-s" data-up-btn></button>
-        </div>
+        <!-- Dostępne rabaty: progi ilościowe i zestawy, które klient może jeszcze wykorzystać (znikają po skorzystaniu) -->
+        <div class="ct__upsells" data-upsells aria-live="polite"></div>
 
         <a href="/#produkty" class="lnk ct__back">
           <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M10 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Kontynuuj zakupy
@@ -48,6 +43,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           <div data-promos></div>
           <div class="srow"><span>Dostawa</span><span style="font-weight:400">Darmowa</span></div>
           <div class="total-row" style="border-color:var(--image)"><span>Razem</span><span data-total></span></div>
+          <span class="ct__save" data-save hidden></span>
           <a href="/zamowienie/" class="btn btn--wide" style="margin-top:10px" data-checkout>Realizuj zamówienie</a>
           <span class="k ct__blocked" data-blocked hidden role="status">Usuń z koszyka produkty oznaczone jako niedostępne, aby przejść dalej.</span>
           <span class="k">Ostateczną kwotę potwierdzimy w kolejnym kroku.</span>
@@ -155,7 +151,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           el.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
         }
         el.querySelector('[data-qty]')!.textContent = String(item.qty);
-        el.querySelector('[data-ltotal]')!.textContent = out ? '—' : pln.format(base - d);
+        el.querySelector('[data-ltotal]')!.innerHTML = out ? '—' : `${pln.format(base - d)}${d ? `<s class="ct__lold">${pln.format(base)}</s>` : ''}`;
         el.querySelector('[data-dec]')!.addEventListener('click', () => {
           if (item.qty === 1 && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price, quantity: 1, item_brand: 'Can-C' });
           setQty(p.slug, item.qty - 1);
@@ -168,10 +164,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         lines.append(el);
       }
 
-      // Podpowiedź: najbliższy próg rabatu ilościowego albo brakujący produkt do zestawu
-      const up = $<HTMLElement>('[data-upsell]');
-      const btn = $<HTMLButtonElement>('[data-up-btn]');
-      let shown = false;
+      // Wszystkie rabaty, z których klient może jeszcze skorzystać: wyższy próg ilościowy dla każdego produktu
+      // i zestawy, do których brakuje produktów. Wykorzystany rabat znika z listy.
+      type Offer = { title: string; text: string; btn: string; apply: () => void };
+      const offers: Offer[] = [];
       for (const i of items) {
         const p = catalog.find((c) => c.slug === i.slug)!;
         if (isOut(p)) continue;
@@ -180,38 +176,44 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         const t = nt.tier;
         const add = t.min - i.qty;
         const unitWord = p.bundles ? many(t.min, 'opakowanie', 'opakowania', 'opakowań') : 'szt.';
-        $('[data-up-title]').textContent = t.type === 'percent'
-          ? `Przy ${t.min} ${unitWord} zapłacisz ${t.value}% mniej`
-          : `Przy ${t.min} ${unitWord} zapłacisz ${describeDiscount('amount', t.value).slice(1)} mniej za każde`;
-        $('[data-up-text]').textContent = p.bundles ? `${t.min} ${many(t.min, 'opakowanie', 'opakowania', 'opakowań')} to około ${t.min} ${many(t.min, 'miesiąc', 'miesiące', 'miesięcy')} kuracji.` : `Dotyczy: ${p.name}.`;
-        btn.textContent = add === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${t.min}`;
-        btn.onclick = () => setQty(p.slug, t.min);
-        shown = true;
-        break;
+        offers.push({
+          title: t.type === 'percent'
+            ? `Przy ${t.min} ${unitWord} zapłacisz ${t.value}% mniej`
+            : `Przy ${t.min} ${unitWord} zapłacisz ${describeDiscount('amount', t.value).slice(1)} mniej za każde`,
+          text: p.bundles ? `${p.name}: ${t.min} ${many(t.min, 'opakowanie', 'opakowania', 'opakowań')} to około ${t.min} ${many(t.min, 'miesiąc', 'miesiące', 'miesięcy')} kuracji.` : `Dotyczy: ${p.name}.`,
+          btn: add === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${t.min}`,
+          apply: () => setQty(p.slug, t.min),
+        });
       }
-      if (!shown) {
-        for (const b of promos) {
-          if (b.kind !== 'bundle' || !promoActive(b) || !b.items.length || promo.applied.some((a) => a.id === b.id)) continue;
-          const have = b.items.filter((it) => (items.find((x) => x.slug === it.product_id)?.qty ?? 0) >= it.qty);
-          if (!have.length || have.length === b.items.length) continue;
-          const missing = b.items.filter((it) => !have.includes(it));
-          const prods = missing.map((it) => catalog.find((c) => c.slug === it.product_id));
-          if (prods.some((x) => !x || isOut(x))) continue;
-          $('[data-up-title]').textContent = `${promoLabel(b)}: ${describeDiscount(b.type, b.value)} za zestaw`;
-          $('[data-up-text]').textContent = `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty > 1 ? ` × ${it.qty}` : ''}`).join(', ')} i odbierz rabat.`;
-          btn.textContent = 'Dodaj do koszyka';
-          btn.onclick = () => missing.forEach((it) => setQty(it.product_id, Math.max(it.qty, items.find((x) => x.slug === it.product_id)?.qty ?? 0)));
-          shown = true;
-          break;
-        }
+      for (const b of promos) {
+        if (b.kind !== 'bundle' || !promoActive(b) || !b.items.length || promo.applied.some((a) => a.id === b.id)) continue;
+        const qtyOf = (pid: string) => items.find((x) => x.slug === pid)?.qty ?? 0;
+        if (!b.items.some((it) => qtyOf(it.product_id) > 0)) continue; // tylko zestawy związane z koszykiem
+        const missing = b.items.filter((it) => qtyOf(it.product_id) < it.qty);
+        const prods = missing.map((it) => catalog.find((c) => c.slug === it.product_id));
+        if (!missing.length || prods.some((x) => !x || isOut(x))) continue;
+        offers.push({
+          title: `${promoLabel(b)}: ${describeDiscount(b.type, b.value)} za zestaw`,
+          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} i odbierz rabat.`,
+          btn: missing.length === 1 ? 'Dodaj do koszyka' : 'Dodaj zestaw',
+          apply: () => missing.forEach((it) => setQty(it.product_id, it.qty)),
+        });
       }
-      up.hidden = !shown;
+      const box = $<HTMLElement>('[data-upsells]');
+      box.innerHTML = offers.map((o, k) => `<div class="row ct__upsell">
+          <div class="ct__upsell-t"><span class="ct__upsell-h">${escHtml(o.title)}</span><span>${typoSafe(o.text)}</span></div>
+          <button type="button" class="btn btn-s" data-offer="${k}">${escHtml(o.btn)}</button>
+        </div>`).join('');
+      box.querySelectorAll<HTMLButtonElement>('[data-offer]').forEach((btn) => btn.addEventListener('click', () => offers[Number(btn.dataset.offer)].apply()));
 
       // Naliczone promocje w podsumowaniu (po nazwie)
       $('[data-promos]').innerHTML = promo.applied.map((a) => `<div class="srow"><span>${escHtml(a.label)}</span><span>−${pln.format(a.amount / 100)}</span></div>`).join('');
 
       $('[data-subtotal]').textContent = pln.format(subtotal);
       $('[data-total]').textContent = pln.format(subtotal - discount);
+      const save = $<HTMLElement>('[data-save]');
+      save.hidden = discount <= 0;
+      save.textContent = discount > 0 ? `Oszczędzasz ${pln.format(discount)}` : '';
       const cta = $<HTMLAnchorElement>('[data-checkout]');
       if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
       $<HTMLElement>('[data-blocked]').hidden = !blocked;
@@ -265,14 +267,19 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   :global(.ct__right) { width: 150px; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   :global(.ct__ltotal) { font-size: 22px; line-height: 30px; font-weight: 500; white-space: nowrap; }
   :global(.ct__rm) { border: none; background: transparent; padding: 0; font-family: var(--font); font-size: 14px; line-height: 21px; font-weight: 400; letter-spacing: var(--ls); color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-  .ct__upsell { position: relative; overflow: hidden; background: var(--peach); color: var(--ink); border-radius: var(--r-lg); padding: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
-  .ct__upsell-t { display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 24px; font-weight: 300; }
-  .ct__upsell-h { font-size: 28px; line-height: 32px; font-weight: 400; }
+  .ct__upsells { display: flex; flex-direction: column; gap: 14px; }
+  .ct__upsells:empty { display: none; }
+  :global(.ct__lold) { display: block; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); text-align: right; }
+  :global(.ct__upsell) { position: relative; overflow: hidden; background: var(--peach); color: var(--ink); border-radius: var(--r-lg); padding: 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+  :global(.ct__upsell-t) { display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 24px; font-weight: 300; }
+  :global(.ct__upsell-h) { font-size: 28px; line-height: 32px; font-weight: 400; }
   .ct__back { margin-top: 10px; align-self: flex-start; }
   .ct__side { width: 436px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
   .ct__sum { background: var(--band); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
   .ct__sumh { margin: 0 0 10px; font-size: 28px; line-height: 32px; font-weight: 400; }
   .ct__blocked { color: var(--err); }
+  .ct__save { align-self: flex-end; margin-top: -6px; font-size: 16px; line-height: 24px; font-weight: 400; color: var(--accent-text); }
+  .ct__save[hidden] { display: none; }
   .ct__perks { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 32px; display: flex; flex-direction: column; gap: 14px; font-size: 16px; line-height: 24px; font-weight: 300; }
   .ct__perks span { display: flex; align-items: center; gap: 14px; }
   .ct__perks svg { flex-shrink: 0; color: var(--accent); }
@@ -280,6 +287,6 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     :global(.ct__line) { flex-wrap: wrap; }
     :global(.ct__info) { flex-basis: calc(100% - 144px); }
     :global(.ct__right) { width: auto; flex-grow: 1; }
-    .ct__upsell .btn { align-self: flex-start; }
+    :global(.ct__upsell .btn) { align-self: flex-start; }
   }
 </style>
