@@ -1,4 +1,5 @@
 ---
+import Icon from '../../components/Icon.astro';
 import Base from '../../layouts/Base.astro';
 import { products } from '../../data/shop';
 import { FURGONETKA_MAP_KEY } from '../../config';
@@ -10,7 +11,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   <section class="co">
     <div class="w co__in">
       <ol class="steps" aria-label="Etapy zamówienia">
-        <li class="steps__i steps__i--done"><a href="/koszyk/"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Koszyk</a></li>
+        <li class="steps__i steps__i--done"><a href="/koszyk/"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Koszyk</a></li>
         <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
         <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">2</span>Dostawa i płatność</li>
         <li class="steps__sep" aria-hidden="true"></li>

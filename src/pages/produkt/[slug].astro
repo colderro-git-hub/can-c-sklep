@@ -1,4 +1,5 @@
 ---
+import Icon from '../../components/Icon.astro';
 // Karta produktu generowana z bazy przy każdym wejściu (zmiany z panelu widać od razu)
 import Base from '../../layouts/Base.astro';
 import AvailBadge from '../../components/AvailBadge.astro';
@@ -104,7 +105,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <AvailBadge avail={p.avail} />
           {images.length > 0 && (
             <a href={images[0].url} class="notch__btn" aria-label="Powiększ zdjęcie" target="_blank" rel="noopener" data-zoom>
-              <svg aria-hidden="true" width="42" height="42" viewBox="0 0 42 42"><path d="M9 33L31 11M13 9.5h19.5V29" fill="none" stroke="currentColor" stroke-width="5"/></svg>
+              <Icon name="arrow-up-right" size={48} stroke={2} />
             </a>
           )}
         </div>
@@ -210,7 +211,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <section id="stosowanie" class="pr-sec">
             <h2 class="h3">Stosowanie</h2>
             <div class="md md--checks" set:html={markdown(p.how_to_use)} />
-            <a href="/stosowanie/" class="lnk"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Pełna instrukcja stosowania</a>
+            <a href="/stosowanie/" class="lnk"><Icon name="arrow-right" size={16} />Pełna instrukcja stosowania</a>
           </section>
         )}
         <section id="specyfikacja" class="pr-sec">
@@ -277,7 +278,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
                 <AvailBadge avail={r.avail} />
               </span>
               <span class="pr-also__n">{r.name}</span>
-              <span class="pr-also__f"><span>{pln(r.current)}</span><span class="pr-also__go">Zobacz <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg></span></span>
+              <span class="pr-also__f"><span>{pln(r.current)}</span><span class="pr-also__go">Zobacz <Icon name="arrow-right" size={16} /></span></span>
             </a>
           ))}
         </aside>
@@ -477,7 +478,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-also__n { font-size: 22px; line-height: 30px; font-weight: 500; }
   .pr-also__f { display: flex; align-items: center; justify-content: space-between; font-size: 18px; line-height: 27px; }
   .pr-also__go { display: inline-flex; align-items: center; gap: 10px; font-weight: 500; }
-  .pr-also__go svg { color: var(--accent); }
+  .pr-also__go :global(svg) { color: var(--accent); }
   .pr-also__i:hover .pr-also__go { color: var(--accent-text); }
 
   @media (max-width: 1000px) {

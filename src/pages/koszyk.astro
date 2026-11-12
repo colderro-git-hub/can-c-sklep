@@ -1,4 +1,5 @@
 ---
+import Icon from '../components/Icon.astro';
 // Koszyk wg projektu „S7 · Koszyk” (Laluna). Ceny do podglądu; kwotę do zapłaty liczy serwer.
 import Base from '../layouts/Base.astro';
 import { products } from '../data/shop';
@@ -32,7 +33,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         <div class="ct__upsells" data-upsells aria-live="polite"></div>
 
         <a href="/#produkty" class="lnk ct__back">
-          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M10 5H1M5 1L1 5l4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Kontynuuj zakupy
+          <Icon name="arrow-left" size={16} />Kontynuuj zakupy
         </a>
       </div>
 
@@ -49,9 +50,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           <span class="k">Ostateczną kwotę potwierdzimy w kolejnym kroku.</span>
         </div>
         <div class="ct__perks">
-          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>Darmowa dostawa InPost i DPD</span>
-          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>14 dni na zwrot</span>
-          <span><svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>BLIK, Przelewy24, karta</span>
+          <span><Icon name="truck" size={24} stroke={1.75} />Darmowa dostawa InPost i DPD</span>
+          <span><Icon name="undo-2" size={24} stroke={1.75} />14 dni na zwrot</span>
+          <span><Icon name="credit-card" size={24} stroke={1.75} />BLIK, Przelewy24, karta</span>
         </div>
       </aside>
     </div>
@@ -69,9 +70,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           <span class="ct__out" data-out hidden>Chwilowo niedostępny – usuń z koszyka</span>
         </div>
         <div class="ct__qty">
-          <button type="button" class="ct__qb" data-dec aria-label="Zmniejsz ilość"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="2"/></svg></button>
+          <button type="button" class="ct__qb" data-dec aria-label="Zmniejsz ilość"><Icon name="minus" size={18} /></button>
           <span class="ct__qv" aria-live="polite" data-qty></span>
-          <button type="button" class="ct__qb" data-inc aria-label="Zwiększ ilość"><svg aria-hidden="true" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg></button>
+          <button type="button" class="ct__qb" data-inc aria-label="Zwiększ ilość"><Icon name="plus" size={18} /></button>
         </div>
         <div class="ct__right">
           <span class="ct__ltotal" data-ltotal></span>
@@ -282,7 +283,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .ct__save[hidden] { display: none; }
   .ct__perks { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px 32px; display: flex; flex-direction: column; gap: 14px; font-size: 16px; line-height: 24px; font-weight: 300; }
   .ct__perks span { display: flex; align-items: center; gap: 14px; }
-  .ct__perks svg { flex-shrink: 0; color: var(--accent); }
+  .ct__perks :global(svg) { flex-shrink: 0; color: var(--accent); }
   @media (max-width: 1000px) {
     :global(.ct__line) { flex-wrap: wrap; }
     :global(.ct__info) { flex-basis: calc(100% - 144px); }

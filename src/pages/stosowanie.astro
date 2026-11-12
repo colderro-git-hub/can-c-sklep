@@ -1,4 +1,5 @@
 ---
+import Icon from '../components/Icon.astro';
 import Base from '../layouts/Base.astro';
 import { getEnv } from '../lib/env';
 import { products } from '../data/shop';
@@ -144,7 +145,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       </div>
       <a href={`/produkt/krople-can-c/?zestaw=${plan[defaultPlan].set}`} class="btn" style="align-self:flex-start" data-go>
         Przejdź do zamówienia
-        <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <Icon name="arrow-right" size={20} />
       </a>
     </div>
   </section>

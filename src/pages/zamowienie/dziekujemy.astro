@@ -1,13 +1,14 @@
 ---
+import Icon from '../../components/Icon.astro';
 // Potwierdzenie zamówienia wg „S9 · Potwierdzenie” (Laluna). Dane z /api/zamowienie/status.
 import Base from '../../layouts/Base.astro';
 ---
 <Base title="Dziękujemy za zamówienie | Can-C" description="Potwierdzenie zamówienia w sklepie Can-C." noindex noReferrer>
   <section class="w ty" data-thanks>
     <ol class="steps" aria-label="Etapy zamówienia">
-      <li class="steps__i steps__i--done"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Koszyk</li>
+      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Koszyk</li>
       <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
-      <li class="steps__i steps__i--done"><span class="steps__n"><svg aria-hidden="true" width="12" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>Dostawa i płatność</li>
+      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Dostawa i płatność</li>
       <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
       <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">3</span>Potwierdzenie</li>
     </ol>
@@ -95,6 +96,7 @@ import Base from '../../layouts/Base.astro';
   import { clearCart } from '../../lib/cart';
   import { trackPurchase, calcTax } from '../../lib/analytics';
   import { typoSafe } from '../../lib/typography';
+  import { icon as lucide } from '../../lib/icons';
 
   type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
   type Details = {
@@ -184,7 +186,7 @@ import Base from '../../layouts/Base.astro';
       const done = n <= stepNo;
       const now = n === stepNo + 1 || (stepNo === 4 && n === 4);
       const icon = done
-        ? '<span class="ty__tn ty__tn--done" aria-hidden="true"><svg width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg></span>'
+        ? `<span class="ty__tn ty__tn--done" aria-hidden="true">${lucide('check', 16, { stroke: 2.5 })}</span>`
         : `<span class="ty__tn${now ? ' ty__tn--now' : ''}" aria-hidden="true">${n}</span>`;
       return `<li class="ty__t${done || now ? '' : ' ty__t--off'}"${now && !done ? ' aria-current="step"' : ''}>${icon}<span class="ty__tt"><span class="ty__tl">${esc(t)}</span><span class="k">${esc(sub)}</span></span></li>`;
     }).join('');

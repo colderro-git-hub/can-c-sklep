@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 // Nagłówek sklepu wg „Komponent · Nagłówek sklepu” (Laluna).
 // Treści paska i komunikatu: domyślne z kodu, podmieniane w przeglądarce z /api/ustawienia (Base.astro).
 import { CONTENT_DEFAULTS, getSite } from '../lib/site-settings';
@@ -38,8 +39,8 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 
     <!-- Telefon/tablet: logo + hamburger; menu, koszyk, konto i EN w rozwijanym panelu -->
     <button type="button" class="hd__icon hd__burger" aria-controls="hd-panel" aria-expanded="false" aria-label="Otwórz menu" data-burger>
-      <svg class="hd__bi hd__bi--open" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
-      <svg class="hd__bi hd__bi--close" aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      <Icon name="menu" size={26} stroke={1.75} class="hd__bi hd__bi--open" />
+      <Icon name="x" size={26} stroke={1.75} class="hd__bi hd__bi--close" />
       <span class="hd__bdot" data-cart-dot hidden></span>
     </button>
 
@@ -52,10 +53,10 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 
       <div class="hd__actions">
         <a href="/konto/" aria-label="Moje konto" class="hd__icon">
-          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+          <Icon name="user" size={22} stroke={1.75} />
         </a>
         <button type="button" class="hd__icon" data-theme-toggle aria-label="Tryb ciemny" aria-pressed="false">
-          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5z"/></svg>
+          <Icon name="moon" size={20} stroke={1.75} />
         </button>
 
         <div class="hd__cartwrap" data-cart-wrap>
@@ -150,7 +151,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   .hd__pvsum strong { font-weight: 500; }
   .hd__pvbtn { height: 54px; font-size: 18px; }
   .hd__burger { display: none; position: relative; }
-  .hd__bi--close { display: none; }
+  :global(.hd__bi--close) { display: none; }
   .hd__bdot { position: absolute; top: 9px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
   .hd__bdot[hidden] { display: none; }
 
@@ -159,8 +160,8 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
     .hd__in { flex-wrap: nowrap; padding-top: 14px; padding-bottom: 14px; }
     .hd__name { font-size: 28px; }
     .hd__burger { display: flex; margin-right: -10px; }
-    .hd__burger[aria-expanded='true'] .hd__bi--open { display: none; }
-    .hd__burger[aria-expanded='true'] .hd__bi--close { display: block; }
+    .hd__burger[aria-expanded='true'] :global(.hd__bi--open) { display: none; }
+    .hd__burger[aria-expanded='true'] :global(.hd__bi--close) { display: block; }
     .hd__right {
       display: none; position: absolute; left: 0; right: 0; top: 100%;
       background: var(--surface); border-bottom: 1px solid var(--line); box-shadow: 0 24px 40px rgba(20, 28, 43, .08);

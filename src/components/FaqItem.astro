@@ -1,4 +1,5 @@
 ---
+import Icon from './Icon.astro';
 // Karta pytania FAQ (wygląd ze strony /faq/). `answer` to bezpieczny HTML akapitu; akapity rozdzielone pustą linią.
 interface Props { id?: string; cat?: string; q: string; answer: string; open?: boolean; text?: string }
 const { id, cat, q, answer, open = false, text } = Astro.props;
@@ -8,8 +9,8 @@ const catAttr = Astro.props['data-cat' as keyof Props] as string | undefined;
   <summary class="fq-q">
     <span class="fq-q__t">{cat && <span class="fq-q__cat">{cat}</span>}<span class="fq-q__q">{q}</span></span>
     <span aria-hidden="true" class="fq-q__i">
-      <svg class="fq-plus" width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
-      <svg class="fq-minus" width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="2"/></svg>
+      <Icon name="plus" size={20} class="fq-plus" />
+      <Icon name="minus" size={20} class="fq-minus" />
     </span>
   </summary>
   <div class="fq-a">{answer.split('\n\n').map((t) => <p class="p" set:html={t} />)}</div>
@@ -26,8 +27,8 @@ const catAttr = Astro.props['data-cat' as keyof Props] as string | undefined;
   .fq-q__q { font-size: 24px; line-height: 28px; font-weight: 400; }
   .fq-q__i { width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: var(--band); color: var(--accent); display: flex; align-items: center; justify-content: center; }
   .fq-item[open] .fq-q__i { background: var(--primary); color: var(--surface); }
-  .fq-minus, .fq-item[open] .fq-plus { display: none; }
-  .fq-item[open] .fq-minus { display: block; }
+  :global(.fq-minus), .fq-item[open] :global(.fq-plus) { display: none; }
+  .fq-item[open] :global(.fq-minus) { display: block; }
   .fq-a { padding: 0 90px 24px 23px; display: flex; flex-direction: column; gap: 14px; }
   @media (max-width: 1000px) {
     .fq-q__q { font-size: 20px; line-height: 26px; }

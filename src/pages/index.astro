@@ -1,4 +1,5 @@
 ---
+import Icon from '../components/Icon.astro';
 import Base from '../layouts/Base.astro';
 import { products as fallback, features, reviews, faqs, formatPrice } from '../data/shop';
 import { applyPromotions, qtyOptions } from '../lib/promotions';
@@ -151,17 +152,17 @@ const bundleRows = setQtys.map((qty) => {
       <div class="trust">
         <div class="trust-box">
           <span class="trust-box__num">0 zł</span>
-          <svg aria-hidden="true" class="trust-box__icon" width="36" height="36" viewBox="0 0 24 24"><path fill="currentColor" d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+          <Icon name="truck" size={36} stroke={1.5} class="trust-box__icon" />
           <span class="trust-box__sub">InPost i DPD</span>
         </div>
         <div class="trust-box">
           <span class="trust-box__num">14 dni</span>
-          <svg aria-hidden="true" class="trust-box__icon" width="36" height="36" viewBox="0 0 24 24"><path fill="currentColor" d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+          <Icon name="undo-2" size={36} stroke={1.5} class="trust-box__icon" />
           <span class="trust-box__sub">Na zwrot</span>
         </div>
         <div class="trust-box">
           <span class="trust-box__num">BLIK</span>
-          <svg aria-hidden="true" class="trust-box__icon" width="36" height="36" viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>
+          <Icon name="credit-card" size={36} stroke={1.5} class="trust-box__icon" />
           <span class="trust-box__sub">Przelewy24, karta</span>
         </div>
       </div>
@@ -169,7 +170,7 @@ const bundleRows = setQtys.map((qty) => {
       <div class="hero-cta">
         <a href={hero.cta_primary_href} class="btn btn--wide">
           {hero.cta_primary_label}
-          <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <Icon name="arrow-right" size={20} />
         </a>
         {hero.cta_secondary_label && <a href={hero.cta_secondary_href} class="btn btn--outline btn--wide">{hero.cta_secondary_label}</a>}
       </div>
@@ -185,7 +186,7 @@ const bundleRows = setQtys.map((qty) => {
           <p class="lead" style="max-width:517px">Krople do oczu, kapsułki i wersja dla psa. Wszystkie wysyłamy za darmo w ciągu 1 dnia roboczego.</p>
         </div>
         <a href="/sklep/" class="link-arrow">
-          <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <Icon name="arrow-right" size={16} />
           Zobacz wszystkie
         </a>
       </div>
@@ -210,7 +211,7 @@ const bundleRows = setQtys.map((qty) => {
       <ul class="benefits-list">
         {(benefits.items as string[]).map((item: string) => (
           <li class="lead" style="display:flex;align-items:flex-start;gap:14px;padding-top:14px;border-top:1px solid var(--line)">
-            <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10" style="flex-shrink:0;margin-top:9px"><path d="M1 5l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <Icon name="check" size={18} style="flex-shrink:0;margin-top:5px" />
             <span set:html={item.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')} />
           </li>
         ))}
@@ -237,15 +238,15 @@ const bundleRows = setQtys.map((qty) => {
           </div>
           <ul style={`list-style:none;margin:0;padding:14px 0 0;border-top:1px solid ${i === 1 ? 'var(--on-dark-line)' : 'var(--line)'};display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:24px;font-weight:300`}>
             <li style="display:flex;align-items:center;gap:14px">
-              <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
+              <Icon name="check" size={18} />
               {b.months}
             </li>
             {i > 0 && <li style="display:flex;align-items:center;gap:14px">
-              <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
+              <Icon name="check" size={18} />
               {b.save !== 'Cena regularna' ? b.save : ''}
             </li>}
             <li style="display:flex;align-items:center;gap:14px">
-              <svg aria-hidden="true" width="14" height="10" viewBox="0 0 14 10"><path d="M1 5l4 4 8-8" fill="none" stroke={i===1?"#FFFFFF":"currentColor"} stroke-width="2"/></svg>
+              <Icon name="check" size={18} />
               Darmowa dostawa
             </li>
           </ul>
@@ -262,7 +263,7 @@ const bundleRows = setQtys.map((qty) => {
       <h2 class="h2">{why.h2}</h2>
       {why.lead && <p class="lead" style="text-align:left">{why.lead}</p>}
       {why.link_label && <a href={why.link_href} class="link-arrow">
-        <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <Icon name="arrow-right" size={16} />
         {why.link_label}
       </a>}
     </div>
@@ -306,7 +307,7 @@ const bundleRows = setQtys.map((qty) => {
                 : <span class="rv-thumb" aria-hidden="true"></span>}
               <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
             </div>
-            <svg aria-hidden="true" width="15" height="11" viewBox="5 7 14 10"><path fill="var(--accent)" d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg>
+            <Icon name="quote" size={20} stroke={1.5} style="color:var(--accent)" />
             <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{r.quote}</blockquote>
           </figure>
         ))}
@@ -328,7 +329,7 @@ const bundleRows = setQtys.map((qty) => {
       <div style="display:flex;align-items:center;gap:24px;margin-top:21px;flex-wrap:wrap">
         <a href={k9.cta_href} class="btn">
           {k9.cta_label}
-          <svg aria-hidden="true" width="18" height="14" viewBox="0 0 18 14"><path d="M0 7h16M10 1l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <Icon name="arrow-right" size={20} />
         </a>
       </div>
     </div>
@@ -339,7 +340,7 @@ const bundleRows = setQtys.map((qty) => {
     <div class="home-side">
       <h2 class="h2">Najczęstsze<br/>pytania</h2>
       <a href="/faq/" class="link-arrow">
-        <svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <Icon name="arrow-right" size={16} />
         Wszystkie pytania
       </a>
     </div>
@@ -392,7 +393,7 @@ const bundleRows = setQtys.map((qty) => {
     border: 1px solid var(--line); border-radius: 20px; box-sizing: border-box;
   }
   .trust-box__num { position: absolute; left: 23px; top: 23px; font-size: 3rem; line-height: 72px; font-weight: 300; }
-  .trust-box__icon { position: absolute; right: 23px; top: 23px; color: var(--accent); }
+  :global(.trust-box__icon) { position: absolute; right: 23px; top: 23px; color: var(--accent); }
   .trust-box__sub { position: absolute; left: 23px; bottom: 23px; font-size: 1.5rem; line-height: 36px; font-weight: 200; white-space: nowrap; }
   @media (max-width: 1000px) {
     .hero-bottom { flex-direction: column; align-items: stretch; }
@@ -407,10 +408,10 @@ const bundleRows = setQtys.map((qty) => {
   @media (max-width: 700px) {
     .trust { grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .trust-box { height: auto; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 16px 20px; }
-    .trust-box__num, .trust-box__icon, .trust-box__sub { position: static; }
+    .trust-box__num, :global(.trust-box__icon), .trust-box__sub { position: static; }
     .trust-box__num { font-size: 28px; line-height: 36px; }
     .trust-box__sub { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); white-space: normal; }
-    .trust-box__icon { grid-column: 3; grid-row: 1; width: 28px; height: 28px; }
+    :global(.trust-box__icon) { grid-column: 3; grid-row: 1; width: 28px; height: 28px; }
     .hero-bottom { margin-top: 32px; gap: 24px; }
   }
 
@@ -436,8 +437,8 @@ const bundleRows = setQtys.map((qty) => {
 
   /* Akcent: etykieta w hero, znaczniki list, ikony */
   .hero .tag { background: var(--accent-soft); border-color: var(--accent-soft); }
-  .bundle-card li svg, .benefits-list svg { color: var(--accent); }
-  .bundle-card--featured li svg path { stroke: var(--accent-soft); }
+  .bundle-card li :global(svg), .benefits-list :global(svg) { color: var(--accent); }
+  .bundle-card--featured li :global(svg) { color: var(--accent-soft); }
   /* Miniatura produktu w opinii */
   .rv-thumb { width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; background: var(--image); overflow: hidden; display: block; }
   .rv-thumb img { width: 100%; height: 100%; object-fit: cover; }

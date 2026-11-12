@@ -1,0 +1,9 @@
+---
+// Ikona z zestawu Lucide (src/lib/icons.ts). <Icon name="arrow-right" size={20} stroke={2} class="..." label="Opis dla czytnika" />
+import { icon, type IconName } from '../lib/icons';
+interface Props { name: IconName; size?: number; stroke?: number; class?: string; label?: string; style?: string }
+const { name, size = 24, stroke = 2, class: cls, label, style } = Astro.props;
+let svg = icon(name, size, { stroke, cls, label });
+if (style) svg = svg.replace('<svg ', `<svg style="${style.replace(/"/g, '&quot;')}" `);
+---
+<Fragment set:html={svg} />
