@@ -11,6 +11,7 @@ import { getSite } from '../lib/site-settings';
 import type { Availability } from '../lib/pricing';
 import { AVAIL_LABEL } from '../lib/catalog';
 import Stars from '../components/Stars.astro';
+import NewsletterForm from '../components/NewsletterForm.astro';
 import ProductCard from '../components/ProductCard.astro';
 import FaqItem from '../components/FaqItem.astro';
 
@@ -349,16 +350,15 @@ const bundleRows = setQtys.map((qty) => {
     </div>
   </section>
 
-  <!-- KONTO / RABATY -->
-  <section class="w" style="margin-top:90px;margin-bottom:90px">
+  <!-- NEWSLETTER (zapis z obowiązkową zgodą i potwierdzeniem e-mailem) -->
+  <section class="w" id="newsletter" style="margin-top:90px;margin-bottom:90px">
     <div class="row cta-box">
       <div class="fl" style="width:560px;display:flex;flex-direction:column;gap:24px">
-        <h2 class="h2">Rabaty dla<br/>stałych klientów</h2>
-        <p class="p">Załóż konto, a zobaczysz w nim swoje kody rabatowe, historię zamówień i przypomnienie, kiedy kończy się kuracja.</p>
+        <h2 class="h2">Rabaty i nowości<br/>na Twój e-mail</h2>
+        <p class="p">Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.</p>
       </div>
-      <div class="fl" style="width:493px;display:flex;flex-direction:column;gap:14px">
-        <a href="/konto/" class="btn btn--wide">Załóż konto lub zaloguj się</a>
-        <span class="k">Logowanie kodem z e-maila, bez hasła. Zgodę na informacje o promocjach zaznaczysz w ustawieniach konta.</span>
+      <div class="fl" style="width:493px">
+        <NewsletterForm variant="light" title="" lead="" />
       </div>
     </div>
   </section>

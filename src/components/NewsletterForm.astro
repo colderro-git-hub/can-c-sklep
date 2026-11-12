@@ -3,12 +3,13 @@
 // Turnstile ładuje się dopiero przy pierwszym kontakcie z formularzem – nie spowalnia stron.
 import { site } from '../config';
 import { TURNSTILE_SITE_KEY } from '../config';
-interface Props { variant?: 'dark' | 'light'; title?: string; lead?: string }
-const { variant = 'dark', title = 'Newsletter', lead = 'Promocje, kody rabatowe i nowości w sklepie Can-C prosto na Twój e-mail.' } = Astro.props;
+// dark – na ciemnym tle · light – bez ramki (np. sekcja strony głównej) · card – karta w panelu bocznym (FAQ, O nas)
+interface Props { variant?: 'dark' | 'light' | 'card'; title?: string; lead?: string; titleSize?: number }
+const { variant = 'light', title = 'Newsletter', lead = 'Promocje, kody rabatowe i nowości w sklepie Can-C prosto na Twój e-mail.', titleSize } = Astro.props;
 const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
 ---
-<form class={`nl nl--${variant}`} data-nl data-sitekey={TURNSTILE_SITE_KEY || ''} novalidate>
-  <span class="nl__t">{title}</span>
+<form class={`nl nl--${variant}${variant === 'card' ? ' nl--light' : ''}`} data-nl data-sitekey={TURNSTILE_SITE_KEY || ''} novalidate>
+  {title && <span class="nl__t" style={titleSize ? `font-size:${titleSize}px;line-height:${Math.round(titleSize * 1.15)}px` : undefined}>{title}</span>}
   {lead && <p class="nl__lead">{lead}</p>}
   <div class="nl__row">
     <label class="sr-only" for={`${uid}-e`}>Adres e-mail</label>
@@ -26,6 +27,10 @@ const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
 
 <style>
   .nl { display: flex; flex-direction: column; gap: 14px; max-width: 520px; }
+  .nl--card { max-width: none; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; background: var(--surface, #FFFFFF); }
+  .nl--card .nl__lead { font-size: 16px; line-height: 24px; }
+  .nl--card .nl__ck { font-size: 12px; line-height: 18px; }
+  .nl--card .nl__btn { flex: 1 1 100%; }
   .nl__t { font-size: 24px; line-height: 29px; font-weight: 400; }
   .nl--dark .nl__t { font-family: 'Montserrat', sans-serif; }
   .nl__lead { margin: 0; font-size: 14px; line-height: 21px; font-weight: 300; }

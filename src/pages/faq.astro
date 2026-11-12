@@ -5,6 +5,7 @@ import { getEnv } from '../lib/env';
 import { site } from '../config';
 import { getPageContent, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
+import NewsletterForm from '../components/NewsletterForm.astro';
 
 export const prerender = false;
 
@@ -84,6 +85,7 @@ const jsonLd = {
         </div>
         <a href="/stosowanie/" class="lnk"><svg aria-hidden="true" width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h9M5 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2"/></svg>Jak stosować krople</a>
       </div>
+      <NewsletterForm variant="card" titleSize={28} lead="Promocje, kody rabatowe i nowości – prosto na Twój e-mail." />
       <div class="fq-leaf" aria-hidden="true"></div>
     </aside>
   </section>
