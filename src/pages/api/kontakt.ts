@@ -1,5 +1,10 @@
 import type { APIRoute } from 'astro';
 import { getEnv } from '../../lib/env';
+import { db } from '../../lib/supabase';
+import { later } from '../../lib/background';
+import { addMessage, notifyNewMail, snippetOf, threadFor } from '../../lib/mailbox';
+import { consentText, grantConsent, logConsent } from '../../lib/newsletter';
+import { getSite } from '../../lib/site-settings';
 
 // Ta trasa działa w Workerze (nie jest generowana jako plik statyczny)
 export const prerender = false;
@@ -63,6 +68,28 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: clientAddress ?? '' }),
   }).then((r) => r.json() as Promise<{ success: boolean }>).catch(() => ({ success: false }));
   if (!verify.success) return json(403, { error: 'Weryfikacja nie powiodła się. Odśwież stronę i spróbuj ponownie.' });
+
+  // Korespondencja w panelu (MAIL_INBOX ustawione): wiadomość od razu jako wątek – bez maila do skrzynki
+  const subject = `${TOPICS[topic]}${order ? ` – zamówienie ${order}` : ''}`;
+  if (env.MAIL_INBOX) {
+    try {
+      const sb = db(env);
+      const from = { email: email.toLowerCase(), name };
+      const threadId = await threadFor(sb, { refs: [], contact: from, subject, category: 'customer', orderNumber: /^\d{3,8}$/.test(order) ? Number(order) : null });
+      const body = `${message}${order ? `\n\nNumer zamówienia: ${order}` : ''}`;
+      await addMessage(sb, threadId, { direction: 'in', source: 'form', from, to: [env.MAIL_INBOX.split(',')[0].trim()], subject, text: body });
+      if (marketing) {
+        const site = await getSite(env);
+        const id = await grantConsent(sb, from.email, 'formularz kontaktowy');
+        await logConsent(sb, { email: from.email, customer_id: id, action: 'granted', source: 'formularz kontaktowy', consent_text: consentText(site.company), ip: clientAddress, user_agent: request.headers.get('User-Agent') });
+      }
+      await later(locals, notifyNewMail(env, new URL(request.url).origin, { from, subject, snippet: snippetOf(body), threadId }));
+      return json(200, { ok: true });
+    } catch (e) {
+      // Baza niedostępna albo brak migracji 022 – wysyłamy jak dotąd e-mailem
+      console.error('Kontakt → korespondencja: ' + (e instanceof Error ? e.message : String(e)));
+    }
+  }
 
   // Treść wysyłana jako zwykły tekst – bez ryzyka wstrzyknięcia HTML
   const text = [

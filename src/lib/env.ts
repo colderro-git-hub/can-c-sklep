@@ -23,6 +23,9 @@ export type Env = {
   GA4_PRIVATE_KEY?; GA4_CLIENT_EMAIL?; GA4_PROPERTY_ID?: string;
   GA4_MEASUREMENT_ID?: string; // G-XXXXXXX – Measurement Protocol (zwroty z panelu)
   GA4_API_SECRET?: string;     // klucz tajny Measurement Protocol dla strumienia www
+  MAIL_INBOX?: string;            // adres(y) skrzynki sklepu, np. kontakt@can-c.pl (do testów adres *.resend.app)
+  MAIL_NOTIFY?: string;           // prywatny adres na powiadomienia o nowej wiadomości (opcjonalnie)
+  RESEND_WEBHOOK_SECRET?: string; // whsec_… z Resend → Webhooks (podpis zdarzeń email.received)
   GA4_SERVER_PURCHASE?: string; // 'all' = purchase z serwera dla każdego zamówienia (domyślnie tylko przelew / panel)        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
