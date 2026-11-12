@@ -25,6 +25,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg>
             <span>Zamówienia</span><span class="badge" data-count-paid></span>
           </button>
+          <button type="button" class="nav__item" data-tab="mail">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6.5 8.5 6 8.5-6" /></svg>
+            <span>Korespondencja</span><span class="badge" data-count-mail></span>
+          </button>
           <button type="button" class="nav__item" data-tab="customers">
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c.6-3.4 3.3-5.5 6.5-5.5s5.9 2.1 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.8 2.7 2.6 3 5.2" /></svg>
             <span>Klienci</span>
@@ -163,6 +167,29 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </section>
 
           <!-- KLIENCI -->
+          <section data-view="mail" class="mb" hidden>
+            <p class="notice" data-mb-warn hidden>Nadawca to onboarding@resend.dev – do czasu weryfikacji domeny can-c.pl w Resend odpowiedzi dojdą tylko na adres właściciela konta Resend.</p>
+            <div class="mb__bar">
+              <div class="tabs mb__folders" role="group" aria-label="Foldery">
+                <button type="button" class="tab" data-mb-folder="inbox" aria-pressed="true">Odebrane <span data-mb-count="inbox"></span></button>
+                <button type="button" class="tab" data-mb-folder="closed" aria-pressed="false">Zamknięte</button>
+                <button type="button" class="tab" data-mb-folder="system" aria-pressed="false">Systemowe <span data-mb-count="system"></span></button>
+                <button type="button" class="tab" data-mb-folder="other" aria-pressed="false">Inne adresy <span data-mb-count="other"></span></button>
+                <button type="button" class="tab" data-mb-folder="spam" aria-pressed="false">Spam</button>
+              </div>
+              <form class="mb__search" data-mb-search role="search">
+                <input class="input" type="search" name="q" placeholder="Szukaj: temat, e-mail, imię, treść" aria-label="Szukaj w korespondencji" />
+                <button type="button" class="icon-btn" data-mb-refresh aria-label="Odśwież"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7" /></svg></button>
+              </form>
+            </div>
+            <div class="mb__grid">
+              <div class="mb__list card" data-mb-list><p class="muted">Ładowanie…</p></div>
+              <div class="mb__thread card" data-mb-thread>
+                <div class="mb__empty"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 6.5 8.5 6 8.5-6" /></svg><p class="muted">Wybierz wątek z listy.</p></div>
+              </div>
+            </div>
+          </section>
+
           <section data-view="customers" class="stack" hidden>
             <div class="card">
               <div class="card__head">
@@ -915,6 +942,59 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   .link { border: 0; background: none; padding: 0; font: inherit; color: var(--primary); cursor: pointer; text-align: left; }
   .link:hover { text-decoration: underline; }
   .row3 { display: grid; grid-template-columns: 1fr 80px 36px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  /* ---------- Korespondencja ---------- */
+  .mb { display: flex; flex-direction: column; gap: 14px; }
+  .mb[hidden] { display: none; }
+  .mb__bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .mb__search { display: flex; gap: 8px; align-items: center; flex: 0 1 380px; }
+  .mb__search .input { flex: 1; }
+  .mb__grid { display: grid; grid-template-columns: minmax(300px, 380px) minmax(0, 1fr); gap: 14px; align-items: start; }
+  .mb__list { padding: 6px; display: flex; flex-direction: column; max-height: calc(100vh - 210px); overflow-y: auto; position: sticky; top: 12px; }
+  .mb__item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 12px 12px; border-radius: 12px; cursor: pointer; text-align: left; border: 0; background: transparent; font: inherit; color: inherit; width: 100%; }
+  .mb__item:hover { background: #F4F5FA; }
+  .mb__item[aria-current='true'] { background: var(--primary-a08); }
+  .mb__who { font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mb__item.is-unread .mb__who, .mb__item.is-unread .mb__subj { font-weight: 600; }
+  .mb__item.is-unread .mb__who::before { content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); margin-right: 8px; vertical-align: 1px; }
+  .mb__date { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .mb__subj { grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+  .mb__snip { grid-column: 1 / -1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: var(--muted); }
+  .mb__tags { grid-column: 1 / -1; display: flex; gap: 6px; margin-top: 4px; }
+  .mb__tag { font-size: 11px; padding: 1px 8px; border-radius: 99px; background: #EEF0F7; color: var(--muted); }
+  .mb__tag--out { background: rgba(22,144,137,.12); color: #0F6B66; }
+  .mb__pager { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px 4px; font-size: 13px; }
+  .mb__thread { min-height: 420px; display: flex; flex-direction: column; gap: 16px; }
+  .mb__empty { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 60px 0; }
+  .mb__empty svg { width: 44px; height: 44px; fill: none; stroke: var(--muted); stroke-width: 1.4; }
+  .mb__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .mb__title { font-size: 20px; line-height: 1.3; font-weight: 500; margin: 0; word-break: break-word; }
+  .mb__actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mb__ctx { display: flex; gap: 10px 18px; flex-wrap: wrap; align-items: center; font-size: 13px; padding: 10px 14px; border-radius: 12px; background: #F7F8FC; }
+  .mb__ctx .link { font-size: 13px; }
+  .mb__msgs { display: flex; flex-direction: column; gap: 12px; }
+  .mb__msg { border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .mb__msg--out { background: #F5FAFA; border-color: rgba(22,144,137,.25); margin-left: 32px; }
+  .mb__msg.is-collapsed .mb__body, .mb__msg.is-collapsed .mb__atts { display: none; }
+  .mb__mhead { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 13px; cursor: pointer; }
+  .mb__mhead strong { font-weight: 600; font-size: 14px; }
+  .mb__text { white-space: pre-wrap; word-break: break-word; font-size: 14px; line-height: 1.55; margin: 0; font-family: inherit; }
+  .mb__frame { width: 100%; border: 0; min-height: 60px; background: #FFFFFF; border-radius: 8px; }
+  .mb__atts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mb__att { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); font-size: 13px; color: inherit; }
+  .mb__att:hover { border-color: var(--primary); }
+  .mb__reply { border-top: 1px solid var(--line); padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .mb__reply textarea { min-height: 180px; resize: vertical; font-family: inherit; line-height: 1.5; }
+  .mb__files { display: flex; gap: 6px; flex-wrap: wrap; }
+  .mb__back { display: none; }
+  @media (max-width: 900px) {
+    .mb__grid { grid-template-columns: minmax(0, 1fr); }
+    .mb__list { position: static; max-height: none; }
+    .mb.is-reading .mb__list, .mb.is-reading .mb__bar { display: none; }
+    .mb:not(.is-reading) .mb__thread { display: none; }
+    .mb__back { display: inline-flex; }
+    .mb__msg--out { margin-left: 12px; }
+    .mb__search { flex-basis: 100%; }
+  }
   .nl-ed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
   .nl-ed__fs { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   .nl-ed__preview { position: sticky; top: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -1783,6 +1863,171 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     b.setAttribute('aria-pressed', 'true'); rStatus = b.dataset.rstatus || ''; loadReviews();
   }));
   $('[data-new-review]').addEventListener('click', newReview);
+
+  // ---------- Korespondencja ----------
+  const mb = { folder: 'inbox', q: '', page: 1, current: '' as string };
+  const mbDate = (iso: string) => {
+    const d = new Date(iso), now = new Date();
+    return d.toDateString() === now.toDateString() ? d.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })
+      : d.toLocaleDateString('pl-PL', { day: 'numeric', month: 'short', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) });
+  };
+  const fmtSize = (n: number | null) => (!n ? '' : n > 1048576 ? `${(n / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} kB`);
+  function setMailBadge(n: number) { const el = $('[data-count-mail]'); el.textContent = n ? String(n) : ''; }
+
+  async function loadMail(keepThread = true) {
+    const list = $('[data-mb-list]');
+    try {
+      const p = new URLSearchParams({ folder: mb.folder, page: String(mb.page), ...(mb.q ? { q: mb.q } : {}) });
+      const d = await api(`/api/admin/poczta?${p}`);
+      $('[data-mb-warn]').hidden = !d.fromWarning;
+      for (const [k, v] of Object.entries(d.counts as Record<string, number>)) { const el = document.querySelector(`[data-mb-count="${k}"]`); if (el) el.textContent = v ? String(v) : ''; }
+      setMailBadge(d.counts.inbox || 0);
+      list.innerHTML = (d.threads.length ? d.threads.map((t: any) => `<button type="button" class="mb__item${t.unread ? ' is-unread' : ''}" data-mb-id="${t.id}" aria-current="${t.id === mb.current}">
+          <span class="mb__who">${esc(t.contact_name || t.contact_email)}</span><span class="mb__date">${mbDate(t.last_message_at)}</span>
+          <span class="mb__subj">${esc(t.subject)}</span>
+          <span class="mb__snip">${esc(t.snippet || '')}</span>
+          <span class="mb__tags">${t.message_count > 1 ? `<span class="mb__tag">${t.message_count}</span>` : ''}${t.last_direction === 'out' ? '<span class="mb__tag mb__tag--out">odpowiedziano</span>' : ''}${t.order_number ? `<span class="mb__tag">zam. ${t.order_number}</span>` : ''}${t.customer_id ? '<span class="mb__tag">klient</span>' : ''}</span>
+        </button>`).join('') : `<p class="muted" style="padding:20px">${mb.q ? 'Nic nie znaleziono.' : 'Brak wiadomości w tym folderze.'}</p>`)
+        + (d.pages > 1 ? `<div class="mb__pager"><button type="button" class="btn btn--outline btn--sm" data-mb-page="-1" ${d.page <= 1 ? 'disabled' : ''}>←</button><span>${d.page} / ${d.pages}</span><button type="button" class="btn btn--outline btn--sm" data-mb-page="1" ${d.page >= d.pages ? 'disabled' : ''}>→</button></div>` : '');
+      if (!keepThread) mb.current = '';
+    } catch (e) { list.innerHTML = `<p class="err" style="padding:16px">${esc((e as Error).message)}</p>`; }
+  }
+  $('[data-mb-list]').addEventListener('click', (e) => {
+    const pg = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-mb-page]');
+    if (pg) { mb.page += Number(pg.dataset.mbPage); loadMail(); return; }
+    const it = (e.target as HTMLElement).closest<HTMLElement>('[data-mb-id]');
+    if (it) openThread(it.dataset.mbId!);
+  });
+  document.querySelectorAll<HTMLButtonElement>('[data-mb-folder]').forEach((b) => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-mb-folder]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    mb.folder = b.dataset.mbFolder!; mb.page = 1; mb.q = ''; ($('[data-mb-search]') as HTMLFormElement).reset(); loadMail();
+  }));
+  $('[data-mb-search]').addEventListener('submit', (e) => { e.preventDefault(); mb.q = String(new FormData(e.target as HTMLFormElement).get('q') || '').trim(); mb.page = 1; loadMail(); });
+  $('[data-mb-refresh]').addEventListener('click', () => { loadMail(); if (mb.current) openThread(mb.current, false); });
+
+  // HTML wiadomości w odizolowanej ramce: bez skryptów, zdalne obrazy dopiero po kliknięciu (śledzenie otwarć)
+  function mailFrame(html: string, remote: boolean) {
+    const csp = `default-src 'none'; style-src 'unsafe-inline'; font-src data:; img-src data: ${remote ? 'https: http:' : location.protocol === 'https:' ? `${new URL(location.href).origin} https://*.supabase.co` : '*'};`;
+    return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><base target="_blank"><style>body{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;color:#141C2B;word-break:break-word}img{max-width:100%;height:auto}blockquote{margin:0 0 0 8px;padding-left:10px;border-left:3px solid #DCE2EC;color:#545D6E}</style></head><body>${html}</body></html>`;
+  }
+  const fitFrame = (f: HTMLIFrameElement) => { try { const h = f.contentDocument?.documentElement.scrollHeight; if (h) f.style.height = `${Math.min(h + 8, 4000)}px`; } catch { f.style.height = '420px'; } };
+
+  async function openThread(id: string, markRead = true) {
+    mb.current = id;
+    const box = $('[data-mb-thread]');
+    $('[data-view="mail"]').classList.add('is-reading');
+    document.querySelectorAll('[data-mb-id]').forEach((x) => x.setAttribute('aria-current', String((x as HTMLElement).dataset.mbId === id)));
+    box.innerHTML = '<p class="muted">Ładowanie…</p>';
+    let d: any;
+    try { d = await api(`/api/admin/poczta?id=${encodeURIComponent(id)}`); } catch (e) { box.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+    const t = d.thread;
+    if (markRead && t.unread) { api('/api/admin/poczta', { action: 'read', id }).then(() => loadMail()).catch(() => {}); }
+    history.replaceState(null, '', `#korespondencja/${id}`);
+    const many = d.messages.length > 3;
+    const orderHit = t.order_number ? d.orders.find((o: any) => o.number === t.order_number) : null;
+    box.innerHTML = `
+      <button type="button" class="link mb__back" data-mb-back>← Wróć do listy</button>
+      <div class="mb__head">
+        <h2 class="mb__title">${esc(t.subject)}</h2>
+        <div class="mb__actions">
+          ${t.status === 'open' ? '<button type="button" class="btn btn--outline btn--sm" data-mb-st="closed">Zamknij</button>' : '<button type="button" class="btn btn--outline btn--sm" data-mb-st="open">Otwórz ponownie</button>'}
+          ${t.status === 'spam' ? '<button type="button" class="btn btn--outline btn--sm" data-mb-st="open">To nie spam</button>' : '<button type="button" class="btn btn--outline btn--sm" data-mb-st="spam">Spam</button>'}
+          ${t.category !== 'customer' ? '<button type="button" class="btn btn--outline btn--sm" data-mb-cat="customer">Do odebranych</button>' : '<button type="button" class="btn btn--outline btn--sm" data-mb-cat="system">Do systemowych</button>'}
+          <button type="button" class="btn btn--outline btn--sm" data-mb-unread>Nieprzeczytane</button>
+        </div>
+      </div>
+      <div class="mb__ctx">
+        <span><strong>${esc(t.contact_name || '')}</strong> ${esc(t.contact_email)}</span>
+        ${d.customer ? `<span>Klient: ${d.customer.orders_count} zam. · ${pln(d.customer.total_spent)} <button type="button" class="link" data-open-customer="${d.customer.id}">karta klienta</button></span>` : '<span class="muted">nie ma konta klienta</span>'}
+        ${d.orders.length ? `<span>Zamówienia: ${d.orders.map((o: any) => `<button type="button" class="link" data-mb-order="${o.id}" title="${esc(STATUS[o.status] || o.status)} · ${pln(o.total)}">${o.number}${o.id === orderHit?.id ? ' ★' : ''}</button>`).join(', ')}</span>` : t.order_number ? `<span>W treści: zamówienie ${t.order_number}</span>` : ''}
+      </div>
+      <div class="mb__msgs">${d.messages.map((m: any, i: number) => {
+        const atts = (m.attachments || []).filter((a: any) => !a.inline || !a.cid);
+        const authBad = m.auth && (m.auth.dmarc === 'fail' || (m.auth.spf === 'fail' && m.auth.dkim === 'fail'));
+        return `<article class="mb__msg${m.direction === 'out' ? ' mb__msg--out' : ''}${many && i < d.messages.length - 2 ? ' is-collapsed' : ''}" data-mb-msg="${i}">
+          <div class="mb__mhead" data-mb-toggle><span><strong>${esc(m.direction === 'out' ? `Can-C${m.sent_by ? ` (${m.sent_by})` : ''}` : m.from_name || m.from_email)}</strong>${m.direction === 'in' && m.from_name ? ` <span class="muted">${esc(m.from_email)}</span>` : ''}${m.source === 'form' ? ' <span class="mb__tag">formularz</span>' : ''}${authBad ? ' <span class="mb__tag" style="background:#FDE8E8;color:#B3261E">nadawca niepotwierdzony</span>' : ''}</span><span class="muted">${date(m.sent_at)}</span></div>
+          <div class="mb__body">${m.html_body ? `<iframe class="mb__frame" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" data-mb-frame="${i}" title="Treść wiadomości"></iframe>${/<img[^>]+src=["']?https?:/i.test(m.html_body) ? `<button type="button" class="link small" data-mb-imgs="${i}">Pokaż obrazy z internetu</button>` : ''}` : `<pre class="mb__text">${esc(m.text_body || '')}</pre>`}</div>
+          ${atts.length ? `<div class="mb__atts">${atts.map((a: any) => `<a class="mb__att" href="/api/admin/poczta?att=${m.id}&i=${m.attachments.indexOf(a)}" target="_blank" rel="noopener">📎 ${esc(a.name)} <span class="muted">${fmtSize(a.size)}</span></a>`).join('')}</div>` : ''}
+        </article>`;
+      }).join('')}</div>
+      ${t.status === 'spam' ? '' : `<form class="mb__reply" data-mb-reply>
+        <label class="field">Odpowiedź do ${esc(t.contact_email)}<textarea class="input" name="text" required>Dzień dobry,
+
+
+
+Pozdrawiam
+Zespół Can-C</textarea></label>
+        <div class="mb__files" data-mb-files></div>
+        <div class="actions" style="justify-content:space-between">
+          <span class="actions"><label class="btn btn--outline btn--sm">Załącz pliki<input type="file" multiple hidden data-mb-file /></label>
+          <label class="check"><input type="checkbox" name="close" ${t.category === 'customer' ? 'checked' : ''} /> Zamknij wątek po wysłaniu</label></span>
+          <button class="btn btn--sm">Wyślij odpowiedź</button>
+        </div>
+      </form>`}`;
+
+    // Ramki HTML: wstawienie treści i dopasowanie wysokości
+    box.querySelectorAll<HTMLIFrameElement>('[data-mb-frame]').forEach((f) => {
+      const m = d.messages[Number(f.dataset.mbFrame)];
+      f.addEventListener('load', () => fitFrame(f));
+      f.srcdoc = mailFrame(m.html_body, false);
+    });
+    box.querySelectorAll<HTMLButtonElement>('[data-mb-imgs]').forEach((b) => b.addEventListener('click', () => {
+      const f = box.querySelector<HTMLIFrameElement>(`[data-mb-frame="${b.dataset.mbImgs}"]`);
+      if (f) f.srcdoc = mailFrame(d.messages[Number(b.dataset.mbImgs)].html_body, true);
+      b.remove();
+    }));
+    box.querySelectorAll<HTMLElement>('[data-mb-toggle]').forEach((h) => h.addEventListener('click', () => {
+      const a = h.closest('.mb__msg')!; a.classList.toggle('is-collapsed');
+      a.querySelectorAll<HTMLIFrameElement>('iframe').forEach(fitFrame);
+    }));
+    bindLinks(box);
+    box.querySelectorAll<HTMLButtonElement>('[data-mb-order]').forEach((b) => b.addEventListener('click', () => openOrder(b.dataset.mbOrder!)));
+    box.querySelector('[data-mb-back]')?.addEventListener('click', () => { $('[data-view="mail"]').classList.remove('is-reading'); mb.current = ''; history.replaceState(null, '', '#korespondencja'); loadMail(); });
+    const act = async (body: Record<string, unknown>, msg: string) => {
+      try { await api('/api/admin/poczta', { id, ...body }); toast(msg); loadMail(); openThread(id, false); } catch (e) { toast((e as Error).message, true); }
+    };
+    box.querySelectorAll<HTMLButtonElement>('[data-mb-st]').forEach((b) => b.addEventListener('click', () => act({ action: 'status', status: b.dataset.mbSt }, b.dataset.mbSt === 'spam' ? 'Przeniesiono do spamu.' : b.dataset.mbSt === 'closed' ? 'Wątek zamknięty.' : 'Wątek otwarty.')));
+    box.querySelectorAll<HTMLButtonElement>('[data-mb-cat]').forEach((b) => b.addEventListener('click', () => act({ action: 'category', category: b.dataset.mbCat }, 'Przeniesiono.')));
+    box.querySelector('[data-mb-unread]')?.addEventListener('click', async () => { try { await api('/api/admin/poczta', { action: 'read', id, unread: true }); toast('Oznaczono jako nieprzeczytane.'); loadMail(); } catch (e) { toast((e as Error).message, true); } });
+
+    // Odpowiedź z załącznikami (base64, łącznie do 10 MB)
+    const form = box.querySelector<HTMLFormElement>('[data-mb-reply]');
+    if (!form) return;
+    const files: { name: string; type: string; data: string; size: number }[] = [];
+    const drawFiles = () => {
+      box.querySelector('[data-mb-files]')!.innerHTML = files.map((f, i) => `<span class="mb__att">📎 ${esc(f.name)} <span class="muted">${fmtSize(f.size)}</span> <button type="button" class="link" data-mb-unfile="${i}" aria-label="Usuń załącznik">×</button></span>`).join('');
+    };
+    box.querySelector('[data-mb-files]')!.addEventListener('click', (e) => { const x = (e.target as HTMLElement).closest<HTMLElement>('[data-mb-unfile]'); if (x) { files.splice(Number(x.dataset.mbUnfile), 1); drawFiles(); } });
+    box.querySelector<HTMLInputElement>('[data-mb-file]')!.addEventListener('change', async (e) => {
+      const input = e.target as HTMLInputElement;
+      for (const f of [...(input.files || [])]) {
+        if (files.reduce((s, x) => s + x.size, 0) + f.size > 10 * 1024 * 1024) { toast('Załączniki mogą mieć łącznie do 10 MB.', true); break; }
+        const data = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(r.error); r.readAsDataURL(f); });
+        files.push({ name: f.name, type: f.type || 'application/octet-stream', data, size: f.size });
+      }
+      input.value = ''; drawFiles();
+    });
+    const ta = form.querySelector('textarea')!;
+    ta.setSelectionRange(14, 14);
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const btn = form.querySelector<HTMLButtonElement>('button:not([type])')!;
+      btn.disabled = true; btn.textContent = 'Wysyłanie…';
+      try {
+        await api('/api/admin/poczta', { action: 'reply', id, text: fd.get('text'), close: fd.get('close') !== null, attachments: files.map(({ name, type, data }) => ({ name, type, data })) });
+        toast('Odpowiedź wysłana.');
+        loadMail(); openThread(id, false);
+      } catch (err) { toast((err as Error).message, true); btn.disabled = false; btn.textContent = 'Wyślij odpowiedź'; }
+    });
+  }
+
+  // Licznik nieprzeczytanych przy menu (start panelu) i wejście z linku w powiadomieniu (#korespondencja/<id>)
+  api('/api/admin/poczta?folder=inbox').then((d) => setMailBadge(d.counts?.inbox || 0)).catch(() => {});
+  if (location.hash.startsWith('#korespondencja')) {
+    const tid = location.hash.split('/')[1];
+    setTimeout(() => { document.querySelector<HTMLButtonElement>('[data-tab="mail"]')?.click(); if (tid && /^[0-9a-f-]{36}$/i.test(tid)) openThread(tid); }, 0);
+  }
 
   // ---------- Automaty: podzakładki ----------
   let autoTab = 'reminders';
@@ -3670,12 +3915,14 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   });
 
   // ---------- Zdarzenia interfejsu ----------
-  const TITLES: Record<string, string> = { reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };
+  const TITLES: Record<string, string> = { mail: 'Korespondencja', reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };
   document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
     b.setAttribute('aria-current', 'page');
     document.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => (v.hidden = v.dataset.view !== b.dataset.tab));
     $('[data-title]').textContent = TITLES[b.dataset.tab!]; $('[data-crumb]').textContent = TITLES[b.dataset.tab!];
+    if (b.dataset.tab === 'mail') loadMail();
+    else if (location.hash.startsWith('#korespondencja')) history.replaceState(null, '', location.pathname);
     if (b.dataset.tab === 'products') loadProducts();
     if (b.dataset.tab === 'codes') { loadPromos(); loadCodes(); }
     if (b.dataset.tab === 'customers') loadCustomers();
