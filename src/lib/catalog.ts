@@ -3,6 +3,9 @@ import type { Env } from './env';
 import { db } from './supabase';
 import { saleActive, effectivePrice, availabilityOf, type DbProduct, type Availability } from './pricing';
 
+// Opinie testowe (source=test) widoczne tylko przy SHOW_TEST_REVIEWS=true – domyślnie ukryte
+export const testReviewsFilter = (env: Env) => (env.SHOW_TEST_REVIEWS === 'true' ? '' : '&source=neq.test');
+
 export type Product = DbProduct & {
   subtitle: string | null; short_description: string | null; description: string | null; highlights: string[];
   seo_title: string | null; seo_description: string | null; tags: string[]; vat_rate: number;
@@ -52,7 +55,7 @@ let cache: { at: number; items: CatalogItem[] } | null = null;
 async function build(env: Env, products: Product[]): Promise<CatalogItem[]> {
   const sb = db(env);
   const reviews = products.length
-    ? await sb.select<{ product_id: string; rating: number }>(`reviews?select=product_id,rating&status=eq.approved&limit=10000`)
+    ? await sb.select<{ product_id: string; rating: number }>(`reviews?select=product_id,rating&status=eq.approved${testReviewsFilter(env)}&limit=10000`)
     : [];
   return Promise.all(products.map(async (p) => {
     let lowest30: number | null = null;
@@ -77,14 +80,15 @@ export async function getCatalog(env: Env, { fresh = false } = {}): Promise<Cata
 }
 export const clearCatalogCache = () => { cache = null; };
 
-// Karta produktu: produkt, zatwierdzone opinie, produkty powiązane
+// Karta produktu: produkt, pierwsze opinie (kolejne doczytuje GET /api/opinie), produkty powiązane
+export const REVIEWS_PAGE = 5;
 export async function getProductPage(env: Env, slug: string) {
   if (!/^[a-z0-9-]{2,60}$/.test(slug)) return null;
   const list = await getCatalog(env);
   const product = list.find((p) => p.id === slug);
   if (!product) return null;
   const reviews = await db(env).select<Review>(
-    `reviews?select=id,product_id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${slug}&status=eq.approved&order=created_at.desc&limit=50`,
+    `reviews?select=id,product_id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${slug}&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=${REVIEWS_PAGE}`,
   );
   const related = product.related_ids.map((id) => list.find((p) => p.id === id)).filter(Boolean) as CatalogItem[];
   return { product, reviews, related: related.length ? related : list.filter((p) => p.id !== slug).slice(0, 1) };

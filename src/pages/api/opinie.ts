@@ -3,8 +3,28 @@ import { getEnv, json } from '../../lib/env';
 import { db } from '../../lib/supabase';
 import { sendMail } from '../../lib/mail';
 import { str, EMAIL_RE } from '../../lib/validate';
+import { REVIEWS_PAGE, testReviewsFilter } from '../../lib/catalog';
 
 export const prerender = false;
+
+// Kolejne opinie na karcie produktu („Pokaż więcej”): ?product=<slug>&offset=<n> → { reviews, more }
+export const GET: APIRoute = async ({ url, locals }) => {
+  const product = url.searchParams.get('product') || '';
+  const offset = Math.max(0, Math.min(5000, Math.floor(Number(url.searchParams.get('offset')) || 0)));
+  if (!/^[a-z0-9-]{2,60}$/.test(product)) return json(400, { error: 'Nieprawidłowy produkt.' });
+  try {
+    const env = await getEnv(locals);
+    const rows = await db(env).select<any>(
+      `reviews?select=id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${product}&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&offset=${offset}&limit=${REVIEWS_PAGE + 1}`,
+    );
+    return new Response(JSON.stringify({ reviews: rows.slice(0, REVIEWS_PAGE), more: rows.length > REVIEWS_PAGE }), {
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60' },
+    });
+  } catch (e) {
+    console.error('Opinie (lista): ' + (e instanceof Error ? e.message : String(e)));
+    return json(500, { error: 'Nie udało się wczytać opinii.' });
+  }
+};
 
 // Nowa opinia – trafia do moderacji. „Zweryfikowany zakup”, gdy e-mail ma opłacone zamówienie z tym produktem.
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
