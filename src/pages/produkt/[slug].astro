@@ -240,7 +240,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
                 <span class="k">{dateLabel(r.created_at)}</span>
               </div>
               {r.title && <h3 class="pr-review__title">{r.title}</h3>}
-              <p class="p">{r.body}</p>
+              <p class="p pr-review__body">{r.body}</p>
               {r.reply && <p class="pr-review__reply"><strong>Odpowiedź sklepu:</strong> {r.reply}</p>}
             </article>
           ))}
@@ -412,6 +412,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-tags { margin-top: 24px; }
   .pr-rating { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); text-decoration: none; }
   .pr-lead { margin-top: 24px; }
+  /* Teksty opisowe karty produktu: 18/28 (opis, wyróżniki, Opis, Stosowanie, Specyfikacja, opinie) */
+  .pr-lead, .pr-hl, .pr-spec .trow, .pr-review__body { font-size: 18px; line-height: 28px; }
   .pr-price { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 6px; }
   .pr-price__row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .pr-price__v { font-size: 48px; line-height: 72px; font-weight: 300; }
@@ -436,7 +438,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-chips { display: flex; gap: 10px; flex-wrap: wrap; position: sticky; top: 14px; z-index: 5; }
   .pr-sec { display: flex; flex-direction: column; gap: 24px; padding-top: 45px; border-top: 1px solid var(--image); scroll-margin-top: 90px; }
   .pr-chips + .pr-sec { padding-top: 0; border-top: none; }
-  .md :global(p), .md :global(li) { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); text-align: left; }
+  .md :global(p), .md :global(li) { font-size: 18px; line-height: 28px; font-weight: 300; color: var(--muted); text-align: left; }
   .md :global(p + p) { margin-top: 24px; }
   .md :global(h2), .md :global(h3) { font-size: 24px; line-height: 28px; font-weight: 400; margin: 24px 0 10px; }
   .md :global(strong) { font-weight: 500; color: var(--ink); }
@@ -454,6 +456,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-spec dd { margin: 0; }
   .pr-avg { display: flex; align-items: center; gap: 14px; }
   .pr-avg__v { font-size: 64px; line-height: 64px; font-weight: 300; }
+  @media (max-width: 600px) {
+    .pr-lead, .pr-hl, .pr-spec .trow, .pr-review__body, .md :global(p), .md :global(li) { font-size: 16px; line-height: 26px; }
+  }
   .pr-review { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); padding: 24px; display: flex; flex-direction: column; gap: 10px; }
   .pr-review__head { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
   .pr-review__name { font-size: 18px; line-height: 27px; font-weight: 500; }
