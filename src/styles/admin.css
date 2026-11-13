@@ -331,7 +331,9 @@ textarea.input { height: auto; padding: 10px 14px; resize: vertical; }
 .nl-block__tools .icon-btn { width: 30px; height: 30px; }
 .nl-img { display: flex; align-items: center; gap: 12px; }
 .nl-img img { width: 120px; height: 72px; object-fit: cover; border-radius: 8px; }
-.nl-add { flex-wrap: wrap; }
+.nl-add { flex-wrap: wrap; gap: 8px; }
+.nl-ed__form { display: flex; flex-direction: column; gap: 16px; }
+.nl-ed__form > .actions { padding-top: 4px; }
 .nl-progress { display: flex; flex-direction: column; gap: 6px; }
 .nl-progress[hidden] { display: none; }
 .nl-progress__bar { height: 8px; border-radius: 4px; background: var(--muted-bg); overflow: hidden; }
@@ -472,3 +474,7 @@ tr.flash td { background: var(--primary-a16) !important; transition: background 
 .dl__main .link { text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
 .dl__meta { font-size: 12px; color: var(--ink-10); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 700px) { .ds-lists { grid-template-columns: minmax(0, 1fr); } }
+
+.sig-prev-wrap { display: flex; flex-direction: column; gap: 6px; }
+.pages-faq-add { margin-left: auto; }
+.pages-faq-add[hidden] { display: none; }

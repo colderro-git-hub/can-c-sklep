@@ -141,7 +141,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           </div>
           <span class="k"><span data-unit>{def.total !== null ? `${pln(Math.round(def.total / def.qty))} / szt.` : ''}</span>{p.unitPrice && <> · {p.unitPrice}</>}</span>
           {p.lowest30 !== null && <span class="k">{p.onSale ? 'Najniższa cena z 30 dni przed obniżką' : 'Najniższa cena z ostatnich 30 dni'}: {pln(p.lowest30)}</span>}
-          <span class={`pr-avail pr-avail--${p.avail}`}><span class="dot" aria-hidden="true"></span>{AVAIL_LABEL[p.avail] || p.avail}{p.avail === 'in_stock' && <> · <span data-lead>{leadTime}</span></>}</span>
+          <span class={`pr-avail pr-avail--${p.avail}`}><span class="dot" aria-hidden="true"></span>{AVAIL_LABEL[p.avail] || p.avail}</span>
         </div>
 
         {buyable && (

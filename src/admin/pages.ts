@@ -132,6 +132,9 @@ export async function loadPages(page = pageSelect?.value ?? 'home') {
   if (!pagesList) return;
   pagesList.innerHTML = '<p class="muted">Ładowanie…</p>';
   if (pagePreview) pagePreview.href = PAGES_META[page]?.previewHref ?? '/';
+  // „Dodaj pytanie” w pasku obok „Podgląd strony” - tylko dla FAQ
+  const faqAdd = document.querySelector<HTMLButtonElement>('[data-faq-add]');
+  if (faqAdd) faqAdd.hidden = page !== 'faq';
   try {
     const { rows } = await api(`/api/admin/pages?page=${encodeURIComponent(page)}`);
     renderPageSections(page, rows);
@@ -209,8 +212,7 @@ export function renderPageSections(page: string, rows: any[]) {
   if (page === 'faq') {
     const cats: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
     pagesList.innerHTML = `<div class="faq-cms">
-      <div class="actions" style="justify-content:space-between"><p class="muted small" style="margin:0">Edytuj pytania i odpowiedzi. Kolejność: mniejsza liczba = wyżej. Zmiany widoczne po zapisie (do minuty).</p>
-        <button type="button" class="btn btn--sm" data-faq-add>+ Dodaj pytanie</button></div>
+      <p class="muted small" style="margin:0">Edytuj pytania i odpowiedzi. Kolejność: mniejsza liczba = wyżej. Zmiany widoczne po zapisie (do minuty).</p>
       <div data-faq-list>
         ${rows.map((r) => `<details class="faq-cms__item" data-faq-key="${esc(r.key)}">
           <summary class="faq-cms__q">
@@ -249,15 +251,6 @@ export function renderPageSections(page: string, rows: any[]) {
         try { await api('/api/admin/pages', { action: 'delete_faq', key }); toast('Usunięto pytanie.'); loadPages('faq'); }
         catch (err) { toast((err as Error).message, true); }
       });
-    });
-    pagesList.querySelector('[data-faq-add]')?.addEventListener('click', async () => {
-      try {
-        const d = await api('/api/admin/pages', { action: 'create_faq' });
-        await loadPages('faq');
-        const el = pagesList.querySelector<HTMLDetailsElement>(`[data-faq-key="${d.key}"]`);
-        if (el) { el.open = true; el.scrollIntoView({ block: 'center' }); el.querySelector<HTMLInputElement>('[name="q"]')?.focus(); }
-        toast('Dodano pytanie - uzupełnij treść i zapisz.');
-      } catch (err) { toast((err as Error).message, true); }
     });
     return;
   }
@@ -340,3 +333,14 @@ export function renderPageSections(page: string, rows: any[]) {
 
 pageSelect?.addEventListener('change', () => loadPages());
 document.querySelector('[data-tab="pages"]')?.addEventListener('click', () => setTimeout(() => loadPages(), 50));
+
+// Nowe pytanie FAQ (przycisk w pasku narzędzi Stron, jeden nasłuch na stałe)
+document.querySelector<HTMLButtonElement>('[data-faq-add]')?.addEventListener('click', async () => {
+  try {
+    const d = await api('/api/admin/pages', { action: 'create_faq' });
+    await loadPages('faq');
+    const el = pagesList?.querySelector<HTMLDetailsElement>(`[data-faq-key="${d.key}"]`);
+    if (el) { el.open = true; el.scrollIntoView({ block: 'center' }); el.querySelector<HTMLInputElement>('[name="q"]')?.focus(); }
+    toast('Dodano pytanie - uzupełnij treść i zapisz.');
+  } catch (err) { toast((err as Error).message, true); }
+});
