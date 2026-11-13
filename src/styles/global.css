@@ -108,22 +108,7 @@
   color-scheme: light;
 }
 
-/* Tryb ciemny - tylko panel admina i elementy które mają data-theme */
-[data-theme="dark"] {
-  --accent: #3CC2B9;
-  --accent-text: #5ED3CB;
-  --accent-soft: #173B39;
-  --primary: #6F7FA6;
-  --primary-hover: #8191B8;
-  --ink:     #FFFFFF;
-  --muted:   #A0A0A0;
-  --line:    #2A2A2A;
-  --image:   var(--primary-hover);
-  --band:    #1A1A1A;
-  --surface: #111111;
-  --peach:   #3A2A20;
-  color-scheme: dark;
-}
+/* Sklep ma tylko jasny motyw (tryb ciemny usunięty). */
 
 /* ----------------------------------------------------------------
    Reset i base

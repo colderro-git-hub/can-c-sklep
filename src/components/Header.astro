@@ -55,9 +55,6 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
         <a href="/konto/" aria-label="Moje konto" class="hd__icon">
           <Icon name="user" size={22} stroke={1.75} />
         </a>
-        <button type="button" class="hd__icon" data-theme-toggle aria-label="Tryb ciemny" aria-pressed="false">
-          <Icon name="moon" size={20} stroke={1.75} />
-        </button>
 
         <div class="hd__cartwrap" data-cart-wrap>
           <a href="/koszyk/" class="hd__cart" data-cart-link aria-describedby="hd-preview">
@@ -176,7 +173,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
     /* Koszyk na całą szerokość na górze akcji, pod nim konto, motyw i EN */
     .hd__cartwrap { order: -1; flex: 1 1 100%; }
     .hd__cart { width: 100%; height: 54px; justify-content: space-between; padding: 0 14px 0 20px; font-size: 18px; }
-    .hd__actions > a[href='/konto/'], [data-theme-toggle] { border: 1px solid var(--line); }
+    .hd__actions > a[href='/konto/'] { border: 1px solid var(--line); }
     .hd__lang { margin-left: auto; display: inline-flex; align-items: center; height: 44px; padding: 0 16px; border: 1px solid var(--line); border-radius: var(--r-pill); }
     .hd__preview { display: none !important; }
   }
@@ -285,14 +282,6 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   panel?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
   window.matchMedia('(min-width: 1181px)').addEventListener?.('change', (m) => { if (m.matches) setMenu(false); });
 
-  // Tryb ciemny (wybór zapamiętany w przeglądarce)
-  const tBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
-  const sync = () => tBtn?.setAttribute('aria-pressed', String(document.documentElement.dataset.theme === 'dark'));
-  sync();
-  tBtn?.addEventListener('click', () => {
-    const dark = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    try { localStorage.setItem('canc-theme', dark ? 'dark' : 'light'); } catch { /* tryb prywatny */ }
-    sync();
-  });
+  // Tryb ciemny usunięty (sklep tylko jasny) - sprzątanie zapamiętanego wyboru z wcześniejszych wizyt
+  try { localStorage.removeItem('canc-theme'); } catch { /* tryb prywatny */ }
 </script>

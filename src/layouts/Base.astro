@@ -62,15 +62,6 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     <!-- Poppins z własnego serwera (@fontsource): bez połączenia z Google, szybsze pierwsze wyświetlenie -->
     <link rel="preload" href={poppins300} as="font" type="font/woff2" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Motyw przed pierwszym malowaniem strony (bez mignięcia jasnego tła): wybór klienta albo ustawienie systemu -->
-    <script is:inline>
-      (function () {
-        var t = null;
-        try { t = localStorage.getItem('canc-theme'); } catch (e) {}
-        var dark = t === 'dark'; // projekt Laluna jest jasny; ciemny tylko z wyboru klienta
-        document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-      })();
-    </script>
     <meta name="color-scheme" content="light" />
     <!-- Favicon z panelu (Ustawienia sklepu): wersja zależna od motywu przeglądarki/systemu.
          Atrybut media nie działa we wszystkich przeglądarkach, więc przełączamy go też skryptem. -->
