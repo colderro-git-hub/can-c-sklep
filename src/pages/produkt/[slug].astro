@@ -292,6 +292,16 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       )}
     </div>
   </section>
+  {/* Telefon: pasek z ceną i przyciskiem, gdy główny przycisk zniknie z ekranu */}
+  {buyable && (
+    <div class="pr-sticky" data-sticky aria-hidden="true" hidden>
+      <div class="pr-sticky__info">
+        <span class="pr-sticky__name">{p.name}</span>
+        <span class="pr-sticky__price" data-sticky-price>{pln(def.total)}</span>
+      </div>
+      <button type="button" class="btn pr-sticky__btn" data-sticky-add tabindex="-1">Dodaj do koszyka</button>
+    </div>
+  )}
 </Base>
 
 <script>
@@ -359,6 +369,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     const radios = root.querySelectorAll<HTMLInputElement>('input[name="qty"]');
     const render = (r: HTMLInputElement) => {
       q('[data-price]')!.textContent = r.dataset.total ?? '';
+      const sp = document.querySelector('[data-sticky-price]'); if (sp) sp.textContent = r.dataset.total ?? '';
       q('[data-unit]')!.textContent = r.dataset.unit ?? '';
       const reg = q('[data-regular]'); if (reg) reg.textContent = r.dataset.regular ?? '';
       const save = q('[data-save]')!; save.textContent = r.dataset.save ?? ''; save.hidden = !r.dataset.save;
@@ -383,6 +394,30 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       flyToCart(img || addBtn, img?.src).then(() => announceAdded({ slug, qty }));
       trackAddToCart({ item_id: slug, item_name: gaName, price: gaPrice, quantity: qty, item_brand: 'Can-C' });
     });
+
+    // Przyklejony pasek na telefonie: pokazuje się, gdy główny przycisk „Dodaj do koszyka” jest poza ekranem
+    // (po przewinięciu w dół do opisu i opinii); kliknięcie wywołuje ten sam przycisk – ta sama ilość, GA4, animacja.
+    const sticky = document.querySelector<HTMLElement>('[data-sticky]');
+    if (sticky && addBtn && 'IntersectionObserver' in window) {
+      const mq = window.matchMedia('(max-width: 900px)');
+      let below = false;
+      const sync = () => {
+        const show = mq.matches && below;
+        sticky.hidden = !show;
+        sticky.setAttribute('aria-hidden', String(!show));
+        sticky.querySelector<HTMLButtonElement>('[data-sticky-add]')!.tabIndex = show ? 0 : -1;
+        document.body.classList.toggle('has-sticky-buy', show);
+      };
+      // Tylko gdy przycisk jest NAD ekranem (przewinięty w dół), nie przed dojściem do niego
+      new IntersectionObserver(([e]) => { below = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(addBtn);
+      mq.addEventListener?.('change', sync);
+      const stickyBtn = sticky.querySelector<HTMLButtonElement>('[data-sticky-add]')!;
+      stickyBtn.addEventListener('click', () => {
+        addBtn.click();
+        stickyBtn.textContent = 'Dodano ✓';
+        window.setTimeout(() => { stickyBtn.textContent = 'Dodaj do koszyka'; }, 1800);
+      });
+    }
   }
 
   // GA4: select_item w „Często kupowane razem”
@@ -452,6 +487,22 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .pr-thumb[aria-pressed='true'] { border-color: var(--primary); }
 
+  /* Przyklejony pasek zakupu (telefon) */
+  .pr-sticky {
+    position: fixed; z-index: 40; left: 0; right: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 14px;
+    padding: 12px var(--page-px) calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -12px 32px rgba(20, 28, 43, .08);
+    animation: pr-sticky-in .2s ease-out;
+  }
+  .pr-sticky[hidden] { display: none; }
+  .pr-sticky__info { min-width: 0; display: flex; flex-direction: column; }
+  .pr-sticky__name { font-size: 14px; line-height: 20px; font-weight: 300; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pr-sticky__price { font-size: 20px; line-height: 28px; font-weight: 500; }
+  .pr-sticky__btn { flex-shrink: 0; height: 50px; padding: 0 22px; font-size: 16px; }
+  :global(body.has-sticky-buy) { padding-bottom: 80px; }
+  @keyframes pr-sticky-in { from { transform: translateY(100%); } to { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .pr-sticky { animation: none; } }
   .pr-buy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .pr-title { margin-top: 10px; }
   .pr-tags { margin-top: 24px; }
