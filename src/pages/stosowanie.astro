@@ -6,7 +6,7 @@ import { products } from '../data/shop';
 import { getCatalog } from '../lib/catalog';
 import { applyPromotions } from '../lib/promotions';
 import { getPromotions } from '../lib/promotions-db';
-import { getPageContent, getSection } from '../lib/page-content';
+import { getPageContent, getSection, visible, fs } from '../lib/page-content';
 
 export const prerender = false;
 
@@ -33,7 +33,7 @@ const plan = [
   };
 });
 const defaultPlan = 2;
-const toc = [
+const tocAll = [
   { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#fiolka', label: 'Otwieranie fiolki' },
   { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#ile', label: 'Ile opakowań potrzebujesz' },
 ];
@@ -42,7 +42,9 @@ const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
 const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1–2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });
 const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolka jest fabrycznie zamknięta.', steps: ['Zdejmij dolny pierścień.', 'Dokręć nakrętkę.', 'Odkręć nakrętkę.', 'Naciśnij fiolkę.'], step_images: [null, null, null, null] as (string|null)[] });
-const applying = at('how_to_use.applying', { h2: 'Zakraplanie', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }], image_url: null as string|null, image_alt: 'Zakraplanie kropli Can-C' });
+const applying = at('how_to_use.applying', { h2: 'Zakraplanie', lead: 'Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }], image_url: null as string|null, image_alt: 'Zakraplanie kropli Can-C' });
+// Spis treści bez sekcji wyłączonych w panelu
+const toc = tocAll.filter((x) => (x.href === '#dawkowanie' ? visible(dosage) : x.href === '#fiolka' ? visible(opening) : x.href === '#zakraplanie' ? visible(applying) : true));
 const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.h1, step: (applying.steps as {title:string;desc:string}[]).map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.desc })) };
 ---
 <Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację." nav="stosowanie">
@@ -51,17 +53,18 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
   <section class="w row us-hero">
     <div class="fl us-hero__l">
       <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Stosowanie</nav>
-      <h1 class="h1">{intro.h1}</h1>
-      <p class="p p--lg" style="max-width:560px">{intro.lead}</p>
+      <h1 class="h1" style={fs(intro, 'h1')}>{intro.h1}</h1>
+      <p class="p p--lg" style={fs(intro, 'lead', 'max-width:560px')}>{intro.lead}</p>
     </div>
     <nav class="fl us-toc" aria-label="Spis treści">
       {toc.map((t) => <a href={t.href} class="us-anc">{t.label} <span aria-hidden="true">↓</span></a>)}
     </nav>
   </section>
 
+  {visible(dosage) && (
   <section id="dawkowanie" class="us-dark">
     <div class="w us-pad">
-      <h2 class="h2">{dosage.h2}</h2>
+      <h2 class="h2" style={fs(dosage, 'h2')}>{dosage.h2}</h2>
       <div class="g3 us-doses">
         {(dosage.doses as { num: string; title: string; desc: string }[]).map((d) => (
           <div class="us-dose">
@@ -74,16 +77,18 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       {dosage.note && (
         <div class="us-note">
           <span aria-hidden="true" class="us-note__i">!</span>
-          <p>{dosage.note}</p>
+          <p style={fs(dosage, 'note')}>{dosage.note}</p>
         </div>
       )}
     </div>
   </section>
+  )}
 
+  {visible(opening) && (
   <section id="fiolka" class="w us-sec">
     <div class="row us-sechead">
-      <h2 class="h2">{opening.h2}</h2>
-      <p class="p fl" style="width:517px">{opening.lead}</p>
+      <h2 class="h2" style={fs(opening, 'h2')}>{opening.h2}</h2>
+      <p class="p fl" style={fs(opening, 'lead', 'width:517px')}>{opening.lead}</p>
     </div>
     <ol class="g4 us-steps">
       {(opening.steps as string[]).map((t, i) => {
@@ -100,12 +105,14 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       })}
     </ol>
   </section>
+  )}
 
+  {visible(applying) && (
   <section id="zakraplanie" class="us-band">
     <div class="w row us-pad us-split">
       <div class="fl us-split__l">
-        <h2 class="h2">{applying.h2}</h2>
-        <p class="p p--lg">Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.</p>
+        <h2 class="h2" style={fs(applying, 'h2')}>{applying.h2}</h2>
+        {applying.lead && <p class="p p--lg" style={fs(applying, 'lead')}>{applying.lead}</p>}
         <div class="us-arch">
           {applying.image_url ? <img src={applying.image_url} alt={applying.image_alt || 'Zakraplanie'} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
         </div>
@@ -120,6 +127,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       </ol>
     </div>
   </section>
+  )}
 
   <section id="ile" class="w row us-split us-last">
     <div class="fl us-split__l">

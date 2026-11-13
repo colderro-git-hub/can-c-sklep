@@ -8,11 +8,12 @@ interface Props {
   title: string;
   description: string;
   lead?: string;
+  leadStyle?: string; // np. rozmiar tekstu z panelu
   toc?: { id: string; title: string }[];
   legal?: boolean;   // dokument prawny: data obowiązywania, informacja o projekcie, przycisk drukowania
   newsletter?: boolean; // karta zapisu na newsletter w panelu bocznym
 }
-const { title, description, lead, toc = [], legal = false, newsletter = false } = Astro.props;
+const { title, description, lead, leadStyle, toc = [], legal = false, newsletter = false } = Astro.props;
 const path = Astro.url.pathname;
 const links = [
   { href: '/formy-dostawy/', label: 'Formy dostawy' },
@@ -31,7 +32,7 @@ const links = [
         <h1 class="h1">{title}</h1>
         {legal && <span class="k">Obowiązuje od: {LEGAL_EFFECTIVE_DATE}</span>}
       </div>
-      {lead && <p class="p p--lg fl" style="width:533px">{lead}</p>}
+      {lead && <p class="p p--lg fl" style={`width:533px${leadStyle ? `;${leadStyle}` : ''}`}>{lead}</p>}
     </div>
     {legal && LEGAL_DRAFT && (
       <p class="ip-draft" role="note">Projekt dokumentu do weryfikacji przez prawnika przed startem sklepu. Treść opisuje działanie nowego sklepu, ale nie stanowi porady prawnej.</p>

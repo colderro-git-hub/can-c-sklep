@@ -47,3 +47,20 @@ export function clearPageCache(page?: PageKey) {
 export function applyTokens(text: string, tokens: Record<string, string>): string {
   return Object.entries(tokens).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), text);
 }
+
+// ---------- Ustawienia sekcji z panelu (/admin → Strony) ----------
+// data.__hidden = true → sekcja wyłączona; data.__sizes = { pole: px } → własny rozmiar tekstu.
+export const visible = (data: unknown) => !(data && typeof data === 'object' && (data as any).__hidden === true);
+
+// Styl rozmiaru tekstu dla pola. Duże rozmiary (nagłówki) skalują się z szerokością ekranu,
+// żeby na telefonie nie rozsadzały układu: clamp(min, vw, wartość z panelu).
+export function fs(data: unknown, field: string, extra = ''): string | undefined {
+  const n = Number((data as any)?.__sizes?.[field]);
+  const own = !n || n < 8 || n > 200
+    ? ''
+    : n >= 28
+      ? `font-size:clamp(${Math.round(Math.max(22, n * 0.5))}px,${(n / 14.4).toFixed(2)}vw,${n}px);line-height:1.12`
+      : `font-size:${n}px;line-height:1.55`;
+  const style = [extra.replace(/;\s*$/, ''), own].filter(Boolean).join(';');
+  return style || undefined;
+}

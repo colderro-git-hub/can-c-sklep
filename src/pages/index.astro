@@ -7,7 +7,7 @@ import { getPromotions } from '../lib/promotions-db';
 import { getEnv } from '../lib/env';
 import { getCatalog, testReviewsFilter } from '../lib/catalog';
 import { db } from '../lib/supabase';
-import { getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
+import { visible, fs, getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
 import type { Availability } from '../lib/pricing';
 import { AVAIL_LABEL } from '../lib/catalog';
@@ -136,8 +136,8 @@ const bold = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
 const faqCatLabel: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
 const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
-const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item')
-  .filter((f) => f.home)
+const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string; __hidden?: boolean }>(faqRows, 'item')
+  .filter((f) => f.home && !f.__hidden && f.q && f.a)
   .map((f) => ({ q: f.q, a: applyTokens(f.a, tokens), cat: f.cat }));
 const faqList: { q: string; a: string; cat?: string }[] = faqCms.length ? faqCms : faqs;
 
@@ -164,9 +164,9 @@ const bundleRows = setQtys.map((qty) => {
 ---
 <Base title="Krople do oczu Can-C z N-acetylokarnozyną" description="Oryginalne krople Can-C z N-acetylokarnozyną. Darmowa dostawa, szybka wysyłka.">
   <!-- HERO -->
+  {visible(hero) && (
   <section class="container" style="margin-top: 45px">
     <div class="hero" style="position:relative;height:638px">
-      <!-- Kształty tła; zdjęcie z panelu wypełnia cały kształt (każdy fragment pokazuje swoją część tego samego zdjęcia) -->
       {[
         { st: 'left:64.46%;right:0;top:0;height:545px;border-radius:50px', l: '-64.46cqw', t: 0 },
         { st: 'left:0;top:221px;width:72.38%;height:324px;border-radius:50px', l: '0px', t: 221 },
@@ -180,18 +180,16 @@ const bundleRows = setQtys.map((qty) => {
       ))}
       {!hero.image_url && <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie z panelu: Strony → Hero]</span>}
       {hero.image_url && <img src={hero.image_url} alt="" class="hero-mobile-img" loading="eager" />}
-      <!-- Tekst -->
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
-        {hero.kicker && <span class="tag" style="align-self:flex-start;height:36px;padding:0 16px;font-size:16px">{hero.kicker}</span>}
-        <h1 style="margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em">
-          {heroH1.map((line: string, i: number) => <span style={`display:block${i > 0 ? ';padding-left:68px' : ''}`}>{line}</span>)}
+        {hero.kicker && <span class="tag" style={fs(hero, 'kicker', 'align-self:flex-start;min-height:36px;padding:0 16px;font-size:16px')}>{hero.kicker}</span>}
+        <h1 class="hero-h1" style={fs(hero, 'h1', 'margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em')}>
+          {heroH1.map((line: string, i: number) => i === 0
+            ? <span style="display:block">{line}</span>
+            : <span class="hero-h1__2"><span class="hero-dash" aria-hidden="true"></span>{line}</span>)}
         </h1>
       </div>
-      <span aria-hidden="true" style="position:absolute;left:9px;top:169px;width:50px;height:2px;background: var(--primary)"></span>
-      <p style="position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{hero.lead}</p>
+      {hero.lead && <p style={fs(hero, 'lead', 'position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left')}>{hero.lead}</p>}
     </div>
-
-    <!-- Bloki zaufania + CTA -->
     <div class="hero-bottom">
       <div class="trust">
         {trustBoxes.map((t) => (
@@ -212,14 +210,16 @@ const bundleRows = setQtys.map((qty) => {
       </div>
     </div>
   </section>
+  )}
 
   <!-- PRODUKTY -->
+  {visible(productsCms) && (
   <section class="section section--band sec-gap" id="produkty">
     <div class="container">
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:45px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:24px">
-          <h2 class="h2" set:html={lines(productsCms.h2).map(escHtml).join('<br/>')} />
-          {productsCms.lead && <p class="lead" style="max-width:517px">{productsCms.lead}</p>}
+          <h2 class="h2" style={fs(productsCms, 'h2')} set:html={lines(productsCms.h2).map(escHtml).join('<br/>')} />
+          {productsCms.lead && <p class="lead" style={fs(productsCms, 'lead', 'max-width:517px')}>{productsCms.lead}</p>}
         </div>
         {productsCms.link_label && <a href={productsCms.link_href} class="link-arrow">
           <Icon name="arrow-right" size={16} />
@@ -234,8 +234,10 @@ const bundleRows = setQtys.map((qty) => {
       </div>
     </div>
   </section>
+  )}
 
   <!-- KORZYŚCI: 3 kolumny – karta (3) · zdjęcie (4) · nagłówek, lista, przycisk (5) -->
+  {visible(benefits) && (
   <section class="container sec-gap ben">
     <div class="ben__card">
       <div class="ben__card-img">
@@ -243,9 +245,9 @@ const bundleRows = setQtys.map((qty) => {
           ? <img src={benefits.card_image_url} alt={benefits.card_image_alt || ''} loading="lazy" />
           : <span class="ben__ph">[zdjęcie: krople]</span>}
       </div>
-      {benefits.card_title && <h3 class="ben__card-t">{benefits.card_title}</h3>}
-      {benefits.card_text && <p class="ben__card-p">{benefits.card_text}</p>}
-      {benefits.card_items.length > 0 && <ul class="dots ben__card-list">{benefits.card_items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
+      {benefits.card_title && <h3 class="ben__card-t" style={fs(benefits, 'card_title')}>{benefits.card_title}</h3>}
+      {benefits.card_text && <p class="ben__card-p" style={fs(benefits, 'card_text')}>{benefits.card_text}</p>}
+      {benefits.card_items.length > 0 && <ul class="dots ben__card-list" style={fs(benefits, 'card_items')}>{benefits.card_items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
     </div>
     <div class="ben__img">
       {benefits.image_url
@@ -253,20 +255,22 @@ const bundleRows = setQtys.map((qty) => {
         : <span class="ben__ph">[zdjęcie: zbliżenie oka]</span>}
     </div>
     <div class="ben__head">
-      <h2 class="h2">{benefits.h2}</h2>
-      {benefits.lead && <p class="lead">{benefits.lead}</p>}
+      <h2 class="h2" style={fs(benefits, 'h2')}>{benefits.h2}</h2>
+      {benefits.lead && <p class="lead" style={fs(benefits, 'lead')}>{benefits.lead}</p>}
     </div>
     <div class="ben__body">
-      {benefits.items.length > 0 && <ul class="dots ben__list">{benefits.items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
+      {benefits.items.length > 0 && <ul class="dots ben__list" style={fs(benefits, 'items')}>{benefits.items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
       {benefits.cta_label && <a href={benefits.cta_href} class="btn">{benefits.cta_label}</a>}
     </div>
   </section>
+  )}
 
   <!-- ZESTAWY -->
+  {visible(bundlesCms) && (
   <section class="container sec-gap">
     <div class="bundles-head">
-      <h2 class="h2" set:html={lines(bundlesCms.h2).map(escHtml).join('<br/>')} />
-      {bundlesCms.lead && <p class="lead bundles-head__p">{bundlesCms.lead}</p>}
+      <h2 class="h2" style={fs(bundlesCms, 'h2')} set:html={lines(bundlesCms.h2).map(escHtml).join('<br/>')} />
+      {bundlesCms.lead && <p class="lead bundles-head__p" style={fs(bundlesCms, 'lead')}>{bundlesCms.lead}</p>}
     </div>
     <div class="bundles-grid">
       {bundleRows.map((b, i) => (
@@ -286,7 +290,7 @@ const bundleRows = setQtys.map((qty) => {
               <span class="bullet" aria-hidden="true"></span>
               {b.save !== 'Cena regularna' ? b.save : ''}
             </li>}
-            {((bundlesCms.perks as string[]) || []).filter(Boolean).map((perk: string) => <li style="display:flex;align-items:center;gap:14px">
+            {((bundlesCms.perks as string[]) || []).filter(Boolean).map((perk: string) => <li style={fs(bundlesCms, 'perks', 'display:flex;align-items:center;gap:14px')}>
               <span class="bullet" aria-hidden="true"></span>
               {perk}
             </li>)}
@@ -296,13 +300,15 @@ const bundleRows = setQtys.map((qty) => {
       ))}
     </div>
   </section>
+  )}
 
   <!-- DLACZEGO -->
+  {visible(why) && (
   <section class="container home-split sec-gap">
     <div class="home-side">
       <div class="why-shape" aria-hidden="true"></div>
-      <h2 class="h2">{why.h2}</h2>
-      {why.lead && <p class="lead" style="text-align:left">{why.lead}</p>}
+      <h2 class="h2" style={fs(why, 'h2')}>{why.h2}</h2>
+      {why.lead && <p class="lead" style={fs(why, 'lead', 'text-align:left')}>{why.lead}</p>}
       {why.link_label && <a href={why.link_href} class="link-arrow">
         <Icon name="arrow-right" size={16} />
         {why.link_label}
@@ -318,12 +324,14 @@ const bundleRows = setQtys.map((qty) => {
       ))}
     </div>
   </section>
+  )}
 
   <!-- OPINIE -->
+  {visible(reviewsCms) && (
   <section class="section section--band sec-gap">
     <div class="container home-split">
       <div class="home-side">
-        <h2 class="h2">{reviewsCms.h2}</h2>
+        <h2 class="h2" style={fs(reviewsCms, 'h2')}>{reviewsCms.h2}</h2>
         <div style="display:flex;align-items:center;gap:14px">
           <span style="font-size:4rem;line-height:64px;font-weight:300">{ratingAvg ? ratingAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}</span>
           <div style="display:flex;flex-direction:column;gap:4px">
@@ -335,7 +343,7 @@ const bundleRows = setQtys.map((qty) => {
       <div class="home-split__main rv-grid">
         {reviewSlots.map((r) => r === 'cta' ? (
           <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
-            <span style="font-size:1.5rem;line-height:28px;font-weight:400">{reviewsCms.cta_text}</span>
+            <span style={fs(reviewsCms, 'cta_text', 'font-size:1.5rem;line-height:28px;font-weight:400')}>{reviewsCms.cta_text}</span>
             {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="btn btn--outline btn--sm" style="align-self:flex-start">{reviewsCms.cta_label}</a>}
           </div>
         ) : (
@@ -355,8 +363,10 @@ const bundleRows = setQtys.map((qty) => {
       </div>
     </div>
   </section>
+  )}
 
   <!-- K9 -->
+  {visible(k9) && (
   <section class="container home-split home-split--center sec-gap">
     <div class="k9-img">
       {k9.image_url
@@ -364,9 +374,9 @@ const bundleRows = setQtys.map((qty) => {
         : <span style="font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: pies]</span>}
     </div>
     <div class="home-split__main">
-      {k9.tag && <span class="tag tag--peach" style="align-self:flex-start">{k9.tag}</span>}
-      <h2 class="h2">{k9.h2}</h2>
-      {k9.lead && <p class="lead" style="text-align:left">{k9.lead}</p>}
+      {k9.tag && <span class="tag tag--peach" style={fs(k9, 'tag', 'align-self:flex-start')}>{k9.tag}</span>}
+      <h2 class="h2" style={fs(k9, 'h2')}>{k9.h2}</h2>
+      {k9.lead && <p class="lead" style={fs(k9, 'lead', 'text-align:left')}>{k9.lead}</p>}
       <div style="display:flex;align-items:center;gap:24px;margin-top:21px;flex-wrap:wrap">
         <a href={k9.cta_href} class="btn">
           {k9.cta_label}
@@ -375,11 +385,13 @@ const bundleRows = setQtys.map((qty) => {
       </div>
     </div>
   </section>
+  )}
 
   <!-- FAQ -->
+  {visible(faqHead) && (
   <section class="container home-split sec-gap">
     <div class="home-side">
-      <h2 class="h2" set:html={lines(faqHead.h2).map(escHtml).join('<br/>')} />
+      <h2 class="h2" style={fs(faqHead, 'h2')} set:html={lines(faqHead.h2).map(escHtml).join('<br/>')} />
       {faqHead.link_label && <a href={faqHead.link_href} class="link-arrow">
         <Icon name="arrow-right" size={16} />
         {faqHead.link_label}
@@ -391,19 +403,22 @@ const bundleRows = setQtys.map((qty) => {
       ))}
     </div>
   </section>
+  )}
 
   <!-- NEWSLETTER (zapis z obowiązkową zgodą i potwierdzeniem e-mailem) -->
+  {visible(newsletterCms) && (
   <section class="w sec-gap" id="newsletter" style="margin-bottom:90px">
     <div class="row cta-box">
       <div class="fl cta-box__l">
-        <h2 class="h2" set:html={lines(newsletterCms.h2).map(escHtml).join('<br/>')} />
-        {newsletterCms.text && <p class="p">{newsletterCms.text}</p>}
+        <h2 class="h2" style={fs(newsletterCms, 'h2')} set:html={lines(newsletterCms.h2).map(escHtml).join('<br/>')} />
+        {newsletterCms.text && <p class="p" style={fs(newsletterCms, 'text')}>{newsletterCms.text}</p>}
       </div>
       <div class="fl cta-box__r">
         <NewsletterForm variant="light" title="" lead="" />
       </div>
     </div>
   </section>
+  )}
 </Base>
 
 
@@ -413,11 +428,17 @@ const bundleRows = setQtys.map((qty) => {
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
   .hero-fill { position: absolute; width: 100cqw; height: 638px; max-width: none; object-fit: cover; display: block; }
   .hero-mobile-img { display: none; }
+  /* H1 nie wchodzi pod zdjęcie (prawy kształt zaczyna się na 64,46%); druga linia z kreską jak w projekcie */
+  .hero > div[style*="left:0;top:0"] { z-index: 2; max-width: calc(64.46% - 40px); }
+  .hero-h1__2 { position: relative; display: block; padding-left: 68px; }
+  .hero-dash { position: absolute; left: 9px; top: 0.56em; width: 50px; height: 2px; background: var(--primary); }
   @media (max-width: 1380px) {
     .hero { height: auto !important; display: flex; flex-direction: column; }
     .hero > div.hero-shape, .hero > span.hero-shape, .hero > span[aria-hidden="true"] { display: none; }
     .hero > div[style*="position:absolute;left:0;top:0"] { position: static !important; }
-    .hero h1 span { padding-left: 0 !important; }
+    .hero-h1__2 { padding-left: 0; }
+    .hero-dash { display: none; }
+    .hero > div[style*="left:0;top:0"] { max-width: none; }
     .hero-mobile-img { display: block; order: 3; width: 100%; aspect-ratio: 4 / 3; max-height: 520px; margin-top: 24px; object-fit: cover; border-radius: 32px; background: var(--image); }
     .hero > p { position: static !important; width: auto !important; margin-top: 24px; order: 2; }
     .hero-bottom > span[aria-hidden="true"] { display: none; }

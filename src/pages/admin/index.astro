@@ -1026,6 +1026,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     .mb__msg--out { margin-left: 12px; }
     .mb__search { flex-basis: 100%; }
   }
+  .fsz { display: inline-flex; align-items: center; gap: 6px; margin-left: auto; font-size: 12px; color: var(--muted); }
+  .fsz .input { width: 76px; height: 30px; padding: 0 8px; font-size: 13px; }
+  [data-page-form] .field { position: relative; }
+  .sec-vis { font-size: 13px; }
+  [data-page-form].is-off { opacity: .6; }
+  [data-page-form].is-off .card__title::after { content: ' – wyłączona'; color: var(--muted); font-weight: 400; }
   .nl-ed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
   .nl-ed__fs { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   .nl-ed__preview { position: sticky; top: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -3081,6 +3087,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       },},
       { key: 'how_to_use.applying', label: 'Zakraplanie', schema: {
         h2: { type: 'text', label: 'Nagłówek' },
+        lead: { type: 'textarea', label: 'Tekst pod nagłówkiem (puste = ukryj)' },
         steps: { type: 'array', label: 'Kroki JSON [{title, desc}]' },
         image_url: { type: 'image', label: 'Zdjęcie przy sekcji zakraplania' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
@@ -3092,6 +3099,10 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     ]},
   };
 
+  // Sekcje, których nie da się wyłączyć (nagłówki stron, stopka) – pozostałe mają przełącznik „Sekcja widoczna”
+  const ALWAYS_ON = new Set(['how_to_use.intro', 'about.intro', 'footer.columns', 'footer.badges']);
+  // Pola bez regulacji rozmiaru (linki, alt, etykiety przycisków)
+  const NO_SIZE = /(href|_alt|_label|button|badge|^cta_label)$/;
   const pageSelect = $<HTMLSelectElement>('[data-page-select]');
   const pagesList = $<HTMLElement>('[data-pages-list]');
   const pagePreview = $<HTMLAnchorElement>('[data-page-preview]');
@@ -3120,9 +3131,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     </div>`;
   }
 
-  function fieldHtml(fk: string, schema: any, value: unknown): string {
+  function fieldHtml(fk: string, schema: any, value: unknown, size?: number | null): string {
     const val = value === null || value === undefined ? '' : value;
-    const hint = schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '';
+    // Rozmiar tekstu (px) dla pól tekstowych – puste = jak w projekcie
+    const sizable = ['text', 'textarea', 'markdown', 'list', undefined].includes(schema.type) && !NO_SIZE.test(fk);
+    const sz = sizable ? `<span class="fsz" title="Rozmiar tekstu w px (puste = jak w projekcie). Na telefonie duże rozmiary same się zmniejszają."><input class="input" type="number" name="${fk}__size" min="10" max="160" step="1" value="${size ?? ''}" placeholder="auto" aria-label="Rozmiar tekstu ${esc(schema.label)} (px)" /> px</span>` : '';
+    const hint = (schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '') + sz;
     switch (schema.type) {
       case 'textarea': case 'markdown':
         return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="4">${esc(String(val))}</textarea></label>`;
@@ -3145,6 +3159,15 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   function collectData(form: HTMLFormElement, schema: Record<string, any>): Record<string, unknown> {
     const fd = new FormData(form);
     const data: Record<string, unknown> = {};
+    // Ustawienia sekcji: widoczność i rozmiary tekstów
+    const vis = form.querySelector<HTMLInputElement>('[name="__visible"]');
+    if (vis) data.__hidden = !vis.checked;
+    const sizes: Record<string, number> = {};
+    for (const fk of Object.keys(schema)) {
+      const n = Math.round(Number(fd.get(`${fk}__size`)));
+      if (n >= 10 && n <= 160) sizes[fk] = n;
+    }
+    if (Object.keys(sizes).length) data.__sizes = sizes;
     for (const [fk, s] of Object.entries(schema)) {
       const raw = String(fd.get(fk) ?? '');
       switch (s.type) {
@@ -3165,22 +3188,27 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     if (page === 'faq') {
       const cats: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
       pagesList.innerHTML = `<div class="faq-cms">
-        <p class="muted small">Edytuj pytania i odpowiedzi. Zmiany widoczne natychmiast po zapisie.</p>
+        <div class="actions" style="justify-content:space-between"><p class="muted small" style="margin:0">Edytuj pytania i odpowiedzi. Kolejność: mniejsza liczba = wyżej. Zmiany widoczne po zapisie (do minuty).</p>
+          <button type="button" class="btn btn--sm" data-faq-add>+ Dodaj pytanie</button></div>
         <div data-faq-list>
           ${rows.map((r) => `<details class="faq-cms__item" data-faq-key="${esc(r.key)}">
             <summary class="faq-cms__q">
               <span class="faq-cms__label">${esc(r.data.q || '(bez pytania)')}</span>
               <span class="pill">${esc(cats[r.data.cat] || r.data.cat || '')}</span>
-              ${r.data.home ? '<span class="pill pill--ok">Na głównej</span>' : ''}
+              ${r.data.home ? '<span class="pill pill--ok">Na głównej</span>' : ''}${r.data.__hidden ? '<span class="pill pill--warn">Ukryte</span>' : ''}
             </summary>
             <form class="faq-cms__form">
               <div class="row2">
                 <label class="field">Kategoria<select class="input" name="cat">${Object.entries(cats).map(([id, lbl]) => `<option value="${id}" ${r.data.cat===id?'selected':''}>${lbl}</option>`).join('')}</select></label>
                 <label class="check faq-cms__check"><input type="checkbox" name="home" ${r.data.home?'checked':''} /> Pokaż na stronie głównej</label>
               </div>
+              <div class="row2">
+                <label class="field">Kolejność<input class="input" type="number" name="sort_order" value="${esc(r.sort_order ?? '')}" min="0" max="9999" /></label>
+                <label class="check faq-cms__check"><input type="checkbox" name="visible" ${r.data.__hidden ? '' : 'checked'} /> Pytanie widoczne</label>
+              </div>
               <label class="field">Pytanie<input class="input" name="q" value="${esc(r.data.q||'')}" required /></label>
               <label class="field">Odpowiedź <span class="muted small">(pusta linia = nowy akapit; {shippingTime} = czas wysyłki)</span><textarea class="input mono" name="a" rows="5">${esc(r.data.a||'')}</textarea></label>
-              <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
+              <div class="actions"><button class="btn btn--sm">Zapisz</button><button type="button" class="btn btn--danger btn--sm" data-faq-del>Usuń pytanie</button></div>
             </form>
           </details>`).join('')}
         </div>
@@ -3190,19 +3218,39 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
           const fd = new FormData(form);
-          const data = { cat: fd.get('cat'), home: fd.get('home') !== null, q: String(fd.get('q')||'').trim(), a: String(fd.get('a')||'').trim() };
-          try { await api('/api/admin/pages', { key, data }); toast('Zapisano pytanie.'); (form.closest('details') as any).open = false; }
+          const data = { cat: fd.get('cat'), home: fd.get('home') !== null, q: String(fd.get('q')||'').trim(), a: String(fd.get('a')||'').trim(), __hidden: fd.get('visible') === null };
+          if (!data.q || !data.a) { toast('Uzupełnij pytanie i odpowiedź.', true); return; }
+          try { await api('/api/admin/pages', { key, data, sort_order: Number(fd.get('sort_order')) || 0 }); toast('Zapisano pytanie.'); loadPages('faq'); }
           catch (err) { toast((err as Error).message, true); }
         });
+        form.querySelector('[data-faq-del]')?.addEventListener('click', async () => {
+          if (!confirm('Usunąć to pytanie? Tej operacji nie można cofnąć.')) return;
+          try { await api('/api/admin/pages', { action: 'delete_faq', key }); toast('Usunięto pytanie.'); loadPages('faq'); }
+          catch (err) { toast((err as Error).message, true); }
+        });
+      });
+      pagesList.querySelector('[data-faq-add]')?.addEventListener('click', async () => {
+        try {
+          const d = await api('/api/admin/pages', { action: 'create_faq' });
+          await loadPages('faq');
+          const el = pagesList.querySelector<HTMLDetailsElement>(`[data-faq-key="${d.key}"]`);
+          if (el) { el.open = true; el.scrollIntoView({ block: 'center' }); el.querySelector<HTMLInputElement>('[name="q"]')?.focus(); }
+          toast('Dodano pytanie – uzupełnij treść i zapisz.');
+        } catch (err) { toast((err as Error).message, true); }
       });
       return;
     }
 
     pagesList.innerHTML = meta.sections.map((sec: any) => {
       const data = rowMap[sec.key]?.data ?? {};
-      const fields = Object.entries(sec.schema).map(([fk, fSchema]: [string, any]) => fieldHtml(fk, fSchema, data[fk])).join('');
-      return `<form class="card" data-page-form="${esc(sec.key)}">
-        <div class="card__head"><h2 class="card__title">${esc(sec.label)}</h2>${rowMap[sec.key]?.updated_at ? `<span class="muted small">Zmienione: ${date(rowMap[sec.key].updated_at)}</span>` : ''}</div>
+      const fields = Object.entries(sec.schema).map(([fk, fSchema]: [string, any]) => fieldHtml(fk, fSchema, data[fk], data.__sizes?.[fk])).join('');
+      const hidden = data.__hidden === true;
+      const missing = !rowMap[sec.key];
+      return `<form class="card${hidden ? ' is-off' : ''}" data-page-form="${esc(sec.key)}">
+        <div class="card__head"><h2 class="card__title">${esc(sec.label)}</h2>
+          <span class="actions">${rowMap[sec.key]?.updated_at ? `<span class="muted small">Zmienione: ${date(rowMap[sec.key].updated_at)}</span>` : ''}
+          ${ALWAYS_ON.has(sec.key) ? '' : `<label class="check sec-vis"><input type="checkbox" name="__visible" ${hidden ? '' : 'checked'} /> Sekcja widoczna</label>`}</span></div>
+        ${missing ? '<p class="err small">Tej sekcji nie ma jeszcze w bazie – uruchom najnowszy skrypt SQL z paczki (supabase/), inaczej zapis się nie uda.</p>' : ''}
         ${fields}
         <div class="actions"><button class="btn btn--sm">Zapisz sekcję</button></div>
       </form>`;
@@ -3215,6 +3263,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       toast(msg || `Zapisano „${sec.label}".`);
     };
     pagesList.querySelectorAll<HTMLFormElement>('[data-page-form]').forEach((form) => {
+      // Przełącznik widoczności zapisuje sekcję od razu
+      form.querySelector<HTMLInputElement>('[name="__visible"]')?.addEventListener('change', async (e) => {
+        const on = (e.target as HTMLInputElement).checked;
+        form.classList.toggle('is-off', !on);
+        try { await saveSection(form, on ? 'Sekcja włączona.' : 'Sekcja wyłączona – nie pokazuje się na stronie.'); }
+        catch (err) { (e.target as HTMLInputElement).checked = !on; form.classList.toggle('is-off', on); toast((err as Error).message, true); }
+      });
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
         try { await saveSection(form); } catch (err) { toast((err as Error).message, true); }

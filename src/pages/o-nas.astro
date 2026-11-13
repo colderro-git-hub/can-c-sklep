@@ -3,24 +3,50 @@ export const prerender = false; // SEO (tytuł, opis, obraz) edytowane w panelu 
 import InfoPage from '../components/InfoPage.astro';
 import { getEnv } from '../lib/env';
 import { site } from '../config';
----
-<InfoPage newsletter title="O nas" description="Sklep can-c.pl prowadzi firma Colderro Ewa Zimna. Sprzedajemy oryginalne krople Can-C od 2013 roku." lead="Oryginalne krople Can-C sprzedajemy od 2013 roku. Stawiamy na sprawdzone produkty, szybką wysyłkę i obsługę, z którą łatwo się porozumieć.">
-  <section>
-    <h2>Kim jesteśmy</h2>
-    <p>Sklep can-c.pl prowadzi firma <span data-site="company">{site.company}</span>. Od początku sprzedajemy wyłącznie oryginalne produkty renomowanych producentów z branży optycznej – w tym krople Can-C zatwierdzone przez Innovative Vision Products (IVP).</p>
-    <p>Wszystkie zamówienia realizujemy przez sklep internetowy. Nie prowadzimy sprzedaży stacjonarnej.</p>
-  </section>
+import { getPageContent, getSection, applyTokens, visible, fs } from '../lib/page-content';
+import { getSite } from '../lib/site-settings';
 
-  <section>
-    <h2>Na co możesz liczyć</h2>
-    <ul>
-      <li>Oryginalne produkty z pewnego źródła.</li>
-      <li>Darmowa dostawa w Polsce i szybka wysyłka.</li>
-      <li>Rabaty przy zakupie zestawów na dłuższą kurację.</li>
-      <li>Konto z historią zamówień i ponownym zamówieniem jednym kliknięciem.</li>
-      <li>Kontakt z człowiekiem: <span data-site="hours">{site.hours}</span>.</li>
-    </ul>
-  </section>
+// Treści z /admin → Strony → O nas (fallback: teksty z kodu)
+const env = await getEnv(Astro.locals);
+const [rows, shop] = await Promise.all([getPageContent(env, 'about').catch(() => []), getSite(env).catch(() => null)]);
+const tokens = { company: shop?.company ?? site.company, hours: shop?.hours ?? site.hours, email: shop?.email ?? site.email };
+const at = (key: string, fb: any): any => getSection(rows, key) ?? fb;
+const intro = at('about.intro', { lead: 'Oryginalne krople Can-C sprzedajemy od 2013 roku. Stawiamy na sprawdzone produkty, szybką wysyłkę i obsługę, z którą łatwo się porozumieć.' });
+const who = at('about.who', {
+  h2: 'Kim jesteśmy',
+  paragraphs: [
+    'Sklep can-c.pl prowadzi firma {company}. Od początku sprzedajemy wyłącznie oryginalne produkty renomowanych producentów z branży optycznej – w tym krople Can-C zatwierdzone przez Innovative Vision Products (IVP).',
+    'Wszystkie zamówienia realizujemy przez sklep internetowy. Nie prowadzimy sprzedaży stacjonarnej.',
+  ],
+});
+const promise = at('about.promise', {
+  h2: 'Na co możesz liczyć',
+  items: [
+    'Oryginalne produkty z pewnego źródła.',
+    'Darmowa dostawa w Polsce i szybka wysyłka.',
+    'Rabaty przy zakupie zestawów na dłuższą kurację.',
+    'Konto z historią zamówień i ponownym zamówieniem jednym kliknięciem.',
+    'Kontakt z człowiekiem: {hours}.',
+  ],
+});
+const t = (s: string) => applyTokens(String(s ?? ''), tokens);
+---
+<InfoPage newsletter title="O nas" description="Sklep can-c.pl prowadzi firma Colderro Ewa Zimna. Sprzedajemy oryginalne krople Can-C od 2013 roku." lead={t(intro.lead)} leadStyle={fs(intro, 'lead')}>
+  {visible(who) && (
+    <section>
+      <h2 style={fs(who, 'h2')}>{who.h2}</h2>
+      {(who.paragraphs as string[]).filter(Boolean).map((p) => <p style={fs(who, 'paragraphs')}>{t(p)}</p>)}
+    </section>
+  )}
+
+  {visible(promise) && (
+    <section>
+      <h2 style={fs(promise, 'h2')}>{promise.h2}</h2>
+      <ul style={fs(promise, 'items')}>
+        {(promise.items as string[]).filter(Boolean).map((i) => <li>{t(i)}</li>)}
+      </ul>
+    </section>
+  )}
 
   <section>
     <h2>Dane firmy</h2>

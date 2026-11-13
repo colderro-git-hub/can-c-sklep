@@ -17,7 +17,7 @@ const [faqRows, siteDb] = await Promise.all([
 ]);
 const tokens = { shippingTime: siteDb?.shippingTime ?? '' };
 const slugify = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
-const faqItems = getSections<{ cat: string; home: boolean; q: string; a: string }>(faqRows, 'item').map((f) => ({ ...f, id: slugify(f.q) }));
+const faqItems = getSections<{ cat: string; home: boolean; q: string; a: string; __hidden?: boolean }>(faqRows, 'item').filter((f) => !f.__hidden && f.q && f.a).map((f) => ({ ...f, id: slugify(f.q) }));
 const faqCategories = [
   { id: 'produkt', label: 'Produkt' }, { id: 'stosowanie', label: 'Stosowanie' },
   { id: 'zamowienia', label: 'Zamówienia i dostawa' }, { id: 'zwroty', label: 'Płatności i zwroty' },
