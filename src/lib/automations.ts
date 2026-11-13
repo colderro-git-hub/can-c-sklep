@@ -92,14 +92,19 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
       }
 
       const days = Math.round((new Date(c.treatment_end_at).getTime() - Date.now()) / 864e5);
-      const qty = c.last_order_packs >= 4 ? 4 : 2;
       const unsub = await unsubscribeUrl(env, origin, c.id);
+      // „Zamów ponownie jednym kliknięciem”: koszyk z produktami z ostatniego zamówienia (+ kod, jeśli jest)
+      const lastItems = await sb.select<{ product_id: string | null; qty: number }>(`order_items?select=product_id,qty&order_id=eq.${c.order_id}`).catch(() => []);
+      const merged = new Map<string, number>();
+      for (const i of lastItems) if (i.product_id) merged.set(i.product_id, (merged.get(i.product_id) ?? 0) + i.qty);
+      if (!merged.size) merged.set('krople-can-c', c.last_order_packs >= 4 ? 4 : 2);
+      const reorderUrl = `${origin}/koszyk/?dodaj=${[...merged].map(([slug, q]) => `${slug}:${q}`).join(',')}${code ? `&kod=${code}` : ''}&utm_source=przypomnienie&utm_medium=email&utm_campaign=koniec-kuracji`;
       await sendMail(env, {
         to: c.email,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
         subject: days > 0 ? `Kończy Ci się zapas kropli Can-C` : `Czas na kolejne opakowanie kropli Can-C`,
         headers: { 'List-Unsubscribe': `<${unsub}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
-        html: treatmentReminderHtml({ site, origin, firstName: c.first_name, days, packs: c.last_order_packs, code, pct: s.regularCodePercent, validDays: s.codeValidDays, orderUrl: `${origin}/produkt/krople-can-c/?zestaw=${qty}`, unsubscribe: unsub }),
+        html: treatmentReminderHtml({ site, origin, firstName: c.first_name, days, packs: c.last_order_packs, code, pct: s.regularCodePercent, validDays: s.codeValidDays, orderUrl: reorderUrl, unsubscribe: unsub }),
         text: [
           `Dzień dobry${c.first_name ? ` ${c.first_name}` : ''},`, '',
           days > 0
@@ -108,7 +113,7 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
           'Żeby nie przerywać kuracji, zamów kolejne opakowania z wyprzedzeniem - wysyłamy ' + site.shippingTime + ', dostawa jest bezpłatna.', '',
           code ? `Dla stałych klientów mamy rabat ${s.regularCodePercent}% - Twój kod: ${code} (ważny ${s.codeValidDays} dni).` : '',
           code ? '' : '',
-          `Zamów ponownie: ${origin}/produkt/krople-can-c/?zestaw=${qty}`, '',
+          `Zamów ponownie (ten sam zestaw${code ? ' z kodem' : ''}): ${reorderUrl}`, '',
           'Dłuższa kuracja = niższa cena za opakowanie (rabaty liczą się same w koszyku).', '',
           `Zespół Can-C · ${site.email}`, '',
           `Nie chcesz takich przypomnień? Wypisz się: ${unsub}`,

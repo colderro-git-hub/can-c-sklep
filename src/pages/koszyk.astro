@@ -17,6 +17,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       <li class="steps__i"><span class="steps__n">3</span>Potwierdzenie</li>
     </ol>
     <h1 class="h1 ct__title">Koszyk</h1>
+    <p class="peach ct__reorder" data-reorder hidden>Dodaliśmy produkty z Twojego poprzedniego zamówienia<span data-reorder-code></span>. Możesz zmienić ilości przed zamówieniem.</p>
     <p class="ct__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
     <div data-empty hidden class="empty ct__empty">
@@ -96,10 +97,20 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <script>
-  import { getCart, setQty, onCartChange } from '../lib/cart';
+  import { getCart, setQty, onCartChange, cartFromLink } from '../lib/cart';
+  // Link z maila „Zamów ponownie” - przed pierwszym odczytem koszyka
+  const fromLink = cartFromLink();
   import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
   import { typoSafe } from '../lib/typography';
   import { applyPromotions, nextTier, normalizePromotion, promoActive, promoLabel, describeDiscount } from '../lib/promotions';
+
+  if (fromLink.added || fromLink.code) {
+    const box = document.querySelector<HTMLElement>('[data-reorder]');
+    if (box) {
+      box.hidden = !fromLink.added;
+      if (fromLink.code) box.querySelector('[data-reorder-code]')!.textContent = `, a kod ${fromLink.code} doda się automatycznie w następnym kroku`;
+    }
+  }
 
   (async () => {
     await (window as any).__CANC_READY__;
@@ -243,7 +254,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   .ct { margin-top: 45px; margin-bottom: 90px; }
   .ct__title { margin-top: 45px; }
   .ct__notice { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); font-size: 14px; }
-  .ct__notice[hidden], [data-empty][hidden], [data-filled][hidden], [data-upsell][hidden] { display: none !important; }
+  .ct__reorder { align-self: flex-start; margin: -10px 0 24px; padding: 10px 18px; border-radius: 14px; font-size: 16px; line-height: 24px; }
+  .ct__reorder[hidden], .ct__notice[hidden], [data-empty][hidden], [data-filled][hidden], [data-upsell][hidden] { display: none !important; }
   .ct__empty { margin-top: 45px; }
   .ct__emptyt { font-size: 28px; line-height: 32px; font-weight: 400; }
   .ct__grid { display: flex; align-items: flex-start; gap: 45px; margin-top: 45px; }

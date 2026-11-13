@@ -209,8 +209,9 @@ export function treatmentReminderHtml(o: Base & {
         : `według naszych wyliczeń zapas z ostatniego zamówienia (${o.packs} op.) właśnie się skończył.`),
       p(`Żeby nie przerywać kuracji, zamów kolejne opakowania z wyprzedzeniem. Wysyłamy ${esc(o.site.shippingTime)}, dostawa jest bezpłatna.`),
       o.code ? p(`Dla stałych klientów mamy rabat <strong>${o.pct}%</strong>:`) : '',
-      o.code ? codeBox(o.code, `ważny ${o.validDays} dni · wpisz przy zamówieniu`) : '',
-      button(o.orderUrl, 'Zamów ponownie'),
+      o.code ? codeBox(o.code, `ważny ${o.validDays} dni · doda się sam po kliknięciu przycisku`) : '',
+      button(o.orderUrl, 'Zamów ponownie ten sam zestaw'),
+      p('Przycisk otwiera koszyk z produktami z Twojego ostatniego zamówienia' + (o.code ? ' i od razu dolicza rabat' : '') + '. Ilości możesz zmienić przed zamówieniem.', { muted: true, size: 14 }),
       box('Dłuższa kuracja = niższa cena: <strong>2 opakowania −8%</strong>, <strong>4 opakowania −10%</strong>.', 'plain'),
     ].join(''),
   });

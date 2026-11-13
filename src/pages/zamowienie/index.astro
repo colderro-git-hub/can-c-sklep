@@ -202,6 +202,20 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     });
     codeInput.addEventListener('input', () => { if (appliedCode && codeInput.value.trim().toUpperCase() !== appliedCode) { resetCode(); codeMsg.textContent = ''; } });
     (window as any).__cancCode = () => appliedCode;
+    // Kod z linku „Zamów ponownie” (mail o końcu kuracji): wpisany automatycznie; kody imienne sprawdzamy po podaniu e-maila
+    let pendingCode = '';
+    try { pendingCode = sessionStorage.getItem('canc-reorder-code') || ''; } catch { /* brak */ }
+    const applyPending = () => {
+      if (!pendingCode || appliedCode) return;
+      codeInput.value = pendingCode;
+      form.querySelector<HTMLButtonElement>('[data-apply-code]')!.click();
+    };
+    if (pendingCode) {
+      applyPending();
+      form.querySelector<HTMLInputElement>('input[name="email"]')?.addEventListener('change', () => { if (!appliedCode) applyPending(); });
+      // Po złożeniu zamówienia kod nie wraca przy kolejnych zakupach
+      form.addEventListener('submit', () => { try { sessionStorage.removeItem('canc-reorder-code'); } catch { /* brak */ } });
+    }
 
     // ---------- Uzupełnienie danych zalogowanego klienta ----------
     (async () => {
