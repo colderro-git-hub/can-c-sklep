@@ -2,7 +2,7 @@
 import type { Env } from './env';
 import { PARCEL_DEFAULTS, PRODUCT_VAT_RATE, PRODUCT_NUMERIC_ID } from '../config';
 
-// Klucz może przyjść w różnych nagłówkach – sprawdzamy typowe miejsca
+// Klucz może przyjść w różnych nagłówkach - sprawdzamy typowe miejsca
 export function readApiKey(request: Request) {
   const h = request.headers;
   const url = new URL(request.url);

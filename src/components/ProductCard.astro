@@ -25,7 +25,7 @@ const href = `/produkt/${slug}/`;
     {tag && <p class="pc__tag">{tag}</p>}
     <div class="pc__foot">
       <span class="pc__price">
-        {price !== null ? formatPrice(price) : '—'}
+        {price !== null ? formatPrice(price) : '-'}
         {onSale && regular != null && <s class="k">{formatPrice(regular)}</s>}
       </span>
       {avail !== 'out_of_stock' && price !== null

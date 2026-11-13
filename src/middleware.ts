@@ -1,4 +1,4 @@
-// Przekierowania ze starych adresów (np. WordPress) i dziennik błędów 404 – panel: SEO → Przekierowania.
+// Przekierowania ze starych adresów (np. WordPress) i dziennik błędów 404 - panel: SEO → Przekierowania.
 // Pliki statyczne Cloudflare serwuje bez udziału tego kodu, więc nie spowalnia to zwykłych stron.
 import { defineMiddleware } from 'astro:middleware';
 import type { APIContext, MiddlewareNext } from 'astro';
@@ -9,7 +9,7 @@ import { typoResponse } from './lib/typography';
 
 const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon)(\/|$|\.ico$)/;
 
-// Typografia (twarde spacje po spójnikach, wyrazy z łącznikiem w jednym wierszu) dla wszystkich stron sklepu –
+// Typografia (twarde spacje po spójnikach, wyrazy z łącznikiem w jednym wierszu) dla wszystkich stron sklepu -
 // SSR przy każdym żądaniu, statycznych raz przy budowaniu. Panel admina i API bez zmian.
 const NO_TYPO = /^\/(api|admin)(\/|$)/;
 

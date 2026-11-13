@@ -17,16 +17,17 @@ export type Env = {
   ACCESS_TEAM_DOMAIN?: string; // np. colderro.cloudflareaccess.com
   ACCESS_AUD?: string;         // Application Audience (AUD) z Cloudflare Access; kilka po przecinku
   ADMIN_EMAILS?: string;       // e-maile administratorów po przecinku
-  ALLOW_WC_ACTIONS?: string;   // 'true' po starcie – pozwala obsługiwać zamówienia z importu
+  ALLOW_WC_ACTIONS?: string;   // 'true' po starcie - pozwala obsługiwać zamówienia z importu
   FURGONETKA_API_KEY?: string; // klucz integracji własnej (ten sam wpisujesz w panelu Furgonetki)
   CRON_SECRET?;
   GA4_PRIVATE_KEY?; GA4_CLIENT_EMAIL?; GA4_PROPERTY_ID?: string;
-  GA4_MEASUREMENT_ID?: string; // G-XXXXXXX – Measurement Protocol (zwroty z panelu)
+  GA4_MEASUREMENT_ID?: string; // G-XXXXXXX - Measurement Protocol (zwroty z panelu)
   GA4_API_SECRET?: string;     // klucz tajny Measurement Protocol dla strumienia www
+  SHOW_TEST_REVIEWS?: string;     // 'true' = pokazuj opinie testowe (source=test) - tylko na czas testów
   MAIL_INBOX?: string;            // adres(y) skrzynki sklepu, np. kontakt@can-c.pl (do testów adres *.resend.app)
   MAIL_NOTIFY?: string;           // prywatny adres na powiadomienia o nowej wiadomości (opcjonalnie)
   RESEND_WEBHOOK_SECRET?: string; // whsec_… z Resend → Webhooks (podpis zdarzeń email.received)
-  RESEND_RECEIVING_KEY?: string;  // klucz Resend „Full access” – tylko do odczytu odebranej poczty (wysyłka zostaje na RESEND_API_KEY)
+  RESEND_RECEIVING_KEY?: string;  // klucz Resend „Full access” - tylko do odczytu odebranej poczty (wysyłka zostaje na RESEND_API_KEY)
   GA4_SERVER_PURCHASE?: string; // 'all' = purchase z serwera dla każdego zamówienia (domyślnie tylko przelew / panel)        // klucz automatów (Supabase pg_cron) i podpisu linków „wypisz się”
 };
 
@@ -35,10 +36,10 @@ export async function getEnv(locals: unknown): Promise<Env> {
     const fromLocals = (locals as any)?.runtime?.env;
     if (fromLocals) return fromLocals as Env;
   } catch {
-    /* Astro 6 zgłasza błąd przy odwołaniu do locals.runtime – przechodzimy dalej */
+    /* Astro 6 zgłasza błąd przy odwołaniu do locals.runtime - przechodzimy dalej */
   }
   try {
-    // @ts-ignore – moduł istnieje tylko w środowisku Workers
+    // @ts-ignore - moduł istnieje tylko w środowisku Workers
     const mod = await import('cloudflare:workers');
     return ((mod as any).env ?? {}) as Env;
   } catch {

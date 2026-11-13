@@ -14,7 +14,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     <section class="row ac__login" data-state="login" hidden>
       <div class="ac__lhead">
         <h1 class="h1">Moje konto</h1>
-        <p class="p p--lg">Zaloguj się adresem e-mail użytym przy zamówieniu. Wyślemy link i kod – bez hasła.</p>
+        <p class="p p--lg">Zaloguj się adresem e-mail użytym przy zamówieniu. Wyślemy link i kod - bez hasła.</p>
         <ul class="checks ac__perks">
           <li>Historia wszystkich zamówień, także z poprzedniej wersji sklepu</li>
           <li>Śledzenie przesyłek i ponowne zamówienie jednym kliknięciem</li>
@@ -431,7 +431,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const start = new Date(last.shipped_at || last.paid_at || last.created_at).getTime() + 3 * 864e5; // ok. 3 dni na dostawę
     const end = start + packs * 30 * 864e5;
     const left = Math.round((end - Date.now()) / 864e5);
-    if (left < -60) return; // dawno po kuracji – bez karty
+    if (left < -60) return; // dawno po kuracji - bez karty
     const rem = $('[data-reminder]');
     rem.hidden = false;
     $('[data-cards]').hidden = false;
@@ -441,7 +441,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const pct = Math.min(100, Math.max(0, Math.round(((Date.now() - start) / (end - start)) * 100)));
     $('[data-rem-bar]').setAttribute('aria-valuenow', String(pct));
     $<HTMLElement>('[data-rem-fill]').style.width = pct + '%';
-    $('[data-rem-sub]').textContent = `Szacunek przy 1–2 kroplach do oka, dwa razy dziennie. ${packs} ${packs === 1 ? 'opakowanie ≈ 1 miesiąc' : packs < 5 ? `opakowania ≈ ${packs} miesiące` : `opakowań ≈ ${packs} miesięcy`}.`;
+    $('[data-rem-sub]').textContent = `Szacunek przy 1-2 kroplach do oka, dwa razy dziennie. ${packs} ${packs === 1 ? 'opakowanie ≈ 1 miesiąc' : packs < 5 ? `opakowania ≈ ${packs} miesiące` : `opakowań ≈ ${packs} miesięcy`}.`;
     $<HTMLAnchorElement>('[data-rem-cta]').textContent = left > 21 ? 'Zamów ponownie' : 'Zamów zawczasu';
     const qty = packs >= 4 ? 4 : packs >= 2 ? 2 : 2;
     $<HTMLAnchorElement>('[data-rem-cta]').href = `/produkt/krople-can-c/?zestaw=${qty}`;
@@ -483,7 +483,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     if (session?.user) {
       const uid = session.user.id;
       if (event === 'SIGNED_IN') {
-        // Supabase nie rozróżnia sign_up od login w OTP – sprawdzamy datę konta
+        // Supabase nie rozróżnia sign_up od login w OTP - sprawdzamy datę konta
         const created = new Date(session.user.created_at).getTime();
         const isNew = Date.now() - created < 60_000; // nowe konto = stworzone <60s temu
         if (isNew) trackSignUp('email_otp');
@@ -500,7 +500,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   // form_field_error przy błędnym kodzie OTP
   const _origCodeSubmit = $('[data-code-form]').onsubmit;
   $('[data-code-form]').addEventListener('submit', async (e) => {
-    // Obsługiwane przez istniejący listener – tutaj tylko obserwujemy wynik
+    // Obsługiwane przez istniejący listener - tutaj tylko obserwujemy wynik
     // przez MutationObserver na komunikacie błędu
     const msg = $('[data-code-msg]');
     const obs = new MutationObserver(() => {

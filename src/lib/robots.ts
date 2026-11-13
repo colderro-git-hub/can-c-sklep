@@ -24,9 +24,9 @@ export async function getCustomRobots(env: Env): Promise<string> {
 }
 export const clearRobotsCache = () => { cache = null; };
 
-// Boty AI (stan: 2026). „search” – wyszukiwarki i asystenci, którzy pobierają stronę, żeby odpowiedzieć i zacytować źródło.
-// „training” – zbieranie treści do trenowania modeli. Google AI Overviews i Copilot korzystają z Googlebota i Bingbota,
-// więc nie da się ich wyłączyć osobno bez wypadnięcia z wyszukiwarki – nie ma ich na liście.
+// Boty AI (stan: 2026). „search” - wyszukiwarki i asystenci, którzy pobierają stronę, żeby odpowiedzieć i zacytować źródło.
+// „training” - zbieranie treści do trenowania modeli. Google AI Overviews i Copilot korzystają z Googlebota i Bingbota,
+// więc nie da się ich wyłączyć osobno bez wypadnięcia z wyszukiwarki - nie ma ich na liście.
 export const AI_BOTS: { id: string; group: 'search' | 'training'; owner: string; note: string }[] = [
   { id: 'OAI-SearchBot', group: 'search', owner: 'OpenAI', note: 'wyszukiwarka ChatGPT' },
   { id: 'ChatGPT-User', group: 'search', owner: 'OpenAI', note: 'ChatGPT otwiera stronę na prośbę użytkownika' },

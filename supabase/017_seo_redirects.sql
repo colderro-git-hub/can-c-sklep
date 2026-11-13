@@ -1,4 +1,4 @@
--- 017: SEO – przekierowania 301 i dziennik błędów 404 (panel: SEO → Przekierowania).
+-- 017: SEO - przekierowania 301 i dziennik błędów 404 (panel: SEO → Przekierowania).
 -- Zapis i odczyt wyłącznie kluczem secret z Workera (RLS włączone, bez polityk dla klientów).
 
 create table if not exists public.redirects (

@@ -1,6 +1,6 @@
 // Polska typografia w HTML: bez „wiszących” jednoliterowych słów na końcu wiersza i bez łamania wyrazów z łącznikiem.
 //  • po a, i, o, u, w, z (też wielkimi) zwykła spacja → twarda (U+00A0), więc spójnik przechodzi do nowego wiersza razem ze słowem,
-//  • spacja przed półpauzą/pauzą „ – ” → twarda (myślnik nie zaczyna wiersza),
+//  • spacja przed półpauzą/pauzą „ - ” → twarda (myślnik nie zaczyna wiersza),
 //  • wyrazy z łącznikiem (Can-C, e-mail, biało-czerwony) → <span class="nowrap">, przeglądarka nie łamie ich za łącznikiem.
 // Zmieniamy wyłącznie tekst między znacznikami; atrybuty, skrypty, style, kod i pola formularzy zostają nietknięte.
 
@@ -10,9 +10,12 @@ const RAW = new Set(['script', 'style', 'textarea', 'pre', 'code', 'svg', 'math'
 // Elementy, w których nie wolno wstawić znacznika <span> (tylko twarde spacje)
 const TEXT_ONLY = new Set(['title', 'option']);
 
-// Bez flagi „u” i bez lookbehind – te wyrażenia działają na każdej stronie, więc liczy się szybkość (limit CPU Workera)
-const ORPHAN = /(^|[\s(„"'«\u2013\u2014])([aiouwz])[ \t\r\n]+(?=\S)/gi;
-const DASH = /[ \t\r\n]+([\u2013\u2014])(?=\s)/g;
+// Bez flagi „u” i bez lookbehind - te wyrażenia działają na każdej stronie, więc liczy się szybkość (limit CPU Workera)
+const ORPHAN = /(^|[\s(„"'«-])([aiouwz])[ \t\r\n]+(?=\S)/gi;
+// Myślnik w zdaniu („ - ”): twarda spacja przed nim, żeby nie zaczynał wiersza
+const DASH = /[ \t\r\n]+(-)(?=\s)/g;
+// Zasada sklepu: w tekstach tylko zwykły łącznik „-” (półpauza i pauza zamieniane przy wyświetlaniu)
+const LONG_DASH = /[\u2013\u2014]/g;
 const W = 'A-Za-z0-9\\u00C0-\\u024F';
 const HYPHENATED = new RegExp(`[${W}]+(?:-[${W}]+)+`, 'g');
 const HAS_ORPHAN = /(?:^|\s)[aiouwz]\s/i;
@@ -22,9 +25,10 @@ export type TypoOptions = { nowrap?: string }; // znacznik otwierający dla wyra
 export function typoText(text: string, opts: TypoOptions & { spans?: boolean } = {}): string {
   if (!text.trim()) return text;
   let t = text;
-  // Dwa przebiegi: „a w domu” – drugi spójnik stoi tuż za twardą spacją wstawioną w pierwszym
+  // Dwa przebiegi: „a w domu” - drugi spójnik stoi tuż za twardą spacją wstawioną w pierwszym
   if (HAS_ORPHAN.test(t)) t = t.replace(ORPHAN, `$1$2${NBSP}`).replace(ORPHAN, `$1$2${NBSP}`);
-  if (t.includes('\u2013') || t.includes('\u2014')) t = t.replace(DASH, `${NBSP}$1`);
+  if (t.includes('\u2013') || t.includes('\u2014')) t = t.replace(LONG_DASH, '-');
+  if (t.includes(' -')) t = t.replace(DASH, `${NBSP}$1`);
   if (opts.spans !== false && t.includes('-')) {
     const open = opts.nowrap ?? '<span class="nowrap">';
     const wrapped = t.replace(HYPHENATED, (w) => `${open}${w}</span>`);
@@ -52,7 +56,7 @@ export function typoHtml(html: string, opts: TypoOptions = {}): string {
     if (!name) continue;
     const closing = m[0][1] === '/';
     if (!closing && RAW.has(name) && !m[0].endsWith('/>')) {
-      // Przeskok do znacznika zamykającego – zawartość skryptów i stylów przepisujemy bez zmian
+      // Przeskok do znacznika zamykającego - zawartość skryptów i stylów przepisujemy bez zmian
       const close = new RegExp(`</${name}[\\s>]`, 'gi');
       close.lastIndex = pos;
       const end = close.exec(html);

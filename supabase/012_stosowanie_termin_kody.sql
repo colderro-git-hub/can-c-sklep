@@ -2,7 +2,7 @@
 -- Can-C krok 20: sekcja „Stosowanie” i termin realizacji na produkcie,
 -- szybsza lista użyć kodów rabatowych.
 -- Uruchom raz w Supabase PRZED wdrożeniem kodu: SQL Editor → New query → wklej → Run.
--- (Nowy kod odczytuje te kolumny – bez nich strony produktów zwrócą błąd).
+-- (Nowy kod odczytuje te kolumny - bez nich strony produktów zwrócą błąd).
 -- =====================================================================
 
 alter table public.products
@@ -17,4 +17,4 @@ create index if not exists orders_discount_code_idx
   on public.orders (discount_code, created_at desc)
   where discount_code is not null;
 
--- robots.txt edytowany w panelu trzymamy w settings pod kluczem 'robots' – bez zmian w schemacie.
+-- robots.txt edytowany w panelu trzymamy w settings pod kluczem 'robots' - bez zmian w schemacie.

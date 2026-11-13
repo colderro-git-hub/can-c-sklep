@@ -15,19 +15,19 @@ export async function sendBackInStock(env: Env, productId: string, origin: strin
   let sent = 0;
   for (const w of waiting) {
     try {
-      // Najpierw oznaczamy jako wysłane – przy równoległym zapisie nikt nie dostanie dwóch maili
+      // Najpierw oznaczamy jako wysłane - przy równoległym zapisie nikt nie dostanie dwóch maili
       const done = await sb.update(`stock_notifications?id=eq.${w.id}&notified_at=is.null`, { notified_at: new Date().toISOString() }, 'id');
       if (!done.length) continue;
       await sendMail(env, {
         to: w.email,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
-        subject: `${p.name} – znów dostępne w Can-C`,
+        subject: `${p.name} - znów dostępne w Can-C`,
         html: backInStockHtml({ site, origin, productName: p.name, productUrl: `${origin}/produkt/${p.id}/`, image: Array.isArray(p.images) ? p.images[0]?.url : null }),
         text: [
           'Dzień dobry,', '',
           `produkt, na który czekasz, jest znów dostępny: ${p.name}.`, '',
           `Zamów teraz: ${origin}/produkt/${p.id}/`, '',
-          'To jednorazowe powiadomienie – zapisałeś się na nie na stronie produktu. Więcej wiadomości z tego powodu nie wyślemy.', '',
+          'To jednorazowe powiadomienie - zapisałeś się na nie na stronie produktu. Więcej wiadomości z tego powodu nie wyślemy.', '',
           `Zespół Can-C · ${site.email}`,
         ].join('\n'),
       });

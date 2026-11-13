@@ -11,7 +11,7 @@ create table if not exists public.discount_codes (
   id                 uuid primary key default gen_random_uuid(),
   code               text not null unique check (code = upper(code) and code ~ '^[A-Z0-9_-]{3,30}$'),
   type               text not null check (type in ('percent', 'amount')),
-  value              integer not null check (value > 0),           -- procent (1–100) albo kwota w groszach
+  value              integer not null check (value > 0),           -- procent (1-100) albo kwota w groszach
   min_total          integer not null default 0 check (min_total >= 0),  -- minimalna wartość koszyka po rabacie zestawowym (grosze)
   starts_at          timestamptz,
   ends_at            timestamptz,
@@ -39,7 +39,7 @@ create index if not exists discount_code_uses_code_idx on public.discount_code_u
 alter table public.orders add column if not exists discount_code text;
 alter table public.orders add column if not exists discount_code_amount integer not null default 0 check (discount_code_amount >= 0);
 
--- Tylko serwer (klucz secret) ma dostęp – brak polityk dla klientów
+-- Tylko serwer (klucz secret) ma dostęp - brak polityk dla klientów
 alter table public.discount_codes enable row level security;
 alter table public.discount_code_uses enable row level security;
 

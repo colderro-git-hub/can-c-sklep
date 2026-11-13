@@ -1,6 +1,6 @@
 // Ochrona panelu admina.
 // Warstwa 1: Cloudflare Access (logowanie kodem z e-maila) przed adresami /admin i /api/admin.
-// Warstwa 2: tutaj – Worker sprawdza podpis tokenu Access (JWT) i e-mail na liście ADMIN_EMAILS.
+// Warstwa 2: tutaj - Worker sprawdza podpis tokenu Access (JWT) i e-mail na liście ADMIN_EMAILS.
 // Dzięki temu nawet ominięcie Access (np. inny adres Workera) nie da dostępu do danych.
 import type { Env } from './env';
 
@@ -44,18 +44,18 @@ export async function requireAdmin(request: Request, env: Env): Promise<string |
     const payload = decodeJson(p);
     const keys = await getKeys(ACCESS_TEAM_DOMAIN.replace(/^https?:\/\//, '').replace(/\/$/, ''));
     const jwk = keys.find((k) => k.kid === header.kid);
-    if (!jwk || header.alg !== 'RS256') return deny(`nie znaleziono klucza ${header.kid} dla domeny ${ACCESS_TEAM_DOMAIN} – sprawdź ACCESS_TEAM_DOMAIN`);
+    if (!jwk || header.alg !== 'RS256') return deny(`nie znaleziono klucza ${header.kid} dla domeny ${ACCESS_TEAM_DOMAIN} - sprawdź ACCESS_TEAM_DOMAIN`);
 
     const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
     const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64url(s), new TextEncoder().encode(`${h}.${p}`));
     if (!ok) return deny('nieprawidłowy podpis tokenu');
 
     const now = Math.floor(Date.now() / 1000);
-    if (typeof payload.exp !== 'number' || payload.exp < now) return deny('token wygasł – odśwież stronę');
+    if (typeof payload.exp !== 'number' || payload.exp < now) return deny('token wygasł - odśwież stronę');
     const auds = ACCESS_AUD.split(',').map((a) => a.trim());
     const tokenAud: string[] = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
     if (!tokenAud.some((a) => auds.includes(a))) {
-      return deny(`AUD się nie zgadza – token ma ${tokenAud.map((a) => a.slice(0, 8) + '…').join(', ')}, ACCESS_AUD zaczyna się od ${auds.map((a) => a.slice(0, 8) + '…').join(', ')}`);
+      return deny(`AUD się nie zgadza - token ma ${tokenAud.map((a) => a.slice(0, 8) + '…').join(', ')}, ACCESS_AUD zaczyna się od ${auds.map((a) => a.slice(0, 8) + '…').join(', ')}`);
     }
 
     const email = String(payload.email || '').toLowerCase();

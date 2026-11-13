@@ -8,7 +8,7 @@ import { promoActive, describeDiscount } from '../../lib/promotions';
 
 export const prerender = false;
 
-// Warunki promocji z kodem – do komunikatu, gdy koszyk ich nie spełnia
+// Warunki promocji z kodem - do komunikatu, gdy koszyk ich nie spełnia
 const conditions = (p: NonNullable<Awaited<ReturnType<typeof findCodePromotion>>>, names: Map<string, string>) =>
   p.kind === 'bundle'
     ? `zestaw: ${p.items.map((i) => `${names.get(i.product_id) || i.product_id}${i.qty > 1 ? ` × ${i.qty}` : ''}`).join(' + ')}`
@@ -40,10 +40,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const withCode = priceCart(lines, products, promos, { code });
       if (!withCode.codePromo) {
         const names = new Map((await sb.select<{ id: string; name: string }>('products?select=id,name')).map((p) => [p.id, p.name]));
-        return json(422, { error: `Kod działa przy zakupie – ${conditions(promo, names)}.` });
+        return json(422, { error: `Kod działa przy zakupie - ${conditions(promo, names)}.` });
       }
       const amount = priced.total - withCode.total;
-      if (amount <= 0) return json(422, { error: 'Ten kod nie obniży ceny tego koszyka – obecne rabaty są korzystniejsze.' });
+      if (amount <= 0) return json(422, { error: 'Ten kod nie obniży ceny tego koszyka - obecne rabaty są korzystniejsze.' });
       return json(200, { code, amount, total: withCode.total, promo: withCode.codePromo.label, describe: promo.kind === 'bundle' ? describeDiscount(promo.type, promo.value) : null });
     }
 

@@ -43,7 +43,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
   <channel>
-    <title>Can-C – sklep can-c.pl</title>
+    <title>Can-C - sklep can-c.pl</title>
     <link>${x(origin)}</link>
     <description>Produkty sklepu can-c.pl</description>${items}
   </channel>

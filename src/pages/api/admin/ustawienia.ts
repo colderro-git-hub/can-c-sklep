@@ -23,8 +23,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
 
-  // robots.txt – osobny zapis (klucz settings 'robots'); pusta treść = domyślna
-  // GTM ID – osobna akcja, nie wymaga pełnych danych sklepu
+  // robots.txt - osobny zapis (klucz settings 'robots'); pusta treść = domyślna
+  // GTM ID - osobna akcja, nie wymaga pełnych danych sklepu
   if (b.action === 'gtm') {
     const gtmId = String(b.gtmId ?? '').trim().toUpperCase();
     if (gtmId && !/^GTM-[A-Z0-9]{4,10}$/.test(gtmId)) return json(422, { error: 'Nieprawidłowy GTM ID. Format: GTM-XXXXXXX' });
@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
-  // Logo (nagłówek / stopka) – osobny zapis; adres musi wskazywać na folder logo/ we własnym magazynie zdjęć
+  // Logo (nagłówek / stopka) - osobny zapis; adres musi wskazywać na folder logo/ we własnym magazynie zdjęć
   if (b.action === 'logo') {
     const FIELDS: Record<string, string> = {
       header: 'logoHeader', footer: 'logoFooter',

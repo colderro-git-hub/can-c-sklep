@@ -1,10 +1,10 @@
-// Maile HTML w stylu sklepu. Układ tabelowy i style w atrybutach – tak, żeby wyglądał dobrze
+// Maile HTML w stylu sklepu. Układ tabelowy i style w atrybutach - tak, żeby wyglądał dobrze
 // w Gmailu, Outlooku i Apple Mail (programy pocztowe nie obsługują nowoczesnego CSS).
 import type { Site } from './site-settings';
 import { mailLogoUrl } from './mailbox';
 
 // Kolory i krój jak na stronie (system Laluna, global.css). Poppins ładują Apple Mail, iOS i część
-// programów; Gmail i Outlook pokażą Arial – dlatego wagi i odstępy dobrane tak, żeby oba wyglądały dobrze.
+// programów; Gmail i Outlook pokażą Arial - dlatego wagi i odstępy dobrane tak, żeby oba wyglądały dobrze.
 const INK = '#141C2B';          // --ink
 const MUTED = '#545D6E';        // --muted
 const LINE = '#DCE2EC';         // --line
@@ -59,7 +59,7 @@ export const steps = (items: string[]) => `
 // ---------- Szkielet wiadomości ----------
 export function layout(o: { site: Site; origin: string; preheader: string; body: string; unsubscribe?: string; reason?: string }) {
   const s = o.site;
-  // Logo z panelu – tylko PNG/JPG/GIF (SVG i WebP nie działają w Gmailu i Outlooku); inaczej logo tekstowe
+  // Logo z panelu - tylko PNG/JPG/GIF (SVG i WebP nie działają w Gmailu i Outlooku); inaczej logo tekstowe
   const logoUrl = mailLogoUrl(s as any);
   const logo = logoUrl
     ? `<img src="${esc(logoUrl)}" alt="Can-C" height="36" style="display:block;height:36px;width:auto;border:0;">`
@@ -113,7 +113,7 @@ export function orderConfirmationHtml(o: Base & {
     ...o, preheader: `Zamówienie nr ${o.number} jest opłacone. Wysyłamy ${o.site.shippingTime}.`,
     body: [
       h1('Dziękujemy za zamówienie!'),
-      p(`Płatność za zamówienie <strong>nr ${o.number}</strong> została przyjęta. Wysyłamy ${esc(o.site.shippingTime)} – numer przesyłki prześlemy w osobnej wiadomości.`),
+      p(`Płatność za zamówienie <strong>nr ${o.number}</strong> została przyjęta. Wysyłamy ${esc(o.site.shippingTime)} - numer przesyłki prześlemy w osobnej wiadomości.`),
       o.site.noticeActive ? box(esc(o.site.noticeText), 'warn') : '',
       rows([
         ...o.items.map((i) => ({ label: `${i.name} × ${i.qty}`, value: zl(i.total) })),
@@ -159,7 +159,7 @@ export function orderConfirmationBankHtml(o: Base & {
         ['Dostawa', esc(o.delivery) + (o.pointName ? `<br><span style="color:${MUTED};font-size:13px;">${esc(o.pointName)}</span>` : '')],
         ...(o.invoice ? [['Faktura', 'wyślemy osobno na ten adres e-mail'] as [string, string]] : []),
       ]),
-      p('Masz pytania? Napisz do nas – odpiszemy na ten adres.', { muted: true, size: 14 }),
+      p('Masz pytania? Napisz do nas - odpiszemy na ten adres.', { muted: true, size: 14 }),
     ].join(''),
   });
 }
@@ -182,7 +182,7 @@ export function paymentLinkHtml(o: Base & { number: number; firstName: string; i
     ...o, preheader: `Zamówienie nr ${o.number} czeka na płatność: ${zl(o.total)}.`,
     body: [
       h1(`Dzień dobry ${o.firstName}`),
-      p(`Przygotowaliśmy dla Ciebie zamówienie <strong>nr ${o.number}</strong>. Zapłać BLIK-iem, przelewem lub kartą – zajmie to chwilę.`),
+      p(`Przygotowaliśmy dla Ciebie zamówienie <strong>nr ${o.number}</strong>. Zapłać BLIK-iem, przelewem lub kartą - zajmie to chwilę.`),
       rows([
         ...o.items.map((i) => ({ label: `${i.name} × ${i.qty}`, value: zl(i.total) })),
         ...(o.extraDiscount ? [{ label: 'Rabat', value: `−${zl(o.extraDiscount)}`, muted: true }] : []),
@@ -200,7 +200,7 @@ export function treatmentReminderHtml(o: Base & {
 }) {
   return layout({
     ...o, unsubscribe: o.unsubscribe, reason: 'Wysyłamy to przypomnienie, bo zgodziłeś się na wiadomości od Can-C.',
-    preheader: o.days > 0 ? `Zapas kropli skończy się za ok. ${o.days} dni – zamów z wyprzedzeniem.` : 'Zapas kropli właśnie się skończył.',
+    preheader: o.days > 0 ? `Zapas kropli skończy się za ok. ${o.days} dni - zamów z wyprzedzeniem.` : 'Zapas kropli właśnie się skończył.',
     body: [
       h1(o.days > 0 ? 'Kończy Ci się zapas kropli' : 'Czas na kolejne opakowanie'),
       p(`Dzień dobry${o.firstName ? ` ${esc(o.firstName)}` : ''},`),
@@ -240,7 +240,7 @@ export function withdrawalConfirmHtml(o: Base & { name: string; number: number; 
       kv([['Otrzymano', esc(o.when)], ['Zakres', esc(o.scopeText)], ...(o.note ? [['Uwagi', esc(o.note)] as [string, string]] : [])]),
       p('<strong>Co dalej</strong>'),
       steps([
-        `Odeślij produkt w ciągu 14 dni – najwygodniej przez <a href="${esc(o.site.returnsUrl)}" style="color:${INK};">formularz szybkich zwrotów</a> albo na adres: ${esc(o.site.company)}, ${esc(o.site.address)}.`,
+        `Odeślij produkt w ciągu 14 dni - najwygodniej przez <a href="${esc(o.site.returnsUrl)}" style="color:${INK};">formularz szybkich zwrotów</a> albo na adres: ${esc(o.site.company)}, ${esc(o.site.address)}.`,
         'Zwrócimy pieniądze tą samą metodą płatności w ciągu 14 dni. Możemy wstrzymać zwrot do otrzymania produktu lub dowodu nadania.',
       ]),
       button(o.site.returnsUrl, 'Wygeneruj etykietę zwrotną'),
@@ -251,8 +251,8 @@ export function withdrawalConfirmHtml(o: Base & { name: string; number: number; 
 
 export function backInStockHtml(o: Base & { productName: string; productUrl: string; image?: string | null }) {
   return layout({
-    ...o, preheader: `${o.productName} – znów dostępne.`,
-    reason: 'To jednorazowe powiadomienie – zapisałeś się na nie na stronie produktu.',
+    ...o, preheader: `${o.productName} - znów dostępne.`,
+    reason: 'To jednorazowe powiadomienie - zapisałeś się na nie na stronie produktu.',
     body: [
       h1('Znów dostępne!'),
       p(`Produkt, na który czekasz, wrócił do sprzedaży:`),

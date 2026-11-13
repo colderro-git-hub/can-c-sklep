@@ -32,7 +32,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 
 <header class="hd">
   <div class="hd__in">
-    <a href="/" class="hd__logo" aria-label="Can-C – strona główna">
+    <a href="/" class="hd__logo" aria-label="Can-C - strona główna">
       <img class="hd__img" data-logo="logoHeader" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
       <span class="hd__txt" data-logo-text="logoHeader" hidden={!!logo}><span class="hd__ring" aria-hidden="true"></span><span class="hd__name">Can-C</span></span>
     </a>
@@ -155,7 +155,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   .hd__bdot { position: absolute; top: 9px; right: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--surface); }
   .hd__bdot[hidden] { display: none; }
 
-  /* Pełne menu potrzebuje ok. 1150 px ekranu – poniżej: logo + hamburger, reszta w panelu */
+  /* Pełne menu potrzebuje ok. 1150 px ekranu - poniżej: logo + hamburger, reszta w panelu */
   @media (max-width: 1180px) {
     .hd__in { flex-wrap: nowrap; padding-top: 14px; padding-bottom: 14px; }
     .hd__name { font-size: 28px; }
@@ -214,7 +214,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   count(getCart());
   onCartChange(count);
 
-  // Podgląd koszyka: najechanie / fokus na przycisk Koszyk, a po dodaniu produktu – na 3 s
+  // Podgląd koszyka: najechanie / fokus na przycisk Koszyk, a po dodaniu produktu - na 3 s
   const wrap = document.querySelector<HTMLElement>('[data-cart-wrap]');
   const pv = document.querySelector<HTMLElement>('[data-cart-preview]');
   const list = document.querySelector<HTMLElement>('[data-pv-list]');

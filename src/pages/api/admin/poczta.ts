@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   const sb = db(env);
   try {
-    // Załącznik: link czasowy z własnego magazynu, a gdy kopii nie ma – świeży link z Resend
+    // Załącznik: link czasowy z własnego magazynu, a gdy kopii nie ma - świeży link z Resend
     const att = url.searchParams.get('att');
     if (att) {
       if (!UUID.test(att)) return json(400, { error: 'Nieprawidłowa wiadomość.' });
@@ -127,7 +127,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const bytes = files.reduce((s: number, f: any) => s + Math.floor(f.data.length * 0.75), 0);
       if (bytes > 10 * 1024 * 1024) return json(413, { error: 'Załączniki są większe niż 10 MB.' });
 
-      // Ostatnia wiadomość klienta – do cytatu i nagłówków wątku (Gmail, Outlook łączą odpowiedź z rozmową)
+      // Ostatnia wiadomość klienta - do cytatu i nagłówków wątku (Gmail, Outlook łączą odpowiedź z rozmową)
       const msgs = await sb.select<any>(`mail_messages?select=message_id,refs,from_email,from_name,text_body,html_body,sent_at,direction&thread_id=eq.${t.id}&order=sent_at.desc&limit=10`);
       const last = msgs.find((m) => m.direction === 'in') ?? msgs[0];
       const refs = [...new Set([...(last?.refs ?? []), ...msgs.map((m) => m.message_id).filter(Boolean).reverse()])].slice(-20) as string[];
@@ -156,10 +156,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (!res.ok) {
         const err = (await res.text()).slice(0, 300);
         console.error('Odpowiedź z panelu: ' + err);
-        return json(502, { error: /domain|verify|testing emails/i.test(err) ? 'Resend odrzucił wysyłkę – domena can-c.pl nie jest jeszcze zweryfikowana (bez tego wysyłka działa tylko na adres właściciela konta).' : 'Nie udało się wysłać wiadomości.' });
+        return json(502, { error: /domain|verify|testing emails/i.test(err) ? 'Resend odrzucił wysyłkę - domena can-c.pl nie jest jeszcze zweryfikowana (bez tego wysyłka działa tylko na adres właściciela konta).' : 'Nie udało się wysłać wiadomości.' });
       }
       const sent: any = await res.json().catch(() => ({}));
-      // Message-ID nadany przez Resend (gdyby nadpisał nasz) – do łączenia odpowiedzi klienta
+      // Message-ID nadany przez Resend (gdyby nadpisał nasz) - do łączenia odpowiedzi klienta
       let messageId = ownId;
       try {
         const g = await fetch(`https://api.resend.com/emails/${sent.id}`, { headers: { Authorization: `Bearer ${receivingKey(env)}` } });

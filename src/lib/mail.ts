@@ -18,7 +18,7 @@ export async function sendMail(env: Env, m: { to: string | string[]; subject: st
 export const zl = (grosze: number) =>
   new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(grosze / 100);
 
-// Wysyłka paczki maili (Resend /emails/batch, maks. 100 na wywołanie) – newsletter
+// Wysyłka paczki maili (Resend /emails/batch, maks. 100 na wywołanie) - newsletter
 export async function sendBatch(env: Env, mails: { to: string; subject: string; text: string; html: string; replyTo?: string; headers?: Record<string, string> }[]) {
   if (!env.RESEND_API_KEY || !env.CONTACT_FROM) throw new Error('Brak konfiguracji Resend');
   if (!mails.length) return;

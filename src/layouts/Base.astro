@@ -10,8 +10,8 @@ import { getSite } from '../lib/site-settings';
 interface Props {
   title: string;
   description: string;
-  noindex?: boolean;     // strony z danymi zamówienia – zawsze poza Google
-  noReferrer?: boolean;  // adres strony zawiera identyfikator zamówienia – nie przekazujemy go dalej
+  noindex?: boolean;     // strony z danymi zamówienia - zawsze poza Google
+  noReferrer?: boolean;  // adres strony zawiera identyfikator zamówienia - nie przekazujemy go dalej
   nav?: string;          // aktywna pozycja menu: krople | kapsulki | k9 | stosowanie | faq | kontakt
   ogImage?: string;      // obraz do udostępniania tej strony (np. zdjęcie produktu); pierwszeństwo ma ustawienie z panelu
   ogType?: 'website' | 'product';
@@ -21,7 +21,7 @@ const { noReferrer = false, nav = '', ogType = 'website' } = Astro.props;
 const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
 
 // SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
-// Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu – zostają wartości z kodu.
+// Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu - zostają wartości z kodu.
 let seo: Awaited<ReturnType<typeof getSeo>> = { pages: {}, share: {}, org: {}, ai: {}, llms: {}, verify: {}, indexnow: {} };
 let site: Record<string, any> = {};
 try {
@@ -102,7 +102,7 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     <script is:inline>
       window.dataLayer = window.dataLayer || [];
       function gtag(){ dataLayer.push(arguments); }
-      // Consent Mode v2 – domyślne wartości przed załadowaniem GTM
+      // Consent Mode v2 - domyślne wartości przed załadowaniem GTM
       gtag('consent', 'default', {
         ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
         analytics_storage: 'denied', functionality_storage: 'denied',
@@ -137,14 +137,14 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     </main>
     <Footer />
     <script>
-      // Aktualne dane sklepu z panelu admina (kontakt, firma) – podmiana w oznaczonych miejscach strony
+      // Aktualne dane sklepu z panelu admina (kontakt, firma) - podmiana w oznaczonych miejscach strony
       type SiteData = Record<string, string>;
       const KEY = 'canc-site-v1';
       const apply = (s: SiteData) => {
         document.querySelectorAll<HTMLElement>('[data-site]').forEach((el) => {
           const v = s[el.dataset.site!];
           if (typeof v !== 'string') return;
-          if (v) { el.textContent = v; el.hidden = false; }
+          if (v) { el.textContent = v.replace(/[\u2013\u2014]/g, '-'); el.hidden = false; }
           else if (el.hasAttribute('data-site-hide-empty')) el.hidden = true;
         });
         document.querySelectorAll<HTMLElement>('[data-notice]').forEach((el) => { el.hidden = !(s as any).noticeActive; });
@@ -170,7 +170,7 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
           apply(site);
           try { sessionStorage.setItem(KEY, JSON.stringify({ at: Date.now(), site })); } catch { /* tryb prywatny */ }
         }).catch(() => {});
-      } catch { /* brak pamięci sesji – zostają dane z config.ts */ }
+      } catch { /* brak pamięci sesji - zostają dane z config.ts */ }
     </script>
   </body>
 </html>

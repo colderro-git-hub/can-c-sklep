@@ -69,8 +69,8 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   }).then((r) => r.json() as Promise<{ success: boolean }>).catch(() => ({ success: false }));
   if (!verify.success) return json(403, { error: 'Weryfikacja nie powiodła się. Odśwież stronę i spróbuj ponownie.' });
 
-  // Korespondencja w panelu (MAIL_INBOX ustawione): wiadomość od razu jako wątek – bez maila do skrzynki
-  const subject = `${TOPICS[topic]}${order ? ` – zamówienie ${order}` : ''}`;
+  // Korespondencja w panelu (MAIL_INBOX ustawione): wiadomość od razu jako wątek - bez maila do skrzynki
+  const subject = `${TOPICS[topic]}${order ? ` - zamówienie ${order}` : ''}`;
   if (env.MAIL_INBOX) {
     try {
       const sb = db(env);
@@ -86,12 +86,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       await later(locals, notifyNewMail(env, new URL(request.url).origin, { from, subject, snippet: snippetOf(body), threadId }));
       return json(200, { ok: true });
     } catch (e) {
-      // Baza niedostępna albo brak migracji 022 – wysyłamy jak dotąd e-mailem
+      // Baza niedostępna albo brak migracji 022 - wysyłamy jak dotąd e-mailem
       console.error('Kontakt → korespondencja: ' + (e instanceof Error ? e.message : String(e)));
     }
   }
 
-  // Treść wysyłana jako zwykły tekst – bez ryzyka wstrzyknięcia HTML
+  // Treść wysyłana jako zwykły tekst - bez ryzyka wstrzyknięcia HTML
   const text = [
     `Temat: ${TOPICS[topic]}`,
     `Od: ${name} <${email}>`,
@@ -108,7 +108,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       from: env.CONTACT_FROM,
       to: env.CONTACT_TO.split(',').map((s) => s.trim()),
       reply_to: email,
-      subject: `[can-c.pl] ${TOPICS[topic]}${order ? ` #${order}` : ''} – ${name}`,
+      subject: `[can-c.pl] ${TOPICS[topic]}${order ? ` #${order}` : ''} - ${name}`,
       text,
     }),
   });

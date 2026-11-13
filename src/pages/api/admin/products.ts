@@ -37,7 +37,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     });
   } catch (e) {
     console.error('Admin products: ' + (e instanceof Error ? e.message : String(e)));
-    return json(500, { error: 'Błąd pobierania produktów. Czy uruchomiono skrypty 010–012 w Supabase?' });
+    return json(500, { error: 'Błąd pobierania produktów. Czy uruchomiono skrypty 010-012 w Supabase?' });
   }
 };
 
@@ -124,7 +124,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     clearCatalogCache();
     console.log(`Admin ${admin} zapisał produkt ${id}`);
-    // IndexNow (jeśli włączony): karta produktu, sklep i strona główna – po wysłaniu odpowiedzi
+    // IndexNow (jeśli włączony): karta produktu, sklep i strona główna - po wysłaniu odpowiedzi
     await later(locals, submitIndexNow(env, [`/produkt/${id}/`, '/sklep/', '/'], admin, true));
     return json(200, { id });
   } catch (e) {

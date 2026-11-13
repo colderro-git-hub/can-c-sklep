@@ -79,7 +79,7 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
 
   for (const c of list) {
     try {
-      // Rezerwujemy wpis przed wysyłką – chroni przed podwójnym mailem przy równoległym uruchomieniu
+      // Rezerwujemy wpis przed wysyłką - chroni przed podwójnym mailem przy równoległym uruchomieniu
       const [reserved] = await sb.insert<{ id: number }>('reminders', { customer_id: c.id, order_id: c.order_id, kind: 'treatment' }, 'id').catch(() => [] as any);
       if (!reserved) continue;
 
@@ -105,8 +105,8 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
           days > 0
             ? `według naszych wyliczeń zapas kropli z ostatniego zamówienia (${c.last_order_packs} op.) skończy się za około ${days} ${days === 1 ? 'dzień' : 'dni'}.`
             : `według naszych wyliczeń zapas kropli z ostatniego zamówienia (${c.last_order_packs} op.) właśnie się skończył.`,
-          'Żeby nie przerywać kuracji, zamów kolejne opakowania z wyprzedzeniem – wysyłamy ' + site.shippingTime + ', dostawa jest bezpłatna.', '',
-          code ? `Dla stałych klientów mamy rabat ${s.regularCodePercent}% – Twój kod: ${code} (ważny ${s.codeValidDays} dni).` : '',
+          'Żeby nie przerywać kuracji, zamów kolejne opakowania z wyprzedzeniem - wysyłamy ' + site.shippingTime + ', dostawa jest bezpłatna.', '',
+          code ? `Dla stałych klientów mamy rabat ${s.regularCodePercent}% - Twój kod: ${code} (ważny ${s.codeValidDays} dni).` : '',
           code ? '' : '',
           `Zamów ponownie: ${origin}/produkt/krople-can-c/?zestaw=${qty}`, '',
           'Dłuższa kuracja = niższa cena: 2 opakowania −8%, 4 opakowania −10%.', '',
@@ -119,7 +119,7 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
       errors.push(`${c.email}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
-  if (errors.length) console.error('Przypomnienia – błędy: ' + errors.join(' | '));
+  if (errors.length) console.error('Przypomnienia - błędy: ' + errors.join(' | '));
   console.log(`Przypomnienia o kuracji: wysłano ${sent} z ${list.length}`);
   return { sent, candidates: list.length, errors: errors.length };
 }

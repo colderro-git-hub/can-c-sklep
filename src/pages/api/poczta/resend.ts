@@ -29,7 +29,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const sb = db(env);
   try {
-    // Ponowne doręczenie tego samego zdarzenia (Resend ponawia przy błędach) – nic nie robimy
+    // Ponowne doręczenie tego samego zdarzenia (Resend ponawia przy błędach) - nic nie robimy
     const dup = await sb.select(`mail_messages?select=id&resend_id=eq.${encodeURIComponent(resendId)}&limit=1`);
     if (dup.length) return json(200, { ok: true, duplicate: true });
 
@@ -70,12 +70,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
         sent_at: m.created_at || new Date().toISOString(),
       });
     } catch (e) {
-      // Wyścig dwóch doręczeń tego samego zdarzenia – unikalny resend_id / Message-ID
+      // Wyścig dwóch doręczeń tego samego zdarzenia - unikalny resend_id / Message-ID
       if (/duplicate key|23505/.test(e instanceof Error ? e.message : String(e))) return json(200, { ok: true, duplicate: true });
       throw e;
     }
 
-    // Podejrzana wiadomość (DMARC fail – podszycie pod cudzą domenę) → od razu do spamu
+    // Podejrzana wiadomość (DMARC fail - podszycie pod cudzą domenę) → od razu do spamu
     if (m.authentication?.dmarc === 'fail') await sb.update(`mail_threads?id=eq.${threadId}&message_count=eq.1`, { status: 'spam' }, 'id');
 
     if (attachmentsMeta.length) {

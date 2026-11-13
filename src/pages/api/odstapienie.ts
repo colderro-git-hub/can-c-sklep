@@ -33,7 +33,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const sb = db(env);
     const [order] = await sb.select<any>(`orders?select=id,number,email,status,created_at&number=eq.${number}&email=eq.${encodeURIComponent(email)}`);
-    // Ta sama odpowiedź dla złego numeru i złego e-maila – nie zdradzamy, czy zamówienie istnieje
+    // Ta sama odpowiedź dla złego numeru i złego e-maila - nie zdradzamy, czy zamówienie istnieje
     if (!order) return json(404, { error: 'Nie znaleźliśmy zamówienia o tym numerze dla podanego e-maila. Sprawdź dane albo napisz do nas.' });
 
     const recent = await sb.select(`order_events?select=id&order_id=eq.${order.id}&type=eq.withdrawal`);
@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await sendMail(env, {
       to: email,
       replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
-      subject: `Potwierdzenie odstąpienia od umowy – zamówienie nr ${order.number}`,
+      subject: `Potwierdzenie odstąpienia od umowy - zamówienie nr ${order.number}`,
       html: withdrawalConfirmHtml({ site, origin: new URL(request.url).origin, name, number: order.number, when, scopeText, note }),
       text: [
         `Dzień dobry ${name},`, '',
@@ -55,7 +55,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         `Data i godzina otrzymania: ${when}`,
         `Zakres: ${scopeText}`, note ? `Uwagi: ${note}` : '', '',
         'Co dalej:',
-        `1. Odeślij produkt w ciągu 14 dni – najwygodniej przez formularz szybkich zwrotów: ${site.returnsUrl}`,
+        `1. Odeślij produkt w ciągu 14 dni - najwygodniej przez formularz szybkich zwrotów: ${site.returnsUrl}`,
         `   albo na adres: ${site.company}, ${site.address}.`,
         '2. Zwrócimy pieniądze tą samą metodą płatności w ciągu 14 dni (możemy wstrzymać zwrot do otrzymania produktu lub dowodu nadania).',
         '', 'Zwrotowi podlegają produkty w nienaruszonym, fabrycznie zamkniętym opakowaniu.', '',
@@ -66,8 +66,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await sendMail(env, {
         to: env.CONTACT_TO.split(',').map((s) => s.trim()),
         replyTo: email,
-        subject: `[can-c.pl] Odstąpienie od umowy – zamówienie nr ${order.number}`,
-        text: `Klient: ${name} <${email}>\nZamówienie: ${order.number} (status: ${order.status})\nZakres: ${scopeText}\nUwagi: ${note || '—'}\nOtrzymano: ${when}`,
+        subject: `[can-c.pl] Odstąpienie od umowy - zamówienie nr ${order.number}`,
+        text: `Klient: ${name} <${email}>\nZamówienie: ${order.number} (status: ${order.status})\nZakres: ${scopeText}\nUwagi: ${note || '-'}\nOtrzymano: ${when}`,
       }).catch((e) => console.error('Mail do sklepu (odstąpienie): ' + (e instanceof Error ? e.message : String(e))));
     }
     return json(200, { ok: true, number: order.number });

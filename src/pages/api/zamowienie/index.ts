@@ -86,7 +86,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     const ids = [...new Set(lines.map((l: any) => l.slug))].map((s) => `"${String(s).replace(/"/g, '')}"`).join(',');
     const products = await sb.select<DbProduct>(`products?select=${PRODUCT_PRICE_FIELDS}&id=in.(${ids})`);
     const promos = await getPromotions(env);
-    // Kod uruchamiający promocję (zestaw / rabat ilościowy) – rabat trafia do pozycji, nie do kwoty kodu
+    // Kod uruchamiający promocję (zestaw / rabat ilościowy) - rabat trafia do pozycji, nie do kwoty kodu
     const codePromo = str(body.discountCode, 30) ? await findCodePromotion(env, body.discountCode) : null;
     const promoCode = codePromo ? normalizeCode(body.discountCode) : null;
     let priced;
@@ -140,12 +140,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       customer_note: note || null,
       payment_provider: paymentMethod === BANK_PROVIDER ? BANK_PROVIDER : 'przelewy24',
       source: 'shop',
-      // Identyfikatory GA4 (tylko gdy klient zgodził się na analitykę) – do zdarzeń z serwera, np. zwrotu
+      // Identyfikatory GA4 (tylko gdy klient zgodził się na analitykę) - do zdarzeń z serwera, np. zwrotu
       attribution: (() => { const ga = gaIdsFromCookies(request.headers.get('Cookie')); return Object.keys(ga).length ? ga : null; })(),
     }, 'id,number');
 
     await sb.insert('order_items', priced.items.map((i) => ({ ...i, order_id: order.id })), 'id');
-    // Naliczone promocje – do statystyk w panelu (błąd zapisu nie blokuje zamówienia)
+    // Naliczone promocje - do statystyk w panelu (błąd zapisu nie blokuje zamówienia)
     if (priced.promotions.length) {
       await sb.insert('order_promotions', priced.promotions.map((p) => ({ order_id: order.id, promotion_id: p.id, name: p.label, kind: p.kind, amount: p.amount })), 'id')
         .catch((e) => console.error('Promocje zamówienia: ' + (e instanceof Error ? e.message : String(e))));
@@ -163,7 +163,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
         const mailHtml = orderConfirmationBankHtml({ site, origin: self.origin, number: order.number, total, items: itemRows, delivery, invoice: wantsInvoice, pointName: undefined, bankAccount: BANK_ACCOUNT, bankTitle: bankTitle(order.number) });
         await sendMail(env, {
           to: email,
-          subject: `Zamówienie nr ${order.number} – dane do przelewu`,
+          subject: `Zamówienie nr ${order.number} - dane do przelewu`,
           text: `Dziękujemy za zamówienie nr ${order.number}.
 
 Tytuł przelewu: ${bankTitle(order.number)}
@@ -186,7 +186,7 @@ W razie pytań odpiszemy na ten adres.`,
     const redirect = await registerTransaction(p24!, {
       sessionId: order.id,
       amount: total,
-      description: `Zamówienie nr ${order.number} – can-c.pl`,
+      description: `Zamówienie nr ${order.number} - can-c.pl`,
       email,
       client: name,
       phone,

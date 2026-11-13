@@ -23,7 +23,7 @@ export async function finalizePayment(
     }
   }
 
-  // Zmiana statusu tylko z „oczekuje” – chroni przed podwójnym przetworzeniem
+  // Zmiana statusu tylko z „oczekuje” - chroni przed podwójnym przetworzeniem
   const updated = await sb.update(
     `orders?id=eq.${order.id}&status=in.(${(opts.from || ['pending_payment']).join(',')})`,
     { status: 'paid', paid_at: new Date().toISOString(), ...(opts.orderId ? { p24_order_id: opts.orderId } : {}) },
@@ -45,7 +45,7 @@ export async function finalizePayment(
   try {
     const items = await sb.select<any>(`order_items?select=name,qty,total&order_id=eq.${order.id}`);
     itemRows = items;
-    lines = items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
+    lines = items.map((i) => `• ${i.name} × ${i.qty} - ${zl(i.total)}`).join('\n');
     delivery = order.shipping_method === 'inpost_locker'
       ? `Paczkomat InPost ${order.shipping_point}`
       : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
@@ -56,7 +56,7 @@ export async function finalizePayment(
   try {
     await sendMail(env, {
       to: order.email,
-      subject: `Potwierdzenie zamówienia nr ${order.number} – Can-C`,
+      subject: `Potwierdzenie zamówienia nr ${order.number} - Can-C`,
       html: orderConfirmationHtml({ site, origin, number: order.number, total: order.total, items: itemRows, delivery, invoice: Boolean(order.wants_invoice), pointName: order.shipping_address?.point_name }),
       replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
       text: [
@@ -92,7 +92,7 @@ export async function finalizePayment(
     try {
       await sendMail(env, {
         to: env.CONTACT_TO.split(',').map((s) => s.trim()),
-        subject: `[can-c.pl] Nowe opłacone zamówienie nr ${order.number} – ${zl(order.total)}`,
+        subject: `[can-c.pl] Nowe opłacone zamówienie nr ${order.number} - ${zl(order.total)}`,
         text: `${lines}\n\nDostawa: ${delivery}\nKlient: ${order.email}\nFaktura: ${order.wants_invoice ? 'tak' : 'nie'}\n\nPanel: ${origin}/admin/`,
       });
     } catch (e) {

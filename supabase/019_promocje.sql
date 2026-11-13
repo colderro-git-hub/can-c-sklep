@@ -1,5 +1,5 @@
--- Krok 40: promocje automatyczne – rabaty ilościowe i zestawowe (panel: Kody rabatowe → Promocje).
--- Zastępują zaszyty w kodzie rabat −8% (2 szt.) / −10% (4 szt.) – ten sam rabat zakładamy niżej jako pierwszą promocję.
+-- Krok 40: promocje automatyczne - rabaty ilościowe i zestawowe (panel: Kody rabatowe → Promocje).
+-- Zastępują zaszyty w kodzie rabat −8% (2 szt.) / −10% (4 szt.) - ten sam rabat zakładamy niżej jako pierwszą promocję.
 
 create table if not exists public.promotions (
   id          uuid primary key default gen_random_uuid(),

@@ -149,7 +149,7 @@ export async function putAttachment(env: Env, path: string, body: ArrayBuffer | 
     method: 'POST',
     headers: { ...authHeaders(env), 'Content-Type': type || 'application/octet-stream', 'x-upsert': 'true' },
     body,
-    // @ts-ignore – wymagane przy wysyłaniu strumienia
+    // @ts-ignore - wymagane przy wysyłaniu strumienia
     duplex: 'half',
   });
   if (!res.ok) throw new Error(`Storage ${res.status}: ${(await res.text()).slice(0, 200)}`);
@@ -199,7 +199,7 @@ export async function notifyNewMail(env: Env, origin: string, o: { from: Addr; s
   try {
     await sendMail(env, {
       to,
-      subject: `Nowa wiadomość: ${o.subject || '(bez tematu)'} – ${o.from.name || o.from.email}`,
+      subject: `Nowa wiadomość: ${o.subject || '(bez tematu)'} - ${o.from.name || o.from.email}`,
       text: [`Od: ${o.from.name ? `${o.from.name} <${o.from.email}>` : o.from.email}`, `Temat: ${o.subject}`, '', o.snippet, '', `Odpowiedz w panelu: ${origin}/admin/#korespondencja/${o.threadId}`].join('\n'),
     });
   } catch (e) {

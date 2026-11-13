@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const rating = Number(b.rating);
       const body = String(b.body || '').trim().slice(0, 3000);
       const name = String(b.author_name || '').trim().slice(0, 60);
-      if (!/^[a-z0-9-]{2,60}$/.test(b.product_id || '') || !Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 10 || name.length < 2) return json(422, { error: 'Uzupełnij produkt, autora, ocenę 1–5 i treść (min. 10 znaków).' });
+      if (!/^[a-z0-9-]{2,60}$/.test(b.product_id || '') || !Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 10 || name.length < 2) return json(422, { error: 'Uzupełnij produkt, autora, ocenę 1-5 i treść (min. 10 znaków).' });
       const created = b.created_at ? new Date(b.created_at) : new Date();
       await sb.insert('reviews', { product_id: b.product_id, author_name: name, rating, title: String(b.title || '').trim().slice(0, 120) || null, body, status: 'approved', verified_purchase: b.verified_purchase === true, source: 'import', created_at: isNaN(+created) ? new Date().toISOString() : created.toISOString(), moderated_at: new Date().toISOString(), moderated_by: admin }, 'id');
       clearCatalogCache();
@@ -48,13 +48,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const [cur] = await sb.select<any>(`reviews?select=id,body,original_body,rating,source,created_at&id=eq.${b.id}`);
       if (!cur) return json(404, { error: 'Nie znaleziono opinii.' });
       // Opinia klienta ze sklepu: ocena i data są nienaruszalne (zakaz zniekształcania opinii konsumentów,
-      // art. 7 pkt 23c ustawy o przeciwdziałaniu nieuczciwym praktykom rynkowym). Treść można poprawić – oryginał zostaje.
+      // art. 7 pkt 23c ustawy o przeciwdziałaniu nieuczciwym praktykom rynkowym). Treść można poprawić - oryginał zostaje.
       const fromCustomer = cur.source === 'shop';
       if (fromCustomer && b.rating !== undefined && Number(b.rating) !== cur.rating) return json(422, { error: 'Nie można zmienić oceny wystawionej przez klienta.' });
       const rating = fromCustomer ? cur.rating : Number(b.rating);
       const body = String(b.body || '').replace(/\r/g, '').trim().slice(0, 3000);
       const name = String(b.author_name || '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, 60);
-      if (!Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 10 || name.length < 2) return json(422, { error: 'Uzupełnij autora, ocenę 1–5 i treść (min. 10 znaków).' });
+      if (!Number.isInteger(rating) || rating < 1 || rating > 5 || body.length < 10 || name.length < 2) return json(422, { error: 'Uzupełnij autora, ocenę 1-5 i treść (min. 10 znaków).' });
       const created = b.created_at ? new Date(b.created_at) : null;
       const upd: Record<string, unknown> = {
         author_name: name, rating, body,

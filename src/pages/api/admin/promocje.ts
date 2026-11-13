@@ -11,7 +11,7 @@ const UUID = /^[0-9a-f-]{36}$/i;
 const PAID = 'paid,packing,shipped,completed';
 type Sb = ReturnType<typeof db>;
 
-// Lista promocji ze statystykami; ?uses=<id> – promocja + zamówienia, w których ją naliczono
+// Lista promocji ze statystykami; ?uses=<id> - promocja + zamówienia, w których ją naliczono
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
@@ -77,10 +77,10 @@ async function parse(sb: Sb, b: any, selfId: string | null = null): Promise<{ ro
   try { starts_at = toIso(b.starts_at); ends_at = toIso(b.ends_at); } catch { return { error: 'Nieprawidłowa data.' }; }
   if (starts_at && ends_at && starts_at > ends_at) return { error: 'Data końca jest wcześniejsza niż początku.' };
 
-  // Kod uruchamiający promocję (opcjonalny) – unikalny wśród promocji i zwykłych kodów rabatowych
+  // Kod uruchamiający promocję (opcjonalny) - unikalny wśród promocji i zwykłych kodów rabatowych
   const code = normalizeCode(b.code) || null;
   if (code) {
-    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' };
+    if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3-30 znaków (litery, cyfry, - i _).' };
     const [dc] = await sb.select(`discount_codes?select=id&code=eq.${encodeURIComponent(code)}`);
     if (dc) return { error: 'Taki kod istnieje już w kodach rabatowych.' };
     const [other] = await sb.select<{ id: string }>(`promotions?select=id&code=eq.${encodeURIComponent(code)}`);
@@ -105,7 +105,7 @@ async function parse(sb: Sb, b: any, selfId: string | null = null): Promise<{ ro
       const type = t?.type === 'amount' ? 'amount' : 'percent';
       const value = type === 'percent' ? Math.round(Number(String(t?.value ?? '').replace(',', '.'))) : money(t?.value);
       if (!Number.isInteger(min) || min < 2 || min > 100) return { error: 'Próg: liczba sztuk od 2 do 100.' };
-      if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 90)) return { error: `Nieprawidłowy rabat dla progu ${min} szt. (procent 1–90 albo kwota w zł).` };
+      if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 90)) return { error: `Nieprawidłowy rabat dla progu ${min} szt. (procent 1-90 albo kwota w zł).` };
       if (tiers.some((x) => x.min === min)) return { error: `Próg ${min} szt. występuje dwa razy.` };
       tiers.push({ min, type, value });
     }
@@ -126,7 +126,7 @@ async function parse(sb: Sb, b: any, selfId: string | null = null): Promise<{ ro
     if (items.length < 2) return { error: 'Zestaw musi zawierać co najmniej dwa różne produkty. Rabat na kilka sztuk jednego produktu ustaw jako rabat ilościowy.' };
     const type = b.type === 'amount' ? 'amount' : 'percent';
     const value = type === 'percent' ? Math.round(Number(String(b.value ?? '').replace(',', '.'))) : money(b.value);
-    if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 90)) return { error: 'Nieprawidłowy rabat zestawu (procent 1–90 albo kwota w zł).' };
+    if (!Number.isFinite(value) || value <= 0 || (type === 'percent' && value > 90)) return { error: 'Nieprawidłowy rabat zestawu (procent 1-90 albo kwota w zł).' };
     const max_sets = b.max_sets === '' || b.max_sets === null || b.max_sets === undefined ? null : Math.round(Number(b.max_sets));
     if (max_sets !== null && (!Number.isInteger(max_sets) || max_sets < 1 || max_sets > 100)) return { error: 'Limit zestawów w zamówieniu: od 1 do 100 albo puste.' };
     Object.assign(row, { items, type, value, max_sets });
@@ -153,7 +153,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (b.action === 'delete') {
       if (!UUID.test(b.id || '')) return json(400, { error: 'Nieprawidłowa promocja.' });
       const used = await sb.select(`order_promotions?select=id&promotion_id=eq.${b.id}&limit=1`);
-      if (used.length) return json(409, { error: 'Promocja była już naliczona w zamówieniach – wyłącz ją zamiast usuwać, żeby zachować statystyki.' });
+      if (used.length) return json(409, { error: 'Promocja była już naliczona w zamówieniach - wyłącz ją zamiast usuwać, żeby zachować statystyki.' });
       await sb.remove(`promotions?id=eq.${b.id}`);
       clearPromotionsCache();
       console.log(`Admin ${admin} usunął promocję ${b.id}`);

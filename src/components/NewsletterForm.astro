@@ -1,9 +1,9 @@
 ---
 // Zapis na newsletter z obowiązkową zgodą (checkbox niezaznaczony domyślnie) i potwierdzeniem e-mailem (double opt-in).
-// Turnstile ładuje się dopiero przy pierwszym kontakcie z formularzem – nie spowalnia stron.
+// Turnstile ładuje się dopiero przy pierwszym kontakcie z formularzem - nie spowalnia stron.
 import { site } from '../config';
 import { TURNSTILE_SITE_KEY } from '../config';
-// dark – na ciemnym tle · light – bez ramki (np. sekcja strony głównej) · card – karta w panelu bocznym (FAQ, O nas)
+// dark - na ciemnym tle · light - bez ramki (np. sekcja strony głównej) · card - karta w panelu bocznym (FAQ, O nas)
 interface Props { variant?: 'dark' | 'light' | 'card'; title?: string; lead?: string; titleSize?: number }
 const { variant = 'light', title = 'Newsletter', lead = 'Promocje, kody rabatowe i nowości w sklepie Can-C prosto na Twój e-mail.', titleSize } = Astro.props;
 const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
@@ -18,7 +18,7 @@ const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
   </div>
   <label class="nl__ck">
     <input type="checkbox" name="consent" required />
-    <span>Wyrażam zgodę na otrzymywanie od <span data-site="company">{site.company}</span> informacji handlowych (newslettera, promocji i kodów rabatowych) na podany adres e-mail. Zgodę mogę wycofać w każdej chwili – link „wypisz się” jest w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</span>
+    <span>Wyrażam zgodę na otrzymywanie od <span data-site="company">{site.company}</span> informacji handlowych (newslettera, promocji i kodów rabatowych) na podany adres e-mail. Zgodę mogę wycofać w każdej chwili - link „wypisz się” jest w każdej wiadomości. Szczegóły w <a href="/polityka-prywatnosci/">Polityce prywatności</a>.</span>
   </label>
   <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="nl__hp" />
   <div class="nl__ts" data-nl-ts></div>
@@ -95,11 +95,11 @@ const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
       const fd = new FormData(form);
       const email = String(fd.get('email') || '').trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return say('Podaj poprawny adres e-mail.', true);
-      if (fd.get('consent') === null) return say('Zaznacz zgodę – bez niej nie możemy wysyłać newslettera.', true);
+      if (fd.get('consent') === null) return say('Zaznacz zgodę - bez niej nie możemy wysyłać newslettera.', true);
       await prepare();
       const ts = (window as any).turnstile;
       const token = key && ts && widget ? ts.getResponse(widget) : '';
-      if (key && !token) return say('Chwileczkę – trwa weryfikacja, spróbuj ponownie za moment.', true);
+      if (key && !token) return say('Chwileczkę - trwa weryfikacja, spróbuj ponownie za moment.', true);
       const btn = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
       btn.disabled = true;
       say('Zapisywanie…');
@@ -108,7 +108,7 @@ const uid = `nl-${Math.random().toString(36).slice(2, 8)}`;
         const d = await res.json().catch(() => ({}));
         if (!res.ok) { say(d.error || 'Nie udało się zapisać.', true); if (key && ts && widget) ts.reset(widget); return; }
         form.classList.add('is-done');
-        say(d.message || 'Sprawdź skrzynkę – wysłaliśmy link potwierdzający zapis.');
+        say(d.message || 'Sprawdź skrzynkę - wysłaliśmy link potwierdzający zapis.');
         try { (window as any).dataLayer?.push({ event: 'generate_lead', lead_source: 'newsletter' }); } catch {}
       } catch { say('Brak połączenia. Spróbuj ponownie.', true); }
       finally { btn.disabled = false; }

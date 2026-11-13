@@ -14,7 +14,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   try {
     const sb = db(env);
-    // Kto użył kodu: wszystkie zamówienia z tym kodem (też nieopłacone i anulowane – status w kolumnie)
+    // Kto użył kodu: wszystkie zamówienia z tym kodem (też nieopłacone i anulowane - status w kolumnie)
     const usesId = url.searchParams.get('uses');
     if (usesId) {
       if (!/^[0-9a-f-]{36}$/i.test(usesId)) return json(400, { error: 'Nieprawidłowy kod.' });
@@ -63,7 +63,7 @@ async function parseCodeFields(sb: Sb, b: any) {
   const toIso = (d: unknown) => (typeof d === 'string' && d ? new Date(d).toISOString() : null);
   const starts_at = toIso(b.starts_at), ends_at = toIso(b.ends_at);
 
-  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3–30 znaków (litery, cyfry, - i _).' };
+  if (!/^[A-Z0-9_-]{3,30}$/.test(code)) return { error: 'Kod: 3-30 znaków (litery, cyfry, - i _).' };
   // Kod nie może być jednocześnie kodem promocji (zestaw / rabat ilościowy uruchamiany kodem)
   const promoWithCode = await sb.select(`promotions?select=id&code=eq.${encodeURIComponent(code)}`).catch(() => []);
   if (promoWithCode.length) return { error: 'Taki kod jest już przypisany do promocji (Promocje automatyczne).' };
@@ -142,7 +142,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           await sendMail(env, {
             to: cust.email,
             replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
-            subject: `Rabat ${val} na kolejne zamówienie – Can-C`,
+            subject: `Rabat ${val} na kolejne zamówienie - Can-C`,
             html: personalCodeHtml({ site, origin, firstName: cust.first_name, message: msg, code, val, minTotal: min_total, endsAt: ends_at }),
             text: [
               `Dzień dobry${cust.first_name ? ` ${cust.first_name}` : ''},`, '',
@@ -167,10 +167,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const parsed = await parseCodeFields(sb, b);
       if ('error' in parsed) return json(422, { error: parsed.error });
       const row = parsed.row;
-      // Zamówienia trzymają tekst kodu – po pierwszym użyciu nazwy nie zmieniamy, żeby nie zgubić historii i statystyk
+      // Zamówienia trzymają tekst kodu - po pierwszym użyciu nazwy nie zmieniamy, żeby nie zgubić historii i statystyk
       if (row.code !== cur.code) {
         const used = await sb.select(`orders?select=id&discount_code=eq.${encodeURIComponent(cur.code)}&limit=1`);
-        if (cur.used_count > 0 || used.length) return json(422, { error: 'Kod był już użyty w zamówieniu – nie można zmienić jego nazwy. Wyłącz go i utwórz nowy.' });
+        if (cur.used_count > 0 || used.length) return json(422, { error: 'Kod był już użyty w zamówieniu - nie można zmienić jego nazwy. Wyłącz go i utwórz nowy.' });
       }
       if (row.max_uses !== null && row.max_uses < cur.used_count) return json(422, { error: `Limit nie może być mniejszy niż liczba dotychczasowych użyć (${cur.used_count}).` });
       const [saved] = await sb.update(`discount_codes?id=eq.${b.id}`, row, 'id,code');

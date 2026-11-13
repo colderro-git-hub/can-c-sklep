@@ -5,7 +5,7 @@ import { getSite } from '../../lib/site-settings';
 
 export const prerender = false;
 
-// Publiczny katalog dla koszyka i formularza zamówienia (ceny tylko do podglądu – płatność liczy serwer)
+// Publiczny katalog dla koszyka i formularza zamówienia (ceny tylko do podglądu - płatność liczy serwer)
 export const GET: APIRoute = async ({ locals }) => {
   try {
     const env = await getEnv(locals);

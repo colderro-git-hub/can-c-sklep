@@ -1,4 +1,4 @@
-// Liczenie zamówienia po stronie serwera – ceny zawsze z bazy, nigdy z przeglądarki.
+// Liczenie zamówienia po stronie serwera - ceny zawsze z bazy, nigdy z przeglądarki.
 import { applyPromotions, type Promotion } from './promotions';
 export type DbProduct = {
   id: string; name: string; price: number | null; bundles: boolean; active: boolean;
@@ -7,7 +7,7 @@ export type DbProduct = {
 };
 export type CartLine = { slug: string; qty: number };
 
-// Kolumny potrzebne do wyceny – używaj w zapytaniach o produkty do koszyka
+// Kolumny potrzebne do wyceny - używaj w zapytaniach o produkty do koszyka
 export const PRICING_COLS = 'id,name,price,bundles,active,sale_price,sale_start,sale_end,stock,availability';
 
 export function saleActive(p: Pick<DbProduct, 'sale_price' | 'sale_start' | 'sale_end' | 'price'>, now = Date.now()) {
@@ -17,14 +17,14 @@ export function saleActive(p: Pick<DbProduct, 'sale_price' | 'sale_start' | 'sal
   return true;
 }
 export const effectivePrice = (p: DbProduct) => (saleActive(p) ? (p.sale_price as number) : p.price);
-// Dostępność: ręczne ustawienie z panelu, inaczej „dostępny” (stan 0 nie blokuje sprzedaży – to ewidencja)
+// Dostępność: ręczne ustawienie z panelu, inaczej „dostępny” (stan 0 nie blokuje sprzedaży - to ewidencja)
 export type Availability = 'in_stock' | 'out_of_stock' | 'preorder' | 'backorder';
 export const availabilityOf = (p: Pick<DbProduct, 'availability'>): Availability =>
   (['in_stock', 'out_of_stock', 'preorder', 'backorder'].includes(p.availability || '') ? p.availability : 'in_stock') as Availability;
 export const isAvailable = (p: DbProduct) => availabilityOf(p) !== 'out_of_stock';
 
 // Rabaty ilościowe i zestawowe pochodzą z promocji (lib/promotions.ts, panel: Kody rabatowe → Promocje)
-// code – kod wpisany przez klienta: włącza promocję uruchamianą tym kodem (zwykłe kody rabatowe sprawdza checkCode)
+// code - kod wpisany przez klienta: włącza promocję uruchamianą tym kodem (zwykłe kody rabatowe sprawdza checkCode)
 export function priceCart(lines: CartLine[], products: DbProduct[], promos: Promotion[] = [], opts: { now?: number; code?: string | null } = {}) {
   const now = opts.now ?? Date.now();
   const base = lines.map((l) => {

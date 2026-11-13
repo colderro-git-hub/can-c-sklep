@@ -31,7 +31,7 @@ import Base from '../../layouts/Base.astro';
         </div>
         <div class="ty__state" data-state="error" hidden>
           <h1 class="h1">Nie znaleźliśmy<br />zamówienia</h1>
-          <p class="p p--lg">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> – wyjaśnimy to od razu.</p>
+          <p class="p p--lg">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> - wyjaśnimy to od razu.</p>
         </div>
       </div>
       <div class="fl ty__leaf" aria-hidden="true"></div>
@@ -138,7 +138,7 @@ import Base from '../../layouts/Base.astro';
       </div>`).join('');
 
     const rows: [string, string, string?][] = [['Produkty', zl(d.subtotal)]];
-    // Promocje po nazwie; starsze zamówienia (bez zapisanych promocji) – jedna suma
+    // Promocje po nazwie; starsze zamówienia (bez zapisanych promocji) - jedna suma
     const promos = d.promotions || [];
     if (promos.length) promos.forEach((p) => rows.push([p.name, `−${zl(p.amount)}`]));
     else if (d.bundleDiscount) rows.push(['Rabat', `−${zl(d.bundleDiscount)}`]);
@@ -209,8 +209,8 @@ import Base from '../../layouts/Base.astro';
   const fillPending = (o: Status | undefined, el: HTMLElement, bodyEl: HTMLElement) => {
     const bank = !!(o?.details?.payment?.bank);
     if (bank) {
-      el.innerHTML = 'Zamówienie przyjęte —<br>czekamy na przelew';
-      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu. Dane do przelewu wysłaliśmy e-mailem — sprawdź też folder spam.`;
+      el.innerHTML = 'Zamówienie przyjęte -<br>czekamy na przelew';
+      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu. Dane do przelewu wysłaliśmy e-mailem - sprawdź też folder spam.`;
     } else {
       el.innerHTML = 'Zamówienie jest<br>zapisane';
       bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.<br><br>Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.`;
@@ -251,7 +251,7 @@ import Base from '../../layouts/Base.astro';
       // Płatność potwierdzona → wyczyść koszyk i pokaż podsumowanie
       if (['paid', 'packing', 'shipped', 'completed'].includes(o.status)) {
         clearCart();
-        // GA4 purchase – wysyłamy tylko raz (tries === 1 = pierwsze udane sprawdzenie)
+        // GA4 purchase - wysyłamy tylko raz (tries === 1 = pierwsze udane sprawdzenie)
         if (tries <= 1 && o.details && !o.details.gaServer) {
           const totalGross = o.total / 100;
           const shippingGross = (o.details.shipping || 0) / 100;

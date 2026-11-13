@@ -71,7 +71,7 @@ export async function isValidNotification(cfg: Cfg, n: P24Notification) {
   return expected === n.sign && n.merchantId === cfg.merchantId;
 }
 
-// 3. Potwierdzenie transakcji – bez tego P24 nie rozliczy płatności
+// 3. Potwierdzenie transakcji - bez tego P24 nie rozliczy płatności
 export async function verifyTransaction(cfg: Cfg, v: { sessionId: string; orderId: number; amount: number }) {
   const sign = await sha384({ sessionId: v.sessionId, orderId: v.orderId, amount: v.amount, currency: 'PLN', crc: cfg.crc });
   const data = await api(cfg, 'PUT', '/transaction/verify', {
@@ -81,7 +81,7 @@ export async function verifyTransaction(cfg: Cfg, v: { sessionId: string; orderI
 }
 
 // 4. Dane transakcji po sessionId (do ręcznego sprawdzenia płatności z panelu)
-// status: 0 – brak płatności, 1 – opłacona, czeka na weryfikację, 2 – opłacona i zweryfikowana, 3 – zwrócona
+// status: 0 - brak płatności, 1 - opłacona, czeka na weryfikację, 2 - opłacona i zweryfikowana, 3 - zwrócona
 export async function getTransaction(cfg: Cfg, sessionId: string) {
   const res = await fetch(`${cfg.host}/api/v1/transaction/by/sessionId/${encodeURIComponent(sessionId)}`, {
     headers: { Authorization: `Basic ${btoa(`${cfg.posId}:${cfg.apiKey}`)}` },
@@ -92,7 +92,7 @@ export async function getTransaction(cfg: Cfg, sessionId: string) {
   return data.data as { orderId: number; sessionId: string; status: number; amount: number; currency: string; paymentMethod?: number };
 }
 
-// 5. Nazwy metod płatności (BLIK, karta, banki) – do podsumowania zamówienia.
+// 5. Nazwy metod płatności (BLIK, karta, banki) - do podsumowania zamówienia.
 // Lista zmienia się rzadko, więc trzymamy ją w pamięci izolatu przez 12 godzin.
 let methodsCache: { at: number; host: string; map: Map<number, string> } | null = null;
 export async function paymentMethodName(cfg: Cfg, methodId: number): Promise<string | null> {

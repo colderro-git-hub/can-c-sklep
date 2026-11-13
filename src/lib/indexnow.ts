@@ -1,5 +1,5 @@
 // IndexNow (indexnow.org): natychmiastowe powiadamianie wyszukiwarek o nowych i zmienionych adresach.
-// Obsługują go Bing (a przez niego Copilot i wyszukiwarka ChatGPT), Yandex, Seznam, Naver. Google – nie (mapa strony w Search Console).
+// Obsługują go Bing (a przez niego Copilot i wyszukiwarka ChatGPT), Yandex, Seznam, Naver. Google - nie (mapa strony w Search Console).
 import type { Env } from './env';
 import { db } from './supabase';
 import { getCatalog } from './catalog';
@@ -10,9 +10,9 @@ const ORIGIN = `https://${SITE_HOST}`;
 export const newIndexNowKey = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
 
 const STATUS: Record<number, string> = {
-  200: 'Przyjęte', 202: 'Przyjęte – klucz w trakcie weryfikacji',
+  200: 'Przyjęte', 202: 'Przyjęte - klucz w trakcie weryfikacji',
   400: 'Nieprawidłowe zgłoszenie', 403: 'Klucz nie został potwierdzony (plik klucza niedostępny na can-c.pl)',
-  422: 'Adresy nie należą do can-c.pl', 429: 'Za dużo zgłoszeń – spróbuj później',
+  422: 'Adresy nie należą do can-c.pl', 429: 'Za dużo zgłoszeń - spróbuj później',
 };
 
 // Wszystkie indeksowane adresy: strony z treścią (bez „Nie indeksuj”) i aktywne produkty
@@ -57,7 +57,7 @@ export async function submitIndexNow(env: Env, rawUrls: string[], by: string, au
     const log = [entry, ...((fresh.indexnow?.log as IndexNowLog[]) || [])].slice(0, 20);
     await db(env).upsert('settings', { key: 'seo', value: { ...fresh, indexnow: { ...(fresh.indexnow || {}), log } }, updated_at: new Date().toISOString() }, 'key', 'key');
     clearSeoCache();
-  } catch (e) { console.error('IndexNow – dziennik: ' + (e instanceof Error ? e.message : String(e))); }
+  } catch (e) { console.error('IndexNow - dziennik: ' + (e instanceof Error ? e.message : String(e))); }
   if (!ok) console.error(`IndexNow: ${message}`);
   return { ok, status, count: urls.length, message };
 }

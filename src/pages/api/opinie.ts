@@ -26,7 +26,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 };
 
-// Nowa opinia – trafia do moderacji. „Zweryfikowany zakup”, gdy e-mail ma opłacone zamówienie z tym produktem.
+// Nowa opinia - trafia do moderacji. „Zweryfikowany zakup”, gdy e-mail ma opłacone zamówienie z tym produktem.
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const origin = request.headers.get('Origin');
   if (origin && new URL(origin).host !== new URL(request.url).host) return json(403, { error: 'Niedozwolone źródło żądania.' });
@@ -50,7 +50,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (errors.length) return json(422, { error: errors.join(' ') });
 
   const env = await getEnv(locals);
-  // Turnstile (jeśli skonfigurowany) – ochrona przed spamem
+  // Turnstile (jeśli skonfigurowany) - ochrona przed spamem
   if (env.TURNSTILE_SECRET) {
     const token = str(b.token, 4096);
     const v = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: clientAddress ?? '' }) })
@@ -80,7 +80,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     if (env.CONTACT_TO) {
       await sendMail(env, {
         to: env.CONTACT_TO.split(',').map((s) => s.trim()),
-        subject: `[can-c.pl] Nowa opinia do moderacji: ${p.name} – ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`,
+        subject: `[can-c.pl] Nowa opinia do moderacji: ${p.name} - ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`,
         text: `${name}${email ? ` <${email}>` : ''}${verified ? ' (zweryfikowany zakup)' : ''}\n\n${title ? title + '\n' : ''}${body}\n\nModeracja: ${new URL(request.url).origin}/admin/`,
       }).catch(() => {});
     }

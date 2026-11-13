@@ -1,9 +1,9 @@
-// Dane sklepu (kontakt, firma) i treści edytowane w panelu – z bazy, z zapasem w src/config.ts.
+// Dane sklepu (kontakt, firma) i treści edytowane w panelu - z bazy, z zapasem w src/config.ts.
 import type { Env } from './env';
 import { db } from './supabase';
 import { site as configSite } from '../config';
 
-// Treści, których nie ma w config.ts – wartości domyślne
+// Treści, których nie ma w config.ts - wartości domyślne
 export const CONTENT_DEFAULTS = {
   gtmId: '',             // GTM-XXXXXXX; puste = analityka wyłączona
   promo1: 'Darmowa dostawa w Polsce',
@@ -18,7 +18,7 @@ export const CONTENT_DEFAULTS = {
 
 // Logo jako obraz (adres w Supabase Storage); puste = logo tekstowe. Zapisywane osobną akcją w panelu.
 // Favicon: osobno dla jasnego i ciemnego motywu przeglądarki + ikona Apple (ekran główny iPhone'a); serwowane przez /favicon/*.
-// mailLogo: PNG/JPG do maili (SVG nie działa w Gmailu i Outlooku) – podpis w korespondencji i nagłówek maili sklepu.
+// mailLogo: PNG/JPG do maili (SVG nie działa w Gmailu i Outlooku) - podpis w korespondencji i nagłówek maili sklepu.
 export const LOGO_DEFAULTS = { logoHeader: '', logoFooter: '', faviconLight: '', faviconDark: '', faviconApple: '', mailLogo: '' };
 export const LOGO_KEYS = Object.keys(LOGO_DEFAULTS) as (keyof typeof LOGO_DEFAULTS)[];
 

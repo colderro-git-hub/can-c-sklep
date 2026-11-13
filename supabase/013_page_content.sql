@@ -1,5 +1,5 @@
 -- =====================================================================
--- Can-C krok 23: tabela page_content – CMS dla stron frontendu.
+-- Can-C krok 23: tabela page_content - CMS dla stron frontendu.
 -- Uruchom raz w Supabase SQL Editor przed wdrożeniem kodu.
 -- =====================================================================
 
@@ -24,7 +24,7 @@ create policy "public read"  on public.page_content for select using (true);
 create index if not exists page_content_page_idx on public.page_content (page, sort_order);
 
 -- ----------------------------------------------------------------
--- Dane startowe – przepisane z kodu, gotowe do edycji w panelu
+-- Dane startowe - przepisane z kodu, gotowe do edycji w panelu
 -- ----------------------------------------------------------------
 
 insert into public.page_content (key, page, section, sort_order, data) values
@@ -77,11 +77,11 @@ insert into public.page_content (key, page, section, sort_order, data) values
 
 -- ===== FAQ =====
 ('faq.czym-sa', 'faq', 'item', 10, '{"cat":"produkt","home":true,"q":"Czym są krople Can-C?","a":"To krople do oczu z N-acetylokarnozyną (NAC), formą karnozyny opracowaną do stosowania do oczu. Są produkowane w warunkach ISO i cGMP w licencjonowanym zakładzie okulistycznym i zatwierdzone przez Innovative Vision Products (IVP).\n\nKażde opakowanie zawiera dwie fiolki po 5 ml oraz ulotkę."}'::jsonb),
-('faq.sklad', 'faq', 'item', 20, '{"cat":"produkt","home":false,"q":"Co zawierają krople?","a":"Składniki aktywne: N-acetylokarnozyna 1,0%, gliceryna 1,0%, karboksymetyloceluloza sodowa 0,3%.\n\nSubstancje pomocnicze: sterylna woda (roztwór izotoniczny, pH 6,7–6,9), wodorowęglan potasu, kwas borowy oraz alkohol benzylowy jako łagodny środek konserwujący."}'::jsonb),
+('faq.sklad', 'faq', 'item', 20, '{"cat":"produkt","home":false,"q":"Co zawierają krople?","a":"Składniki aktywne: N-acetylokarnozyna 1,0%, gliceryna 1,0%, karboksymetyloceluloza sodowa 0,3%.\n\nSubstancje pomocnicze: sterylna woda (roztwór izotoniczny, pH 6,7-6,9), wodorowęglan potasu, kwas borowy oraz alkohol benzylowy jako łagodny środek konserwujący."}'::jsonb),
 ('faq.nac-vs-l', 'faq', 'item', 30, '{"cat":"produkt","home":true,"q":"Czym N-acetylokarnozyna różni się od L-karnozyny?","a":"To spokrewnione, ale różne związki. Do stosowania do oczu przeznaczona jest wyłącznie N-acetylokarnozyna, która stopniowo przenika przez rogówkę. L-karnozyny ani innych form karnozyny nie należy aplikować do oczu."}'::jsonb),
 ('faq.k9', 'faq', 'item', 40, '{"cat":"produkt","home":false,"q":"Czy jest wersja dla psów?","a":"Tak, krople Can-C K9 są przeznaczone dla psów. Kurację warto skonsultować z lekarzem weterynarii."}'::jsonb),
-('faq.dawkowanie', 'faq', 'item', 50, '{"cat":"stosowanie","home":false,"q":"Jak dawkować krople?","a":"1–2 krople do oka dwa razy dziennie. Nie stosuj więcej niż 4 krople do oka dziennie.\n\nProfilaktycznie wystarczy 1 kropla raz dziennie z okresowymi przerwami."}'::jsonb),
-('faq.kuracja', 'faq', 'item', 60, '{"cat":"stosowanie","home":false,"q":"Jak długo trwa kuracja?","a":"Pierwsze efekty mogą pojawić się po miesiącu. Producent zaleca stosowanie przez co najmniej 3–5 miesięcy."}'::jsonb),
+('faq.dawkowanie', 'faq', 'item', 50, '{"cat":"stosowanie","home":false,"q":"Jak dawkować krople?","a":"1-2 krople do oka dwa razy dziennie. Nie stosuj więcej niż 4 krople do oka dziennie.\n\nProfilaktycznie wystarczy 1 kropla raz dziennie z okresowymi przerwami."}'::jsonb),
+('faq.kuracja', 'faq', 'item', 60, '{"cat":"stosowanie","home":false,"q":"Jak długo trwa kuracja?","a":"Pierwsze efekty mogą pojawić się po miesiącu. Producent zaleca stosowanie przez co najmniej 3-5 miesięcy."}'::jsonb),
 ('faq.soczewki', 'faq', 'item', 70, '{"cat":"stosowanie","home":true,"q":"Czy mogę stosować krople przy soczewkach kontaktowych?","a":"Tak, preparat mogą stosować osoby noszące soczewki kontaktowe, także miękkie."}'::jsonb),
 ('faq.opakowanie', 'faq', 'item', 80, '{"cat":"stosowanie","home":true,"q":"Na jak długo wystarcza jedno opakowanie?","a":"Przy standardowym dawkowaniu około miesiąca."}'::jsonb),
 ('faq.dostawa', 'faq', 'item', 90, '{"cat":"zamowienia","home":false,"q":"Ile kosztuje dostawa?","a":"Dostawa w Polsce jest darmowa: do Paczkomatu InPost lub kurierem DPD."}'::jsonb),
@@ -99,7 +99,7 @@ insert into public.page_content (key, page, section, sort_order, data) values
 ('about.who', 'about', 'who', 20, '{
   "h2": "Kim jesteśmy",
   "paragraphs": [
-    "Sklep can-c.pl prowadzi firma {company}. Od początku sprzedajemy wyłącznie oryginalne produkty renomowanych producentów z branży optycznej – w tym krople Can-C zatwierdzone przez Innovative Vision Products (IVP).",
+    "Sklep can-c.pl prowadzi firma {company}. Od początku sprzedajemy wyłącznie oryginalne produkty renomowanych producentów z branży optycznej - w tym krople Can-C zatwierdzone przez Innovative Vision Products (IVP).",
     "Wszystkie zamówienia realizujemy przez sklep internetowy. Nie prowadzimy sprzedaży stacjonarnej."
   ]
 }'::jsonb),
@@ -118,14 +118,14 @@ insert into public.page_content (key, page, section, sort_order, data) values
 -- ===== STOSOWANIE =====
 ('how_to_use.intro', 'how_to_use', 'intro', 10, '{
   "h1": "Jak stosować krople Can-C",
-  "lead": "Pierwsze efekty mogą pojawić się po miesiącu. Producent zaleca kurację trwającą co najmniej 3–5 miesięcy."
+  "lead": "Pierwsze efekty mogą pojawić się po miesiącu. Producent zaleca kurację trwającą co najmniej 3-5 miesięcy."
 }'::jsonb),
 
 ('how_to_use.dosage', 'how_to_use', 'dosage', 20, '{
   "h2": "Dawkowanie",
   "note": "Krople Can-C nie zastępują leczenia. Jeśli masz zdiagnozowaną chorobę oczu, przed rozpoczęciem kuracji porozmawiaj z okulistą.",
   "doses": [
-    {"num": "1–2", "title": "krople do oka, dwa razy dziennie", "desc": "Standardowe dawkowanie w trakcie kuracji."},
+    {"num": "1-2", "title": "krople do oka, dwa razy dziennie", "desc": "Standardowe dawkowanie w trakcie kuracji."},
     {"num": "4",   "title": "krople do oka dziennie to maksimum", "desc": "Większa dawka nie daje dodatkowych korzyści. Nie przekraczaj jej."},
     {"num": "1",   "title": "kropla raz dziennie, profilaktycznie", "desc": "Po zakończeniu kuracji, z okresowymi przerwami."}
   ]

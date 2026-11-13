@@ -18,7 +18,7 @@ try {
   const b = getSection<{ items: string[] }>(rows, 'footer.badges');
   if (c?.columns?.length) columns = c.columns;
   if (b?.items?.length) badges = b.items;
-} catch { /* strona statyczna albo baza niedostępna – treści z kodu */ }
+} catch { /* strona statyczna albo baza niedostępna - treści z kodu */ }
 if (!columns.length) columns = [
   { title: 'Sklep', links: [
     { href: '/produkt/krople-can-c/', label: 'Krople Can-C' },
@@ -46,7 +46,7 @@ const year = new Date().getFullYear();
   <div class="ft__in">
     <div class="ft__top">
       <div class="ft__brand">
-        <a href="/" class="ft__logo" aria-label="Can-C – strona główna">
+        <a href="/" class="ft__logo" aria-label="Can-C - strona główna">
           <img class="ft__img" data-logo="logoFooter" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
           <span class="ft__txt" data-logo-text="logoFooter" hidden={!!logo}><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></span>
         </a>
@@ -70,7 +70,7 @@ const year = new Date().getFullYear();
     </ul>
     <div class="ft__line"></div>
     <p class="ft__legal">
-      <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>{' · '}NIP <span data-site="nip">{site.nip}</span>{' · '}REGON <span data-site="regon">{site.regon}</span>{' · '}© 2012–{year}
+      <span data-site="company">{site.company}</span>, <span data-site="address">{site.address}</span>{' · '}NIP <span data-site="nip">{site.nip}</span>{' · '}REGON <span data-site="regon">{site.regon}</span>{' · '}© 2012-{year}
     </p>
   </div>
 </footer>

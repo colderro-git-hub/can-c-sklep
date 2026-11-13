@@ -1,12 +1,12 @@
-// Promocje automatyczne (panel: Kody rabatowe → Promocje). Moduł bez zależności serwerowych –
+// Promocje automatyczne (panel: Kody rabatowe → Promocje). Moduł bez zależności serwerowych -
 // ten sam kod liczy cenę w koszyku (podgląd) i na serwerze (kwota do zapłaty).
 //
-//  • quantity – rabat ilościowy: progi „od N sztuk” (procent albo kwota na każdą sztukę) dla wybranych produktów;
+//  • quantity - rabat ilościowy: progi „od N sztuk” (procent albo kwota na każdą sztukę) dla wybranych produktów;
 //               sztuki liczone osobno dla każdego produktu albo łącznie dla wszystkich produktów z listy (combined)
-//  • bundle   – zestaw: komplet produktów (np. krople + kapsułki); rabat procentowy albo kwotowy za każdy komplet
+//  • bundle   - zestaw: komplet produktów (np. krople + kapsułki); rabat procentowy albo kwotowy za każdy komplet
 //
-// Jedna sztuka dostaje najwyżej jeden rabat. Liczymy dwa warianty – „najpierw zestawy, resztę ilościowo” oraz
-// „tylko ilościowo” – i wybieramy korzystniejszy dla klienta. Kwoty zawsze w groszach.
+// Jedna sztuka dostaje najwyżej jeden rabat. Liczymy dwa warianty - „najpierw zestawy, resztę ilościowo” oraz
+// „tylko ilościowo” - i wybieramy korzystniejszy dla klienta. Kwoty zawsze w groszach.
 
 export type PromoTier = { min: number; type: 'percent' | 'amount'; value: number }; // amount: grosze za sztukę
 export type BundleItem = { product_id: string; qty: number };
@@ -105,7 +105,7 @@ function runBundles(promos: Promotion[], lines: PromoLine[], remaining: Map<stri
   }
 }
 
-// code – kod wpisany w zamówieniu: włącza promocję z tym kodem (bez kodu działają tylko promocje automatyczne)
+// code - kod wpisany w zamówieniu: włącza promocję z tym kodem (bez kodu działają tylko promocje automatyczne)
 export function applyPromotions(lines: PromoLine[], all: Promotion[], now = Date.now(), code: string | null = null): PromoResult {
   const want = code ? code.trim().toUpperCase() : null;
   const promos = all.filter((p) => promoActive(p, now) && (!p.code || (want !== null && p.code.toUpperCase() === want))).sort((a, b) => a.sort_order - b.sort_order);
@@ -154,7 +154,7 @@ export function nextTier(productId: string, qty: number, all: Promotion[], now =
   return best;
 }
 
-// Opcje ilości na karcie produktu: 1 + progi rabatów ilościowych (maks. 4 pozycje); bez progów – 1, 2, 3
+// Opcje ilości na karcie produktu: 1 + progi rabatów ilościowych (maks. 4 pozycje); bez progów - 1, 2, 3
 export function qtyOptions(productId: string, all: Promotion[], now = Date.now()) {
   const mins = new Set<number>([1]);
   for (const p of all) {

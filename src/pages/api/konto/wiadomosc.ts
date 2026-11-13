@@ -39,7 +39,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await sendMail(env, {
         to: env.CONTACT_TO.split(',').map((s) => s.trim()),
         replyTo: c.email,
-        subject: `[can-c.pl] ${TOPICS[topic]} – zamówienie nr ${order.number}`,
+        subject: `[can-c.pl] ${TOPICS[topic]} - zamówienie nr ${order.number}`,
         text: `Klient: ${c.email}\nZamówienie: ${order.number}\nTemat: ${TOPICS[topic]}\n\n${message}\n\nPanel: ${new URL(request.url).origin}/admin/`,
       });
     }

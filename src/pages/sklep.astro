@@ -1,5 +1,5 @@
 ---
-// Wszystkie produkty – karty jak na stronie głównej (projekt Laluna)
+// Wszystkie produkty - karty jak na stronie głównej (projekt Laluna)
 import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import { getEnv } from '../lib/env';
@@ -31,7 +31,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <h2 class="h2">{g.title}</h2>
           <p class="p fl" style="width:517px">{g.lead}</p>
         </div>
-        <div class="sk-grid" data-list={`Sklep – ${g.title}`}>
+        <div class="sk-grid" data-list={`Sklep - ${g.title}`}>
           {g.items.map((p) => (
             <ProductCard slug={p.id} name={p.name} tag={p.subtitle || undefined} image={p.images[0]?.url} alt={p.images[0]?.alt}
               avail={p.avail} price={zl(p.current)} regular={zl(p.price)} onSale={p.onSale} flag={cap(p.tags[0])} />

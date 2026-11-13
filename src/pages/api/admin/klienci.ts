@@ -127,7 +127,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const hasInv = Boolean(inv.company || inv.nip);
     const errors: string[] = [];
     if (!EMAIL_RE.test(email)) errors.push('Nieprawidłowy e-mail.');
-    if (email !== cur.email && cur.user_id) errors.push('Klient ma konto – e-mail służy do logowania i zmienia go sam klient (lub przez wsparcie Supabase).');
+    if (email !== cur.email && cur.user_id) errors.push('Klient ma konto - e-mail służy do logowania i zmienia go sam klient (lub przez wsparcie Supabase).');
     if (phone && !validPhone(phone)) errors.push('Telefon: 9 cyfr.');
     if (locker && !LOCKER_RE.test(locker)) errors.push('Nieprawidłowy kod Paczkomatu.');
     if (addr.postcode && !POSTCODE_RE.test(addr.postcode)) errors.push('Kod pocztowy: 00-000.');

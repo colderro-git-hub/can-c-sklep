@@ -1,5 +1,5 @@
 ---
-// Panel admina – styl z „Can - Design System” (Metrix). Niezależny od stylów sklepu.
+// Panel admina - styl z „Can - Design System” (Metrix). Niezależny od stylów sklepu.
 import { FURGONETKA_PANEL_URL } from '../../config';
 ---
 <!doctype html>
@@ -94,24 +94,24 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <div class="kpi">
                 <span class="kpi__icon kpi__icon--amber" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg></span>
                 <div class="kpi__row">
-                  <div class="kpi__m"><span class="kpi__label">Do wysłania</span><span class="kpi__value" data-k="paid">–</span></div>
-                  <div class="kpi__m"><span class="kpi__label">Wstrzymane</span><span class="kpi__value" data-k="on_hold">–</span></div>
-                  <div class="kpi__m"><span class="kpi__label">W drodze</span><span class="kpi__value" data-k="shipped">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Do wysłania</span><span class="kpi__value" data-k="paid">-</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Wstrzymane</span><span class="kpi__value" data-k="on_hold">-</span></div>
+                  <div class="kpi__m"><span class="kpi__label">W drodze</span><span class="kpi__value" data-k="shipped">-</span></div>
                 </div>
               </div>
               <div class="kpi">
                 <span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 19V5m0 14h16M8 15v-3m4 3V9m4 6V7" /></svg></span>
                 <div class="kpi__row">
-                  <div class="kpi__m"><span class="kpi__label">Sprzedaż dziś</span><span class="kpi__value" data-k="revenueToday">–</span></div>
-                  <div class="kpi__m"><span class="kpi__label">Zamówienia dziś</span><span class="kpi__value" data-k="ordersToday">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Sprzedaż dziś</span><span class="kpi__value" data-k="revenueToday">-</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Zamówienia dziś</span><span class="kpi__value" data-k="ordersToday">-</span></div>
                 </div>
               </div>
               <div class="kpi">
                 <span class="kpi__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></span>
                 <div class="kpi__row">
-                  <div class="kpi__m"><span class="kpi__label">Sprzedaż 30 dni</span><span class="kpi__value" data-k="revenue30">–</span></div>
-                  <div class="kpi__m"><span class="kpi__label">Zamówienia</span><span class="kpi__value" data-k="orders30">–</span></div>
-                  <div class="kpi__m"><span class="kpi__label">Średnio</span><span class="kpi__value" data-k="avg30">–</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Sprzedaż 30 dni</span><span class="kpi__value" data-k="revenue30">-</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Zamówienia</span><span class="kpi__value" data-k="orders30">-</span></div>
+                  <div class="kpi__m"><span class="kpi__label">Średnio</span><span class="kpi__value" data-k="avg30">-</span></div>
                 </div>
               </div>
             </div>
@@ -168,7 +168,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
           <!-- KLIENCI -->
           <section data-view="mail" class="mb" hidden>
-            <p class="notice" data-mb-warn hidden>Nadawca to onboarding@resend.dev – do czasu weryfikacji domeny can-c.pl w Resend odpowiedzi dojdą tylko na adres właściciela konta Resend.</p>
+            <p class="notice" data-mb-warn hidden>Nadawca to onboarding@resend.dev - do czasu weryfikacji domeny can-c.pl w Resend odpowiedzi dojdą tylko na adres właściciela konta Resend.</p>
             <div class="mb__bar">
               <div class="tabs mb__folders" role="group" aria-label="Foldery">
                 <button type="button" class="tab" data-mb-folder="inbox" aria-pressed="true">Odebrane <span data-mb-count="inbox"></span></button>
@@ -196,7 +196,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <h2 class="card__title">Klienci <span class="muted" data-c-total></span></h2>
                 <div class="actions">
                   <a class="btn btn--outline btn--sm" data-c-csv href="/api/admin/klienci?format=csv">Pobierz CSV</a>
-                  <a class="btn btn--outline btn--sm" data-c-match href="/api/admin/klienci?format=match" title="Lista do Google Ads / Meta – tylko osoby ze zgodą marketingową">Eksport Customer Match</a>
+                  <a class="btn btn--outline btn--sm" data-c-match href="/api/admin/klienci?format=match" title="Lista do Google Ads / Meta - tylko osoby ze zgodą marketingową">Eksport Customer Match</a>
                 </div>
               </div>
               <div class="tabs" role="tablist" aria-label="Segmenty klientów">
@@ -292,9 +292,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div data-auto-pane="newsletter" class="stack" hidden>
               <p class="notice" data-nl-warn hidden></p>
               <div class="kpis kpis--3">
-                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Ze zgodą marketingową</span><span class="kpi__value" data-nl-k="consented">–</span></div></div>
-                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Zapisani przez newsletter</span><span class="kpi__value" data-nl-k="fromNewsletter">–</span></div></div>
-                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Nowe potwierdzenia (30 dni)</span><span class="kpi__value" data-nl-k="joined30">–</span></div></div>
+                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Ze zgodą marketingową</span><span class="kpi__value" data-nl-k="consented">-</span></div></div>
+                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Zapisani przez newsletter</span><span class="kpi__value" data-nl-k="fromNewsletter">-</span></div></div>
+                <div class="kpi"><div class="kpi__m"><span class="kpi__label">Nowe potwierdzenia (30 dni)</span><span class="kpi__value" data-nl-k="joined30">-</span></div></div>
               </div>
               <div class="card">
                 <div class="card__head"><h2 class="card__title">Kampanie</h2><button type="button" class="btn btn--sm" data-nl-new>+ Nowa kampania</button></div>
@@ -351,7 +351,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <div data-an-body><p class="muted">Ładowanie danych…</p></div>
             <form class="card" data-gtm-form novalidate style="margin-top:24px">
               <div class="card__head"><h2 class="card__title">Google Tag Manager</h2></div>
-              <label class="field">GTM ID <span class="muted small">– np. GTM-XXXXXXX; puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
+              <label class="field">GTM ID <span class="muted small">- np. GTM-XXXXXXX; puste = analityka wyłączona</span><input class="input" name="gtmId" data-s-gtmId placeholder="GTM-XXXXXXX" maxlength="20" spellcheck="false" /></label>
               <p class="muted small">Po zapisaniu GTM załaduje się na każdej stronie sklepu. Skonfiguruj w GTM: Consent Mode v2, GA4, Google Ads, Meta Pixel.</p>
               <div class="actions"><button class="btn btn--sm">Zapisz GTM ID</button></div>
             </form>
@@ -397,7 +397,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                   <div class="card__head"><h2 class="card__title">Firma</h2></div>
                   <label class="field">Nazwa marki <input class="input" name="name" maxlength="80" /></label>
                   <label class="field">Pełna nazwa firmy <input class="input" name="legalName" maxlength="150" /></label>
-                  <label class="field">Krótki opis firmy <span class="muted small">1–2 zdania: co sprzedajecie i komu</span><textarea class="input" name="description" rows="3" maxlength="300" placeholder="np. Oficjalny sklep z oryginalnymi kroplami do oczu Can-C z N-acetylokarnozyną. Sprzedajemy w Polsce od 2013 roku."></textarea></label>
+                  <label class="field">Krótki opis firmy <span class="muted small">1-2 zdania: co sprzedajecie i komu</span><textarea class="input" name="description" rows="3" maxlength="300" placeholder="np. Oficjalny sklep z oryginalnymi kroplami do oczu Can-C z N-acetylokarnozyną. Sprzedajemy w Polsce od 2013 roku."></textarea></label>
                   <div class="field">Logo dla wyszukiwarek <span class="muted small">najlepiej kwadratowe, na białym tle, min. 112 × 112 px · puste = logo z menu górnego</span><div class="org-logo" data-org-logo></div></div>
                   <div class="seo-addr">
                     <label class="field">Ulica i numer <input class="input" name="street" maxlength="120" /></label>
@@ -407,7 +407,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                   <div class="field">Kontakt i NIP <span class="muted small">zmienisz w Ustawieniach sklepu</span><p class="small" data-org-contact></p></div>
                   <label class="field">Profile w mediach społecznościowych <span class="muted small">jeden adres w linii, np. Instagram, YouTube, Allegro · Facebook z Ustawień dodajemy automatycznie</span><textarea class="input" name="sameAs" rows="3" placeholder="https://www.instagram.com/…"></textarea></label>
                   <label class="field">Rok założenia <span class="muted small">opcjonalnie</span><input class="input" name="foundingDate" maxlength="10" placeholder="np. 2012" /></label>
-                  <label class="check"><input type="checkbox" name="breadcrumbs" /> Okruszki w wynikach Google (BreadcrumbList) – ścieżka typu Strona główna › Sklep › Produkt</label>
+                  <label class="check"><input type="checkbox" name="breadcrumbs" /> Okruszki w wynikach Google (BreadcrumbList) - ścieżka typu Strona główna › Sklep › Produkt</label>
                   <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
                 </form>
                 <div class="card stack">
@@ -425,7 +425,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div data-seo-pane="bots" role="tabpanel" class="stack" hidden>
               <form class="card stack" data-ai-form novalidate>
                 <div class="card__head"><h2 class="card__title">Polityka botów AI</h2></div>
-                <p class="muted">Zablokowany bot nie może pobierać stron sklepu. Boty wyszukiwarek AI przy blokadzie nie zacytują ani nie polecą sklepu w odpowiedziach. Boty treningowe zbierają treści do uczenia modeli; ich blokada nie wpływa na wyszukiwarki. Google AI Overviews i Copilot korzystają z Googlebota i Bingbota – nie da się ich wyłączyć bez wypadnięcia z wyszukiwarki, dlatego ich tu nie ma.</p>
+                <p class="muted">Zablokowany bot nie może pobierać stron sklepu. Boty wyszukiwarek AI przy blokadzie nie zacytują ani nie polecą sklepu w odpowiedziach. Boty treningowe zbierają treści do uczenia modeli; ich blokada nie wpływa na wyszukiwarki. Google AI Overviews i Copilot korzystają z Googlebota i Bingbota - nie da się ich wyłączyć bez wypadnięcia z wyszukiwarki, dlatego ich tu nie ma.</p>
                 <div class="ai-groups" data-ai-groups></div>
                 <p class="small muted">robots.txt to prośba, nie zabezpieczenie: znane firmy go przestrzegają, nieuczciwe boty mogą go zignorować.</p>
                 <div class="actions"><button class="btn btn--sm">Zapisz politykę botów</button></div>
@@ -442,7 +442,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                 <div class="card__head"><h2 class="card__title">llms.txt</h2><a class="btn btn--outline btn--sm" href="/llms.txt" target="_blank" rel="noopener">Otwórz llms.txt</a></div>
                 <p class="muted">Zwięzły opis sklepu dla modeli językowych (standard llmstxt.org): produkty z cenami i dostępnością, dostawa, płatności, zwroty i najważniejsze strony. Generujemy go automatycznie z katalogu, więc zawsze jest aktualny. Google go nie wymaga; korzystają z niego m.in. ChatGPT, Claude i Perplexity.</p>
                 <label class="check"><input type="checkbox" name="enabled" /> Publikuj /llms.txt</label>
-                <label class="field">Opis sklepu <span class="muted small">1–2 zdania; puste = opis z „Danych firmy” albo domyślny</span><textarea class="input" name="summary" rows="2" maxlength="500"></textarea></label>
+                <label class="field">Opis sklepu <span class="muted small">1-2 zdania; puste = opis z „Danych firmy” albo domyślny</span><textarea class="input" name="summary" rows="2" maxlength="500"></textarea></label>
                 <label class="field">Dodatkowa treść <span class="muted small">Markdown, np. „## Dla hurtowni” z listą informacji · maks. 5000 znaków</span><textarea class="input mono" name="extra" rows="5" maxlength="5000" spellcheck="false" placeholder="## Współpraca&#10;- Sprzedaż hurtowa: kontakt@can-c.pl"></textarea></label>
                 <div class="actions"><button class="btn btn--sm">Zapisz llms.txt</button></div>
                 <details class="manual" open><summary>Podgląd /llms.txt</summary><pre class="code" data-llms-preview></pre></details>
@@ -452,11 +452,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <p class="notice" data-rd-migration hidden></p>
               <form class="card stack" data-rd-form novalidate>
                 <div class="card__head"><h2 class="card__title" data-rd-form-title>Dodaj przekierowanie</h2></div>
-                <p class="muted small">Stary adres możesz wkleić w całości (np. ze starej strony na WordPressie) – zapiszemy samą ścieżkę. Wielkość liter i ukośnik na końcu nie mają znaczenia. Parametry kampanii (utm_…) przechodzą na nowy adres.</p>
+                <p class="muted small">Stary adres możesz wkleić w całości (np. ze starej strony na WordPressie) - zapiszemy samą ścieżkę. Wielkość liter i ukośnik na końcu nie mają znaczenia. Parametry kampanii (utm_…) przechodzą na nowy adres.</p>
                 <div class="rd-grid">
                   <label class="field">Stary adres<input class="input mono" name="from" placeholder="/sklep/krople-do-oczu-can-c/" required /></label>
                   <label class="field">Nowy adres<input class="input mono" name="to" list="rd-targets" placeholder="/produkt/krople-can-c/" required /><datalist id="rd-targets"></datalist></label>
-                  <label class="field">Typ<select class="input" name="code"><option value="301">301 – na stałe</option><option value="302">302 – tymczasowo</option></select></label>
+                  <label class="field">Typ<select class="input" name="code"><option value="301">301 - na stałe</option><option value="302">302 - tymczasowo</option></select></label>
                 </div>
                 <label class="field">Notatka <span class="muted small">opcjonalnie</span><input class="input" name="note" maxlength="200" /></label>
                 <input type="hidden" name="id" />
@@ -483,7 +483,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <div class="card stack">
                 <div class="card__head"><h2 class="card__title">Dziennik 404 <span class="muted" data-nf-count></span></h2>
                   <button type="button" class="btn btn--outline btn--sm" data-nf-clear>Wyczyść dziennik</button></div>
-                <p class="muted small">Adresy, pod którymi ktoś trafił na „Nie znaleziono”, posortowane od najczęstszych. Po starcie sklepu zajrzyj tu po kilku dniach – stare linki z Google i innych stron pokażą, co jeszcze przekierować. Pomijamy automatyczne skanery (np. wp-login.php). <span data-nf-ignored></span></p>
+                <p class="muted small">Adresy, pod którymi ktoś trafił na „Nie znaleziono”, posortowane od najczęstszych. Po starcie sklepu zajrzyj tu po kilku dniach - stare linki z Google i innych stron pokażą, co jeszcze przekierować. Pomijamy automatyczne skanery (np. wp-login.php). <span data-nf-ignored></span></p>
                 <div class="table-wrap"><table class="table rd-table">
                   <thead><tr><th>Adres</th><th class="r">Trafienia</th><th>Ostatnio</th><th>Skąd</th><th></th></tr></thead>
                   <tbody data-nf-list><tr><td colspan="5" class="muted">Ładowanie…</td></tr></tbody>
@@ -493,14 +493,14 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div data-seo-pane="verify" role="tabpanel" class="stack" hidden>
               <form class="card stack" data-verify-form novalidate>
                 <div class="card__head"><h2 class="card__title">Weryfikacja własności strony</h2></div>
-                <p class="muted">Wklej kod albo cały znacznik <code>&lt;meta …&gt;</code> – zapiszemy sam kod i dodamy go do strony. Weryfikację w narzędziu kliknij <strong>po starcie sklepu na can-c.pl</strong> (na stagingu adres jest inny).</p>
+                <p class="muted">Wklej kod albo cały znacznik <code>&lt;meta …&gt;</code> - zapiszemy sam kod i dodamy go do strony. Weryfikację w narzędziu kliknij <strong>po starcie sklepu na can-c.pl</strong> (na stagingu adres jest inny).</p>
                 <div class="verify-row">
                   <label class="field"><span>Google Search Console <span class="pill" data-v-st="google"></span></span><input class="input mono" name="google" placeholder='&lt;meta name="google-site-verification" content="…"&gt;' /></label>
-                  <p class="small muted">Search Console → Dodaj usługę → <strong>Prefiks adresu URL</strong> https://can-c.pl → Metoda „Tag HTML”. Wygodniej: usługa „Domena” z rekordem TXT w DNS Cloudflare – wtedy to pole jest niepotrzebne. Po weryfikacji dodaj mapę strony: <code>https://can-c.pl/sitemap.xml</code>.</p>
+                  <p class="small muted">Search Console → Dodaj usługę → <strong>Prefiks adresu URL</strong> https://can-c.pl → Metoda „Tag HTML”. Wygodniej: usługa „Domena” z rekordem TXT w DNS Cloudflare - wtedy to pole jest niepotrzebne. Po weryfikacji dodaj mapę strony: <code>https://can-c.pl/sitemap.xml</code>.</p>
                 </div>
                 <div class="verify-row">
                   <label class="field"><span>Bing Webmaster Tools <span class="pill" data-v-st="bing"></span></span><input class="input mono" name="bing" placeholder='&lt;meta name="msvalidate.01" content="…"&gt;' /></label>
-                  <p class="small muted">Bing Webmaster Tools → Dodaj witrynę → „Tag HTML”. Najszybciej: „Importuj z Google Search Console” – wtedy kod nie jest potrzebny. Bing zasila też Copilota i wyszukiwarkę w ChatGPT.</p>
+                  <p class="small muted">Bing Webmaster Tools → Dodaj witrynę → „Tag HTML”. Najszybciej: „Importuj z Google Search Console” - wtedy kod nie jest potrzebny. Bing zasila też Copilota i wyszukiwarkę w ChatGPT.</p>
                 </div>
                 <div class="verify-row">
                   <label class="field"><span>Meta (Facebook, Instagram) <span class="pill" data-v-st="meta"></span></span><input class="input mono" name="meta" placeholder='&lt;meta name="facebook-domain-verification" content="…"&gt;' /></label>
@@ -511,11 +511,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
               <form class="card stack" data-indexnow-form novalidate>
                 <div class="card__head"><h2 class="card__title">IndexNow <span class="pill" data-in-st></span></h2></div>
-                <p class="muted">Natychmiastowe powiadamianie wyszukiwarek o nowych i zmienionych stronach – zamiast czekać, aż robot sam je odwiedzi. Obsługują to Bing (a przez niego Copilot i ChatGPT), Yandex, Seznam i Naver. Google nie korzysta z IndexNow – dla niego wystarczy mapa strony w Search Console. <strong>Włącz po starcie sklepu</strong>: wyszukiwarki sprawdzają plik klucza na can-c.pl.</p>
+                <p class="muted">Natychmiastowe powiadamianie wyszukiwarek o nowych i zmienionych stronach - zamiast czekać, aż robot sam je odwiedzi. Obsługują to Bing (a przez niego Copilot i ChatGPT), Yandex, Seznam i Naver. Google nie korzysta z IndexNow - dla niego wystarczy mapa strony w Search Console. <strong>Włącz po starcie sklepu</strong>: wyszukiwarki sprawdzają plik klucza na can-c.pl.</p>
                 <label class="check"><input type="checkbox" name="enabled" /> Włącz IndexNow</label>
                 <label class="check"><input type="checkbox" name="auto" /> Zgłaszaj automatycznie po zapisaniu produktu i strony w zakładce SEO</label>
-                <div class="field">Klucz <span class="muted small">publikowany pod adresem poniżej (wymóg IndexNow – to nie jest hasło)</span>
-                  <div class="actions"><code class="in-key" data-in-key>—</code><a class="btn btn--outline btn--sm" data-in-keylink target="_blank" rel="noopener">Otwórz plik klucza</a><button type="button" class="btn btn--outline btn--sm" data-in-regen>Wygeneruj nowy</button></div></div>
+                <div class="field">Klucz <span class="muted small">publikowany pod adresem poniżej (wymóg IndexNow - to nie jest hasło)</span>
+                  <div class="actions"><code class="in-key" data-in-key>-</code><a class="btn btn--outline btn--sm" data-in-keylink target="_blank" rel="noopener">Otwórz plik klucza</a><button type="button" class="btn btn--outline btn--sm" data-in-regen>Wygeneruj nowy</button></div></div>
                 <div class="actions"><button class="btn btn--sm">Zapisz</button></div>
               </form>
 
@@ -550,7 +550,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
             <div class="card" data-logos>
               <div class="card__head"><h2 class="card__title">Logo sklepu</h2><span class="muted small">SVG, PNG, JPG lub WebP · do 1 MB · na stronie szerokość 120 px</span></div>
-              <p class="muted">Bez obrazu na stronie jest logo tekstowe „Can-C”. Do stopki wgraj jasną wersję logo – stopka ma ciemne tło. Zmiana pojawi się na stronie w ciągu kilku minut.</p>
+              <p class="muted">Bez obrazu na stronie jest logo tekstowe „Can-C”. Do stopki wgraj jasną wersję logo - stopka ma ciemne tło. Zmiana pojawi się na stronie w ciągu kilku minut.</p>
               <div class="logo-grid">
                 <div class="logo-slot" data-logo-slot="header">
                   <span class="logo-slot__t">Menu górne</span>
@@ -572,7 +572,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             </div>
             <div class="card" data-favicons>
               <div class="card__head"><h2 class="card__title">Favicon</h2><span class="muted small">SVG lub PNG · kwadrat, min. 48 × 48 px (PNG najlepiej 512 × 512) · do 1 MB</span></div>
-              <p class="muted">Ikona na karcie przeglądarki i w zakładkach. Przeglądarka wybiera wersję według swojego motywu (jasny/ciemny), a nie przełącznika na stronie. Bez wersji ciemnej wszędzie będzie jasna. Przeglądarki długo pamiętają favicon – zmianę zobaczysz po kilku minutach, czasem dopiero po odświeżeniu z wyczyszczeniem pamięci (Ctrl+F5).</p>
+              <p class="muted">Ikona na karcie przeglądarki i w zakładkach. Przeglądarka wybiera wersję według swojego motywu (jasny/ciemny), a nie przełącznika na stronie. Bez wersji ciemnej wszędzie będzie jasna. Przeglądarki długo pamiętają favicon - zmianę zobaczysz po kilku minutach, czasem dopiero po odświeżeniu z wyczyszczeniem pamięci (Ctrl+F5).</p>
               <div class="logo-grid logo-grid--3">
                 <div class="logo-slot" data-logo-slot="favicon-light">
                   <span class="logo-slot__t">Jasny motyw</span>
@@ -616,8 +616,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               </div>
               <div class="logo-grid" style="margin-top:14px">
                 <div class="logo-slot" data-logo-slot="mail-logo">
-                  <span class="logo-slot__t">Logo do maili <span class="muted small">PNG lub JPG, ok. 240 × 80 px – używane w podpisie i nagłówku maili sklepu (SVG nie działa w Gmailu i Outlooku)</span></span>
-                  <div class="logo-prev logo-prev--light"><img data-logo-img alt="Podgląd logo do maili" hidden style="max-height:40px" /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>brak – w mailach logo z menu, jeśli to PNG/JPG, inaczej tekst</span></div>
+                  <span class="logo-slot__t">Logo do maili <span class="muted small">PNG lub JPG, ok. 240 × 80 px - używane w podpisie i nagłówku maili sklepu (SVG nie działa w Gmailu i Outlooku)</span></span>
+                  <div class="logo-prev logo-prev--light"><img data-logo-img alt="Podgląd logo do maili" hidden style="max-height:40px" /><span class="logo-prev__txt logo-prev__txt--sm" data-logo-empty>brak - w mailach logo z menu, jeśli to PNG/JPG, inaczej tekst</span></div>
                   <div class="actions">
                     <label class="btn btn--sm">Wybierz plik<input type="file" accept=".png,.jpg,.jpeg,image/png,image/jpeg" data-logo-file hidden /></label>
                     <button type="button" class="btn btn--outline btn--sm" data-logo-remove hidden>Usuń</button>
@@ -629,7 +629,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <form class="stack" data-settings-form novalidate>
             <div class="card">
               <div class="card__head"><h2 class="card__title">Komunikat na stronie</h2><span class="st" data-notice-state></span></div>
-              <p class="muted">Pasek nad nagłówkiem na wszystkich stronach oraz informacja w koszyku, przy zamówieniu i w mailu z potwierdzeniem. Np. „Urlop do 15 sierpnia – zamówienia wysyłamy od 16 sierpnia.”</p>
+              <p class="muted">Pasek nad nagłówkiem na wszystkich stronach oraz informacja w koszyku, przy zamówieniu i w mailu z potwierdzeniem. Np. „Urlop do 15 sierpnia - zamówienia wysyłamy od 16 sierpnia.”</p>
               <div class="code-form">
                 <label class="check code-form__wide"><input type="checkbox" name="noticeEnabled" /> Pokazuj komunikat</label>
                 <label class="field code-form__wide">Treść<input class="input" name="noticeText" maxlength="300" /></label>
@@ -640,9 +640,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div class="card">
               <div class="card__head"><h2 class="card__title">Pasek promocji i wysyłka</h2></div>
               <div class="code-form">
-                <label class="field">Pasek – tekst 1<input class="input" name="promo1" maxlength="80" /></label>
-                <label class="field">Pasek – tekst 2<input class="input" name="promo2" maxlength="80" /></label>
-                <label class="field">Pasek – tekst 3<input class="input" name="promo3" maxlength="80" /></label>
+                <label class="field">Pasek - tekst 1<input class="input" name="promo1" maxlength="80" /></label>
+                <label class="field">Pasek - tekst 2<input class="input" name="promo2" maxlength="80" /></label>
+                <label class="field">Pasek - tekst 3<input class="input" name="promo3" maxlength="80" /></label>
                 <label class="field">Czas wysyłki<input class="input" name="shippingTime" maxlength="80" placeholder="w ciągu 1 dnia roboczego" /></label>
                 <p class="muted code-form__wide">Puste pole paska = tekst się nie pokazuje. Czas wysyłki wstawiamy do zdania „Zamówienia wysyłamy …” w FAQ, formach dostawy, regulaminie, na karcie produktu i w mailu.</p>
               </div>
@@ -652,7 +652,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <div class="code-form">
                 <label class="field">E-mail sklepu<input class="input" name="email" type="email" required /></label>
                 <label class="field">Telefon<input class="input" name="phone" type="tel" placeholder="puste = nie pokazuj" /></label>
-                <label class="field">Godziny obsługi<input class="input" name="hours" placeholder="pon.–pt., 9:00–17:00" /></label>
+                <label class="field">Godziny obsługi<input class="input" name="hours" placeholder="pon.-pt., 9:00-17:00" /></label>
                 <label class="field">Czas odpowiedzi<input class="input" name="replyTime" placeholder="w ciągu 24 h" /></label>
                 <label class="field code-form__wide">Facebook<input class="input" name="facebook" type="url" placeholder="https://www.facebook.com/..." /></label>
                 <h3 class="card__title code-form__wide">Dane firmy</h3>
@@ -673,7 +673,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <div class="card">
               <div class="card__head"><h2 class="card__title">Promocje automatyczne</h2>
                 <div class="actions"><button type="button" class="btn btn--sm" data-promo-new="quantity">+ Rabat ilościowy</button><button type="button" class="btn btn--outline btn--sm" data-promo-new="bundle">+ Zestaw produktów</button></div></div>
-              <p class="muted">Naliczają się same w koszyku – bez kodu. <strong>Rabat ilościowy</strong>: od określonej liczby sztuk (np. 2 opakowania −8%). <strong>Zestaw</strong>: komplet różnych produktów (np. krople + kapsułki). Jedna sztuka dostaje najwyżej jeden rabat – gdy zestaw i rabat ilościowy się nakładają, klient dostaje korzystniejszy wariant.</p>
+              <p class="muted">Naliczają się same w koszyku - bez kodu. <strong>Rabat ilościowy</strong>: od określonej liczby sztuk (np. 2 opakowania −8%). <strong>Zestaw</strong>: komplet różnych produktów (np. krople + kapsułki). Jedna sztuka dostaje najwyżej jeden rabat - gdy zestaw i rabat ilościowy się nakładają, klient dostaje korzystniejszy wariant.</p>
               <div class="table-wrap">
                 <table class="table table--form">
                   <thead><tr><th>Promocja</th><th>Warunki i rabat</th><th>Ważność</th><th class="r">Zamówienia</th><th class="r">Klienci</th><th class="r">Przychód</th><th class="r">Udzielony rabat</th><th>Kody</th><th>Aktywna</th></tr></thead>
@@ -1031,7 +1031,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   [data-page-form] .field { position: relative; }
   .sec-vis { font-size: 13px; }
   [data-page-form].is-off { opacity: .6; }
-  [data-page-form].is-off .card__title::after { content: ' – wyłączona'; color: var(--muted); font-weight: 400; }
+  [data-page-form].is-off .card__title::after { content: ' - wyłączona'; color: var(--muted); font-weight: 400; }
   .nl-ed { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
   .nl-ed__fs { border: 0; padding: 0; margin: 0; min-width: 0; display: flex; flex-direction: column; gap: 12px; }
   .nl-ed__preview { position: sticky; top: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -1164,7 +1164,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 <script>
   import { applyPromotions, normalizePromotion, describeDiscount, type Promotion } from '../../lib/promotions';
   type Order = any;
-  const pln = (g: number | null) => (g === null || g === undefined ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+  const pln = (g: number | null) => (g === null || g === undefined ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
   const date = (s: string) => new Date(s).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const STATUS: Record<string, string> = { pending_payment: 'Czeka na płatność', paid: 'Do wysłania', packing: 'Kompletowanie', on_hold: 'Wstrzymane', shipped: 'Wysłane', completed: 'Zrealizowane', cancelled: 'Anulowane', refunded: 'Zwrócone', failed: 'Nieudane' };
   const EVENT: Record<string, string> = { edited: 'Edycja danych', withdrawal: 'Odstąpienie od umowy (formularz)', p24_check: 'Ręczne sprawdzenie w P24', customer_message: 'Wiadomość od klienta', created: 'Utworzone', p24_registered: 'Przekierowanie do Przelewy24', p24_notification: 'Powiadomienie z Przelewy24', p24_verified: 'Płatność potwierdzona', status_change: 'Zmiana statusu', mail_confirmation: 'Mail z potwierdzeniem', mail_shipped: 'Mail o wysyłce', mail_failed: 'Mail NIE wysłany', note: 'Notatka', amount_mismatch: 'Niezgodna kwota!', auto_cancelled: 'Anulowane automatycznie', auto_completed: 'Zrealizowane automatycznie', p24_verify_failed: 'Błąd weryfikacji P24', furgonetka_tracking: 'Numer przesyłki z Furgonetki', mail_refunded: 'Mail o zwrocie', mail_packing: 'Mail o kompletowaniu', ga4_purchase: 'Zakup wysłany do GA4', ga4_refund: 'Zwrot wysłany do GA4', stock_restored: 'Przywrócono stany magazynowe' };
@@ -1185,7 +1185,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     return 'https://furgonetka.pl/zlokalizuj';
   };
   const trackLink = (carrier: string, nr: string) => `<a href="${track(carrier, nr)}" target="_blank" rel="noopener" data-stop>${esc(nr)}</a>`;
-  const delivery = (o: Order) => o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '—');
+  const delivery = (o: Order) => o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '-');
 
   const state = { status: 'paid', q: '', page: 1, pages: 1 };
 
@@ -1227,7 +1227,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td class="cb" data-stop><input type="checkbox" data-sel="${o.id}" ${selected.has(o.id) ? 'checked' : ''} aria-label="Zaznacz zamówienie ${o.number}" /></td>
           <td class="nowrap"><strong>${o.number}</strong>${o.source === 'woocommerce' ? '<span class="wc">WC</span>' : ''}</td>
           <td class="nowrap">${date(o.created_at)}</td>
-          <td><strong>${esc(o.shipping_address?.name || '—')}</strong><br>${esc(o.email)}</td>
+          <td><strong>${esc(o.shipping_address?.name || '-')}</strong><br>${esc(o.email)}</td>
           <td>${o.order_items.map((i: any) => `${esc(i.name)} <span class="muted">× ${i.qty}</span>`).join('<br>')}</td>
           <td>${delivery(o)}${o.tracking_number ? `<br>${trackLink(o.carrier || o.shipping_method, o.tracking_number)}` : ''}</td>
           <td class="r nowrap"><strong>${pln(o.total)}</strong></td>
@@ -1316,7 +1316,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       const name = a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' ');
       body.innerHTML = `
         ${o.customers?.admin_note ? `<div class="box box--amber"><strong>Notatka o kliencie:</strong> ${esc(o.customers.admin_note)}</div>` : ''}
-        ${wc ? '<div class="box box--amber">Zamówienie z WooCommerce (import). Do dnia startu obsługuj je w obecnym sklepie – tu tylko podgląd i notatki.</div>' : ''}
+        ${wc ? '<div class="box box--amber">Zamówienie z WooCommerce (import). Do dnia startu obsługuj je w obecnym sklepie - tu tylko podgląd i notatki.</div>' : ''}
         <div class="meta"><span class="st st--${o.status}">${STATUS[o.status] || esc(o.status)}</span><span>${date(o.created_at)}</span>${o.paid_at ? `<span>· opłacone ${date(o.paid_at)}</span>` : ''}</div>
 
         <div class="sec"><h3 class="sec__t">Produkty</h3>
@@ -1328,12 +1328,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
         <div class="sec"><h3 class="sec__t">Klient i dostawa</h3>
           <dl class="kv">
-            <dt>Klient</dt><dd>${o.customer_id ? `<button type="button" class="link" data-open-customer="${o.customer_id}">${esc(name || o.email)}</button>` : esc(name || '—')}</dd>
+            <dt>Klient</dt><dd>${o.customer_id ? `<button type="button" class="link" data-open-customer="${o.customer_id}">${esc(name || o.email)}</button>` : esc(name || '-')}</dd>
             <dt>E-mail</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd>
-            <dt>Telefon</dt><dd>${esc(a.phone || o.customers?.phone || '—')}</dd>
-            <dt>Dostawa</dt><dd>${o.shipping_method === 'dpd' ? `Kurier DPD<br>${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat <strong>${esc(o.shipping_point || '—')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</dd>
+            <dt>Telefon</dt><dd>${esc(a.phone || o.customers?.phone || '-')}</dd>
+            <dt>Dostawa</dt><dd>${o.shipping_method === 'dpd' ? `Kurier DPD<br>${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat <strong>${esc(o.shipping_point || '-')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</dd>
             ${o.tracking_number ? `<dt>Przesyłka</dt><dd>${esc(o.carrier || '')} ${trackLink(o.carrier || o.shipping_method, o.tracking_number)}</dd>` : ''}
-            ${o.billing ? `<dt>Faktura</dt><dd>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '—')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</dd>` : ''}
+            ${o.billing ? `<dt>Faktura</dt><dd>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '-')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</dd>` : ''}
           </dl>
           ${o.customer_note ? `<div class="note">${esc(o.customer_note)}</div>` : ''}
         </div>
@@ -1369,7 +1369,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <strong>Przelew bankowy</strong>
           <span>Prosimy o wpłatę bezpośrednio na nasze konto bankowe. Prosimy podać numer zamówienia w tytule płatności. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.</span>
           <span><strong>Numer rachunku:</strong> <span style="letter-spacing:0.5px;font-variant-numeric:tabular-nums">${BANK_ACCOUNT}</span></span>
-          <span class="muted small">Tytuł przelewu: <strong>Zamówienie nr ${o.number} – can-c.pl</strong></span>
+          <span class="muted small">Tytuł przelewu: <strong>Zamówienie nr ${o.number} - can-c.pl</strong></span>
         </div>` : ''}
 
         ${o.status === 'refunded' ? `<div class="box box--warn">
@@ -1380,12 +1380,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         ${can(['paid', 'packing', 'on_hold', 'shipped', 'completed', 'cancelled']) && o.paid_at ? `<details class="manual" data-refund-wrap>
           <summary>Zwrot środków</summary>
           <form class="sec" data-refund>
-            <p class="muted small">Zmiana statusu nie przelewa pieniędzy – ${o.payment_provider === BANK_PROVIDER ? 'wykonaj przelew zwrotny z konta firmowego' : 'zleć zwrot w panelu Przelewy24'}. Przy zwrocie częściowym w przychodzie zostaje różnica.</p>
+            <p class="muted small">Zmiana statusu nie przelewa pieniędzy - ${o.payment_provider === BANK_PROVIDER ? 'wykonaj przelew zwrotny z konta firmowego' : 'zleć zwrot w panelu Przelewy24'}. Przy zwrocie częściowym w przychodzie zostaje różnica.</p>
             <div class="row2">
               <label class="field">Kwota zwrotu (zł)<input class="input" name="amount" inputmode="decimal" value="${(o.total / 100).toFixed(2).replace('.', ',')}" /></label>
               <span class="field muted small" style="align-self:end">Zamówienie: ${pln(o.total)}</span>
             </div>
-            <label class="field">Wiadomość do klienta (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="1000" placeholder="Np. zwrot po odstąpieniu od umowy – otrzymaliśmy paczkę 12.11."></textarea></label>
+            <label class="field">Wiadomość do klienta (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="1000" placeholder="Np. zwrot po odstąpieniu od umowy - otrzymaliśmy paczkę 12.11."></textarea></label>
             <label class="check"><input type="checkbox" name="restock" /> Przywróć stany magazynowe (produkty wróciły nienaruszone)</label>
             <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail o zwrocie</label>
             <div class="actions"><button class="btn btn--danger btn--sm">Oznacz jako zwrócone</button></div>
@@ -1415,13 +1415,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <label class="field">Adres firmy<input class="input" name="invStreet" value="${esc(o.billing?.street || '')}" /></label>
             <div class="row2"><label class="field">Kod<input class="input" name="invPostcode" value="${esc(o.billing?.postcode || '')}" /></label><label class="field">Miejscowość<input class="input" name="invCity" value="${esc(o.billing?.city || '')}" /></label></div>
             <label class="field">Uwagi klienta<textarea class="input" name="customer_note" rows="2">${esc(o.customer_note || '')}</textarea></label>
-            <p class="muted">Produktów i kwot nie zmieniamy – przy innej zawartości anuluj zamówienie i dodaj nowe.</p>
+            <p class="muted">Produktów i kwot nie zmieniamy - przy innej zawartości anuluj zamówienie i dodaj nowe.</p>
             <div class="actions"><button class="btn btn--sm">Zapisz zmiany</button></div>
           </form>
         </details>`}
 
         <div class="sec"><h3 class="sec__t">Historia</h3>
-          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.amount && e.type !== 'p24_check' ? ` · ${pln(e.data.amount)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.message ? ` (${esc(e.data.topic || '')}): <span class="note">${esc(e.data.message)}</span>` : ''}${e.data?.code ? ` · kod ${esc(e.data.code)}` : ''}${e.data?.scope ? `: ${esc(e.data.items)}${e.data.note ? ` – ${esc(e.data.note)}` : ''}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
+          <ol class="events">${events.map((e: any) => `<li class="${BAD.has(e.type) ? 'bad' : ''}"><time>${date(e.created_at)}</time>${EVENT[e.type] || esc(e.type)}${e.data?.to ? ` → ${STATUS[e.data.to] || esc(e.data.to)}` : ''}${e.data?.amount && e.type !== 'p24_check' ? ` · ${pln(e.data.amount)}` : ''}${e.data?.note ? `: ${esc(e.data.note)}` : ''}${e.data?.message ? ` (${esc(e.data.topic || '')}): <span class="note">${esc(e.data.message)}</span>` : ''}${e.data?.code ? ` · kod ${esc(e.data.code)}` : ''}${e.data?.scope ? `: ${esc(e.data.items)}${e.data.note ? ` - ${esc(e.data.note)}` : ''}` : ''}${e.data?.error ? `: <span class="muted">${esc(e.data.error)}</span>` : ''}${e.data?.by ? ` <span class="muted">(${esc(e.data.by)})</span>` : ''}</li>`).join('')}</ol>
         </div>
 
         <form class="sec" data-note>
@@ -1505,7 +1505,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td class="r nowrap">${sale ? `<strong>${pln(p.sale_price)}</strong><br><s class="muted">${pln(p.price)}</s>` : `<strong>${pln(p.price)}</strong>`}</td>
           <td class="r ${low ? 'err' : ''}">${p.stock}${low ? '<br><span class="small">mało</span>' : ''}</td>
           <td>${AVAIL[p.avail] || p.avail}${p.availability ? ' <span class="muted">(ręcznie)</span>' : ''}</td>
-          <td>${p.ratingAvg ? `★ ${String(p.ratingAvg).replace('.', ',')} (${p.reviewsApproved})` : '—'}${p.reviewsPending ? ` <span class="badge-inline">${p.reviewsPending} nowe</span>` : ''}${p.notifyWaiting ? `<br><span class="badge-inline" title="Osoby czekające na powiadomienie o dostępności">🔔 ${p.notifyWaiting} czeka</span>` : ''}</td>
+          <td>${p.ratingAvg ? `★ ${String(p.ratingAvg).replace('.', ',')} (${p.reviewsApproved})` : '-'}${p.reviewsPending ? ` <span class="badge-inline">${p.reviewsPending} nowe</span>` : ''}${p.notifyWaiting ? `<br><span class="badge-inline" title="Osoby czekające na powiadomienie o dostępności">🔔 ${p.notifyWaiting} czeka</span>` : ''}</td>
           <td><span class="st ${p.active ? 'st--shipped' : 'st--pending_payment'}">${p.active ? 'Aktywny' : 'Ukryty'}</span></td>
         </tr>`;
       }).join('') || '<tr><td colspan="7" class="empty">Brak produktów.</td></tr>';
@@ -1519,7 +1519,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   }
 
   // Zmniejszenie zdjęcia w przeglądarce (maks. 1600 px, WebP) przed wysłaniem.
-  // Przezroczyste tło z PNG zostaje (WebP obsługuje przezroczystość). Safari nie zapisuje WebP – wtedy wychodzi PNG.
+  // Przezroczyste tło z PNG zostaje (WebP obsługuje przezroczystość). Safari nie zapisuje WebP - wtedy wychodzi PNG.
   const MAX_PX = 1600;
   async function toCanvas(src: Blob) {
     const img = await createImageBitmap(src);
@@ -1546,7 +1546,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     for (const [x0, y0] of [[0, 0], [W - 6, 0], [0, H - 6], [W - 6, H - 6]]) for (let y = y0; y < y0 + 6; y++) for (let x = x0; x < x0 + 6; x++) { const i = (y * W + x) * 4; if (px[i + 3] < 128) continue; r += px[i]; g += px[i + 1]; b += px[i + 2]; n++; }
     if (!n) throw new Error('To zdjęcie ma już przezroczyste tło.');
     r /= n; g /= n; b /= n;
-    if (Math.min(r, g, b) < 200) throw new Error('Tło nie jest jasne i jednolite – usuń je w programie graficznym i wgraj PNG.');
+    if (Math.min(r, g, b) < 200) throw new Error('Tło nie jest jasne i jednolite - usuń je w programie graficznym i wgraj PNG.');
     const TOL = 26, SOFT = 40;
     const dist = (i: number) => Math.max(Math.abs(px[i] - r), Math.abs(px[i + 1] - g), Math.abs(px[i + 2] - b));
     const seen = new Uint8Array(W * H), queue = new Int32Array(W * H);
@@ -1612,7 +1612,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         <div class="sec"><h3 class="sec__t">Zdjęcia <span class="muted">(pierwsze = główne)</span></h3>
           <div class="imgs" data-imgs></div>
           <div class="actions"><label class="btn btn--outline btn--sm upload">+ Dodaj zdjęcia<input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload hidden /></label><button type="button" class="btn btn--outline btn--sm" data-nobg-all>Usuń białe tło ze wszystkich</button></div>
-          <p class="muted small">Najlepiej wgrywaj PNG z przezroczystym tłem – przezroczystość zostaje, a zdjęcie dobrze wygląda w trybie jasnym i ciemnym. Zdjęcia na białym tle przerobisz przyciskiem „Usuń białe tło” (zadziała przy jednolitym, jasnym tle; przy cieniach i odbiciach lepiej przygotować PNG w programie graficznym). Zdjęcia zmniejszamy automatycznie do 1600 px (WebP). Google Merchant wymaga min. 100 × 100 px, zaleca 800 × 800 px, bez napisów i znaków wodnych.</p>
+          <p class="muted small">Najlepiej wgrywaj PNG z przezroczystym tłem - przezroczystość zostaje, a zdjęcie dobrze wygląda w trybie jasnym i ciemnym. Zdjęcia na białym tle przerobisz przyciskiem „Usuń białe tło” (zadziała przy jednolitym, jasnym tle; przy cieniach i odbiciach lepiej przygotować PNG w programie graficznym). Zdjęcia zmniejszamy automatycznie do 1600 px (WebP). Google Merchant wymaga min. 100 × 100 px, zaleca 800 × 800 px, bez napisów i znaków wodnych.</p>
         </div>
 
         <div class="sec"><h3 class="sec__t">Cena</h3>
@@ -1628,8 +1628,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
           <div class="row3c">
             <label class="field">Ilość w opakowaniu (do ceny jednostkowej)<input class="input" name="unit_value" value="${p.unit_value ?? ''}" inputmode="decimal" placeholder="np. 10" /></label>
-            <label class="field">Jednostka<select class="input" name="unit_measure"><option value="">—</option>${['ml', 'l', 'g', 'kg', 'szt'].map((u) => `<option ${p.unit_measure === u ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
-            <div class="field"><span>Najniższa cena z 30 dni</span><strong class="pe__low">${lowest30 !== null ? pln(lowest30) : '—'}</strong></div>
+            <label class="field">Jednostka<select class="input" name="unit_measure"><option value="">-</option>${['ml', 'l', 'g', 'kg', 'szt'].map((u) => `<option ${p.unit_measure === u ? 'selected' : ''}>${u}</option>`).join('')}</select></label>
+            <div class="field"><span>Najniższa cena z 30 dni</span><strong class="pe__low">${lowest30 !== null ? pln(lowest30) : '-'}</strong></div>
           </div>
           ${history.length ? `<details class="manual"><summary>Historia cen (${history.length})</summary><ul class="items">${history.map((h: any) => `<li><span>${date(h.changed_at)}</span><span>${pln(h.price)}${h.sale_price !== null ? ` → promocja ${pln(h.sale_price)}` : ''}</span></li>`).join('')}</ul></details>` : ''}
         </div>
@@ -1638,7 +1638,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <label class="field">Opis krótki (przy cenie, na listach)<textarea class="input" name="short_description" rows="2" maxlength="300">${esc(p.short_description || '')}</textarea></label>
           <label class="field">Wyróżniki (każdy w nowej linii, maks. 10)<textarea class="input" name="highlights" rows="3">${esc((p.highlights || []).join('\n'))}</textarea></label>
           <label class="field">Opis długi <span class="muted">(## nagłówek, **pogrubienie**, - lista, [link](https://…))</span><textarea class="input mono" name="description" rows="10">${esc(p.description || '')}</textarea></label>
-          <label class="field">Stosowanie <span class="muted">(osobna sekcja na stronie produktu; formatowanie jak w opisie; puste = sekcja ukryta)</span><textarea class="input mono" name="how_to_use" rows="6" placeholder="- 1–2 krople do każdego oka, 2 razy dziennie&#10;- Po otwarciu zużyj w ciągu 30 dni">${esc(p.how_to_use || '')}</textarea></label>
+          <label class="field">Stosowanie <span class="muted">(osobna sekcja na stronie produktu; formatowanie jak w opisie; puste = sekcja ukryta)</span><textarea class="input mono" name="how_to_use" rows="6" placeholder="- 1-2 krople do każdego oka, 2 razy dziennie&#10;- Po otwarciu zużyj w ciągu 30 dni">${esc(p.how_to_use || '')}</textarea></label>
         </div>
 
         <div class="sec"><h3 class="sec__t">SEO</h3>
@@ -1656,7 +1656,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <label class="field">Termin realizacji <span class="muted">(pełne zdanie; puste = „Wysyłamy” + czas wysyłki z ustawień sklepu)</span><input class="input" name="lead_time" value="${esc(p.lead_time || '')}" maxlength="120" placeholder="np. Wysyłka do 14 dni roboczych." /></label>
           <label class="field">Dostępność<select class="input" name="availability">
             <option value="" ${!p.availability ? 'selected' : ''}>Według stanu (0 = niedostępny)</option>
-            ${Object.entries(AVAIL).map(([k, v]) => `<option value="${k}" ${p.availability === k ? 'selected' : ''}>${v} – ustawione ręcznie</option>`).join('')}
+            ${Object.entries(AVAIL).map(([k, v]) => `<option value="${k}" ${p.availability === k ? 'selected' : ''}>${v} - ustawione ręcznie</option>`).join('')}
           </select></label>
         </div>
 
@@ -1669,7 +1669,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <label class="field">Marka<input class="input" name="brand" value="${esc(p.brand || 'Can-C')}" /></label>
             <label class="field">Stan produktu<select class="input" name="condition"><option value="new" ${p.condition === 'new' ? 'selected' : ''}>Nowy</option><option value="refurbished" ${p.condition === 'refurbished' ? 'selected' : ''}>Odnowiony</option><option value="used" ${p.condition === 'used' ? 'selected' : ''}>Używany</option></select></label>
           </div>
-          <label class="field">Kategoria Google (ID lub ścieżka)<input class="input" name="google_category" value="${esc(p.google_category || '')}" placeholder="np. 491 – Zdrowie i uroda > Opieka zdrowotna" /></label>
+          <label class="field">Kategoria Google (ID lub ścieżka)<input class="input" name="google_category" value="${esc(p.google_category || '')}" placeholder="np. 491 - Zdrowie i uroda > Opieka zdrowotna" /></label>
           <p class="muted small">Wymagane przez Google: nazwa, opis, zdjęcie, cena, dostępność, marka oraz GTIN (albo MPN). Bez GTIN i MPN feed wyśle „identifier_exists: no”.</p>
         </div>
 
@@ -1692,7 +1692,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <button type="button" class="icon-btn" data-down="${i}" aria-label="W dół" ${i === images.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24"><path d="m6 10 6 6 6-6" /></svg></button>
             <button type="button" class="icon-btn" data-del="${i}" aria-label="Usuń"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
           </div>
-          <button type="button" class="btn btn--outline btn--sm" data-nobg="${i}" title="Zamienia białe tło na przezroczyste – zdjęcie dobrze wygląda w trybie ciemnym">Usuń białe tło</button>
+          <button type="button" class="btn btn--outline btn--sm" data-nobg="${i}" title="Zamienia białe tło na przezroczyste - zdjęcie dobrze wygląda w trybie ciemnym">Usuń białe tło</button>
           ${i === 0 ? '<span class="badge-inline">główne</span>' : ''}
         </div>`).join('') || '<p class="muted">Brak zdjęć.</p>';
       imgsEl.querySelectorAll<HTMLInputElement>('[data-alt]').forEach((el) => el.addEventListener('input', () => { images[Number(el.dataset.alt)].alt = el.value; }));
@@ -1701,7 +1701,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       imgsEl.querySelectorAll<HTMLButtonElement>('[data-del]').forEach((b) => b.addEventListener('click', () => { images.splice(Number(b.dataset.del), 1); renderImgs(); }));
       imgsEl.querySelectorAll<HTMLButtonElement>('[data-nobg]').forEach((b) => b.addEventListener('click', () => removeBg([Number(b.dataset.nobg)])));
     };
-    // Nowa wersja zdjęcia trafia do Storage obok starej; w produkcie podmieniamy adres (stary plik zostaje – można wrócić)
+    // Nowa wersja zdjęcia trafia do Storage obok starej; w produkcie podmieniamy adres (stary plik zostaje - można wrócić)
     const removeBg = async (idx: number[]) => {
       const slug = (f.elements.namedItem('id') as HTMLInputElement).value || 'produkt';
       let ok = 0;
@@ -1734,7 +1734,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           renderImgs();
         } catch (err) { toast((err as Error).message, true); }
       }
-      toast('Zdjęcia dodane – pamiętaj o zapisaniu produktu.');
+      toast('Zdjęcia dodane - pamiętaj o zapisaniu produktu.');
       (e.target as HTMLInputElement).value = '';
     });
 
@@ -1832,7 +1832,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
           <label class="check"><input type="checkbox" name="verified_purchase" ${r.verified_purchase ? 'checked' : ''} /> Zweryfikowany zakup</label>
           ${r.original_body ? `<details class="manual"><summary>Pokaż oryginalną treść</summary><p class="note">${esc(r.original_body)}</p></details>` : ''}
-          <p class="muted small">${locked ? 'Opinia klienta ze sklepu: ocena i data są zablokowane. ' : ''}Poprawiaj tylko literówki i dane (np. imię). Nie zmieniaj sensu ani oceny wystawionej przez klienta – to wprowadzałoby w błąd (Omnibus, zasady Google).</p>
+          <p class="muted small">${locked ? 'Opinia klienta ze sklepu: ocena i data są zablokowane. ' : ''}Poprawiaj tylko literówki i dane (np. imię). Nie zmieniaj sensu ani oceny wystawionej przez klienta - to wprowadzałoby w błąd (Omnibus, zasady Google).</p>
           <div class="actions"><button class="btn btn--sm">Zapisz opinię</button></div>
         </form>
       </details>
@@ -1842,7 +1842,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         ${r.status !== 'rejected' ? '<button type="button" class="btn btn--outline btn--sm" data-act-r="reject">Odrzuć</button>' : ''}
         <button type="button" class="btn btn--danger btn--sm" data-act-r="delete">Usuń</button>
       </div>
-      <p class="muted small">Zgodnie z dyrektywą Omnibus i zasadami Google publikuj opinie rzetelnie – także krytyczne – a odrzucaj tylko spam, treści obraźliwe albo niezwiązane z produktem.</p>`;
+      <p class="muted small">Zgodnie z dyrektywą Omnibus i zasadami Google publikuj opinie rzetelnie - także krytyczne - a odrzucaj tylko spam, treści obraźliwe albo niezwiązane z produktem.</p>`;
     bindLinks(body);
     // Lista produktów do przeniesienia opinii (np. gdy dodano ją do złego produktu)
     api('/api/admin/products').then(({ rows }) => {
@@ -1914,7 +1914,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     $('[data-sig-prev]').innerHTML = `<p style="margin:0 0 12px">Dzień dobry,</p><p style="margin:0">dziękujemy za wiadomość…</p>
       <table style="margin-top:20px;border-collapse:collapse"><tr>${withLogo && logo ? `<td style="padding:2px 14px 0 0;vertical-align:top"><img src="${esc(logo)}" alt="" style="height:28px;width:auto;display:block"></td>` : ''}
       <td style="font-size:13px;line-height:1.55;color:#545D6E;vertical-align:top;${withLogo && logo ? 'padding-left:14px;border-left:1px solid #DCE2EC' : ''}">${lines.join('<br>')}</td></tr></table>
-      ${withLogo && !logo ? '<p class="muted small" style="margin-top:10px">Logo nie pojawi się – wgraj poniżej „Logo do maili” (PNG/JPG).</p>' : ''}`;
+      ${withLogo && !logo ? '<p class="muted small" style="margin-top:10px">Logo nie pojawi się - wgraj poniżej „Logo do maili” (PNG/JPG).</p>' : ''}`;
   }
   $('[data-sig-form]').addEventListener('input', drawSig);
   $('[data-sig-form]').addEventListener('submit', async (e) => {
@@ -2113,7 +2113,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <td><strong>${esc(c.name)}</strong><br><span class="muted">${esc(c.subject || '(bez tematu)')}</span></td>
           <td>${esc(d.audiences[c.audience] || c.audience)}</td>
           <td><span class="st ${NL_STATUS[c.status]?.[1] || ''}">${NL_STATUS[c.status]?.[0] || esc(c.status)}</span></td>
-          <td class="r">${c.status === 'draft' ? '—' : `${c.sent_count} / ${c.recipients}${c.failed_count ? `<br><span class="err">błędy: ${c.failed_count}</span>` : ''}`}</td>
+          <td class="r">${c.status === 'draft' ? '-' : `${c.sent_count} / ${c.recipients}${c.failed_count ? `<br><span class="err">błędy: ${c.failed_count}</span>` : ''}`}</td>
           <td class="nowrap">${date(c.sent_at || c.started_at || c.created_at)}</td>
         </tr>`).join('') : '<tr><td colspan="5" class="empty">Brak kampanii. Utwórz pierwszą.</td></tr>';
       tbody.querySelectorAll<HTMLElement>('tr[data-nlid]').forEach((tr) => {
@@ -2152,7 +2152,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
     body.innerHTML = `
       ${c.status !== 'draft' ? `<div class="meta"><span class="st ${NL_STATUS[c.status][1]}">${NL_STATUS[c.status][0]}</span><span>Wysłane: ${c.sent_count} / ${c.recipients}</span>${c.failed_count ? `<span class="err">Błędy: ${c.failed_count}</span>` : ''}${c.sent_at ? `<span>${date(c.sent_at)}</span>` : ''}</div>` : ''}
-      ${failed.length ? `<div class="box box--amber"><strong>Nie wysłano</strong>${failed.slice(0, 10).map((f) => `<span class="small">${esc(f.email)} – ${esc(f.error || '')}</span>`).join('')}</div>` : ''}
+      ${failed.length ? `<div class="box box--amber"><strong>Nie wysłano</strong>${failed.slice(0, 10).map((f) => `<span class="small">${esc(f.email)} - ${esc(f.error || '')}</span>`).join('')}</div>` : ''}
       <div class="nl-ed">
         <form class="nl-ed__form" data-nl-form novalidate>
           <fieldset ${editable ? '' : 'disabled'} class="nl-ed__fs">
@@ -2202,7 +2202,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         ${f('alt', 'Opis obrazu (alt)', b.alt, 'maxlength="150"')}${f('href', 'Link po kliknięciu (opcjonalnie)', b.href || '', 'placeholder="/produkt/krople-can-c/"')}`;
       if (b.type === 'button') inner = `<div class="row2">${f('label', 'Tekst przycisku', b.label, 'maxlength="60"')}${f('url', 'Adres', b.url, 'placeholder="/sklep/ albo https://…"')}</div>`;
       if (b.type === 'products') inner = `<div class="pm-prods">${nlMeta.products.map((p) => `<label class="check"><input type="checkbox" data-prod="${i}" value="${esc(p.id)}" ${b.ids.includes(p.id) ? 'checked' : ''} /> ${esc(p.name)}${p.active ? '' : ' <span class="muted">(nieaktywny)</span>'}</label>`).join('')}</div>`;
-      if (b.type === 'code') inner = `<div class="row2">${f('code', 'Kod', b.code, 'maxlength="30" style="text-transform:uppercase" placeholder="np. NEWSLETTER10"')}${f('caption', 'Podpis', b.caption || '', 'maxlength="150"')}</div><p class="muted small">Utwórz kod w Kody rabatowe (albo promocję z kodem) – tu tylko go pokazujesz.</p>`;
+      if (b.type === 'code') inner = `<div class="row2">${f('code', 'Kod', b.code, 'maxlength="30" style="text-transform:uppercase" placeholder="np. NEWSLETTER10"')}${f('caption', 'Podpis', b.caption || '', 'maxlength="150"')}</div><p class="muted small">Utwórz kod w Kody rabatowe (albo promocję z kodem) - tu tylko go pokazujesz.</p>`;
       return `<div class="nl-block">${head}${inner}</div>`;
     };
     const renderBlocks = () => { list.innerHTML = blocks.length ? blocks.map(blockHtml).join('') : '<p class="muted">Dodaj bloki treści przyciskami poniżej.</p>'; };
@@ -2279,9 +2279,9 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         catch (e) { txt.textContent = `Przerwano: ${(e as Error).message}. Kliknij „Wznów wysyłkę”.`; break; }
         if (d.error) errors++;
         bar.style.width = `${d.recipients ? Math.round(((d.sent + d.failed) / d.recipients) * 100) : 100}%`;
-        txt.textContent = `Wysłano ${d.sent} z ${d.recipients}${d.failed ? ` · błędy: ${d.failed}` : ''} – nie zamykaj tego okna.`;
+        txt.textContent = `Wysłano ${d.sent} z ${d.recipients}${d.failed ? ` · błędy: ${d.failed}` : ''} - nie zamykaj tego okna.`;
         if (d.done) { txt.textContent = `Gotowe: wysłano ${d.sent} z ${d.recipients}${d.failed ? ` · błędy: ${d.failed}` : ''}.`; toast('Kampania wysłana.'); break; }
-        if (errors >= 3) { txt.textContent = 'Kilka paczek zakończyło się błędem – sprawdź konfigurację Resend i kliknij „Wznów wysyłkę”.'; break; }
+        if (errors >= 3) { txt.textContent = 'Kilka paczek zakończyło się błędem - sprawdź konfigurację Resend i kliknij „Wznów wysyłkę”.'; break; }
       }
       loadNewsletter();
       openCampaign(cid, false);
@@ -2340,7 +2340,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         return `<tr data-pmid="${p.id}" tabindex="0" class="clickrow" title="Edytuj promocję i zobacz, kto z niej skorzystał">
           <td><strong>${esc(p.name)}</strong><br><span class="muted">${p.kind === 'bundle' ? 'Zestaw' : 'Rabat ilościowy'}${p.label && p.label !== p.name ? ` · klient widzi: „${esc(p.label)}”` : ''}</span>${p.code ? `<br><span class="wc" style="margin-left:0">kod ${esc(p.code)}</span>` : ''}</td>
           <td>${promoSummary(p)}</td>
-          <td class="nowrap">${p.starts_at || p.ends_at ? `${d(p.starts_at) || '…'} – ${d(p.ends_at) || '…'}` : 'bezterminowo'}${future ? '<br><span class="muted">zaplanowana</span>' : past ? '<br><span class="err">zakończona</span>' : ''}</td>
+          <td class="nowrap">${p.starts_at || p.ends_at ? `${d(p.starts_at) || '…'} - ${d(p.ends_at) || '…'}` : 'bezterminowo'}${future ? '<br><span class="muted">zaplanowana</span>' : past ? '<br><span class="err">zakończona</span>' : ''}</td>
           <td class="r">${p.stats.orders}${p.stats.last ? `<br><span class="muted">ost. ${new Date(p.stats.last).toLocaleDateString('pl-PL')}</span>` : ''}</td>
           <td class="r">${p.stats.customers}</td>
           <td class="r nowrap"><strong>${pln(p.stats.revenue)}</strong>${p.stats.orders ? `<br><span class="muted">śr. ${pln(Math.round(p.stats.revenue / p.stats.orders))}</span>` : ''}</td>
@@ -2370,7 +2370,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <label class="field">Rabat<input class="input" data-t-value inputmode="decimal" value="${t.value === '' ? '' : esc(t.type === 'amount' ? zlInput(t.value) : t.value)}" /></label>
       <button type="button" class="icon-btn" data-row-del aria-label="Usuń próg"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>`;
   const itemRow = (it: any = { product_id: '', qty: 1 }) => `<div class="pm-row pm-row--item" data-item>
-      <label class="field">Produkt<select class="input" data-i-prod><option value="">— wybierz —</option>${productOpts(it.product_id)}</select></label>
+      <label class="field">Produkt<select class="input" data-i-prod><option value="">- wybierz -</option>${productOpts(it.product_id)}</select></label>
       <label class="field">Sztuk<input class="input" data-i-qty type="number" min="1" max="20" value="${esc(it.qty)}" /></label>
       <button type="button" class="icon-btn" data-row-del aria-label="Usuń produkt"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button></div>`;
 
@@ -2448,7 +2448,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <td class="r nowrap">${pln(u.total)}</td>
             <td><span class="st st--${u.status}">${STATUS[u.status] || esc(u.status)}</span></td>
           </tr>`).join('')}</tbody></table></div>
-          <p class="muted small">Statystyki liczą tylko zamówienia opłacone, wysłane i zrealizowane. Na liście są też nieopłacone i anulowane – patrz status.</p>`
+          <p class="muted small">Statystyki liczą tylko zamówienia opłacone, wysłane i zrealizowane. Na liście są też nieopłacone i anulowane - patrz status.</p>`
         : '<p class="muted">Nikt jeszcze nie skorzystał z tej promocji.</p>'}
       </div>` : ''}`;
 
@@ -2549,8 +2549,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         <tr data-cid="${c.id}" tabindex="0" class="clickrow" title="Edytuj kod i zobacz, kto go użył">
           <td><strong>${esc(c.code)}</strong>${c.description ? `<br><span class="muted">${esc(c.description)}</span>` : ''}</td>
           <td class="nowrap">${c.type === 'percent' ? `${c.value}%` : pln(c.value)}</td>
-          <td>${c.min_total ? `od ${pln(c.min_total)}` : '—'}${c.once_per_customer ? '<br><span class="muted">1× na klienta</span>' : ''}</td>
-          <td class="nowrap">${c.starts_at || c.ends_at ? `${d(c.starts_at) || '…'} – ${d(c.ends_at) || '…'}` : 'bezterminowo'}</td>
+          <td>${c.min_total ? `od ${pln(c.min_total)}` : '-'}${c.once_per_customer ? '<br><span class="muted">1× na klienta</span>' : ''}</td>
+          <td class="nowrap">${c.starts_at || c.ends_at ? `${d(c.starts_at) || '…'} - ${d(c.ends_at) || '…'}` : 'bezterminowo'}</td>
           <td>${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}</td>
           <td class="r">${c.stats.orders}${c.stats.last ? `<br><span class="muted">ost. ${new Date(c.stats.last).toLocaleDateString('pl-PL')}</span>` : ''}</td>
           <td class="r nowrap"><strong>${pln(c.stats.revenue)}</strong>${c.stats.orders ? `<br><span class="muted">śr. ${pln(Math.round(c.stats.revenue / c.stats.orders))}</span>` : ''}</td>
@@ -2593,7 +2593,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <form class="sec" data-code-edit novalidate>
         <h3 class="sec__t">Ustawienia kodu</h3>
         <div class="code-form">
-          <label class="field">Kod<input class="input" name="code" value="${esc(c.code)}" maxlength="30" style="text-transform:uppercase" ${nameLocked ? 'readonly title="Kod był użyty – nazwy nie można zmienić"' : ''} /></label>
+          <label class="field">Kod<input class="input" name="code" value="${esc(c.code)}" maxlength="30" style="text-transform:uppercase" ${nameLocked ? 'readonly title="Kod był użyty - nazwy nie można zmienić"' : ''} /></label>
           <label class="field">Rodzaj<select class="input" name="type"><option value="percent" ${c.type === 'percent' ? 'selected' : ''}>Procent (%)</option><option value="amount" ${c.type === 'amount' ? 'selected' : ''}>Kwota (zł)</option></select></label>
           <label class="field">Wartość<input class="input" name="value" value="${esc(val)}" inputmode="decimal" /></label>
           <label class="field">Minimalna kwota (zł)<input class="input" name="min_total" value="${c.min_total ? (c.min_total / 100).toFixed(2).replace('.', ',') : ''}" inputmode="decimal" placeholder="0" /></label>
@@ -2619,7 +2619,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
             <td class="r nowrap">${pln(u.total)}</td>
             <td><span class="st st--${u.status}">${STATUS[u.status] || esc(u.status)}</span></td>
           </tr>`).join('')}</tbody></table></div>
-          <p class="muted small">Licznik „Użycia” rośnie dopiero po opłaceniu zamówienia. Na liście są też zamówienia nieopłacone i anulowane – patrz status.</p>`
+          <p class="muted small">Licznik „Użycia” rośnie dopiero po opłaceniu zamówienia. Na liście są też zamówienia nieopłacone i anulowane - patrz status.</p>`
         : '<p class="muted">Nikt jeszcze nie użył tego kodu.</p>'}
       </div>`;
     bindLinks(body);
@@ -2655,8 +2655,8 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   // Domyślny kierunek po pierwszym kliknięciu: teksty A→Z, liczby i daty od największych
   const TEXT_COLS = new Set(['name', 'email', 'country', 'city', 'postcode', 'phone']);
   const cState = { q: '', sort: 'last_active', dir: 'desc', segment: '', buyers: false, page: 1, size: 50 };
-  const dshort = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }) : '—');
-  const dnum = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL') : '—');
+  const dshort = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' }) : '-');
+  const dnum = (x: string | null) => (x ? new Date(x).toLocaleDateString('pl-PL') : '-');
   const cParams = (extra: Record<string, string> = {}) => new URLSearchParams({ q: cState.q, sort: cState.sort, dir: cState.dir, segment: cState.segment, size: String(cState.size), ...(cState.buyers ? { buyers: '1' } : {}), ...extra });
   function renderSortHeads() {
     document.querySelectorAll<HTMLElement>('[data-c-head] th[data-sort]').forEach((th) => {
@@ -2675,12 +2675,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       const d = await api(`/api/admin/klienci?${cParams({ page: String(cState.page) })}`);
       $('[data-c-total]').textContent = `(${d.total})`;
       const from = d.total ? (d.page - 1) * d.size + 1 : 0, to = Math.min(d.page * d.size, d.total);
-      $('[data-c-page]').textContent = `${from}–${to} z ${d.total} · strona ${d.page} z ${d.pages}`;
+      $('[data-c-page]').textContent = `${from}-${to} z ${d.total} · strona ${d.page} z ${d.pages}`;
       $<HTMLButtonElement>('[data-c-prev]').disabled = d.page <= 1;
       $<HTMLButtonElement>('[data-c-next]').disabled = d.page >= d.pages;
       tbody.innerHTML = d.rows.length ? d.rows.map((c: any) => `
         <tr data-cid="${c.id}" tabindex="0">
-          <td><strong>${esc(c.full_name || '—')}</strong>${c.has_account ? ' <span class="wc">konto</span>' : ''}${c.admin_note ? ' <span class="wc wc--note" title="' + esc(c.admin_note) + '">notatka</span>' : ''}</td>
+          <td><strong>${esc(c.full_name || '-')}</strong>${c.has_account ? ' <span class="wc">konto</span>' : ''}${c.admin_note ? ' <span class="wc wc--note" title="' + esc(c.admin_note) + '">notatka</span>' : ''}</td>
           <td class="nowrap">${dnum(c.last_active_at)}</td>
           <td class="nowrap">${dnum(c.created_at)}</td>
           <td><a href="mailto:${esc(c.email)}" data-stop>${esc(c.email)}</a></td>
@@ -2717,16 +2717,16 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
         <form class="sec" data-cnote>
           <h3 class="sec__t">Notatka o kliencie</h3>
-          <textarea class="input" name="note" rows="2" maxlength="1000" placeholder="np. prosi o telefon przed wysyłką – widoczna przy każdym zamówieniu">${esc(c.admin_note || '')}</textarea>
+          <textarea class="input" name="note" rows="2" maxlength="1000" placeholder="np. prosi o telefon przed wysyłką - widoczna przy każdym zamówieniu">${esc(c.admin_note || '')}</textarea>
           <div class="actions"><button class="btn btn--outline btn--sm">Zapisz notatkę</button></div>
         </form>
 
         <div class="sec"><h3 class="sec__t">Dane</h3>
           <dl class="kv">
             <dt>E-mail</dt><dd><a href="mailto:${esc(c.email)}">${esc(c.email)}</a></dd>
-            <dt>Telefon</dt><dd>${esc(c.phone || '—')}</dd>
-            <dt>Adres</dt><dd>${a.street ? `${esc(a.street)}<br>` : ''}${esc([c.postcode, c.city].filter(Boolean).join(' ') || '—')}${c.country ? `, ${esc(c.country)}` : ''}</dd>
-            <dt>Paczkomat</dt><dd>${esc(c.default_locker || '—')}</dd>
+            <dt>Telefon</dt><dd>${esc(c.phone || '-')}</dd>
+            <dt>Adres</dt><dd>${a.street ? `${esc(a.street)}<br>` : ''}${esc([c.postcode, c.city].filter(Boolean).join(' ') || '-')}${c.country ? `, ${esc(c.country)}` : ''}</dd>
+            <dt>Paczkomat</dt><dd>${esc(c.default_locker || '-')}</dd>
             ${c.billing?.nip ? `<dt>Faktura</dt><dd>${esc(c.billing.company || '')}<br>NIP ${esc(c.billing.nip)}</dd>` : ''}
             <dt>Rejestracja</dt><dd>${dshort(c.created_at)}</dd>
             <dt>Ostatnio aktywny</dt><dd>${dshort(c.last_active_at)}</dd>
@@ -2738,7 +2738,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <summary>Edytuj dane klienta</summary>
           <form class="sec" data-cedit>
             <div class="row2"><label class="field">Imię<input class="input" name="first_name" value="${esc(c.first_name || '')}" /></label><label class="field">Nazwisko<input class="input" name="last_name" value="${esc(c.last_name || '')}" /></label></div>
-            <label class="field">E-mail${c.has_account ? ' <span class="muted">(login klienta – bez zmian)</span>' : ''}<input class="input" name="email" type="email" value="${esc(c.email)}" ${c.has_account ? 'readonly' : ''} /></label>
+            <label class="field">E-mail${c.has_account ? ' <span class="muted">(login klienta - bez zmian)</span>' : ''}<input class="input" name="email" type="email" value="${esc(c.email)}" ${c.has_account ? 'readonly' : ''} /></label>
             <div class="row2"><label class="field">Telefon<input class="input" name="phone" value="${esc(c.phone || '')}" /></label><label class="field">Paczkomat<input class="input" name="default_locker" value="${esc(c.default_locker || '')}" /></label></div>
             <label class="field">Ulica i numer<input class="input" name="street" value="${esc(a.street || '')}" /></label>
             <div class="row2"><label class="field">Kod pocztowy<input class="input" name="postcode" value="${esc(a.postcode || '')}" /></label><label class="field">Miejscowość<input class="input" name="city" value="${esc(a.city || '')}" /></label></div>
@@ -2762,7 +2762,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
               <label class="field">Ważny (dni)<input class="input" name="days" type="number" min="1" max="365" value="30" /></label>
               <label class="field">Od kwoty (zł)<input class="input" name="min_total" inputmode="decimal" placeholder="0" /></label>
             </div>
-            <label class="field">Wiadomość (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="600" placeholder="np. dziękujemy za zaufanie – na kolejną kurację mamy dla Ciebie rabat"></textarea></label>
+            <label class="field">Wiadomość (opcjonalnie)<textarea class="input" name="message" rows="2" maxlength="600" placeholder="np. dziękujemy za zaufanie - na kolejną kurację mamy dla Ciebie rabat"></textarea></label>
             <label class="check"><input type="checkbox" name="notify" checked /> Wyślij klientowi e-mail z kodem</label>
             <div class="actions"><button class="btn btn--sm">Utwórz kod osobisty</button></div>
           </form>
@@ -2844,7 +2844,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     body.innerHTML = '<p class="muted">Ładowanie…</p>';
     try { productCache = (await api('/api/admin/products')).rows.filter((p: any) => p.active && p.price !== null); }
     catch (e) { body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
-    const opts = productCache.map((p) => `<option value="${esc(p.id)}">${esc(p.name)} – ${pln(p.price)}</option>`).join('');
+    const opts = productCache.map((p) => `<option value="${esc(p.id)}">${esc(p.name)} - ${pln(p.price)}</option>`).join('');
     body.innerHTML = `
       <form class="sec" data-no>
         <div class="sec"><h3 class="sec__t">Klient</h3>
@@ -2870,7 +2870,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           <div class="row2"><label class="field">Kod<input class="input" name="invPostcode" /></label><label class="field">Miejscowość<input class="input" name="invCity" /></label></div>
         </details>
         <div class="sec"><h3 class="sec__t">Płatność</h3>
-          <label class="check"><input type="radio" name="payment" value="link" checked /> Wyślij klientowi link do płatności (BLIK, przelew, karta) – ważny 7 dni</label>
+          <label class="check"><input type="radio" name="payment" value="link" checked /> Wyślij klientowi link do płatności (BLIK, przelew, karta) - ważny 7 dni</label>
           <label class="check"><input type="radio" name="payment" value="paid" /> Opłacone poza sklepem (przelew, gotówka)</label>
           <label class="field" data-no-pnote hidden>Jak zapłacono<input class="input" name="paymentNote" placeholder="np. przelew 12.11" /></label>
           <label class="check"><input type="radio" name="payment" value="pending" /> Czeka na płatność (bez wysyłania linku)</label>
@@ -2902,7 +2902,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         sub += p.price * qty;
         lines.push({ product_id: slug, qty, unit_price: p.price });
       }
-      // Promocje (rabaty ilościowe i zestawy) – podgląd; kwotę i tak liczy serwer
+      // Promocje (rabaty ilościowe i zestawy) - podgląd; kwotę i tak liczy serwer
       const disc = applyPromotions(lines, noPromos).total;
       const extra = Math.round(Number(String((f.elements.namedItem('extraDiscount') as HTMLInputElement).value || 0).replace(',', '.')) * 100) || 0;
       f.querySelector('[data-no-sub]')!.textContent = pln(sub);
@@ -2927,7 +2927,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       t = window.setTimeout(async () => {
         try {
           const d = await api(`/api/admin/klienci?q=${encodeURIComponent(q)}&size=50&sort=last_active`);
-          picks.innerHTML = d.rows.slice(0, 6).map((c: any) => `<li class="clickable" data-pick='${esc(JSON.stringify(c.id))}'><span><strong>${esc(c.full_name || '—')}</strong><br><span class="muted">${esc(c.email)}${c.phone ? ` · ${esc(c.phone)}` : ''}</span></span><span>${c.orders_count} zam.</span></li>`).join('') || '<li class="muted">Brak – wpisz dane nowego klienta poniżej.</li>';
+          picks.innerHTML = d.rows.slice(0, 6).map((c: any) => `<li class="clickable" data-pick='${esc(JSON.stringify(c.id))}'><span><strong>${esc(c.full_name || '-')}</strong><br><span class="muted">${esc(c.email)}${c.phone ? ` · ${esc(c.phone)}` : ''}</span></span><span>${c.orders_count} zam.</span></li>`).join('') || '<li class="muted">Brak - wpisz dane nowego klienta poniżej.</li>';
           picks.querySelectorAll<HTMLElement>('[data-pick]').forEach((li) => li.addEventListener('click', async () => {
             const { customer: c } = await api(`/api/admin/klienci?id=${JSON.parse(li.dataset.pick!)}`);
             const set = (n: string, v: unknown) => { const el = f.elements.namedItem(n) as HTMLInputElement | null; if (el) el.value = String(v ?? ''); };
@@ -2973,11 +2973,11 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       st.className = `st ${d.settings.enabled ? 'st--shipped' : 'st--pending_payment'}`;
       const warn = $('[data-auto-warn]');
       warn.hidden = d.cronReady;
-      warn.textContent = 'Brak sekretu CRON_SECRET w Workerze – automat i linki „wypisz się” nie zadziałają. Instrukcja w opisie wdrożenia.';
+      warn.textContent = 'Brak sekretu CRON_SECRET w Workerze - automat i linki „wypisz się” nie zadziałają. Instrukcja w opisie wdrożenia.';
       $('[data-auto-count]').textContent = `(${d.total})`;
       const pct = d.settings.regularCodePercent;
-      $('[data-auto-list]').innerHTML = d.candidates.length ? d.candidates.map((c: any) => `<tr><td><button type="button" class="link" data-open-customer="${c.id}">${esc(c.first_name || '—')}</button></td><td>${esc(c.email)}</td><td class="r">${c.orders_count}</td><td class="r">${c.last_order_packs}</td><td>${dnum(c.treatment_end_at)}</td><td>${pct && c.orders_count >= 2 ? `−${pct}%` : '—'}</td></tr>`).join('') : '<tr><td colspan="6" class="empty">Dziś nikt nie spełnia warunków.</td></tr>';
-      $('[data-auto-hist]').innerHTML = d.history.length ? d.history.map((h: any) => `<tr><td>${date(h.sent_at)}</td><td>${esc([h.customers?.first_name, h.customers?.last_name].filter(Boolean).join(' ') || h.customers?.email || '')}</td><td>${esc(h.code || '—')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Jeszcze nic nie wysłano.</td></tr>';
+      $('[data-auto-list]').innerHTML = d.candidates.length ? d.candidates.map((c: any) => `<tr><td><button type="button" class="link" data-open-customer="${c.id}">${esc(c.first_name || '-')}</button></td><td>${esc(c.email)}</td><td class="r">${c.orders_count}</td><td class="r">${c.last_order_packs}</td><td>${dnum(c.treatment_end_at)}</td><td>${pct && c.orders_count >= 2 ? `−${pct}%` : '-'}</td></tr>`).join('') : '<tr><td colspan="6" class="empty">Dziś nikt nie spełnia warunków.</td></tr>';
+      $('[data-auto-hist]').innerHTML = d.history.length ? d.history.map((h: any) => `<tr><td>${date(h.sent_at)}</td><td>${esc([h.customers?.first_name, h.customers?.last_name].filter(Boolean).join(' ') || h.customers?.email || '')}</td><td>${esc(h.code || '-')}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Jeszcze nic nie wysłano.</td></tr>';
       bindLinks($('[data-auto-list]').closest('table') as HTMLElement);
     } catch (e) { toast((e as Error).message, true); }
   }
@@ -2999,12 +2999,12 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     home: { label: 'Strona główna', previewHref: '/', sections: [
       { key: 'home.hero', label: 'Hero (baner)', schema: {
         kicker: { type: 'text', label: 'Kicker (etykieta nad H1, puste = ukryj)' },
-        h1: { type: 'text', label: 'Nagłówek H1', hint: 'Druga linia po znaku |, np. „Krople do oczu Can-C | z N-acetylokarnozyną” – druga linia jest wcięta.' },
+        h1: { type: 'text', label: 'Nagłówek H1', hint: 'Druga linia po znaku |, np. „Krople do oczu Can-C | z N-acetylokarnozyną” - druga linia jest wcięta.' },
         lead: { type: 'textarea', label: 'Tekst lead' },
-        cta_primary_label: { type: 'text', label: 'Przycisk główny – etykieta' },
-        cta_primary_href: { type: 'url', label: 'Przycisk główny – link' },
-        cta_secondary_label: { type: 'text', label: 'Przycisk drugorzędny – etykieta (puste = ukryj)' },
-        cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny – link' },
+        cta_primary_label: { type: 'text', label: 'Przycisk główny - etykieta' },
+        cta_primary_href: { type: 'url', label: 'Przycisk główny - link' },
+        cta_secondary_label: { type: 'text', label: 'Przycisk drugorzędny - etykieta (puste = ukryj)' },
+        cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny - link' },
         image_url: { type: 'image', label: 'Zdjęcie w hero', hint: 'Wypełnia cały kształt baneru (szare pola). Poziome, min. 2000 px szerokości; najważniejszy motyw po prawej stronie. Na telefonie pokazuje się pod tekstem w proporcji 4:3.' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
         trust_boxes: { type: 'list', label: 'Boksy pod banerem (3 linie: „liczba | opis”)', hint: 'Np. „0 zł | InPost i DPD”. Ikony wg kolejności: dostawa, zwrot, płatność.' },
@@ -3012,52 +3012,52 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       { key: 'home.products', label: 'Produkty (nagłówek sekcji)', schema: {
         h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia' },
         lead: { type: 'textarea', label: 'Tekst pod nagłówkiem (puste = ukryj)' },
-        link_label: { type: 'text', label: 'Link po prawej – etykieta (puste = ukryj)' },
-        link_href: { type: 'url', label: 'Link po prawej – adres' },
+        link_label: { type: 'text', label: 'Link po prawej - etykieta (puste = ukryj)' },
+        link_href: { type: 'url', label: 'Link po prawej - adres' },
       }},
       { key: 'home.benefits', label: 'Korzyści (3 kolumny: karta · zdjęcie · lista)', schema: {
-        h2: { type: 'text', label: 'Prawa kolumna – nagłówek sekcji' },
-        lead: { type: 'textarea', label: 'Prawa kolumna – tekst pod nagłówkiem', hint: '1–2 zdania; puste = bez tekstu' },
-        items: { type: 'list', label: 'Prawa kolumna – punkty (jedna linia = jeden punkt)', hint: '**tekst** = pogrubienie. Najlepiej 4–6 punktów.' },
-        cta_label: { type: 'text', label: 'Prawa kolumna – przycisk, etykieta (puste = ukryj)' },
-        cta_href: { type: 'url', label: 'Prawa kolumna – przycisk, link' },
-        image_url: { type: 'image', label: 'Środkowa kolumna – duże zdjęcie', hint: 'Pionowe, min. 900 px wysokości. Górny lewy róg jest mocno zaokrąglony – ważny motyw nie przy tym rogu.' },
-        image_alt: { type: 'text', label: 'Środkowa kolumna – alt zdjęcia' },
-        card_image_url: { type: 'image', label: 'Lewa karta – zdjęcie w łuku', hint: 'Np. opakowanie kropli; kadr poziomy lub kwadratowy.' },
-        card_image_alt: { type: 'text', label: 'Lewa karta – alt zdjęcia' },
-        card_title: { type: 'text', label: 'Lewa karta – tytuł', hint: 'Np. „Z N-acetylokarnozyną”' },
-        card_text: { type: 'textarea', label: 'Lewa karta – opis (2–3 zdania)' },
-        card_items: { type: 'list', label: 'Lewa karta – punkty (jedna linia = jeden punkt)', hint: 'Najlepiej 3 krótkie punkty. Puste = pierwsze 3 punkty z prawej kolumny.' },
+        h2: { type: 'text', label: 'Prawa kolumna - nagłówek sekcji' },
+        lead: { type: 'textarea', label: 'Prawa kolumna - tekst pod nagłówkiem', hint: '1-2 zdania; puste = bez tekstu' },
+        items: { type: 'list', label: 'Prawa kolumna - punkty (jedna linia = jeden punkt)', hint: '**tekst** = pogrubienie. Najlepiej 4-6 punktów.' },
+        cta_label: { type: 'text', label: 'Prawa kolumna - przycisk, etykieta (puste = ukryj)' },
+        cta_href: { type: 'url', label: 'Prawa kolumna - przycisk, link' },
+        image_url: { type: 'image', label: 'Środkowa kolumna - duże zdjęcie', hint: 'Pionowe, min. 900 px wysokości. Górny lewy róg jest mocno zaokrąglony - ważny motyw nie przy tym rogu.' },
+        image_alt: { type: 'text', label: 'Środkowa kolumna - alt zdjęcia' },
+        card_image_url: { type: 'image', label: 'Lewa karta - zdjęcie w łuku', hint: 'Np. opakowanie kropli; kadr poziomy lub kwadratowy.' },
+        card_image_alt: { type: 'text', label: 'Lewa karta - alt zdjęcia' },
+        card_title: { type: 'text', label: 'Lewa karta - tytuł', hint: 'Np. „Z N-acetylokarnozyną”' },
+        card_text: { type: 'textarea', label: 'Lewa karta - opis (2-3 zdania)' },
+        card_items: { type: 'list', label: 'Lewa karta - punkty (jedna linia = jeden punkt)', hint: 'Najlepiej 3 krótkie punkty. Puste = pierwsze 3 punkty z prawej kolumny.' },
       }},
       { key: 'home.bundles', label: '„Kupuj więcej, płać mniej” (zestawy)', schema: {
         h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia, np. „Kupuj więcej, | płać mniej”' },
         lead: { type: 'textarea', label: 'Tekst po prawej (puste = ukryj)' },
-        badge: { type: 'text', label: 'Etykieta polecanego zestawu', hint: 'Np. „Polecany” – rabat w % dopisuje się sam' },
+        badge: { type: 'text', label: 'Etykieta polecanego zestawu', hint: 'Np. „Polecany” - rabat w % dopisuje się sam' },
         perks: { type: 'list', label: 'Dodatkowe punkty na każdej karcie (jedna linia = jeden punkt)', hint: 'Np. „Darmowa dostawa”. Punkty „X miesięcy kuracji” i „Oszczędzasz X%” liczą się same z promocji.' },
         button: { type: 'text', label: 'Tekst przycisku na kartach' },
       }},
       { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
         h2: { type: 'text', label: 'Nagłówek sekcji' }, lead: { type: 'textarea', label: 'Tekst lead' },
-        link_label: { type: 'text', label: 'Link – etykieta' }, link_href: { type: 'url', label: 'Link – href' },
+        link_label: { type: 'text', label: 'Link - etykieta' }, link_href: { type: 'url', label: 'Link - href' },
         features: { type: 'array', label: 'Kafelki JSON [{title, text}]', hint: 'Tablica obiektów JSON z polami title i text' },
       }},
       { key: 'home.reviews', label: 'Opinie na stronie głównej', schema: {
         h2: { type: 'text', label: 'Nagłówek sekcji' },
-        cta_text: { type: 'text', label: 'Karta „Napisz opinię” – tekst' },
-        cta_label: { type: 'text', label: 'Karta „Napisz opinię” – przycisk (puste = ukryj)' },
-        cta_href: { type: 'url', label: 'Karta „Napisz opinię” – link' },
+        cta_text: { type: 'text', label: 'Karta „Napisz opinię” - tekst' },
+        cta_label: { type: 'text', label: 'Karta „Napisz opinię” - przycisk (puste = ukryj)' },
+        cta_href: { type: 'url', label: 'Karta „Napisz opinię” - link' },
         items: { type: 'array', label: 'Opinie zapasowe JSON [{quote, author}]', hint: 'Pokazywane tylko, gdy w bazie nie ma żadnej zatwierdzonej opinii.' },
       }},
       { key: 'home.k9', label: 'Sekcja Can-C K9', schema: {
         tag: { type: 'text', label: 'Etykieta (np. „DLA PSA")' }, h2: { type: 'text', label: 'Nagłówek' },
-        lead: { type: 'textarea', label: 'Tekst lead' }, cta_label: { type: 'text', label: 'Przycisk – etykieta' },
-        cta_href: { type: 'url', label: 'Przycisk – link' },
+        lead: { type: 'textarea', label: 'Tekst lead' }, cta_label: { type: 'text', label: 'Przycisk - etykieta' },
+        cta_href: { type: 'url', label: 'Przycisk - link' },
         image_url: { type: 'image', label: 'Zdjęcie' }, image_alt: { type: 'text', label: 'Alt' },
       }},
       { key: 'home.faq', label: 'FAQ na stronie głównej (nagłówek)', schema: {
         h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia. Pytania wybierasz w zakładce FAQ (pole „na głównej”).' },
-        link_label: { type: 'text', label: 'Link – etykieta (puste = ukryj)' },
-        link_href: { type: 'url', label: 'Link – adres' },
+        link_label: { type: 'text', label: 'Link - etykieta (puste = ukryj)' },
+        link_href: { type: 'url', label: 'Link - adres' },
       }},
       { key: 'home.newsletter', label: 'Newsletter (sekcja zapisu)', schema: {
         h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia' },
@@ -3099,7 +3099,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     ]},
   };
 
-  // Sekcje, których nie da się wyłączyć (nagłówki stron, stopka) – pozostałe mają przełącznik „Sekcja widoczna”
+  // Sekcje, których nie da się wyłączyć (nagłówki stron, stopka) - pozostałe mają przełącznik „Sekcja widoczna”
   const ALWAYS_ON = new Set(['how_to_use.intro', 'about.intro', 'footer.columns', 'footer.badges']);
   // Pola bez regulacji rozmiaru (linki, alt, etykiety przycisków)
   const NO_SIZE = /(href|_alt|_label|button|badge|^cta_label)$/;
@@ -3133,7 +3133,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
   function fieldHtml(fk: string, schema: any, value: unknown, size?: number | null): string {
     const val = value === null || value === undefined ? '' : value;
-    // Rozmiar tekstu (px) dla pól tekstowych – puste = jak w projekcie
+    // Rozmiar tekstu (px) dla pól tekstowych - puste = jak w projekcie
     const sizable = ['text', 'textarea', 'markdown', 'list', undefined].includes(schema.type) && !NO_SIZE.test(fk);
     const sz = sizable ? `<span class="fsz" title="Rozmiar tekstu w px (puste = jak w projekcie). Na telefonie duże rozmiary same się zmniejszają."><input class="input" type="number" name="${fk}__size" min="10" max="160" step="1" value="${size ?? ''}" placeholder="auto" aria-label="Rozmiar tekstu ${esc(schema.label)} (px)" /> px</span>` : '';
     const hint = (schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '') + sz;
@@ -3235,7 +3235,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           await loadPages('faq');
           const el = pagesList.querySelector<HTMLDetailsElement>(`[data-faq-key="${d.key}"]`);
           if (el) { el.open = true; el.scrollIntoView({ block: 'center' }); el.querySelector<HTMLInputElement>('[name="q"]')?.focus(); }
-          toast('Dodano pytanie – uzupełnij treść i zapisz.');
+          toast('Dodano pytanie - uzupełnij treść i zapisz.');
         } catch (err) { toast((err as Error).message, true); }
       });
       return;
@@ -3250,7 +3250,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         <div class="card__head"><h2 class="card__title">${esc(sec.label)}</h2>
           <span class="actions">${rowMap[sec.key]?.updated_at ? `<span class="muted small">Zmienione: ${date(rowMap[sec.key].updated_at)}</span>` : ''}
           ${ALWAYS_ON.has(sec.key) ? '' : `<label class="check sec-vis"><input type="checkbox" name="__visible" ${hidden ? '' : 'checked'} /> Sekcja widoczna</label>`}</span></div>
-        ${missing ? '<p class="err small">Tej sekcji nie ma jeszcze w bazie – uruchom najnowszy skrypt SQL z paczki (supabase/), inaczej zapis się nie uda.</p>' : ''}
+        ${missing ? '<p class="err small">Tej sekcji nie ma jeszcze w bazie - uruchom najnowszy skrypt SQL z paczki (supabase/), inaczej zapis się nie uda.</p>' : ''}
         ${fields}
         <div class="actions"><button class="btn btn--sm">Zapisz sekcję</button></div>
       </form>`;
@@ -3267,7 +3267,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       form.querySelector<HTMLInputElement>('[name="__visible"]')?.addEventListener('change', async (e) => {
         const on = (e.target as HTMLInputElement).checked;
         form.classList.toggle('is-off', !on);
-        try { await saveSection(form, on ? 'Sekcja włączona.' : 'Sekcja wyłączona – nie pokazuje się na stronie.'); }
+        try { await saveSection(form, on ? 'Sekcja włączona.' : 'Sekcja wyłączona - nie pokazuje się na stronie.'); }
         catch (err) { (e.target as HTMLInputElement).checked = !on; form.classList.toggle('is-off', on); toast((err as Error).message, true); }
       });
       form.addEventListener('submit', async (e) => {
@@ -3276,7 +3276,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       });
     });
 
-    // Grafiki: wysłanie pliku (zdjęcia zmniejszone do 1600 px WebP, SVG bez zmian) i od razu zapis sekcji – jak logo w Ustawieniach
+    // Grafiki: wysłanie pliku (zdjęcia zmniejszone do 1600 px WebP, SVG bez zmian) i od razu zapis sekcji - jak logo w Ustawieniach
     pagesList.querySelectorAll<HTMLElement>('[data-img-slot]').forEach((slot) => {
       const form = slot.closest<HTMLFormElement>('[data-page-form]')!;
       const hidden = slot.querySelector<HTMLInputElement>('input[type="hidden"]')!;
@@ -3325,7 +3325,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const anRange = $<HTMLSelectElement>('[data-an-range]');
 
   function zl_an(g: number) { return new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(g/100); }
-  function pct(a: number, b: number) { return b ? Math.round((a/b)*10)/10+'%' : '—'; }
+  function pct(a: number, b: number) { return b ? Math.round((a/b)*10)/10+'%' : '-'; }
   function delta(cur: number, prev: number) {
     if (!prev) return '';
     const d = Math.round(((cur-prev)/prev)*100);
@@ -3335,7 +3335,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     return `<div class="an__kpi"><span class="an__kpi_v">${value}</span><span class="an__kpi_l">${label}</span>${sub?`<span class="an__kpi_d">${sub}</span>`:''}</div>`;
   }
 
-  // Wykres liniowy SVG – minimalistyczny
+  // Wykres liniowy SVG - minimalistyczny
   function lineChart(data: {date:string;revenue:number;orders:number}[], h=200): string {
     if (!data.length) return '';
     const W2=680, PL=52, PR=16, PT=16, PB=32, IW=W2-PL-PR, IH=h-PT-PB;
@@ -3354,7 +3354,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     }
     const linePath = bezier(pts);
     const areaPath = linePath+` L${px(data.length-1).toFixed(1)},${(PT+IH).toFixed(1)} L${PL},${(PT+IH).toFixed(1)} Z`;
-    // Oś Y – 4 linie
+    // Oś Y - 4 linie
     const yLines = [0,.33,.67,1].map(f=>{
       const v=max*f, y=PT+IH-f*IH;
       const lbl=v>0?new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:0}).format(v/100):'0';
@@ -3380,13 +3380,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     </svg>`;
   }
 
-  // Wykres słupkowy poziomy – minimalistyczny
+  // Wykres słupkowy poziomy - minimalistyczny
   function barChart(labels: string[], values: number[], h=0): string {
     if (!labels.length) return '';
     const maxV = Math.max(...values, 1);
     const rows = labels.map((l,i) => {
       const pct = Math.round((values[i]/maxV)*100);
-      const val = values[i]>0 ? new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:1}).format(values[i]/100)+' zł' : '—';
+      const val = values[i]>0 ? new Intl.NumberFormat('pl-PL',{notation:'compact',maximumFractionDigits:1}).format(values[i]/100)+' zł' : '-';
       const name = l.length>28 ? l.slice(0,28)+'…' : l;
       return `<div class="an__bar_row">
         <span class="an__bar_name">${esc(name)}</span>
@@ -3488,7 +3488,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       <!-- GA4 Data API -->
       ${d.ga4 ? `
       <div class="card">
-        <div class="card__head"><h2 class="card__title">GA4 — Ruch i zdarzenia</h2><span class="muted small">Google Analytics · ostatnie ${range} dni</span></div>
+        <div class="card__head"><h2 class="card__title">GA4 - Ruch i zdarzenia</h2><span class="muted small">Google Analytics · ostatnie ${range} dni</span></div>
         <div class="an__kpis">
           ${kpiCard('Sesje', d.ga4.sessions.toLocaleString('pl-PL'))}
           ${kpiCard('Użytkownicy', d.ga4.users.toLocaleString('pl-PL'))}
@@ -3498,7 +3498,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </div>
       <div class="an__row2">
         <div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Produkty i koszyk</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Produkty i koszyk</h2></div>
           <div class="an__funnel">
             ${[
               ['Wyświetlenia list produktów', d.ga4.view_item_list],
@@ -3511,7 +3511,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
           </div>
         </div>
         <div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Proces zamówienia</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Proces zamówienia</h2></div>
           <div class="an__funnel">
             ${[
               ['Rozpoczęcie zamówienia', d.ga4.begin_checkout],
@@ -3525,14 +3525,14 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </div>
       <div class="an__row2">
         <div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Konto użytkownika</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Konto użytkownika</h2></div>
           <div class="an__kpis">
             ${kpiCard('Rejestracje (sign_up)', d.ga4.sign_up)}
             ${kpiCard('Logowania (login)', d.ga4.login)}
           </div>
         </div>
         <div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Formularze</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Formularze</h2></div>
           <div class="an__funnel">
             ${[
               ['Rozpoczęcia formularza', d.ga4.form_start],
@@ -3545,13 +3545,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       </div>
       <div class="an__row2">
         <div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Lejek konwersji</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Lejek konwersji</h2></div>
           <div class="an__funnel">
             ${d.ga4.funnelRates.map((f: any) => funnelBar(f.step + ' (' + f.rate + '%)', f.count, d.ga4.funnelRates[0]?.count || 1)).join('')}
           </div>
         </div>
         ${d.ga4.topFieldErrors.length ? `<div class="card">
-          <div class="card__head"><h2 class="card__title">GA4 — Błędy pól formularzy</h2></div>
+          <div class="card__head"><h2 class="card__title">GA4 - Błędy pól formularzy</h2></div>
           <div class="table-wrap"><table class="table">
             <thead><tr><th>Pole</th><th class="r">Błędów</th></tr></thead>
             <tbody>${d.ga4.topFieldErrors.map((f: any) => `<tr><td>${esc(f.field)}</td><td class="r">${f.count}</td></tr>`).join('')}</tbody>
@@ -3899,7 +3899,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     const blocked = new Set<string>(d.seo.ai?.block || []);
     const groups: [string, string, string][] = [
       ['search', 'Wyszukiwarki i asystenci AI', 'Cytują i polecają sklep w odpowiedziach. Zalecamy zezwolić.'],
-      ['training', 'Trening modeli AI', 'Zbierają treści do uczenia modeli. Decyzja biznesowa – blokada nie wpływa na wyszukiwarki.'],
+      ['training', 'Trening modeli AI', 'Zbierają treści do uczenia modeli. Decyzja biznesowa - blokada nie wpływa na wyszukiwarki.'],
     ];
     $('[data-ai-groups]').innerHTML = groups.map(([g, t, h]) => `
       <fieldset class="ai-group">
@@ -3918,7 +3918,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       e.preventDefault();
       const block = d.aiBots.map((b: any) => b.id).filter((id: string) => !form.querySelector<HTMLInputElement>(`input[value="${id}"]`)!.checked);
       const searchBlocked = d.aiBots.filter((b: any) => b.group === 'search' && block.includes(b.id)).length;
-      if (searchBlocked && !confirm(`Blokujesz ${searchBlocked} bot(y) wyszukiwarek AI – te serwisy nie zacytują ani nie polecą sklepu. Kontynuować?`)) return;
+      if (searchBlocked && !confirm(`Blokujesz ${searchBlocked} bot(y) wyszukiwarek AI - te serwisy nie zacytują ani nie polecą sklepu. Kontynuować?`)) return;
       try { const r = await api('/api/admin/seo', { action: 'ai', block }); Object.assign(seoData!, r); fillRobots(r.robots); toast(block.length ? `Zapisano. Zablokowane boty: ${block.length}.` : 'Zapisano. Wszystkie boty AI mają dostęp.'); }
       catch (err) { toast((err as Error).message, true); }
     };
@@ -3933,7 +3933,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       const fd = new FormData(lf);
       try {
         const r = await api('/api/admin/seo', { action: 'llms', enabled: fd.get('enabled') !== null, summary: fd.get('summary'), extra: fd.get('extra') });
-        Object.assign(seoData!, r); $('[data-llms-preview]').textContent = fd.get('enabled') !== null ? r.llmsPreview : '(wyłączone – /llms.txt zwraca 404)';
+        Object.assign(seoData!, r); $('[data-llms-preview]').textContent = fd.get('enabled') !== null ? r.llmsPreview : '(wyłączone - /llms.txt zwraca 404)';
         toast('Zapisano llms.txt.');
       } catch (err) { toast((err as Error).message, true); }
     };
@@ -3948,7 +3948,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     set('street', o.street, def.street); set('postcode', o.postcode, def.postcode); set('city', o.city, def.city);
     set('sameAs', (o.sameAs || []).join('\n')); set('foundingDate', o.foundingDate);
     (f.elements.namedItem('breadcrumbs') as HTMLInputElement).checked = o.breadcrumbs !== false;
-    $('[data-org-contact]').innerHTML = [def.email ? `E-mail: ${esc(def.email)}` : '<span class="err">Brak e-maila</span>', def.phone ? `Telefon: ${esc(def.phone)}` : '<span class="err">Brak telefonu – uzupełnij w Ustawieniach sklepu</span>', def.taxID ? `NIP: ${esc(def.taxID)}` : ''].filter(Boolean).join('<br>');
+    $('[data-org-contact]').innerHTML = [def.email ? `E-mail: ${esc(def.email)}` : '<span class="err">Brak e-maila</span>', def.phone ? `Telefon: ${esc(def.phone)}` : '<span class="err">Brak telefonu - uzupełnij w Ustawieniach sklepu</span>', def.taxID ? `NIP: ${esc(def.taxID)}` : ''].filter(Boolean).join('<br>');
     $('[data-org-json]').textContent = JSON.stringify(d.orgJsonLd, null, 2);
     $('[data-crumb-json]').textContent = JSON.stringify(d.crumbExample, null, 2);
     const wrap = $<HTMLElement>('[data-org-logo]');
@@ -3975,7 +3975,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
 
   // ---------- Przekierowania i dziennik 404 ----------
   let rdData: { redirects: any[]; notFound: any[]; ignoredCount: number; targets: { path: string; label: string }[]; migration?: string } | null = null;
-  const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—');
+  const fmtDate = (iso?: string | null) => (iso ? new Date(iso).toLocaleString('pl-PL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-');
   async function loadRedirects() {
     try { rdData = await api('/api/admin/redirects'); } catch (e) { toast((e as Error).message, true); return; }
     const mig = $<HTMLElement>('[data-rd-migration]');
@@ -4000,7 +4000,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
     $('[data-nf-ignored]').textContent = rdData!.ignoredCount ? `Zignorowane: ${rdData!.ignoredCount}.` : '';
     $('[data-nf-list]').innerHTML = rows.length ? rows.map((r) => `<tr>
       <td class="mono rd-path">${esc(r.path)}</td><td class="r">${r.hits}</td><td class="nowrap">${fmtDate(r.last_seen)}</td>
-      <td class="rd-path small muted">${r.referrer ? esc(r.referrer) : '—'}</td>
+      <td class="rd-path small muted">${r.referrer ? esc(r.referrer) : '-'}</td>
       <td class="nowrap r"><button type="button" class="btn btn--sm" data-nf-go="${esc(r.path)}">Przekieruj</button> <button type="button" class="btn btn--outline btn--sm" data-nf-ignore="${esc(r.path)}">Ignoruj</button></td></tr>`).join('')
       : '<tr><td colspan="5" class="muted">Brak błędów 404.</td></tr>';
   }

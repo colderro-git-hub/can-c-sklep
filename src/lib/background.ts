@@ -1,4 +1,4 @@
-// Zadanie po wysłaniu odpowiedzi (ctx.waitUntil w Cloudflare Workers); gdy niedostępne – czekamy na wynik.
+// Zadanie po wysłaniu odpowiedzi (ctx.waitUntil w Cloudflare Workers); gdy niedostępne - czekamy na wynik.
 export async function later(locals: unknown, task: Promise<unknown>) {
   const safe = task.catch((e) => console.error('Zadanie w tle: ' + (e instanceof Error ? e.message : String(e))));
   try {

@@ -4,7 +4,7 @@
 -- =====================================================================
 
 -- Zmniejszenie stanów po opłaceniu zamówienia (wywołuje Worker po potwierdzeniu P24).
--- Stan nie spada poniżej zera, a brak towaru nie blokuje sprzedaży – to tylko ewidencja.
+-- Stan nie spada poniżej zera, a brak towaru nie blokuje sprzedaży - to tylko ewidencja.
 create or replace function public.apply_order_stock(p_order uuid)
 returns void
 language sql

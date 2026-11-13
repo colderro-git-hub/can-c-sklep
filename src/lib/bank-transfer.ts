@@ -11,4 +11,4 @@ export const BANK_INFO_HTML = `<p>Prosimy o wpłatę bezpośrednio na nasze kont
 
 export const BANK_INFO_TEXT = `Prosimy o wpłatę bezpośrednio na nasze konto bankowe. W tytule płatności prosimy podać numer zamówienia. Zamówienie zostanie przekazane do realizacji po zaksięgowaniu kwoty na naszym koncie.\n\nNumer rachunku: ${BANK_ACCOUNT}`;
 
-export const bankTitle = (orderNumber: number | string) => `Zamówienie nr ${orderNumber} – can-c.pl`;
+export const bankTitle = (orderNumber: number | string) => `Zamówienie nr ${orderNumber} - can-c.pl`;

@@ -68,7 +68,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             <fieldset class="co__card">
               <legend class="co__ct">3. Płatność</legend>
               <label class="opt"><input type="radio" name="paymentMethod" value="p24" checked />
-                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">BLIK, karta, przelew online – ponad 150 metod</span></span></label>
+                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">BLIK, karta, przelew online - ponad 150 metod</span></span></label>
               <label class="opt"><input type="radio" name="paymentMethod" value="bank_transfer" />
                 <span class="opt__txt"><span class="opt__t">Przelew bankowy</span><span class="opt__s">Realizacja po zaksięgowaniu wpłaty</span></span></label>
               <div class="co__sub" data-bank hidden>
@@ -224,14 +224,14 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           const t = form.querySelector<HTMLInputElement>('[data-invoice-toggle]')!; t.checked = true; t.dispatchEvent(new Event('change'));
           fill('company', p.billing.company); fill('nip', p.billing.nip); fill('invStreet', p.billing.street); fill('invPostcode', p.billing.postcode); fill('invCity', p.billing.city);
         }
-      } catch { /* niezalogowany albo brak konfiguracji – formularz działa normalnie */ }
+      } catch { /* niezalogowany albo brak konfiguracji - formularz działa normalnie */ }
     })();
 
-    // GA4 form_start – przy pierwszym focusie na dowolnym polu
+    // GA4 form_start - przy pierwszym focusie na dowolnym polu
     let _fmStarted = false;
     form.addEventListener('focusin', () => { if (_fmStarted) return; _fmStarted = true; trackFormStart('checkout_form'); }, { once: false });
 
-    // GA4 form_field_click – śledzimy nazwę pola, NIE wartość
+    // GA4 form_field_click - śledzimy nazwę pola, NIE wartość
     const FIELD_MAP: Record<string, string> = {
       email: 'email', phone: 'phone', firstName: 'first_name', lastName: 'last_name',
       street: 'street', postcode: 'postal_code', city: 'city',
@@ -355,7 +355,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          // GA4 form_field_error – próbujemy wykryć pole z błędu (uproszczone)
+          // GA4 form_field_error - próbujemy wykryć pole z błędu (uproszczone)
           const errMsg: string = data.error || '';
           const fieldHint = errMsg.toLowerCase().includes('email') ? 'email'
             : errMsg.toLowerCase().includes('telefon') ? 'phone'

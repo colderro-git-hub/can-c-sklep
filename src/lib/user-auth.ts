@@ -1,5 +1,5 @@
 // Weryfikacja zalogowanego klienta: token sesji Supabase z nagłówka Authorization.
-// Supabase sam sprawdza token i zwraca użytkownika – nie ufamy żadnym danym z przeglądarki.
+// Supabase sam sprawdza token i zwraca użytkownika - nie ufamy żadnym danym z przeglądarki.
 import type { Env } from './env';
 import { db } from './supabase';
 
@@ -20,7 +20,7 @@ export async function requireCustomer(request: Request, env: Env): Promise<Custo
   const email = user.email.toLowerCase();
   let [c] = await sb.select<Customer>(`customers?select=id,email,user_id&user_id=eq.${user.id}`);
   if (!c) {
-    // Konto potwierdzone, ale bez rekordu klienta – tworzymy albo łączymy po e-mailu
+    // Konto potwierdzone, ale bez rekordu klienta - tworzymy albo łączymy po e-mailu
     [c] = await sb.upsert<Customer>('customers', { email, user_id: user.id }, 'email', 'id,email,user_id');
   }
   return c ?? null;

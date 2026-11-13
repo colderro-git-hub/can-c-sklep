@@ -28,7 +28,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
     const [order] = await sb.select(`orders?select=*,order_items(name,qty,unit_price,discount,total,product_id),customers(id,first_name,last_name,phone,marketing_consent,admin_note)&id=eq.${id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
     const events = await sb.select(`order_events?select=type,data,created_at&order_id=eq.${id}&order=created_at.asc`);
-    // Promocje naliczone w zamówieniu (tabela z migracji 019 – bez niej pusta lista)
+    // Promocje naliczone w zamówieniu (tabela z migracji 019 - bez niej pusta lista)
     const promotions = await sb.select(`order_promotions?select=promotion_id,name,amount&order_id=eq.${id}&order=created_at.asc`).catch(() => []);
     return json(200, { order: { ...order, promotions }, events });
   } catch (e) {
@@ -66,7 +66,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
   const rule = ALLOWED[action];
   if (!rule?.to) return { ok: false, status: 400, error: 'Nieznana akcja.' };
   // Zamówienia z WooCommerce obsługuje stary sklep aż do dnia startu (wtedy ustawimy ALLOW_WC_ACTIONS=true)
-  if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return { ok: false, status: 409, error: 'Zamówienie z WooCommerce – obsłuż je w obecnym sklepie.' };
+  if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return { ok: false, status: 409, error: 'Zamówienie z WooCommerce - obsłuż je w obecnym sklepie.' };
   if (!rule.from.includes(order.status)) return { ok: false, status: 409, error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` };
 
   const patch: Record<string, unknown> = { status: rule.to };
@@ -87,7 +87,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
     try {
       await sendMail(env, {
         to: order.email,
-        subject: `Zamówienie nr ${order.number} zostało wysłane – Can-C`,
+        subject: `Zamówienie nr ${order.number} zostało wysłane - Can-C`,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
         html: orderShippedHtml({ site: await getSite(env), origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
         text: [
@@ -115,7 +115,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
       const firstName = order.customers?.first_name || null;
       await sendMail(env, {
         to: order.email,
-        subject: `Kompletujemy zamówienie nr ${order.number} – Can-C`,
+        subject: `Kompletujemy zamówienie nr ${order.number} - Can-C`,
         replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
         html: orderPackingHtml({ site: await getSite(env), origin, number: order.number, firstName, items, delivery, message }),
         text: [
@@ -137,7 +137,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
     }
   }
   if (action === 'cancel' && order.status !== 'pending_payment') {
-    return { ok: true, warning: 'Zamówienie było opłacone – zwrot środków wykonaj w panelu Przelewy24 (albo użyj „Zwrot środków”).' };
+    return { ok: true, warning: 'Zamówienie było opłacone - zwrot środków wykonaj w panelu Przelewy24 (albo użyj „Zwrot środków”).' };
   }
   return { ok: true };
 }
@@ -150,7 +150,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
 
-  // Zbiorcza zmiana statusu zaznaczonych zamówień – każde osobno, z tymi samymi regułami co pojedynczo
+  // Zbiorcza zmiana statusu zaznaczonych zamówień - każde osobno, z tymi samymi regułami co pojedynczo
   if (b?.action === 'bulk') {
     const ids = [...new Set((Array.isArray(b.ids) ? b.ids : []).map(String))].filter((x) => UUID.test(x as string)).slice(0, 200) as string[];
     if (!ids.length) return json(400, { error: 'Zaznacz zamówienia.' });
@@ -172,7 +172,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           failed.push({ number: order.number, error: 'Błąd zapisu.' });
         }
       }
-      console.log(`Admin ${admin}: zbiorczo ${b.to} – ${done}/${orders.length}`);
+      console.log(`Admin ${admin}: zbiorczo ${b.to} - ${done}/${orders.length}`);
       return json(200, { ok: true, done, failed, mailFailed: warned });
     } catch (e) {
       console.error('Admin zbiorczo: ' + (e instanceof Error ? e.message : String(e)));
@@ -188,9 +188,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const [order] = await sb.select<any>(`orders?select=${ORDER_COLS}&id=eq.${b.id}`);
     if (!order) return json(404, { error: 'Nie znaleziono.' });
 
-    // Edycja danych zamówienia (kontakt, dostawa, faktura, uwagi) – kwoty i produkty bez zmian
+    // Edycja danych zamówienia (kontakt, dostawa, faktura, uwagi) - kwoty i produkty bez zmian
     if (b.action === 'update') {
-      if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return json(409, { error: 'Zamówienie z WooCommerce – edytuj je w obecnym sklepie.' });
+      if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') return json(409, { error: 'Zamówienie z WooCommerce - edytuj je w obecnym sklepie.' });
       const email = str(b.email, 200).toLowerCase();
       const phone = cleanPhone(b.phone);
       const name = str(b.name, 120);
@@ -229,7 +229,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (t.status === 3) return json(200, { ok: true, warning: 'Płatność w Przelewy24 została zwrócona.' });
       if (t.amount !== order.total) {
         await sb.insert('order_events', { order_id: order.id, type: 'amount_mismatch', data: { paid: t.amount, expected: order.total } }, 'id');
-        return json(200, { ok: true, warning: `Kwota w P24 (${(t.amount / 100).toFixed(2)} zł) nie zgadza się z zamówieniem – sprawdź ręcznie.` });
+        return json(200, { ok: true, warning: `Kwota w P24 (${(t.amount / 100).toFixed(2)} zł) nie zgadza się z zamówieniem - sprawdź ręcznie.` });
       }
       const r = await finalizePayment(env, sb, p24, order, {
         orderId: t.orderId, methodId: t.paymentMethod, origin: new URL(request.url).origin,
@@ -260,13 +260,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Zamówienia z WooCommerce obsługuje stary sklep aż do dnia startu (wtedy ustawimy ALLOW_WC_ACTIONS=true)
     if (order.source === 'woocommerce' && env.ALLOW_WC_ACTIONS !== 'true') {
-      return json(409, { error: 'To zamówienie pochodzi z WooCommerce – obsłuż je w obecnym sklepie.' });
+      return json(409, { error: 'To zamówienie pochodzi z WooCommerce - obsłuż je w obecnym sklepie.' });
     }
     if (!rule.from.includes(order.status)) return json(409, { error: `Nie można wykonać tej akcji dla statusu „${order.status}”.` });
 
     if (b.action === 'refund') {
       const [full] = await sb.select<any>(`orders?select=paid_at,payment_provider,attribution,customers(first_name)&id=eq.${order.id}`);
-      if (!full?.paid_at) return json(409, { error: 'Zamówienie nie zostało opłacone – nie ma czego zwracać. Użyj „Anuluj”.' });
+      if (!full?.paid_at) return json(409, { error: 'Zamówienie nie zostało opłacone - nie ma czego zwracać. Użyj „Anuluj”.' });
       const amount = b.amount === undefined || b.amount === null || b.amount === '' ? order.total : Math.round(Number(b.amount));
       if (!Number.isFinite(amount) || amount <= 0 || amount > order.total) return json(422, { error: `Kwota zwrotu: od 0,01 zł do ${(order.total / 100).toFixed(2).replace('.', ',')} zł.` });
       const message = String(b.message ?? '').replace(/\r/g, '').trim().slice(0, 1000);
@@ -283,7 +283,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
       if (b.restock === true) {
         try { await sb.rpc('restore_order_stock', { p_order: order.id }); clearCatalogCache(); await sb.insert('order_events', { order_id: order.id, type: 'stock_restored', data: { by: admin } }, 'id'); }
-        catch (e) { console.error('Zwrot – stan magazynowy: ' + (e instanceof Error ? e.message : String(e))); warnings.push('Nie udało się przywrócić stanów magazynowych (czy uruchomiono 018_zwroty.sql?).'); }
+        catch (e) { console.error('Zwrot - stan magazynowy: ' + (e instanceof Error ? e.message : String(e))); warnings.push('Nie udało się przywrócić stanów magazynowych (czy uruchomiono 018_zwroty.sql?).'); }
       }
       if (b.notify !== false) {
         const method = full.payment_provider === BANK_PROVIDER ? 'przelewem na konto, z którego otrzymaliśmy wpłatę'
@@ -293,7 +293,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         try {
           await sendMail(env, {
             to: order.email,
-            subject: `Zwrot środków – zamówienie nr ${order.number} – Can-C`,
+            subject: `Zwrot środków - zamówienie nr ${order.number} - Can-C`,
             replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
             html: orderRefundedHtml({ site: await getSite(env), origin: new URL(request.url).origin, number: order.number, firstName, amount, total: order.total, method, note: message }),
             text: [
@@ -315,8 +315,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
           warnings.push('Nie udało się wysłać e-maila do klienta.');
         }
       }
-      if (full.payment_provider !== BANK_PROVIDER) warnings.unshift('Pamiętaj o zleceniu zwrotu w panelu Przelewy24 – zmiana statusu nie przelewa pieniędzy.');
-      else warnings.unshift('Pamiętaj o wykonaniu przelewu zwrotnego – zmiana statusu nie przelewa pieniędzy.');
+      if (full.payment_provider !== BANK_PROVIDER) warnings.unshift('Pamiętaj o zleceniu zwrotu w panelu Przelewy24 - zmiana statusu nie przelewa pieniędzy.');
+      else warnings.unshift('Pamiętaj o wykonaniu przelewu zwrotnego - zmiana statusu nie przelewa pieniędzy.');
       return json(200, { ok: true, warning: warnings.join(' ') });
     }
 

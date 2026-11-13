@@ -67,7 +67,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           <a class="ct__name" data-link></a>
           <span class="k" data-meta></span>
           <span class="ct__lead" data-lead hidden><span class="dot" aria-hidden="true"></span><span></span></span>
-          <span class="ct__out" data-out hidden>Chwilowo niedostępny – usuń z koszyka</span>
+          <span class="ct__out" data-out hidden>Chwilowo niedostępny - usuń z koszyka</span>
         </div>
         <div class="ct__qty">
           <button type="button" class="ct__qb" data-dec aria-label="Zmniejsz ilość"><Icon name="minus" size={18} /></button>
@@ -122,7 +122,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       lines.replaceChildren();
 
       let subtotal = 0, discount = 0, blocked = false;
-      // Rabaty z promocji – ten sam silnik co na serwerze (kwoty w groszach)
+      // Rabaty z promocji - ten sam silnik co na serwerze (kwoty w groszach)
       const isOut = (p: P) => p.price === null || p.avail === 'out_of_stock';
       const promo = applyPromotions(items.flatMap((i) => {
         const p = catalog.find((c) => c.slug === i.slug)!;
@@ -130,7 +130,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       }), promos);
       for (const item of items) {
         const p = catalog.find((c) => c.slug === item.slug)!;
-        // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy – serwer i tak by go odrzucił
+        // Niedostępny produkt (albo bez ceny) nie wchodzi do sumy - serwer i tak by go odrzucił
         const out = p.price === null || p.avail === 'out_of_stock';
         if (out) blocked = true;
         const base = out ? 0 : (p.price as number) * item.qty;
@@ -152,7 +152,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
           el.querySelector<HTMLButtonElement>('[data-inc]')!.disabled = true;
         }
         el.querySelector('[data-qty]')!.textContent = String(item.qty);
-        el.querySelector('[data-ltotal]')!.innerHTML = out ? '—' : `${pln.format(base - d)}${d ? `<s class="ct__lold">${pln.format(base)}</s>` : ''}`;
+        el.querySelector('[data-ltotal]')!.innerHTML = out ? '-' : `${pln.format(base - d)}${d ? `<s class="ct__lold">${pln.format(base)}</s>` : ''}`;
         el.querySelector('[data-dec]')!.addEventListener('click', () => {
           if (item.qty === 1 && p.price !== null) trackRemoveFromCart({ item_id: p.slug, item_name: p.name, price: p.price, quantity: 1, item_brand: 'Can-C' });
           setQty(p.slug, item.qty - 1);
@@ -195,7 +195,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         if (!missing.length || prods.some((x) => !x || isOut(x))) continue;
         offers.push({
           title: promoLabel(b),
-          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} – za zestaw zapłacisz ${b.type === 'percent' ? `${b.value}%` : describeDiscount('amount', b.value).slice(1)} mniej.`,
+          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} - za zestaw zapłacisz ${b.type === 'percent' ? `${b.value}%` : describeDiscount('amount', b.value).slice(1)} mniej.`,
           btn: missing.length === 1 ? 'Dodaj do koszyka' : 'Dodaj zestaw',
           apply: () => missing.forEach((it) => setQty(it.product_id, it.qty)),
         });

@@ -1,4 +1,4 @@
-// Kody rabatowe – sprawdzanie i wyliczanie rabatu zawsze po stronie serwera.
+// Kody rabatowe - sprawdzanie i wyliczanie rabatu zawsze po stronie serwera.
 import type { db as dbFn } from './supabase';
 
 type Sb = ReturnType<typeof dbFn>;
@@ -24,7 +24,7 @@ export async function checkCode(sb: Sb, rawCode: unknown, base: number, email: s
   if (c.max_uses !== null && c.used_count >= c.max_uses) return { ok: false, error: 'Limit użyć tego kodu został wyczerpany.' };
   if (base < c.min_total) return { ok: false, error: `Kod działa od ${(c.min_total / 100).toFixed(2).replace('.', ',')} zł.` };
 
-  // Kod przypisany do klienta albo jednorazowy na klienta – potrzebny e-mail
+  // Kod przypisany do klienta albo jednorazowy na klienta - potrzebny e-mail
   let customerId: string | null = null;
   if (c.customer_id || c.once_per_customer) {
     if (!email) return { ok: false, error: 'Podaj e-mail, aby użyć tego kodu.' };

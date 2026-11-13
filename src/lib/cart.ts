@@ -24,7 +24,7 @@ function write(items: CartItem[]) {
   try {
     localStorage.setItem(KEY, JSON.stringify(items));
   } catch {
-    /* tryb prywatny lub pełna pamięć – koszyk działa do odświeżenia strony */
+    /* tryb prywatny lub pełna pamięć - koszyk działa do odświeżenia strony */
   }
   window.dispatchEvent(new CustomEvent(EVENT, { detail: items }));
 }

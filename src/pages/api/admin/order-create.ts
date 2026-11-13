@@ -14,7 +14,7 @@ import { str, EMAIL_RE, POSTCODE_RE, LOCKER_RE, cleanPhone, validPhone, validNip
 export const prerender = false;
 
 // Zamówienie dodane ręcznie w panelu (telefon, e-mail, sprzedaż poza sklepem).
-// payment: 'paid' – opłacone poza sklepem (przelew, gotówka) | 'link' – wysyłamy klientowi link do płatności P24 | 'pending' – czeka na płatność
+// payment: 'paid' - opłacone poza sklepem (przelew, gotówka) | 'link' - wysyłamy klientowi link do płatności P24 | 'pending' - czeka na płatność
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   const admin = await requireAdmin(request, env);
@@ -97,17 +97,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
     } else if (payment === 'link') {
       const p24 = p24Config(env);
       paymentUrl = await registerTransaction(p24, {
-        sessionId: order.id, amount: total, description: `Zamówienie nr ${order.number} – can-c.pl`, email, client: name, phone,
+        sessionId: order.id, amount: total, description: `Zamówienie nr ${order.number} - can-c.pl`, email, client: name, phone,
         urlReturn: `${origin}/zamowienie/dziekujemy/?id=${order.id}`, urlStatus: `${origin}/api/p24/status`, timeLimit: 0,
       });
       await sb.insert('order_events', { order_id: order.id, type: 'p24_registered', data: { link: true } }, 'id');
       if (b.notify !== false) {
         const site = await getSite(env);
-        const items = priced.items.map((i) => `• ${i.name} × ${i.qty} – ${zl(i.total)}`).join('\n');
+        const items = priced.items.map((i) => `• ${i.name} × ${i.qty} - ${zl(i.total)}`).join('\n');
         await sendMail(env, {
           to: email,
           replyTo: env.CONTACT_TO?.split(',')[0]?.trim(),
-          subject: `Zamówienie nr ${order.number} – link do płatności – Can-C`,
+          subject: `Zamówienie nr ${order.number} - link do płatności - Can-C`,
           html: paymentLinkHtml({ site, origin, number: order.number, firstName, items: priced.items, extraDiscount, total, paymentUrl: paymentUrl! }),
           text: [
             `Dzień dobry ${firstName},`, '', 'przygotowaliśmy dla Ciebie zamówienie:', '', items,

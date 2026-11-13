@@ -1,5 +1,5 @@
 -- Krok 38: zwroty zamówień (status 'refunded' istnieje od 001_schema.sql).
--- Przywrócenie stanów magazynowych po zwrocie – odwrotność apply_order_stock(); wywoływana tylko z Workera (service_role).
+-- Przywrócenie stanów magazynowych po zwrocie - odwrotność apply_order_stock(); wywoływana tylko z Workera (service_role).
 
 create or replace function public.restore_order_stock(p_order uuid)
 returns void
@@ -22,6 +22,6 @@ $$;
 revoke execute on function public.restore_order_stock(uuid) from public, anon, authenticated;
 grant execute on function public.restore_order_stock(uuid) to service_role;
 
--- Kwota zwrotu (grosze) – do statystyk; pełny zwrot = total
+-- Kwota zwrotu (grosze) - do statystyk; pełny zwrot = total
 alter table public.orders add column if not exists refunded_amount int check (refunded_amount is null or refunded_amount >= 0);
 alter table public.orders add column if not exists refunded_at timestamptz;

@@ -3,7 +3,7 @@ import type { Env } from './env';
 import { db } from './supabase';
 import { saleActive, effectivePrice, availabilityOf, type DbProduct, type Availability } from './pricing';
 
-// Opinie testowe (source=test) widoczne tylko przy SHOW_TEST_REVIEWS=true – domyślnie ukryte
+// Opinie testowe (source=test) widoczne tylko przy SHOW_TEST_REVIEWS=true - domyślnie ukryte
 export const testReviewsFilter = (env: Env) => (env.SHOW_TEST_REVIEWS === 'true' ? '' : '&source=neq.test');
 
 export type Product = DbProduct & {
@@ -34,7 +34,7 @@ export const AVAIL_BADGE: Partial<Record<Availability, string>> = {
 
 // Termin realizacji jako pełne zdanie: tekst z produktu (wpisany w panelu) albo „Wysyłamy <czas wysyłki ze sklepu>.”
 export function leadTimeText(productLeadTime: string | null | undefined, shippingTime: string) {
-  const own = String(productLeadTime || '').trim().replace(/^[\s:;,.–—-]+/, '');
+  const own = String(productLeadTime || '').trim().replace(/^[\s:;,.\u2013\u2014-]+/, '');
   if (own) return own.charAt(0).toUpperCase() + own.slice(1);
   return `Wysyłamy ${shippingTime}.`;
 }

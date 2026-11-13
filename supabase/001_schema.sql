@@ -133,7 +133,7 @@ create table public.order_items (
 create index order_items_order_idx on public.order_items (order_id);
 
 -- ---------- Dziennik zdarzeń (płatności, zmiany statusu) ----------
--- Tu trafiają m.in. surowe powiadomienia z P24 – przydatne przy reklamacjach i księgowości.
+-- Tu trafiają m.in. surowe powiadomienia z P24 - przydatne przy reklamacjach i księgowości.
 create table public.order_events (
   id          bigint generated always as identity primary key,
   order_id    uuid not null references public.orders (id) on delete cascade,
@@ -179,7 +179,7 @@ create policy "pozycje własnych zamówień" on public.order_items
 -- =====================================================================
 -- Łączenie konta z historią zakupów
 -- Gdy klient POTWIERDZI e-mail (link z maila), jego konto zostaje połączone
--- z rekordem klienta o tym samym adresie – razem z zamówieniami z importu
+-- z rekordem klienta o tym samym adresie - razem z zamówieniami z importu
 -- i zakupami jako gość. Przed potwierdzeniem nikt nie zobaczy cudzych zamówień.
 -- =====================================================================
 create or replace function public.link_customer_to_user()

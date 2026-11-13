@@ -67,13 +67,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const page = key.split('.')[0] as PageKey;
   if (!PAGES.includes(page)) return json(400, { error: 'Nieprawidłowa strona.' });
 
-  // data to dowolny obiekt JSON – walidujemy tylko że to obiekt
+  // data to dowolny obiekt JSON - walidujemy tylko że to obiekt
   if (!b.data || typeof b.data !== 'object' || Array.isArray(b.data)) return json(400, { error: 'data musi być obiektem JSON.' });
 
   // Ochrona przed gigantami (maks. 100 kB na sekcję)
   if (JSON.stringify(b.data).length > 100_000) return json(413, { error: 'Sekcja jest za duża (maks. 100 kB).' });
 
-  // Sprawdź czy klucz istnieje (musi – nie tworzymy nowych kluczy z panelu)
+  // Sprawdź czy klucz istnieje (musi - nie tworzymy nowych kluczy z panelu)
   const sb = db(env);
   const [existing] = await sb.select<{ key: string; sort_order: number; section: string }>(
     `page_content?select=key,sort_order,section&key=eq.${encodeURIComponent(key)}`,

@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       getSite(env),
       sb.select<{ name: string; amount: number }>(`order_promotions?select=name,amount&order_id=eq.${id}&order=created_at.asc`).catch(() => []),
     ]);
-    // Zakup wysłany do GA4 z serwera – strona podziękowania nie wysyła go drugi raz
+    // Zakup wysłany do GA4 z serwera - strona podziękowania nie wysyła go drugi raz
     const gaServer = (await sb.select(`order_events?select=id&order_id=eq.${id}&type=eq.ga4_purchase&limit=1`).catch(() => [])).length > 0;
 
     // Termin wysyłki: jeden dla całego zamówienia albo przy każdym produkcie, gdy się różnią
@@ -68,7 +68,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
         const methodId = events.map((e) => Number(e.data?.methodId)).find((n) => n > 0);
         if (methodId) method = await paymentMethodName(p24Config(env), methodId);
       } catch (e) {
-        console.error('Status zamówienia – metoda płatności: ' + (e instanceof Error ? e.message : String(e)));
+        console.error('Status zamówienia - metoda płatności: ' + (e instanceof Error ? e.message : String(e)));
       }
     }
 

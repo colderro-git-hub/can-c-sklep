@@ -1,5 +1,5 @@
 /* ================================================================
-   Can-C — Global CSS
+   Can-C - Global CSS
    Design system: Laluna (Poppins, monochromatyczna paleta, brak cieni)
    ================================================================ */
 
@@ -17,7 +17,7 @@
   --accent:      #169089;   /* akcent: ikony, strzałki, znaczniki list (min. 3:1) */
   --accent-text: #107571;   /* akcent w tekście: linki po najechaniu (min. 4,5:1 także na pasach) */
   --accent-soft: #D4EEEB;   /* tło etykiet, wyróżnień i paneli informacyjnych */
-  --peach:   var(--accent-soft);   /* dawna nazwa roli „brzoskwiniowej” – teraz tło akcentu */
+  --peach:   var(--accent-soft);   /* dawna nazwa roli „brzoskwiniowej” - teraz tło akcentu */
   --star:    #D8BE95;   /* gwiazdki ocen */
   --primary: #4E5A7C;   /* przyciski, koszyk, ciemne karty, stopka */
   --primary-hover: #3F4A68;
@@ -108,7 +108,7 @@
   color-scheme: light;
 }
 
-/* Tryb ciemny — tylko panel admina i elementy które mają data-theme */
+/* Tryb ciemny - tylko panel admina i elementy które mają data-theme */
 [data-theme="dark"] {
   --accent: #3CC2B9;
   --accent-text: #5ED3CB;
@@ -485,7 +485,7 @@ select.input {
 .total-row > :last-child { font-weight: 500; }
 
 /* Listy z punktatorami: turkusowa kropka (akcent). .checks zostaje jako nazwa dla zgodności.
-   Kropka pozycjonowana absolutnie (nie flex) – pogrubienia i linki w punkcie nie gubią spacji. */
+   Kropka pozycjonowana absolutnie (nie flex) - pogrubienia i linki w punkcie nie gubią spacji. */
 .checks, .dots { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 24px; font-weight: 300; }
 .checks li, .dots li { position: relative; padding-left: 22px; }
 .checks li::before, .dots li::before {
@@ -595,7 +595,7 @@ a:not(.btn):not(.chip):not(.hd__cart):hover { text-decoration-color: var(--accen
     --sp-5:    30px;
     --sp-6:    24px;
   }
-  .site-nav { display: none; } /* na mobilnych – hamburger w Header.astro */
+  .site-nav { display: none; } /* na mobilnych - hamburger w Header.astro */
 }
 @media (max-width: 600px) {
   :root { --page-px: 20px; }

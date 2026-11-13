@@ -4,7 +4,7 @@ import { db } from './supabase';
 
 export type Redirect = { id: string; from_path: string; to_url: string; code: number };
 
-// Klucz porównania: małe litery, odkodowane znaki, bez ukośnika na końcu (poza „/”), parametry – dokładnie jak podane
+// Klucz porównania: małe litery, odkodowane znaki, bez ukośnika na końcu (poza „/”), parametry - dokładnie jak podane
 export function normPath(pathWithQuery: string): string {
   let [path, query = ''] = pathWithQuery.split(/\?(.*)/s);
   try { path = decodeURIComponent(path); } catch { /* zostaje jak jest */ }
@@ -21,7 +21,7 @@ export async function loadRedirects(env: Env): Promise<Map<string, Redirect>> {
     const rows = await db(env).select<Redirect>('redirects?select=id,from_path,to_url,code&limit=10000');
     cache = { at: Date.now(), map: new Map(rows.map((r) => [normPath(r.from_path), r])) };
   } catch (e) {
-    // Tabela jeszcze nie istnieje (przed migracją 017) albo baza niedostępna – sklep działa bez przekierowań
+    // Tabela jeszcze nie istnieje (przed migracją 017) albo baza niedostępna - sklep działa bez przekierowań
     console.error('Przekierowania: ' + (e instanceof Error ? e.message : String(e)));
     cache = { at: Date.now(), map: new Map() };
   }
@@ -48,7 +48,7 @@ export function targetUrl(to: string, search: string, keepQuery: boolean): strin
   return `${base}${search}${hash ? '#' + hash : ''}`;
 }
 
-// Skanery i automaty (nie ma czego przekierowywać – nie zaśmiecamy dziennika)
+// Skanery i automaty (nie ma czego przekierowywać - nie zaśmiecamy dziennika)
 const PROBE = /(\.(php\d?|aspx?|jsp|cgi|env|ini|sql|bak|old|swp|log|git|ds_store|yml|yaml|toml|config)$)|^\/(wp-admin|wp-login|wp-includes|wp-json|xmlrpc|cgi-bin|phpmyadmin|pma|vendor|\.git|\.env|\.aws|\.vscode|autodiscover|actuator|boaform|owa|ecp)(\/|$)|^\/(apple-touch-icon[^/]*|browserconfig\.xml|ads\.txt|app-ads\.txt)$/i;
 export const isProbe = (path: string) => PROBE.test(path);
 

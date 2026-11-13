@@ -12,7 +12,7 @@ type Sb = ReturnType<typeof dbFn>;
 // Treść zgody pokazywana przy formularzu i zapisywana w dzienniku (dowód, na co klient się zgodził)
 export const consentText = (company: string) =>
   `Wyrażam zgodę na otrzymywanie od ${company} informacji handlowych (newslettera, promocji i kodów rabatowych) na podany adres e-mail. ` +
-  'Zgodę mogę wycofać w każdej chwili – link „wypisz się” jest w każdej wiadomości.';
+  'Zgodę mogę wycofać w każdej chwili - link „wypisz się” jest w każdej wiadomości.';
 
 export const normEmail = (raw: unknown) => String(raw ?? '').trim().toLowerCase().slice(0, 200);
 
@@ -34,7 +34,7 @@ export async function logConsent(sb: Sb, e: { email: string; customer_id?: strin
   }
 }
 
-// Zapis zgody na kliencie: istniejący klient dostaje zgodę, nowy adres – wiersz klienta ze źródłem „newsletter”
+// Zapis zgody na kliencie: istniejący klient dostaje zgodę, nowy adres - wiersz klienta ze źródłem „newsletter”
 export async function grantConsent(sb: Sb, email: string, source: string): Promise<string> {
   const now = new Date().toISOString();
   const [c] = await sb.select<{ id: string }>(`customers?select=id&email=eq.${encodeURIComponent(email)}`);
@@ -66,7 +66,7 @@ export function newsletterConfirmHtml(o: { site: Site; origin: string; url: stri
       h1('Potwierdź zapis na newsletter'),
       p('Dziękujemy za zapis! Kliknij przycisk, aby potwierdzić adres e-mail i zgodę na otrzymywanie informacji o promocjach i nowościach.'),
       button(o.url, 'Potwierdzam zapis'),
-      p(`Link jest ważny przez ${CONFIRM_DAYS} dni. Jeśli to nie Ty zapisałeś ten adres, zignoruj wiadomość – bez potwierdzenia nie wyślemy żadnego newslettera.`, { muted: true, size: 14 }),
+      p(`Link jest ważny przez ${CONFIRM_DAYS} dni. Jeśli to nie Ty zapisałeś ten adres, zignoruj wiadomość - bez potwierdzenia nie wyślemy żadnego newslettera.`, { muted: true, size: 14 }),
     ].join(''),
   });
 }
@@ -75,7 +75,7 @@ export function newsletterConfirmHtml(o: { site: Site; origin: string; url: stri
 export const AUDIENCES: Record<string, string> = {
   all: 'Wszyscy ze zgodą marketingową',
   buyers: 'Klienci, którzy kupili (ze zgodą)',
-  no_orders: 'Bez zamówień – tylko zapisani na newsletter (ze zgodą)',
+  no_orders: 'Bez zamówień - tylko zapisani na newsletter (ze zgodą)',
   inactive_90: 'Bez zakupu od 90 dni (ze zgodą)',
 };
 export function audiencePath(audience: string) {
@@ -194,8 +194,8 @@ export async function prepareCampaign(env: Env, site: Site, origin: string, c: C
         parts.push(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;"><tr><td>${b.href ? `<a href="${esc(link(b.href))}">${img}</a>` : img}</td></tr></table>`);
       }
       if (b.type === 'button') { parts.push(button(link(b.url), b.label)); textParts.push(`${b.label}: ${link(b.url)}`); }
-      if (b.type === 'divider') { parts.push(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 26px;"><tr><td style="border-top:1px solid ${LINE};font-size:0;line-height:0;">&nbsp;</td></tr></table>`); textParts.push('—'); }
-      if (b.type === 'code') { parts.push(codeBox(b.code, b.caption || 'Wpisz kod przy zamówieniu')); textParts.push(`Kod: ${b.code}${b.caption ? ` – ${b.caption}` : ''}`); }
+      if (b.type === 'divider') { parts.push(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:6px 0 26px;"><tr><td style="border-top:1px solid ${LINE};font-size:0;line-height:0;">&nbsp;</td></tr></table>`); textParts.push('-'); }
+      if (b.type === 'code') { parts.push(codeBox(b.code, b.caption || 'Wpisz kod przy zamówieniu')); textParts.push(`Kod: ${b.code}${b.caption ? ` - ${b.caption}` : ''}`); }
       if (b.type === 'products') {
         const list = b.ids.map((id) => cards.get(id)).filter(Boolean) as ProductCard[];
         parts.push(`<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px;">${list.map((x) => {
@@ -208,14 +208,14 @@ export async function prepareCampaign(env: Env, site: Site, origin: string, c: C
               <a href="${esc(href)}" style="display:inline-block;margin-top:8px;font-size:14px;color:${ACCENT_TEXT};">Zobacz produkt →</a>
             </td></tr></table></td></tr>`;
         }).join('')}</table>`);
-        list.forEach((x) => textParts.push(`${x.name} – ${x.price}: ${link(`${origin}/produkt/${x.id}/`)}`));
+        list.forEach((x) => textParts.push(`${x.name} - ${x.price}: ${link(`${origin}/produkt/${x.id}/`)}`));
       }
     }
     const html = layout({
       site, origin, preheader: c.preheader || c.subject, body: parts.join(''),
       unsubscribe: r.unsubscribe, reason: 'Otrzymujesz tę wiadomość, bo wyraziłeś zgodę na informacje handlowe od Can-C.',
     });
-    const text = [...textParts, '', '—', `${site.company} · ${site.email}`, r.unsubscribe ? `Wypisz się: ${r.unsubscribe}` : ''].join('\n\n').replace(/\n{3,}/g, '\n\n');
+    const text = [...textParts, '', '-', `${site.company} · ${site.email}`, r.unsubscribe ? `Wypisz się: ${r.unsubscribe}` : ''].join('\n\n').replace(/\n{3,}/g, '\n\n');
     return { html, text };
   };
 }

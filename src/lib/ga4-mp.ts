@@ -1,4 +1,4 @@
-// GA4 Measurement Protocol – zdarzenia wysyłane z serwera (tu: zwrot z panelu admina, gdzie nie ma GTM).
+// GA4 Measurement Protocol - zdarzenia wysyłane z serwera (tu: zwrot z panelu admina, gdzie nie ma GTM).
 // Wymaga sekretów Workera: GA4_MEASUREMENT_ID (G-XXXXXXX) i GA4_API_SECRET
 // (GA4 → Administracja → Strumienie danych → strumień www → Klucze tajne interfejsu Measurement Protocol API).
 import type { Env } from './env';
@@ -33,7 +33,7 @@ export const ga4MpConfigured = (env: Env) => Boolean(env.GA4_MEASUREMENT_ID && e
 // Zwrot częściowy wysyłamy z kwotą bez listy produktów (panel nie rozbija zwrotu na pozycje).
 export async function sendGa4Refund(env: Env, o: { id: string; amount: number; attribution?: GaIds | null }): Promise<{ ok: boolean; error?: string }> {
   if (!ga4MpConfigured(env)) return { ok: false, error: 'brak GA4_MEASUREMENT_ID / GA4_API_SECRET' };
-  // Bez identyfikatora klienta (brak zgody, zamówienie ręczne, import) – losowy; GA4 łączy zwrot z zakupem po transaction_id
+  // Bez identyfikatora klienta (brak zgody, zamówienie ręczne, import) - losowy; GA4 łączy zwrot z zakupem po transaction_id
   const clientId = o.attribution?.ga_client_id || `${Math.floor(Math.random() * 2 ** 31)}.${Math.floor(Date.now() / 1000)}`;
   const body = {
     client_id: clientId,
@@ -52,14 +52,14 @@ export async function sendGa4Refund(env: Env, o: { id: string; amount: number; a
   const url = `https://www.google-analytics.com/mp/collect?measurement_id=${encodeURIComponent(env.GA4_MEASUREMENT_ID!)}&api_secret=${encodeURIComponent(env.GA4_API_SECRET!)}`;
   try {
     const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    // Measurement Protocol zwraca 2xx także przy błędnych danych – poprawność sprawdza się w DebugView / /debug/mp/collect
+    // Measurement Protocol zwraca 2xx także przy błędnych danych - poprawność sprawdza się w DebugView / /debug/mp/collect
     return res.ok ? { ok: true } : { ok: false, error: `HTTP ${res.status}` };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
   }
 }
 
-// Purchase z serwera – dla zamówień, przy których przeglądarka nie wyśle zdarzenia: przelew tradycyjny
+// Purchase z serwera - dla zamówień, przy których przeglądarka nie wyśle zdarzenia: przelew tradycyjny
 // (opłacany po wyjściu ze strony), zamówienia z panelu i płatności potwierdzone ręcznie.
 // GA4_SERVER_PURCHASE=all → wysyłaj dla wszystkich (GA4 scala zakupy o tym samym transaction_id).
 export function shouldSendServerPurchase(env: Env, o: { source?: string | null; payment_provider?: string | null }, byAdmin: boolean) {
@@ -75,7 +75,7 @@ export async function sendGa4Purchase(env: Env, o: {
   if (!ga4MpConfigured(env)) return { ok: false, error: 'brak GA4_MEASUREMENT_ID / GA4_API_SECRET' };
   const total = o.total / 100, shipping = (o.shipping_cost || 0) / 100;
   const productGross = total - shipping;
-  const tax = Math.round((productGross - productGross / 1.23) * 100) / 100; // VAT 23% – jak na stronie podziękowania
+  const tax = Math.round((productGross - productGross / 1.23) * 100) / 100; // VAT 23% - jak na stronie podziękowania
   const clientId = o.attribution?.ga_client_id || `${Math.floor(Math.random() * 2 ** 31)}.${Math.floor(Date.now() / 1000)}`;
   const body = {
     client_id: clientId,

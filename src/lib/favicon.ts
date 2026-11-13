@@ -1,5 +1,5 @@
 // Favicon z panelu (Ustawienia sklepu → Favicon). Plik leży w Supabase Storage, a strona zawsze wskazuje stałe adresy
-// /favicon/light, /favicon/dark, /favicon/apple – dzięki temu działa też na stronach statycznych (koszyk, zamówienie, konto).
+// /favicon/light, /favicon/dark, /favicon/apple - dzięki temu działa też na stronach statycznych (koszyk, zamówienie, konto).
 import type { Env } from './env';
 import { getSite } from './site-settings';
 

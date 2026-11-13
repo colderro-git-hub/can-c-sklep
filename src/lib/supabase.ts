@@ -1,4 +1,4 @@
-// Minimalny klient Supabase (PostgREST) na fetch – bez dodatkowych bibliotek.
+// Minimalny klient Supabase (PostgREST) na fetch - bez dodatkowych bibliotek.
 // Używa klucza secret, więc działa WYŁĄCZNIE po stronie serwera (Worker).
 import type { Env } from './env';
 

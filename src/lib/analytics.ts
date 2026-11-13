@@ -1,6 +1,6 @@
-// Warstwa analityczna – zdarzenia GA4 e-commerce wysyłane przez dataLayer.
+// Warstwa analityczna - zdarzenia GA4 e-commerce wysyłane przez dataLayer.
 // Specyfikacja: GA4 Enhanced Ecommerce + zdarzenia formularzy i konta.
-// WAŻNE: do dataLayer nie trafiają wartości wpisywane przez użytkownika –
+// WAŻNE: do dataLayer nie trafiają wartości wpisywane przez użytkownika -
 //        tylko nazwy formularzy, pól i typy interakcji.
 
 declare global { interface Window { dataLayer: unknown[] } }
@@ -28,7 +28,7 @@ export function calcTax(grossTotal: number, vatRate: number): number {
 // Ustaw user_id dla zalogowanego klienta (wywołaj po zalogowaniu, clearUserData po wylogowaniu)
 export function setUserId(userId: string) {
   dl().push({ event: 'user_identified', user_id: userId });
-  // gtag config update – GTM powinien przesłać to do GA4 jako set user_id
+  // gtag config update - GTM powinien przesłać to do GA4 jako set user_id
   dl().push({ event: 'gtag.config', config: { user_id: userId } });
 }
 export function clearUserData() {

@@ -21,7 +21,7 @@ export const GET: APIRoute = async ({ request, locals }) => {
   }
 };
 
-// { action: 'save', ...ustawienia } | { action: 'run' } – wysłanie teraz
+// { action: 'save', ...ustawienia } | { action: 'run' } - wysłanie teraz
 export const POST: APIRoute = async ({ request, locals }) => {
   const env = await getEnv(locals);
   const admin = await requireAdmin(request, env);
@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
   try {
     if (b.action === 'run') {
-      if (!env.CRON_SECRET) return json(422, { error: 'Brak sekretu CRON_SECRET – potrzebny do linków „wypisz się”.' });
+      if (!env.CRON_SECRET) return json(422, { error: 'Brak sekretu CRON_SECRET - potrzebny do linków „wypisz się”.' });
       const r = await runTreatmentReminders(env, new URL(request.url).origin, { force: true });
       console.log(`Admin ${admin} uruchomił przypomnienia ręcznie`);
       return json(200, r);

@@ -29,7 +29,7 @@ alter table public.products
   add column if not exists low_stock_alert     integer not null default 5,
   add column if not exists subtitle            text;                                      -- np. „2 × 5 ml”
 
--- Dotychczasowe produkty mają stan 0 – żeby nie zablokować sprzedaży, dostępność ustawiamy ręcznie na „dostępny”.
+-- Dotychczasowe produkty mają stan 0 - żeby nie zablokować sprzedaży, dostępność ustawiamy ręcznie na „dostępny”.
 -- Po wpisaniu prawdziwych stanów w panelu przełącz dostępność na „według stanu magazynowego”.
 update public.products set availability = 'in_stock' where availability is null and stock = 0;
 
@@ -126,7 +126,7 @@ create index if not exists reviews_product_idx on public.reviews (product_id, st
 alter table public.reviews enable row level security;
 alter table public.price_history enable row level security;
 
--- Zatwierdzone opinie są publiczne (bez e-maila – czytamy je przez serwer i tak, ale na wszelki wypadek)
+-- Zatwierdzone opinie są publiczne (bez e-maila - czytamy je przez serwer i tak, ale na wszelki wypadek)
 drop policy if exists "opinie zatwierdzone" on public.reviews;
 create policy "opinie zatwierdzone" on public.reviews for select to anon, authenticated using (status = 'approved');
 revoke select (email, customer_id) on public.reviews from anon, authenticated;

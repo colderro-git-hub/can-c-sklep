@@ -17,7 +17,7 @@ const clean = (v: unknown, max: number) => String(v ?? '').replace(/[\r\n\t]+/g,
 
 async function readSeo(env: Parameters<typeof db>[0]): Promise<SeoSettings> {
   const [row] = await db(env).select<{ value: Partial<SeoSettings> }>('settings?select=value&key=eq.seo');
-  // Cały wpis (także działy, których ta akcja nie zmienia) – zapis jednego działu nie kasuje pozostałych
+  // Cały wpis (także działy, których ta akcja nie zmienia) - zapis jednego działu nie kasuje pozostałych
   const v: any = row?.value ?? {};
   return { ...v, pages: v.pages ?? {}, share: v.share ?? {}, org: v.org ?? {}, ai: v.ai ?? {}, llms: v.llms ?? {}, verify: v.verify ?? {}, indexnow: v.indexnow ?? {} };
 }

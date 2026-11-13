@@ -22,7 +22,7 @@ export const products: Product[] = [
     slug: 'krople-can-c', tag: 'KROPLE', name: 'Krople Can-C 2 × 5 ml', price: 369, bundles: true, size: '2 × 5 ml',
     desc: 'Oryginalne krople z N-acetylokarnozyną. Miesięczna kuracja.',
     about: 'Can-C to pierwsze krople do oczu zawierające N-acetylokarnozynę (NAC). Produkt musiał spełnić kryteria Innovative Vision Products (IVP); na oryginalnym opakowaniu znajdziesz ich oznaczenie. [Opis do weryfikacji pod kątem dopuszczalnych oświadczeń zdrowotnych]',
-    usage: '[Dawkowanie i sposób aplikacji – przenieść ze strony /stosowanie, zgodnie z ulotką producenta]',
+    usage: '[Dawkowanie i sposób aplikacji - przenieść ze strony /stosowanie, zgodnie z ulotką producenta]',
     ingredients: '[Pełny skład z ulotki producenta]',
     related: 'kapsulki-can-c-60',
   },
@@ -30,7 +30,7 @@ export const products: Product[] = [
     slug: 'krople-can-c-k9', tag: 'DLA PSA', name: 'Krople Can-C K9', price: null, bundles: true, size: '[pojemność]',
     desc: 'Wersja kropli przeznaczona dla psów.',
     about: 'Krople z N-acetylokarnozyną w wersji dla psów. Kurację warto skonsultować z lekarzem weterynarii. [Opis do uzupełnienia]',
-    usage: '[Dawkowanie dla psów – zgodnie z ulotką producenta]',
+    usage: '[Dawkowanie dla psów - zgodnie z ulotką producenta]',
     ingredients: '[Pełny skład z ulotki producenta]',
   },
   {
@@ -68,7 +68,7 @@ export const reviews = [
 
 export const faqs = faqItems.filter((f) => f.home).map(({ q, a }) => ({ q, a: a.replace('{shippingTime}', 'w ciągu 1 dnia roboczego') }));
 
-// Rabat zależy od liczby sztuk – ta sama funkcja posłuży później do liczenia ceny po stronie serwera
+// Rabat zależy od liczby sztuk - ta sama funkcja posłuży później do liczenia ceny po stronie serwera
 export const discountFor = (qty: number, product: Product) =>
   !product.bundles ? 0 : qty >= 4 ? 0.10 : qty >= 2 ? 0.08 : 0;
 

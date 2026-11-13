@@ -20,7 +20,7 @@ const word = (n: number) => (n === 1 ? 'opakowanie' : n < 5 ? 'opakowania' : 'op
 const promos = await getPromotions(env).catch(() => []);
 const plan = [
   { label: '1 miesiąc', qty: 1, set: 1 }, { label: '2 miesiące', qty: 2, set: 2 },
-  { label: '3–4 miesiące', qty: 4, set: 4 }, { label: '6 miesięcy', qty: 6, set: 4 },
+  { label: '3-4 miesiące', qty: 4, set: 4 }, { label: '6 miesięcy', qty: 6, set: 4 },
 ].map((p) => {
   const regular = unit * p.qty;
   const saved = applyPromotions([{ product_id: 'krople-can-c', qty: p.qty, unit_price: unit }], promos).total;
@@ -40,7 +40,7 @@ const tocAll = [
 const rows = await getPageContent(env, 'how_to_use').catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
-const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1–2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });
+const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1-2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });
 const opening = at('how_to_use.opening', { h2: 'Otwieranie fiolki', lead: 'Fiolka jest fabrycznie zamknięta.', steps: ['Zdejmij dolny pierścień.', 'Dokręć nakrętkę.', 'Odkręć nakrętkę.', 'Naciśnij fiolkę.'], step_images: [null, null, null, null] as (string|null)[] });
 const applying = at('how_to_use.applying', { h2: 'Zakraplanie', lead: 'Najważniejsze jest 60 sekund z zamkniętym okiem. Nawet jedno mrugnięcie wypycha większość kropli.', steps: [{ title: 'Odchyl głowę do tyłu', desc: 'Patrz w górę.' }, { title: 'Zakroplij jedną kroplę', desc: 'Nie dotykaj oka końcówką.' }, { title: 'Powoli zamknij oko', desc: 'Bez zaciskania powiek.' }, { title: 'Odczekaj 60 sekund', desc: 'Nie mrugaj.' }, { title: 'Powtórz przy drugiej kropli', desc: 'Jeśli stosujesz dwie krople.' }], image_url: null as string|null, image_alt: 'Zakraplanie kropli Can-C' });
 // Spis treści bez sekcji wyłączonych w panelu

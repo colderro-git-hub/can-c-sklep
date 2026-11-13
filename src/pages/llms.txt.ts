@@ -1,4 +1,4 @@
-// /llms.txt – opis sklepu dla modeli językowych (generowany; ustawienia w panelu: SEO → Roboty i AI)
+// /llms.txt - opis sklepu dla modeli językowych (generowany; ustawienia w panelu: SEO → Roboty i AI)
 import type { APIRoute } from 'astro';
 import { getEnv } from '../lib/env';
 import { buildLlms } from '../lib/llms';

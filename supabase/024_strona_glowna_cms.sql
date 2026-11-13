@@ -22,11 +22,11 @@ insert into public.page_content (key, page, section, sort_order, data) values
 }'::jsonb),
 ('home.newsletter', 'home', 'newsletter', 60, '{
   "h2": "Rabaty i nowości | na Twój e-mail",
-  "text": "Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem."
+  "text": "Zapisz się na newsletter - jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem."
 }'::jsonb)
 on conflict (key) do nothing;
 
--- Hero: H1 w dwóch liniach (znak |) i boksy pod banerem – tylko gdy pól jeszcze nie ma
+-- Hero: H1 w dwóch liniach (znak |) i boksy pod banerem - tylko gdy pól jeszcze nie ma
 update public.page_content
    set data = (data - 'trust') || jsonb_build_object(
          'h1', case when coalesce(data->>'h1', '') in ('', 'Krople do oczu Can-C z N-acetylokarnozyną')

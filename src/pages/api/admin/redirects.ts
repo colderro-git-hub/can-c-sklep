@@ -30,7 +30,7 @@ function parseTo(raw: string): string | { error: string } {
   if (!v) return { error: 'Podaj nowy adres.' };
   if (v.startsWith('/')) return v.length <= 1000 ? v : { error: 'Nowy adres jest za długi.' };
   try { const u = new URL(v); if (u.protocol === 'https:' || u.protocol === 'http:') return u.href; } catch { /* niżej */ }
-  return { error: `Nowy adres musi zaczynać się od „/” (strona sklepu) albo https:// – „${raw}”.` };
+  return { error: `Nowy adres musi zaczynać się od „/” (strona sklepu) albo https:// - „${raw}”.` };
 }
 const internalPath = (to: string) => { try { const u = new URL(to, 'https://can-c.pl'); return /^(www\.)?can-c\.pl$/.test(u.hostname) ? u.pathname + u.search : null; } catch { return null; } };
 
@@ -74,7 +74,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const from = parseFrom(fromRaw); if (typeof from !== 'string') return from;
       let to = parseTo(toRaw); if (typeof to !== 'string') return to;
       if (![301, 302, 307, 308].includes(code)) return { error: 'Nieprawidłowy typ przekierowania.' };
-      if (live.has(normPath(from))) return { error: `${from} to działająca strona sklepu – przekierowanie by ją zasłoniło.` };
+      if (live.has(normPath(from))) return { error: `${from} to działająca strona sklepu - przekierowanie by ją zasłoniło.` };
       let note = '';
       const inner = internalPath(to);
       if (inner !== null) {
@@ -96,7 +96,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       const row = { from_path: r.from, to_url: r.to, code: r.code, note: String(b.note || '').slice(0, 200) || null, updated_at: new Date().toISOString() };
       if (b.id) await sb.update(`redirects?id=eq.${enc(b.id)}`, row);
       else await sb.insert('redirects', { ...row, created_by: admin });
-      // Adres obsłużony – znika z dziennika 404 (z ukośnikiem i bez)
+      // Adres obsłużony - znika z dziennika 404 (z ukośnikiem i bez)
       const p = r.from.replace(/\/+$/, '');
       await sb.remove(`not_found_log?path=in.(${[p, p + '/'].map((x) => `"${x.replace(/"/g, '')}"`).join(',')})`).catch(() => {});
       clearRedirectsCache();
@@ -109,7 +109,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return json(200, { ok: true });
     }
 
-    // Import listy: jedna para w linii – „stary nowy”, „stary,nowy”, „stary;nowy” lub ze strzałką; opcjonalnie kod 301/302
+    // Import listy: jedna para w linii - „stary nowy”, „stary,nowy”, „stary;nowy” lub ze strzałką; opcjonalnie kod 301/302
     if (b.action === 'import') {
       const lines = String(b.text || '').replace(/\r/g, '').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#'));
       if (lines.length > 2000) return json(422, { error: 'Maksymalnie 2000 linii na raz.' });

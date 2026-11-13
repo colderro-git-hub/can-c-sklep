@@ -22,9 +22,9 @@ if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono'
 const { product: p, reviews, related } = data;
 const site = await getSite(env);
 
-const pln = (g: number | null) => (g === null ? '—' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+const pln = (g: number | null) => (g === null ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
 const buyable = p.current !== null && p.avail !== 'out_of_stock';
-// Termin realizacji: zdanie z produktu, a gdy puste – czas wysyłki z ustawień sklepu
+// Termin realizacji: zdanie z produktu, a gdy puste - czas wysyłki z ustawień sklepu
 const leadTime = p.lead_time ? leadTimeText(p.lead_time, site.shippingTime) : site.shippingTime;
 // Opcje ilości i ceny z promocji ilościowych (panel: Kody rabatowe → Promocje)
 const promos = await getPromotions(env);
@@ -100,7 +100,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         <div class="notch pr-main">
           {images.length
             ? <img src={images[0].url} alt={images[0].alt || p.name} width="800" height="800" data-main fetchpriority="high" />
-            : <span class="notch__ph">[Zdjęcie produktu – dodaj w panelu]</span>}
+            : <span class="notch__ph">[Zdjęcie produktu - dodaj w panelu]</span>}
           {p.tags[0] && <span class="pr-flag">{p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1)}</span>}
           <AvailBadge avail={p.avail} />
           {images.length > 0 && (
@@ -417,7 +417,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || 'Nie udało się wysłać opinii.');
       msg.className = 'msg msg--ok';
-      msg.textContent = `Dziękujemy! Opinia pojawi się po moderacji.${d.verified ? ' Potwierdziliśmy zakup – dostanie oznaczenie „Zweryfikowany zakup”.' : ''}`;
+      msg.textContent = `Dziękujemy! Opinia pojawi się po moderacji.${d.verified ? ' Potwierdziliśmy zakup - dostanie oznaczenie „Zweryfikowany zakup”.' : ''}`;
       form.reset();
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
     (window as any).turnstile?.reset();
@@ -434,7 +434,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       const res = await fetch('/api/powiadom', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: root?.dataset.product, email: fd.get('email'), website: fd.get('website'), token: fd.get('cf-turnstile-response') }) });
       const d = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(d.error || 'Nie udało się zapisać.');
-      msg.className = 'msg msg--ok'; msg.textContent = 'Gotowe – napiszemy, gdy produkt wróci.'; notify.reset();
+      msg.className = 'msg msg--ok'; msg.textContent = 'Gotowe - napiszemy, gdy produkt wróci.'; notify.reset();
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
     (window as any).turnstile?.reset();
   });
@@ -526,7 +526,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-also { width: 436px; background: var(--surface); border-radius: var(--r-lg); padding: 24px; display: flex; flex-direction: column; gap: 24px; position: sticky; top: 14px; }
   .pr-also__t { font-size: 18px; line-height: 27px; font-weight: 400; }
   .pr-also__i { display: flex; flex-direction: column; gap: 14px; text-decoration: none; color: var(--ink); }
-  .pr-also__img { position: relative; aspect-ratio: 1 / 1; /* kwadratowy kadr – produkt widoczny w całości */ border-radius: var(--r-md); background: var(--image); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .pr-also__img { position: relative; aspect-ratio: 1 / 1; /* kwadratowy kadr - produkt widoczny w całości */ border-radius: var(--r-md); background: var(--image); display: flex; align-items: center; justify-content: center; overflow: hidden; }
   .pr-also__img img { width: 100%; height: 100%; object-fit: cover; }
   .pr-also__n { font-size: 22px; line-height: 30px; font-weight: 500; }
   .pr-also__f { display: flex; align-items: center; justify-content: space-between; font-size: 18px; line-height: 27px; }

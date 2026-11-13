@@ -16,7 +16,7 @@ import NewsletterForm from '../components/NewsletterForm.astro';
 import ProductCard from '../components/ProductCard.astro';
 import FaqItem from '../components/FaqItem.astro';
 
-// Strona główna z aktualnymi produktami i treściami z bazy; przy awarii bazy – dane zapasowe z kodu
+// Strona główna z aktualnymi produktami i treściami z bazy; przy awarii bazy - dane zapasowe z kodu
 export const prerender = false;
 type Card = { slug: string; tag: string; tags: string[]; avail: Availability; name: string; desc: string; price: number | null; regular: number | null; onSale: boolean; image?: string; alt?: string; rating: number; reviews: number };
 let products: Card[];
@@ -28,7 +28,7 @@ try {
     image: p.images[0]?.url, alt: p.images[0]?.alt || p.name, rating: p.rating.avg, reviews: p.rating.count,
   }));
 } catch (e) {
-  console.error('Strona główna – katalog: ' + (e instanceof Error ? e.message : String(e)));
+  console.error('Strona główna - katalog: ' + (e instanceof Error ? e.message : String(e)));
   products = fallback.map((p) => ({ slug: p.slug, tag: p.tag, tags: [], avail: 'in_stock' as Availability, name: p.name, desc: p.desc, price: p.price, regular: p.price, onSale: false, image: p.image, alt: p.name, rating: 0, reviews: 0 }));
 }
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
@@ -78,7 +78,7 @@ const bundlesCms = at('home.bundles', {
 const faqHead = at('home.faq', { h2: 'Najczęstsze | pytania', link_label: 'Wszystkie pytania', link_href: '/faq/' });
 const newsletterCms = at('home.newsletter', {
   h2: 'Rabaty i nowości | na Twój e-mail',
-  text: 'Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.',
+  text: 'Zapisz się na newsletter - jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.',
 });
 const why = at('home.why', {
   h2: 'Dlaczego krople Can-C', lead: '', link_label: 'Przeczytaj, jak stosować', link_href: '/stosowanie/',
@@ -86,7 +86,7 @@ const why = at('home.why', {
 });
 const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[], cta_text: 'Kupiłeś Can-C? Podziel się wrażeniami.', cta_label: 'Napisz opinię', cta_href: '/produkt/krople-can-c/#opinia' });
 
-// 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie – teksty z CMS
+// 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie - teksty z CMS
 type HomeReview = { quote: string; author: string; slug?: string; productName?: string; image?: string };
 const shorten = (t: string, n = 180) => (t.length > n ? t.slice(0, t.lastIndexOf(' ', n) > 120 ? t.lastIndexOf(' ', n) : n).trimEnd() + '…' : t);
 let latestReviews: HomeReview[] = [];
@@ -97,13 +97,13 @@ try {
     const prod = products.find((x) => x.slug === r.product_id);
     return { quote: shorten(r.body), author: r.author_name, slug: r.product_id, productName: prod?.name, image: prod?.image };
   });
-} catch { /* baza niedostępna – zostają teksty z CMS */ }
+} catch { /* baza niedostępna - zostają teksty z CMS */ }
 const homeReviews: HomeReview[] = latestReviews.length ? latestReviews : (reviewsCms.items as HomeReview[]).slice(0, 5);
 // Układ: 3 opinie, karta „Napisz opinię”, kolejne opinie
 const reviewSlots: (HomeReview | 'cta')[] = [...homeReviews.slice(0, 3), 'cta', ...homeReviews.slice(3)];
 const benefitsRaw = at('home.benefits', {
   h2: 'Korzyści używania kropli Can-C',
-  lead: 'Krople Can-C z N-acetylokarnozyną wspierają oczy na co dzień – szczególnie gdy wzrok zaczyna odczuwać upływ czasu i zmęczenie ekranem.',
+  lead: 'Krople Can-C z N-acetylokarnozyną wspierają oczy na co dzień - szczególnie gdy wzrok zaczyna odczuwać upływ czasu i zmęczenie ekranem.',
   card_title: 'Z N-acetylokarnozyną',
   card_text: 'Opatentowana formuła, która dociera do soczewki oka. Jedno opakowanie wystarcza na około miesiąc kuracji.',
   card_items: [] as string[],
@@ -123,7 +123,7 @@ const benefitsRaw = at('home.benefits', {
   image_url: null as string | null,
   image_alt: 'Korzyści stosowania kropli Can-C',
 });
-// Układ w 3 kolumnach (karta · zdjęcie · nagłówek z listą). Starsze dane z CMS mają tylko „items” –
+// Układ w 3 kolumnach (karta · zdjęcie · nagłówek z listą). Starsze dane z CMS mają tylko „items” -
 // wtedy pierwsze 3 punkty trafiają do karty, reszta do prawej kolumny.
 const benAll = ((benefitsRaw.items as string[]) || []).filter(Boolean);
 const benCardItems = ((benefitsRaw.card_items as string[]) || []).filter(Boolean);
@@ -236,7 +236,7 @@ const bundleRows = setQtys.map((qty) => {
   </section>
   )}
 
-  <!-- KORZYŚCI: 3 kolumny – karta (3) · zdjęcie (4) · nagłówek, lista, przycisk (5) -->
+  <!-- KORZYŚCI: 3 kolumny - karta (3) · zdjęcie (4) · nagłówek, lista, przycisk (5) -->
   {visible(benefits) && (
   <section class="container sec-gap ben">
     <div class="ben__card">
@@ -333,7 +333,7 @@ const bundleRows = setQtys.map((qty) => {
       <div class="home-side">
         <h2 class="h2" style={fs(reviewsCms, 'h2')}>{reviewsCms.h2}</h2>
         <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-size:4rem;line-height:64px;font-weight:300">{ratingAvg ? ratingAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '—'}</span>
+          <span style="font-size:4rem;line-height:64px;font-weight:300">{ratingAvg ? ratingAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '-'}</span>
           <div style="display:flex;flex-direction:column;gap:4px">
             <Stars value={ratingAvg || 5} size={16} label={`Średnia ocena ${ratingAvg || 5} na 5`} />
             <span style="font-size:14px;font-weight:300;color:var(--muted)">{ratingCount ? `na podstawie ${ratingCount} ${ratingCount === 1 ? 'opinii' : 'opinii'}` : 'opinie klientów'}</span>
@@ -423,7 +423,7 @@ const bundleRows = setQtys.map((qty) => {
 
 
 <style>
-  /* Hero: kształty w px pod kontener 1300 px; węższe ekrany – układ pionowy */
+  /* Hero: kształty w px pod kontener 1300 px; węższe ekrany - układ pionowy */
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
   .hero-fill { position: absolute; width: 100cqw; height: 638px; max-width: none; object-fit: cover; display: block; }
@@ -521,7 +521,7 @@ const bundleRows = setQtys.map((qty) => {
   .home-split--center { align-items: center; }
   .home-split__main { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 24px; }
   .home-side { width: 408px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
-  /* Korzyści (wariant A): siatka z obszarami – na telefonie kolejność nagłówek → zdjęcie → lista → karta */
+  /* Korzyści (wariant A): siatka z obszarami - na telefonie kolejność nagłówek → zdjęcie → lista → karta */
   .ben {
     display: grid; gap: 24px 45px; align-items: center;
     grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);

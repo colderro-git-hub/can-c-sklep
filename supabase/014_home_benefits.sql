@@ -22,6 +22,6 @@ insert into public.page_content (key, page, section, sort_order, data) values
   "cta_label": "Jak używać kropli Can-C",
   "cta_href": "/stosowanie/",
   "image_url": null,
-  "image_alt": "Oko — korzyści stosowania kropli Can-C"
+  "image_alt": "Oko - korzyści stosowania kropli Can-C"
 }'::jsonb)
 on conflict (key) do nothing;

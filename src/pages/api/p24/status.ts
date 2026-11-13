@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   await sb.insert('order_events', { order_id: order.id, type: 'p24_notification', data: { ...n, sign: undefined } }, 'id');
 
-  // Już opłacone (P24 może wysłać powiadomienie ponownie) – nic więcej nie robimy
+  // Już opłacone (P24 może wysłać powiadomienie ponownie) - nic więcej nie robimy
   if (order.status !== 'pending_payment') return json(200, { ok: true });
 
   if (n.amount !== order.total || n.currency !== order.currency) {

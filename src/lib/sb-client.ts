@@ -1,4 +1,4 @@
-// Klient Supabase w przeglądarce – tylko klucz publishable i sesja zalogowanego klienta.
+// Klient Supabase w przeglądarce - tylko klucz publishable i sesja zalogowanego klienta.
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { SUPABASE_PUBLIC_URL, SUPABASE_PUBLISHABLE_KEY } from '../config';
 

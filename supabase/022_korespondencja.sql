@@ -1,4 +1,4 @@
--- Krok 48: korespondencja – odbiór poczty kontakt@can-c.pl przez Resend (webhook) i formularz /kontakt.
+-- Krok 48: korespondencja - odbiór poczty kontakt@can-c.pl przez Resend (webhook) i formularz /kontakt.
 -- Wątki i wiadomości; załączniki w prywatnym buckecie „mail” (dostęp tylko przez Workera, linki czasowe).
 
 create table if not exists public.mail_threads (

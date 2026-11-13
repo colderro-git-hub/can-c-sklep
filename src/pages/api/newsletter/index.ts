@@ -16,7 +16,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (str(b.website, 100)) return json(200, { ok: true }); // bot
   const email = normEmail(b.email);
   if (!EMAIL_RE.test(email)) return json(422, { error: 'Podaj poprawny adres e-mail.' });
-  if (b.consent !== true) return json(422, { error: 'Zaznacz zgodę na otrzymywanie newslettera – bez niej nie możemy wysyłać wiadomości.' });
+  if (b.consent !== true) return json(422, { error: 'Zaznacz zgodę na otrzymywanie newslettera - bez niej nie możemy wysyłać wiadomości.' });
 
   const env = await getEnv(locals);
   if (env.TURNSTILE_SECRET) {
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     if (!v.success) return json(403, { error: 'Weryfikacja nie powiodła się. Odśwież stronę i spróbuj ponownie.' });
   }
 
-  const ok = json(200, { ok: true, message: 'Sprawdź skrzynkę – wysłaliśmy link potwierdzający zapis.' });
+  const ok = json(200, { ok: true, message: 'Sprawdź skrzynkę - wysłaliśmy link potwierdzający zapis.' });
   try {
     const sb = db(env);
     const [c] = await sb.select<{ id: string; marketing_consent: boolean }>(`customers?select=id,marketing_consent&email=eq.${encodeURIComponent(email)}`);

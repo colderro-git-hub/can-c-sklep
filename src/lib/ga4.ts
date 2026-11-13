@@ -1,5 +1,5 @@
-// GA4 Data API – integracja przez Service Account (JWT + OAuth2).
-// Cloudflare Workers obsługuje SubtleCrypto natywnie – bez zewnętrznych bibliotek.
+// GA4 Data API - integracja przez Service Account (JWT + OAuth2).
+// Cloudflare Workers obsługuje SubtleCrypto natywnie - bez zewnętrznych bibliotek.
 import type { Env } from './env';
 
 const GA4_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly';
@@ -104,7 +104,7 @@ export type GA4Stats = {
   form_start: number; form_field_click: number; form_field_error: number; form_submit: number;
   // Ruch
   sessions: number; users: number; newUsers: number; bounceRate: number;
-  // Pola formularza – top błędy i kliknięcia
+  // Pola formularza - top błędy i kliknięcia
   topFieldClicks: { field: string; count: number }[];
   topFieldErrors: { field: string; count: number }[];
   // Lejek
@@ -114,7 +114,7 @@ export type GA4Stats = {
 export async function getGA4Stats(env: Env, days = 30): Promise<GA4Stats> {
   const dateRange = { startDate: `${days}daysAgo`, endDate: 'today' };
 
-  // 1. Zdarzenia e-commerce i inne – jedna metryka eventCount per nazwa zdarzenia
+  // 1. Zdarzenia e-commerce i inne - jedna metryka eventCount per nazwa zdarzenia
   const [eventsReport, sessionReport, fieldClicksReport, fieldErrorsReport] = await Promise.all([
     runReport(env, {
       dateRanges: [dateRange],
@@ -132,7 +132,7 @@ export async function getGA4Stats(env: Env, days = 30): Promise<GA4Stats> {
       metrics: [{ name: 'sessions' }, { name: 'totalUsers' }, { name: 'newUsers' }, { name: 'bounceRate' }],
       limit: 1,
     }),
-    // Top pola formularza – kliknięcia (field_name wymiar)
+    // Top pola formularza - kliknięcia (field_name wymiar)
     runReport(env, {
       dateRanges: [dateRange],
       dimensions: [{ name: 'customEvent:field_name' }],
@@ -141,7 +141,7 @@ export async function getGA4Stats(env: Env, days = 30): Promise<GA4Stats> {
       orderBys: [{ metric: { metricName: 'eventCount' }, desc: true }],
       limit: 10,
     }).catch(() => null),
-    // Top pola formularza – błędy
+    // Top pola formularza - błędy
     runReport(env, {
       dateRanges: [dateRange],
       dimensions: [{ name: 'customEvent:field_name' }],

@@ -6,7 +6,7 @@ export const prerender = false;
 
 const TYPES: Record<string, string> = { 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' };
 
-// Pobranie istniejącego zdjęcia (do usuwania tła w przeglądarce) – omija CORS obcych serwerów.
+// Pobranie istniejącego zdjęcia (do usuwania tła w przeglądarce) - omija CORS obcych serwerów.
 // Tylko admin, tylko https i tylko obrazy do 8 MB; Worker i tak nie sięga do sieci prywatnych (global_fetch_strictly_public).
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = await getEnv(locals);
@@ -60,7 +60,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     method: 'POST',
     headers: { apikey: key, ...(key.startsWith('eyJ') ? { Authorization: `Bearer ${key}` } : {}), 'Content-Type': contentType, 'Cache-Control': 'max-age=31536000', 'x-upsert': 'false' },
     body,
-    // @ts-ignore – wymagane przy wysyłaniu strumienia
+    // @ts-ignore - wymagane przy wysyłaniu strumienia
     duplex: 'half',
   });
   if (!res.ok) {

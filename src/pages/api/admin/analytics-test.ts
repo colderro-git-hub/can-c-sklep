@@ -1,4 +1,4 @@
-// Endpoint diagnostyczny GA4 – usuń po naprawieniu problemu
+// Endpoint diagnostyczny GA4 - usuń po naprawieniu problemu
 import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { requireAdmin } from '../../../lib/admin-auth';
@@ -40,6 +40,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
     propertyId: propertyId || 'BRAK',
     keyInfo,
     importError,
-    status: !importError && email && propertyId ? 'OK – klucz wczytany poprawnie' : 'BŁĄD – sprawdź szczegóły',
+    status: !importError && email && propertyId ? 'OK - klucz wczytany poprawnie' : 'BŁĄD - sprawdź szczegóły',
   });
 };

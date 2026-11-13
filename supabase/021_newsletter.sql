@@ -1,4 +1,4 @@
--- Krok 44: newsletter – zapis z obowiązkową zgodą (double opt-in), dziennik zgód, kampanie e-mail z panelu.
+-- Krok 44: newsletter - zapis z obowiązkową zgodą (double opt-in), dziennik zgód, kampanie e-mail z panelu.
 -- Subskrybenci to wiersze w customers (marketing_consent = true); osoby bez zamówień mają source = 'newsletter'.
 
 -- Dziennik zgód marketingowych (dowód zgody: kiedy, skąd, jaka treść, skrót IP)

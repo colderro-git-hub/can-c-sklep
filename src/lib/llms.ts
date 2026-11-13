@@ -20,7 +20,7 @@ export async function buildLlms(env: Env): Promise<{ enabled: boolean; text: str
   out.push(
     `- Sprzedawca: ${[o.legalName, [o.street, [o.postcode, o.city].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(', ')}${o.taxID ? `, NIP ${o.taxID}` : ''}`,
     `- Kontakt: ${[o.email, o.phone].filter(Boolean).join(', ') || `${ORIGIN}/kontakt/`}`,
-    `- Dostawa: darmowa w Polsce – InPost Paczkomat 24/7 i kurier DPD${(site as any).shippingTime ? `; wysyłka ${line((site as any).shippingTime)}` : ''}`,
+    `- Dostawa: darmowa w Polsce - InPost Paczkomat 24/7 i kurier DPD${(site as any).shippingTime ? `; wysyłka ${line((site as any).shippingTime)}` : ''}`,
     '- Płatności: BLIK, szybki przelew, karta (Przelewy24) oraz przelew tradycyjny',
     '- Zwroty: 14 dni na odstąpienie od umowy (nieotwarte opakowanie)',
     '- Ceny: w złotych, brutto (z VAT); rabat 8% przy 2 i 10% przy 4 opakowaniach kropli',

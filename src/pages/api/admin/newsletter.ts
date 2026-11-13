@@ -13,7 +13,7 @@ export const prerender = false;
 const UUID = /^[0-9a-f-]{36}$/i;
 const BATCH = 50; // maili na jedno wywołanie (Resend przyjmuje do 100)
 
-// Lista kampanii + liczby subskrybentów; ?id= – jedna kampania; ?audience= – liczba odbiorców
+// Lista kampanii + liczby subskrybentów; ?id= - jedna kampania; ?audience= - liczba odbiorców
 export const GET: APIRoute = async ({ request, url, locals }) => {
   const env = await getEnv(locals);
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
@@ -44,7 +44,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
       campaigns, products, audiences: AUDIENCES,
       stats: { consented: consented.total, fromNewsletter: fromNewsletter.total, joined30: joined30.total },
       // Bez zweryfikowanej domeny Resend dostarcza maile tylko na adres właściciela konta
-      fromWarning: /resend\.dev/i.test(env.CONTACT_FROM || '') ? 'Nadawca to onboarding@resend.dev – do czasu weryfikacji domeny can-c.pl w Resend kampanie dojdą tylko na adres właściciela konta Resend.' : null,
+      fromWarning: /resend\.dev/i.test(env.CONTACT_FROM || '') ? 'Nadawca to onboarding@resend.dev - do czasu weryfikacji domeny can-c.pl w Resend kampanie dojdą tylko na adres właściciela konta Resend.' : null,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -77,7 +77,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const now = new Date().toISOString();
 
   try {
-    // Podgląd HTML (bez zapisu) – dane z edytora
+    // Podgląd HTML (bez zapisu) - dane z edytora
     if (b.action === 'preview') {
       const parsed = parse(b);
       if ('error' in parsed) return json(422, { error: parsed.error });
@@ -132,7 +132,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (b.action === 'start') {
       if (c.status !== 'draft') return json(409, { error: 'Ta kampania była już wysyłana.' });
       if (!c.subject) return json(422, { error: 'Podaj temat wiadomości.' });
-      if (!(c.blocks || []).length) return json(422, { error: 'Kampania jest pusta – dodaj treść.' });
+      if (!(c.blocks || []).length) return json(422, { error: 'Kampania jest pusta - dodaj treść.' });
       const people = await sb.select<{ id: string; email: string; first_name: string | null }>(`${audiencePath(c.audience)}&limit=20000`);
       if (!people.length) return json(422, { error: 'Brak odbiorców w wybranej grupie.' });
       const [locked] = await sb.update(`newsletter_campaigns?id=eq.${c.id}&status=eq.draft`, { status: 'sending', started_at: now, recipients: people.length, updated_by: admin }, 'id');
@@ -140,7 +140,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       for (let i = 0; i < people.length; i += 500) {
         await sb.upsert('newsletter_sends', people.slice(i, i + 500).map((x) => ({ campaign_id: c.id, customer_id: x.id, email: x.email, first_name: x.first_name })), 'campaign_id,email', 'id');
       }
-      console.log(`Admin ${admin} uruchomił kampanię „${c.name}” – ${people.length} odbiorców`);
+      console.log(`Admin ${admin} uruchomił kampanię „${c.name}” - ${people.length} odbiorców`);
       return json(200, { ok: true, recipients: people.length });
     }
 
@@ -165,7 +165,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         `newsletter_sends?id=in.(${queued.map((q) => q.id).join(',')})&status=eq.queued`, { status: 'sending', claimed_at: now }, 'id,email,first_name,customer_id');
       if (!claimed.length) return json(200, { done: false, sent: c.sent_count, failed: c.failed_count, recipients: c.recipients });
 
-      // Kto w międzyczasie się wypisał – pomijamy
+      // Kto w międzyczasie się wypisał - pomijamy
       const custIds = claimed.map((x) => x.customer_id).filter(Boolean) as string[];
       const still = new Set(custIds.length ? (await sb.select<{ id: string }>(`customers?select=id&marketing_consent=is.true&id=in.(${custIds.join(',')})`)).map((x) => x.id) : []);
       const toSend = claimed.filter((x) => x.customer_id && still.has(x.customer_id));

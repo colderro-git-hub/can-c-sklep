@@ -88,7 +88,7 @@ export function orgData(seo: SeoSettings, site: SiteLike) {
   };
 }
 
-// Organization (OnlineStore) + WebSite – na stronie głównej i „O nas”
+// Organization (OnlineStore) + WebSite - na stronie głównej i „O nas”
 export function orgJsonLd(seo: SeoSettings, site: SiteLike) {
   const d = orgData(seo, site);
   const org: Record<string, unknown> = {
