@@ -52,7 +52,7 @@ export async function loadMail(keepThread = true) {
         <span class="mb__who">${esc(t.contact_name || t.contact_email)}</span><span class="mb__date">${mbDate(t.last_message_at)}</span>
         <span class="mb__subj">${esc(t.subject)}</span>
         <span class="mb__snip">${esc(t.snippet || '')}</span>
-        <span class="mb__tags">${t.message_count > 1 ? `<span class="mb__tag">${t.message_count}</span>` : ''}${t.last_direction === 'out' ? '<span class="mb__tag mb__tag--out">odpowiedziano</span>' : ''}${t.order_number ? `<span class="mb__tag">zam. ${t.order_number}</span>` : ''}${t.customer_id ? '<span class="mb__tag">klient</span>' : ''}</span>
+        <span class="mb__tags">${t.message_count > 1 ? `<span class="mb__tag">${t.message_count} wiad.</span>` : ''}${t.last_direction === 'out' ? '<span class="mb__tag mb__tag--out">Odpowiedziano</span>' : ''}${t.order_number ? `<span class="mb__tag">zam. ${t.order_number}</span>` : ''}${t.customer_id ? '<span class="mb__tag mb__tag--amber">Klient</span>' : ''}</span>
       </button>`).join('') : `<p class="muted" style="padding:20px">${mb.q ? 'Nic nie znaleziono.' : 'Brak wiadomości w tym folderze.'}</p>`)
       + (d.pages > 1 ? `<div class="mb__pager"><button type="button" class="btn btn--outline btn--sm" data-mb-page="-1" ${d.page <= 1 ? 'disabled' : ''}>←</button><span>${d.page} / ${d.pages}</span><button type="button" class="btn btn--outline btn--sm" data-mb-page="1" ${d.page >= d.pages ? 'disabled' : ''}>→</button></div>` : '');
     if (!keepThread) mb.current = '';
@@ -111,9 +111,9 @@ export async function openThread(id: string, markRead = true) {
       const atts = (m.attachments || []).filter((a: any) => !a.inline || !a.cid);
       const authBad = m.auth && (m.auth.dmarc === 'fail' || (m.auth.spf === 'fail' && m.auth.dkim === 'fail'));
       return `<article class="mb__msg${m.direction === 'out' ? ' mb__msg--out' : ''}${many && i < d.messages.length - 2 ? ' is-collapsed' : ''}" data-mb-msg="${i}">
-        <div class="mb__mhead" data-mb-toggle><span><strong>${esc(m.direction === 'out' ? `Can-C${m.sent_by ? ` (${m.sent_by})` : ''}` : m.from_name || m.from_email)}</strong>${m.direction === 'in' && m.from_name ? ` <span class="muted">${esc(m.from_email)}</span>` : ''}${m.source === 'form' ? ' <span class="mb__tag">formularz</span>' : ''}${authBad ? ' <span class="mb__tag" style="background:#FDE8E8;color:#B3261E">nadawca niepotwierdzony</span>' : ''}</span><span class="muted">${date(m.sent_at)}</span></div>
+        <div class="mb__mhead" data-mb-toggle><span><strong>${esc(m.direction === 'out' ? `Can-C${m.sent_by ? ` (${m.sent_by})` : ''}` : m.from_name || m.from_email)}</strong>${m.direction === 'in' && m.from_name ? ` <span class="muted">${esc(m.from_email)}</span>` : ''}${m.source === 'form' ? ' <span class="mb__tag mb__tag--amber">Formularz</span>' : ''}${authBad ? ' <span class="mb__tag mb__tag--bad">Nadawca niepotwierdzony</span>' : ''}</span><span class="muted">${date(m.sent_at)}</span></div>
         <div class="mb__body">${m.html_body ? `<iframe class="mb__frame" sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox" data-mb-frame="${i}" title="Treść wiadomości"></iframe>${/<img[^>]+src=["']?https?:/i.test(m.html_body) ? `<button type="button" class="link small" data-mb-imgs="${i}">Pokaż obrazy z internetu</button>` : ''}` : `<pre class="mb__text">${esc(m.text_body || '')}</pre>`}</div>
-        ${atts.length ? `<div class="mb__atts">${atts.map((a: any) => `<a class="mb__att" href="/api/admin/poczta?att=${m.id}&i=${m.attachments.indexOf(a)}" target="_blank" rel="noopener">📎 ${esc(a.name)} <span class="muted">${fmtSize(a.size)}</span></a>`).join('')}</div>` : ''}
+        ${atts.length ? `<div class="mb__atts">${atts.map((a: any) => `<a class="mb__att" href="/api/admin/poczta?att=${m.id}&i=${m.attachments.indexOf(a)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg> ${esc(a.name)} <span class="muted">${fmtSize(a.size)}</span></a>`).join('')}</div>` : ''}
       </article>`;
     }).join('')}</div>
     ${t.status === 'spam' ? '' : `<form class="mb__reply" data-mb-reply>
@@ -159,7 +159,7 @@ export async function openThread(id: string, markRead = true) {
   if (!form) return;
   const files: { name: string; type: string; data: string; size: number }[] = [];
   const drawFiles = () => {
-    box.querySelector('[data-mb-files]')!.innerHTML = files.map((f, i) => `<span class="mb__att">📎 ${esc(f.name)} <span class="muted">${fmtSize(f.size)}</span> <button type="button" class="link" data-mb-unfile="${i}" aria-label="Usuń załącznik">×</button></span>`).join('');
+    box.querySelector('[data-mb-files]')!.innerHTML = files.map((f, i) => `<span class="mb__att"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.4 11.1-8.6 8.6a5.5 5.5 0 0 1-7.8-7.8l8.6-8.6a3.7 3.7 0 0 1 5.2 5.2l-8.6 8.6a1.8 1.8 0 0 1-2.6-2.6l7.9-7.9"/></svg> ${esc(f.name)} <span class="muted">${fmtSize(f.size)}</span> <button type="button" class="link" data-mb-unfile="${i}" aria-label="Usuń załącznik">×</button></span>`).join('');
   };
   box.querySelector('[data-mb-files]')!.addEventListener('click', (e) => { const x = (e.target as HTMLElement).closest<HTMLElement>('[data-mb-unfile]'); if (x) { files.splice(Number(x.dataset.mbUnfile), 1); drawFiles(); } });
   box.querySelector<HTMLInputElement>('[data-mb-file]')!.addEventListener('change', async (e) => {
