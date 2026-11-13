@@ -3,7 +3,8 @@ import { getEnv, json } from '../../lib/env';
 import { db } from '../../lib/supabase';
 import { sendMail } from '../../lib/mail';
 import { str, EMAIL_RE } from '../../lib/validate';
-import { REVIEWS_PAGE, testReviewsFilter } from '../../lib/catalog';
+import { REVIEWS_PAGE, REVIEW_SORTS, testReviewsFilter } from '../../lib/catalog';
+import { verifyReviewToken } from '../../lib/review-requests';
 
 export const prerender = false;
 
@@ -15,7 +16,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   try {
     const env = await getEnv(locals);
     const rows = await db(env).select<any>(
-      `reviews?select=id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${product}&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&offset=${offset}&limit=${REVIEWS_PAGE + 1}`,
+      `reviews?select=id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${product}&status=eq.approved${testReviewsFilter(env)}&order=${REVIEW_SORTS[url.searchParams.get('sort') || 'new'] ?? REVIEW_SORTS.new}&offset=${offset}&limit=${REVIEWS_PAGE + 1}`,
     );
     return new Response(JSON.stringify({ reviews: rows.slice(0, REVIEWS_PAGE), more: rows.length > REVIEWS_PAGE }), {
       headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'public, max-age=60' },
@@ -65,6 +66,26 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
     let customer_id: string | null = null;
     let verified = false;
+    // Link z maila „Oceń zakup” (?o=<zamówienie>&t=<podpis>): zakup potwierdzony bez wpisywania e-maila
+    const orderId = str(b.order, 40);
+    if (orderId && /^[0-9a-f-]{36}$/i.test(orderId) && (await verifyReviewToken(env, orderId, product, str(b.orderToken, 64)))) {
+      const [o] = await sb.select<{ email: string; customer_id: string | null }>(`orders?select=email,customer_id&id=eq.${orderId}&status=in.(paid,packing,shipped,completed)`);
+      if (o) {
+        customer_id = o.customer_id;
+        verified = true;
+        const pending = o.customer_id ? await sb.select(`reviews?select=id&product_id=eq.${product}&customer_id=eq.${o.customer_id}&status=eq.pending`) : [];
+        if (pending.length) return json(429, { error: 'Twoja opinia o tym produkcie czeka już na moderację.' });
+        await sb.insert('reviews', { product_id: product, customer_id, author_name: name, email: o.email, rating, title: title || null, body, verified_purchase: true, source: 'shop' }, 'id');
+        if (env.CONTACT_TO) {
+          await sendMail(env, {
+            to: env.CONTACT_TO.split(',').map((s) => s.trim()),
+            subject: `[can-c.pl] Nowa opinia do moderacji: ${p.name} - ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`,
+            text: `${name} <${o.email}> (zweryfikowany zakup, z maila z prośbą o opinię)\n\n${title ? title + '\n' : ''}${body}\n\nModeracja: ${new URL(request.url).origin}/admin/`,
+          }).catch(() => {});
+        }
+        return json(200, { ok: true, verified: true });
+      }
+    }
     if (email) {
       const [c] = await sb.select<{ id: string }>(`customers?select=id&email=eq.${encodeURIComponent(email)}`);
       if (c) {

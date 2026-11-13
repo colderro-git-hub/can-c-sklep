@@ -82,14 +82,25 @@ export const clearCatalogCache = () => { cache = null; };
 
 // Karta produktu: produkt, pierwsze opinie (kolejne doczytuje GET /api/opinie), produkty powiązane
 export const REVIEWS_PAGE = 5;
+// Sortowanie opinii na karcie produktu
+export const REVIEW_SORTS: Record<string, string> = {
+  new: 'created_at.desc',
+  high: 'rating.desc,created_at.desc',
+  low: 'rating.asc,created_at.desc',
+};
 export async function getProductPage(env: Env, slug: string) {
   if (!/^[a-z0-9-]{2,60}$/.test(slug)) return null;
   const list = await getCatalog(env);
   const product = list.find((p) => p.id === slug);
   if (!product) return null;
-  const reviews = await db(env).select<Review>(
-    `reviews?select=id,product_id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${slug}&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=${REVIEWS_PAGE}`,
-  );
+  const [reviews, ratings] = await Promise.all([
+    db(env).select<Review>(
+      `reviews?select=id,product_id,author_name,rating,title,body,verified_purchase,reply,created_at&product_id=eq.${slug}&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=${REVIEWS_PAGE}`,
+    ),
+    db(env).select<{ rating: number }>(`reviews?select=rating&product_id=eq.${slug}&status=eq.approved${testReviewsFilter(env)}&limit=10000`).catch(() => []),
+  ]);
+  // Rozkład ocen: [5★, 4★, 3★, 2★, 1★]
+  const dist = [5, 4, 3, 2, 1].map((n) => ratings.filter((r) => Math.round(r.rating) === n).length);
   const related = product.related_ids.map((id) => list.find((p) => p.id === id)).filter(Boolean) as CatalogItem[];
-  return { product, reviews, related: related.length ? related : list.filter((p) => p.id !== slug).slice(0, 1) };
+  return { product, reviews, dist, related: related.length ? related : list.filter((p) => p.id !== slug).slice(0, 1) };
 }

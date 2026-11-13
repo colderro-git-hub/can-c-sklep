@@ -19,7 +19,7 @@ const env = await getEnv(Astro.locals);
 const slug = Astro.params.slug || '';
 const data = await getProductPage(env, slug).catch((e) => { console.error('Karta produktu: ' + (e instanceof Error ? e.message : String(e))); return null; });
 if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono' });
-const { product: p, reviews, related } = data;
+const { product: p, reviews, related, dist } = data;
 const site = await getSite(env);
 
 const pln = (g: number | null) => (g === null ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
@@ -229,9 +229,27 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         <section id="opinie" class="pr-sec">
           <h2 class="h3">Opinie klientów</h2>
           {p.rating.count > 0
-            ? <div class="pr-avg"><span class="pr-avg__v">{p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })}</span><span class="k">na podstawie {p.rating.count} {p.rating.count === 1 ? 'opinii' : 'opinii'}</span></div>
+            ? <div class="pr-rsum">
+                <div class="pr-avg"><span class="pr-avg__v">{p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })}</span><span class="k">na podstawie {p.rating.count} {p.rating.count === 1 ? 'opinii' : 'opinii'}</span></div>
+                {/* Rozkład ocen 5★-1★ */}
+                <ul class="pr-dist" aria-label="Rozkład ocen">
+                  {dist.map((c: number, i: number) => {
+                    const total = dist.reduce((a: number, b: number) => a + b, 0) || 1;
+                    return <li><span class="pr-dist__l">{5 - i}<span aria-hidden="true"> ★</span><span class="sr-only"> gwiazdek</span></span><span class="pr-dist__bar" aria-hidden="true"><span style={`width:${Math.round((c / total) * 100)}%`}></span></span><span class="pr-dist__n">{c}</span></li>;
+                  })}
+                </ul>
+              </div>
             : <p class="p">Ten produkt nie ma jeszcze opinii. Bądź pierwszą osobą, która ją doda.</p>}
-          <div class="pr-reviews" data-reviews data-product={p.id} data-offset={reviews.length}>
+          {p.rating.count > 1 && (
+            <label class="pr-sort"><span class="k">Sortuj:</span>
+              <select class="fld" data-reviews-sort aria-label="Sortuj opinie">
+                <option value="new">Najnowsze</option>
+                <option value="high">Najwyżej oceniane</option>
+                <option value="low">Najniżej oceniane</option>
+              </select>
+            </label>
+          )}
+          <div class="pr-reviews" data-reviews data-product={p.id} data-offset={reviews.length} data-total={p.rating.count}>
           {reviews.map((r) => (
             <article class="pr-review">
               <div class="pr-review__head">
@@ -266,6 +284,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
               <div><label class="lbl" for="rv-title">Tytuł (opcjonalnie)</label><input id="rv-title" class="fld" name="title" maxlength="120" /></div>
               <div><label class="lbl" for="rv-body">Opinia</label><textarea id="rv-body" class="fld" name="body" rows="4" minlength="10" maxlength="3000" required></textarea></div>
               <label class="ck"><input type="checkbox" name="consent" required /><span>Akceptuję publikację opinii z podanym imieniem. Opinia trafi na stronę po moderacji. Zasady przetwarzania danych: <a href="/polityka-prywatnosci/">polityka prywatności</a>.</span></label>
+              <input type="hidden" name="order" /><input type="hidden" name="orderToken" />
+              <p class="peach peach--s" data-review-verified hidden style="align-self:flex-start">Ocena z linku w mailu - opinia dostanie oznaczenie „Zweryfikowany zakup”.</p>
               <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
               {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>}
               <button class="btn btn-m" style="align-self:flex-start">Wyślij opinię</button>
@@ -309,6 +329,27 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   {
     const box = document.querySelector<HTMLElement>('[data-reviews]');
     const btn = document.querySelector<HTMLButtonElement>('[data-reviews-more]');
+    // Zmiana sortowania: pierwsze 5 opinii od nowa w wybranej kolejności
+    document.querySelector<HTMLSelectElement>('[data-reviews-sort]')?.addEventListener('change', async (e) => {
+      if (!box) return;
+      const sort = (e.target as HTMLSelectElement).value;
+      box.dataset.sort = sort;
+      box.setAttribute('aria-busy', 'true');
+      try {
+        const res = await fetch(`/api/opinie?product=${encodeURIComponent(box.dataset.product || '')}&offset=0&sort=${sort}`);
+        const d = await res.json();
+        if (!res.ok) throw new Error();
+        box.innerHTML = d.reviews.map(card).join('');
+        box.dataset.offset = String(d.reviews.length);
+        if (btn) {
+          const left = Math.max(0, Number(box.dataset.total || 0) - d.reviews.length);
+          btn.dataset.left = String(left);
+          const l = btn.querySelector('[data-reviews-left]'); if (l) l.textContent = `(${left})`;
+          btn.hidden = !d.more;
+        }
+      } catch { /* zostaje poprzednia lista */ }
+      box.removeAttribute('aria-busy');
+    });
     const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
     const STAR = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
     const stars = (n: number) => `<span class="stars" role="img" aria-label="Ocena ${n} na 5">${[1, 2, 3, 4, 5].map((i) => `<svg${i > n ? ' class="off"' : ''} width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${STAR}"/></svg>`).join('')}</span>`;
@@ -323,7 +364,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       const label = btn.innerHTML;
       btn.disabled = true; btn.textContent = 'Wczytuję…';
       try {
-        const res = await fetch(`/api/opinie?product=${encodeURIComponent(box.dataset.product || '')}&offset=${box.dataset.offset || 0}`);
+        const res = await fetch(`/api/opinie?product=${encodeURIComponent(box.dataset.product || '')}&offset=${box.dataset.offset || 0}&sort=${box.dataset.sort || 'new'}`);
         const d = await res.json();
         if (!res.ok) throw new Error(d.error || 'Błąd');
         box.insertAdjacentHTML('beforeend', d.reviews.map(card).join(''));
@@ -437,6 +478,21 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 
   // Opinia
   const form = document.querySelector<HTMLFormElement>('[data-review]');
+  // Wejście z maila „Oceń zakup”: ?o=<zamówienie>&t=<podpis>&ocena=1..5 → formularz otwarty, ocena zaznaczona, bez pola e-mail
+  const qp = new URLSearchParams(location.search);
+  const fromMail = Boolean(form && qp.get('o') && qp.get('t'));
+  if (form && fromMail) {
+    form.querySelector<HTMLInputElement>('[name="order"]')!.value = qp.get('o')!;
+    form.querySelector<HTMLInputElement>('[name="orderToken"]')!.value = qp.get('t')!;
+    const n = Number(qp.get('ocena'));
+    if (n >= 1 && n <= 5) form.querySelector<HTMLInputElement>(`input[name="rating"][value="${n}"]`)!.checked = true;
+    const mail = form.querySelector<HTMLElement>('#rv-mail')?.closest('div');
+    if (mail) mail.hidden = true;
+    form.querySelector<HTMLElement>('[data-review-verified]')!.hidden = false;
+    const det = document.querySelector<HTMLDetailsElement>('#opinia');
+    det?.setAttribute('open', '');
+    setTimeout(() => { det?.scrollIntoView({ block: 'start' }); form.querySelector<HTMLInputElement>('#rv-name')?.focus({ preventScroll: true }); }, 50);
+  }
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const msg = form.querySelector<HTMLElement>('[data-review-msg]')!;
@@ -444,6 +500,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     const body = {
       product: root?.dataset.product, rating: Number(fd.get('rating')), name: fd.get('name'), email: fd.get('email'),
       title: fd.get('title'), body: fd.get('body'), consent: fd.get('consent') !== null, website: fd.get('website'),
+      order: fd.get('order'), orderToken: fd.get('orderToken'),
       token: fd.get('cf-turnstile-response'),
     };
     msg.className = 'msg'; msg.textContent = 'Wysyłanie…';
@@ -454,6 +511,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       msg.className = 'msg msg--ok';
       msg.textContent = `Dziękujemy! Opinia pojawi się po moderacji.${d.verified ? ' Potwierdziliśmy zakup - dostanie oznaczenie „Zweryfikowany zakup”.' : ''}`;
       form.reset();
+      if (fromMail) { form.querySelector<HTMLInputElement>('[name="order"]')!.value = ''; form.querySelector<HTMLInputElement>('[name="orderToken"]')!.value = ''; }
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
     (window as any).turnstile?.reset();
   });
@@ -555,6 +613,17 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   @media (max-width: 600px) {
     .pr-lead, .pr-hl, .pr-spec .trow, :global(.pr-review__body), .md :global(p), .md :global(li) { font-size: 16px; line-height: 26px; }
   }
+  .pr-rsum { display: flex; align-items: center; gap: 32px 45px; flex-wrap: wrap; }
+  .pr-dist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; min-width: 240px; flex: 1; max-width: 420px; }
+  .pr-dist li { display: grid; grid-template-columns: 36px 1fr 32px; align-items: center; gap: 10px; font-size: 14px; line-height: 20px; }
+  .pr-dist__l { color: var(--muted); white-space: nowrap; }
+  .pr-dist__l span[aria-hidden] { color: var(--star); }
+  .pr-dist__bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .pr-dist__bar span { display: block; height: 100%; background: var(--star); border-radius: 4px; }
+  .pr-dist__n { text-align: right; color: var(--muted); }
+  .pr-sort { display: inline-flex; align-items: center; gap: 10px; align-self: flex-end; }
+  .pr-sort .fld { height: 44px; width: auto; padding-right: 36px; }
+  .pr-reviews[aria-busy='true'] { opacity: .5; }
   .pr-reviews { display: flex; flex-direction: column; gap: 14px; }
   .pr-more { align-self: flex-start; gap: 8px; }
   .pr-more[hidden] { display: none; }

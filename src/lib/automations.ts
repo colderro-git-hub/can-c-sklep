@@ -109,7 +109,7 @@ export async function runTreatmentReminders(env: Env, origin: string, opts: { fo
           code ? `Dla stałych klientów mamy rabat ${s.regularCodePercent}% - Twój kod: ${code} (ważny ${s.codeValidDays} dni).` : '',
           code ? '' : '',
           `Zamów ponownie: ${origin}/produkt/krople-can-c/?zestaw=${qty}`, '',
-          'Dłuższa kuracja = niższa cena: 2 opakowania −8%, 4 opakowania −10%.', '',
+          'Dłuższa kuracja = niższa cena za opakowanie (rabaty liczą się same w koszyku).', '',
           `Zespół Can-C · ${site.email}`, '',
           `Nie chcesz takich przypomnień? Wypisz się: ${unsub}`,
         ].filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n'),

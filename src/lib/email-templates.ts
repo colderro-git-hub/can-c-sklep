@@ -298,3 +298,24 @@ export function orderPackingHtml(o: Base & { number: number; firstName: string |
     ].join(''),
   });
 }
+
+// Prośba o opinię po wysyłce: produkty z zamówienia, przy każdym 5 gwiazdek (kliknięcie = formularz z wybraną oceną)
+export function reviewRequestHtml(o: Base & { firstName: string | null; number: number; items: { name: string; links: string[] }[]; unsubscribe?: string }) {
+  const STAR = '#C9A86A';
+  const block = (it: { name: string; links: string[] }) => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;border:1px solid #DCE2EC;border-radius:16px;"><tr><td style="padding:16px 18px;">
+      <div style="font-family:Poppins, Arial, Helvetica, sans-serif;font-size:16px;font-weight:400;color:#141C2B;margin:0 0 8px;">${esc(it.name)}</div>
+      <div>${it.links.map((href, i) => `<a href="${esc(href)}" title="${i + 1} na 5" style="display:inline-block;margin-right:6px;font-size:30px;line-height:30px;color:${STAR};text-decoration:none;">&#9733;</a>`).join('')}</div>
+      <div style="font-family:Arial, Helvetica, sans-serif;font-size:12px;color:#545D6E;margin-top:6px;">Kliknij gwiazdkę, żeby wystawić ocenę i dopisać kilka słów.</div>
+    </td></tr></table>`;
+  return layout({
+    ...o, preheader: 'Jak sprawdzają się krople? Twoja opinia pomoże innym w wyborze.',
+    body: [
+      h1('Jak Ci się sprawdza zakup?'),
+      p(o.firstName ? `Dzień dobry ${esc(o.firstName)},` : 'Dzień dobry,'),
+      p(`dziękujemy za zamówienie nr ${o.number}. Mamy nadzieję, że wszystko dotarło w porządku. Jeśli masz chwilę, oceń produkty - opinie osób, które naprawdę kupiły, najbardziej pomagają innym klientom.`),
+      ...o.items.map(block),
+      p('Opinia pojawi się po sprawdzeniu przez nas i dostanie oznaczenie „Zweryfikowany zakup”. Publikujemy każdą rzetelną opinię - także krytyczną.', { muted: true, size: 14 }),
+    ].join(''),
+    ...(o.unsubscribe ? { unsubscribe: o.unsubscribe, reason: 'Otrzymujesz tę wiadomość, bo kupiłeś produkt w sklepie can-c.pl.' } : {}),
+  });
+}
