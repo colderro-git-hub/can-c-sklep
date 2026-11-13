@@ -12,9 +12,10 @@ import { loadCustomers } from './customers';
 import { loadAutomations } from './automations';
 import { loadSettings } from './settings';
 import { loadSeo } from './seo';
+import { loadDashboard } from './dashboard';
 
 // ---------- Zdarzenia interfejsu ----------
-export const TITLES: Record<string, string> = { mail: 'Korespondencja', reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };
+export const TITLES: Record<string, string> = { dashboard: 'Pulpit', mail: 'Korespondencja', reviews: 'Opinie', automations: 'Automaty', orders: 'Zamówienia', customers: 'Klienci', products: 'Produkty', codes: 'Kody rabatowe', settings: 'Ustawienia sklepu', pages: 'Strony', analytics: 'Analityka', seo: 'SEO' };
 document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => {
   document.querySelectorAll('[data-tab]').forEach((x) => x.removeAttribute('aria-current'));
   b.setAttribute('aria-current', 'page');
@@ -22,6 +23,7 @@ document.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addE
   $('[data-title]').textContent = TITLES[b.dataset.tab!]; $('[data-crumb]').textContent = TITLES[b.dataset.tab!];
   if (b.dataset.tab === 'mail') loadMail();
   else if (location.hash.startsWith('#korespondencja')) history.replaceState(null, '', location.pathname);
+  if (b.dataset.tab === 'orders') loadOrders();
   if (b.dataset.tab === 'products') loadProducts();
   if (b.dataset.tab === 'codes') { loadPromos(); loadCodes(); }
   if (b.dataset.tab === 'customers') loadCustomers();
@@ -56,4 +58,5 @@ $('[data-back]').addEventListener('click', () => { const prev = dHistory.pop(); 
 $('[data-scrim]').addEventListener('click', () => openDrawer(false));
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') openDrawer(false); });
 
-loadOrders();
+loadOrders(); // liczniki w menu (np. „do wysłania”)
+loadDashboard(); // pulpit „Do zrobienia” - pierwszy ekran panelu

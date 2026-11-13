@@ -432,3 +432,20 @@ tr.flash td { background: var(--primary-a16) !important; transition: background 
   .nav .nav__item > span:not(.badge) { display: none; }
   .nav__item .badge:not(:empty) { margin-left: 0; }
 }
+
+/* ---------- Pulpit „Do zrobienia” ---------- */
+.dash { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-items: start; }
+.dash__today { font-size: 14px; }
+.dash__tile { background: #FFFFFF; border-radius: 16px; box-shadow: 0 1px 2px rgba(20, 28, 43, .06); border-left: 4px solid #CFD6E4; overflow: hidden; }
+.dash__tile--bad { border-left-color: #D64545; }
+.dash__tile--warn { border-left-color: #E5A12E; }
+.dash__tile--ok { border-left-color: #169089; opacity: .85; }
+.dash__main { all: unset; box-sizing: border-box; width: 100%; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 16px 18px; cursor: pointer; }
+.dash__main:hover { background: #F7F8FC; }
+.dash__main:focus-visible { outline: 2px solid #4E5A7C; outline-offset: -2px; }
+.dash__t { font-weight: 600; font-size: 15px; }
+.dash__n { grid-row: span 2; align-self: center; font-size: 30px; font-weight: 600; line-height: 1; }
+.dash__tile--ok .dash__n { color: #8A93A6; }
+.dash__sub { font-size: 13px; color: #6B7385; }
+.dash__list { list-style: none; margin: 0; padding: 4px 18px 14px; display: flex; flex-direction: column; gap: 6px; font-size: 13px; border-top: 1px solid #EEF0F5; padding-top: 10px; }
+.dash__list li { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

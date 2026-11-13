@@ -3,6 +3,7 @@
 // swoje zdarzenia, a „ui” na końcu uruchamia start panelu.
 //
 //   core                 formatowanie, api(), toast(), $(), wspólne stałe (statusy, etykiety)
+//   dashboard            pulpit „Do zrobienia” (pierwszy ekran)
 //   orders               lista zamówień, zaznaczanie zbiorcze, szczegóły zamówienia, szuflada (drawer)
 //   products             produkty: lista, edytor, zdjęcia
 //   reviews              opinie: moderacja, edycja
@@ -41,4 +42,5 @@ import './settings';
 import './seo';
 import './redirects';
 import './errors';
+import './dashboard';
 import './ui';

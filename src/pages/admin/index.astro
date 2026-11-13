@@ -22,7 +22,11 @@ import '../../styles/admin.css';
           <span class="logo__mark" aria-hidden="true">C</span><span class="logo__text">Can-C</span>
         </a>
         <nav class="nav">
-          <button type="button" class="nav__item" data-tab="orders" aria-current="page">
+          <button type="button" class="nav__item" data-tab="dashboard" aria-current="page">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5" /><rect x="14" y="3" width="7" height="5" rx="1.5" /><rect x="14" y="12" width="7" height="9" rx="1.5" /><rect x="3" y="16" width="7" height="5" rx="1.5" /></svg>
+            <span>Pulpit</span><span class="badge" data-count-todo></span>
+          </button>
+          <button type="button" class="nav__item" data-tab="orders">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg>
             <span>Zamówienia</span><span class="badge" data-count-paid></span>
           </button>
@@ -82,15 +86,20 @@ import '../../styles/admin.css';
       <div class="main">
         <header class="top">
           <div class="top__row">
-            <h1 class="top__title" data-title>Zamówienia</h1>
+            <h1 class="top__title" data-title>Pulpit</h1>
             <span class="top__user">Can-C · sklep</span>
           </div>
-          <div class="crumbs"><span>Panel</span><span>/</span><span data-crumb>Zamówienia</span></div>
+          <div class="crumbs"><span>Panel</span><span>/</span><span data-crumb>Pulpit</span></div>
         </header>
 
         <div class="content">
           <!-- ZAMÓWIENIA -->
-          <section data-view="orders" class="stack">
+          <section data-view="dashboard" class="stack">
+            <div class="dash__today muted" data-dash-today></div>
+            <div class="dash" data-dash><p class="muted">Ładowanie…</p></div>
+          </section>
+
+          <section data-view="orders" class="stack" hidden>
             <div class="kpis">
               <div class="kpi">
                 <span class="kpi__icon kpi__icon--amber" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 7.7V6.6a4.5 4.5 0 0 1 9 0v1.1M5.2 21h13.6a1.4 1.4 0 0 0 1.4-1.6L19 9a1.4 1.4 0 0 0-1.4-1.3H6.4A1.4 1.4 0 0 0 5 9L3.8 19.4A1.4 1.4 0 0 0 5.2 21Z" /></svg></span>
