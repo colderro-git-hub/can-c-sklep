@@ -7,7 +7,6 @@ import { FURGONETKA_MAP_KEY } from '../../config';
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
 <Base title="Dostawa i płatność | Can-C" description="Złóż zamówienie w sklepie Can-C." noindex>
-  {FURGONETKA_MAP_KEY && <script is:inline src="https://furgonetka.pl/js/dist/map/map.js" async></script>}
   <section class="co">
     <div class="w co__in">
       <ol class="steps" aria-label="Etapy zamówienia">
@@ -277,9 +276,23 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     });
 
     const errorEl = form.querySelector<HTMLElement>('[data-error]')!;
-    // Mapa punktów Furgonetki (jeśli skonfigurowano klucz). Pole ręczne zostaje jako zapas.
-    const mapKey = locker.dataset.mapKey;
-    if (mapKey) {
+    // Mapa punktów Furgonetki (furgonetka.pl/js/dist/map/map.js, dokumentacja „Furgonetka - Mapa 2.0”).
+    // Mapa nie wymaga klucza API - wcześniej działała tylko przy ustawionym FURGONETKA_MAP_KEY, stąd „nie działała”.
+    // Skrypt ładujemy dopiero przy pierwszym kliknięciu; pole ręczne zostaje jako zapas, gdy mapa się nie wczyta.
+    const mapKey = locker.dataset.mapKey || '';
+    let mapLoad: Promise<any> | null = null;
+    const loadMap = () => (mapLoad ??= new Promise((resolve) => {
+      const w = window as any;
+      if (w.Furgonetka?.Map) return resolve(w.Furgonetka);
+      const sc = document.createElement('script');
+      sc.src = 'https://furgonetka.pl/js/dist/map/map.js';
+      sc.async = true;
+      sc.onload = () => resolve(w.Furgonetka ?? null);
+      sc.onerror = () => { mapLoad = null; resolve(null); };
+      document.head.append(sc);
+      setTimeout(() => resolve(w.Furgonetka ?? null), 10000);
+    }));
+    {
       const wrap = locker.querySelector<HTMLElement>('[data-map-wrap]')!;
       const manual = locker.querySelector<HTMLElement>('[data-locker-manual]')!;
       const codeInput = form.querySelector<HTMLInputElement>('input[name="locker"]')!;
@@ -287,16 +300,27 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       wrap.hidden = false;
       manual.hidden = true;
       locker.querySelector<HTMLElement>('[data-locker-link]')!.hidden = true;
-      locker.querySelector('[data-map-open]')!.addEventListener('click', () => {
-        const F = (window as any).Furgonetka;
-        if (!F) { manual.hidden = false; errorEl.textContent = 'Mapa nie załadowała się. Wpisz kod Paczkomatu ręcznie.'; return; }
+      const openBtn = locker.querySelector<HTMLButtonElement>('[data-map-open]')!;
+      openBtn.addEventListener('click', async () => {
+        const label = openBtn.textContent;
+        openBtn.disabled = true; openBtn.textContent = 'Wczytuję mapę…';
+        const F = await loadMap();
+        openBtn.disabled = false; openBtn.textContent = label;
+        if (!F?.Map) {
+          manual.hidden = false;
+          locker.querySelector<HTMLElement>('[data-locker-link]')!.hidden = false;
+          errorEl.textContent = 'Mapa nie wczytała się. Wpisz kod Paczkomatu ręcznie (znajdziesz go na mapie InPost).';
+          return;
+        }
         new F.Map({
-          apiKey: mapKey,
+          ...(mapKey ? { apiKey: mapKey } : {}),
           courierServices: ['inpost'],
           courierServicesFilter: ['inpost'],
           city: String(new FormData(form).get('city') || ''),
-          locale: 'pl',
+          zoom: 14,
           callback: (params: any) => {
+            if (!params?.point?.code) return;
+            errorEl.textContent = '';
             codeInput.value = params.point.code;
             nameInput.value = params.point.name || '';
             locker.querySelector('[data-locker-label]')!.textContent = `Paczkomat ${params.point.code}`;
