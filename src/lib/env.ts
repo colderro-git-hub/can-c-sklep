@@ -24,6 +24,7 @@ export type Env = {
   GA4_MEASUREMENT_ID?: string; // G-XXXXXXX - Measurement Protocol (zwroty z panelu)
   GA4_API_SECRET?: string;     // klucz tajny Measurement Protocol dla strumienia www
   SHOW_TEST_REVIEWS?: string;     // 'true' = pokazuj opinie testowe (source=test) - tylko na czas testów
+  ALERT_EMAIL?: string;           // adres na alerty o błędach (domyślnie MAIL_NOTIFY albo CONTACT_TO)
   MAIL_INBOX?: string;            // adres(y) skrzynki sklepu, np. kontakt@can-c.pl (do testów adres *.resend.app)
   MAIL_NOTIFY?: string;           // prywatny adres na powiadomienia o nowej wiadomości (opcjonalnie)
   RESEND_WEBHOOK_SECRET?: string; // whsec_… z Resend → Webhooks (podpis zdarzeń email.received)

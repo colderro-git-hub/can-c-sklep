@@ -6,6 +6,10 @@ import { getEnv } from './lib/env';
 import { matchRedirect, targetUrl, isProbe, logNotFound, countRedirectHit } from './lib/redirects';
 import { later } from './lib/background';
 import { typoResponse } from './lib/typography';
+import { installErrorHook, queueError, flushErrors } from './lib/alerts';
+
+// Każde console.error trafia do dziennika błędów; krytyczne - na e-mail (lib/alerts.ts)
+installErrorHook();
 
 const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon|img)(\/|$|\.ico$)/;
 
@@ -14,11 +18,24 @@ const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon|img)(\/|$|\.ic
 const NO_TYPO = /^\/(api|admin)(\/|$)/;
 
 export const onRequest = defineMiddleware(async (context, next) => {
-  const res = await route(context, next);
+  let res: Response;
+  try { res = await route(context, next); }
+  catch (e) { queueError('HTTP 500', `${context.request.method} ${context.url.pathname}: ${e instanceof Error ? e.message : String(e)}`); await scheduleFlush(context); throw e; }
+  if (res.status >= 500) queueError(`HTTP ${res.status}`, `${context.request.method} ${context.url.pathname}`);
+  await scheduleFlush(context);
   if (NO_TYPO.test(context.url.pathname)) return res;
   try { return await typoResponse(res); }
   catch (e) { console.error('Typografia: ' + (e instanceof Error ? e.message : String(e))); return res; }
 });
+
+// Zapis błędów z tego (i wcześniejszych) żądań po wysłaniu odpowiedzi - nie spowalnia strony
+async function scheduleFlush(context: APIContext) {
+  if (context.isPrerendered) return;
+  try {
+    const env = await getEnv(context.locals);
+    if (env.SUPABASE_URL) await later(context.locals, flushErrors(env, context.url.origin));
+  } catch { /* brak środowiska (build) */ }
+}
 
 async function route(context: APIContext, next: MiddlewareNext): Promise<Response> {
   if (context.isPrerendered) return next();

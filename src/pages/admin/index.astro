@@ -575,6 +575,15 @@ import '../../styles/admin.css';
             </div>
           </section>
           <section data-view="settings" class="stack" hidden>
+            <div class="card" data-errlog>
+              <div class="card__head"><h2 class="card__title">Błędy systemu <span class="badge" data-err-count></span></h2>
+                <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-err-all>Oznacz wszystkie jako przejrzane</button></div></div>
+              <p class="muted small" data-err-info></p>
+              <div class="table-wrap"><table class="table">
+                <thead><tr><th>Ostatnio</th><th>Obszar</th><th>Treść</th><th class="r">Ile razy</th><th></th></tr></thead>
+                <tbody data-err-list></tbody>
+              </table></div>
+            </div>
 
             <p class="notice">Dane pojawiają się w stopce, na stronach Kontakt, O nas, w regulaminie, polityce prywatności i w e-mailach. Po zapisaniu na stronie zobaczysz je w ciągu kilku minut. W wyszukiwarce Google i na stronach wygenerowanych wcześniej zaktualizują się przy najbliższym wdrożeniu sklepu.</p>
             <div class="card" data-logos>

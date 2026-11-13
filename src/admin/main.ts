@@ -20,6 +20,7 @@
 //   settings             Ustawienia sklepu (logo, favicon, podpis…)
 //   seo                  SEO
 //   redirects            przekierowania i dziennik 404
+//   errors               dziennik błędów systemu (Ustawienia sklepu)
 //   ui                   zdarzenia interfejsu i start panelu
 import './core';
 import './orders';
@@ -39,4 +40,5 @@ import './analytics';
 import './settings';
 import './seo';
 import './redirects';
+import './errors';
 import './ui';
