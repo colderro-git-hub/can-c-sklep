@@ -2992,16 +2992,22 @@ import { FURGONETKA_PANEL_URL } from '../../config';
   const PAGES_META: Record<string, any> = {
     home: { label: 'Strona główna', previewHref: '/', sections: [
       { key: 'home.hero', label: 'Hero (baner)', schema: {
-        kicker: { type: 'text', label: 'Kicker (mały tekst nad H1)' },
-        h1: { type: 'text', label: 'Nagłówek H1' },
+        kicker: { type: 'text', label: 'Kicker (etykieta nad H1, puste = ukryj)' },
+        h1: { type: 'text', label: 'Nagłówek H1', hint: 'Druga linia po znaku |, np. „Krople do oczu Can-C | z N-acetylokarnozyną” – druga linia jest wcięta.' },
         lead: { type: 'textarea', label: 'Tekst lead' },
         cta_primary_label: { type: 'text', label: 'Przycisk główny – etykieta' },
         cta_primary_href: { type: 'url', label: 'Przycisk główny – link' },
         cta_secondary_label: { type: 'text', label: 'Przycisk drugorzędny – etykieta (puste = ukryj)' },
         cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny – link' },
-        image_url: { type: 'image', label: 'Zdjęcie w hero', hint: 'Bez zdjęcia na stronie jest szare tło zastępcze.' },
+        image_url: { type: 'image', label: 'Zdjęcie w hero', hint: 'Wypełnia cały kształt baneru (szare pola). Poziome, min. 2000 px szerokości; najważniejszy motyw po prawej stronie. Na telefonie pokazuje się pod tekstem w proporcji 4:3.' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
-        trust: { type: 'list', label: 'Elementy zaufania pod przyciskami (jedna linia = jeden element)' },
+        trust_boxes: { type: 'list', label: 'Boksy pod banerem (3 linie: „liczba | opis”)', hint: 'Np. „0 zł | InPost i DPD”. Ikony wg kolejności: dostawa, zwrot, płatność.' },
+      }},
+      { key: 'home.products', label: 'Produkty (nagłówek sekcji)', schema: {
+        h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia' },
+        lead: { type: 'textarea', label: 'Tekst pod nagłówkiem (puste = ukryj)' },
+        link_label: { type: 'text', label: 'Link po prawej – etykieta (puste = ukryj)' },
+        link_href: { type: 'url', label: 'Link po prawej – adres' },
       }},
       { key: 'home.benefits', label: 'Korzyści (3 kolumny: karta · zdjęcie · lista)', schema: {
         h2: { type: 'text', label: 'Prawa kolumna – nagłówek sekcji' },
@@ -3017,6 +3023,13 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         card_text: { type: 'textarea', label: 'Lewa karta – opis (2–3 zdania)' },
         card_items: { type: 'list', label: 'Lewa karta – punkty (jedna linia = jeden punkt)', hint: 'Najlepiej 3 krótkie punkty. Puste = pierwsze 3 punkty z prawej kolumny.' },
       }},
+      { key: 'home.bundles', label: '„Kupuj więcej, płać mniej” (zestawy)', schema: {
+        h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia, np. „Kupuj więcej, | płać mniej”' },
+        lead: { type: 'textarea', label: 'Tekst po prawej (puste = ukryj)' },
+        badge: { type: 'text', label: 'Etykieta polecanego zestawu', hint: 'Np. „Polecany” – rabat w % dopisuje się sam' },
+        perks: { type: 'list', label: 'Dodatkowe punkty na każdej karcie (jedna linia = jeden punkt)', hint: 'Np. „Darmowa dostawa”. Punkty „X miesięcy kuracji” i „Oszczędzasz X%” liczą się same z promocji.' },
+        button: { type: 'text', label: 'Tekst przycisku na kartach' },
+      }},
       { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
         h2: { type: 'text', label: 'Nagłówek sekcji' }, lead: { type: 'textarea', label: 'Tekst lead' },
         link_label: { type: 'text', label: 'Link – etykieta' }, link_href: { type: 'url', label: 'Link – href' },
@@ -3024,13 +3037,25 @@ import { FURGONETKA_PANEL_URL } from '../../config';
       }},
       { key: 'home.reviews', label: 'Opinie na stronie głównej', schema: {
         h2: { type: 'text', label: 'Nagłówek sekcji' },
-        items: { type: 'array', label: 'Opinie JSON [{quote, author}]' },
+        cta_text: { type: 'text', label: 'Karta „Napisz opinię” – tekst' },
+        cta_label: { type: 'text', label: 'Karta „Napisz opinię” – przycisk (puste = ukryj)' },
+        cta_href: { type: 'url', label: 'Karta „Napisz opinię” – link' },
+        items: { type: 'array', label: 'Opinie zapasowe JSON [{quote, author}]', hint: 'Pokazywane tylko, gdy w bazie nie ma żadnej zatwierdzonej opinii.' },
       }},
       { key: 'home.k9', label: 'Sekcja Can-C K9', schema: {
         tag: { type: 'text', label: 'Etykieta (np. „DLA PSA")' }, h2: { type: 'text', label: 'Nagłówek' },
         lead: { type: 'textarea', label: 'Tekst lead' }, cta_label: { type: 'text', label: 'Przycisk – etykieta' },
         cta_href: { type: 'url', label: 'Przycisk – link' },
         image_url: { type: 'image', label: 'Zdjęcie' }, image_alt: { type: 'text', label: 'Alt' },
+      }},
+      { key: 'home.faq', label: 'FAQ na stronie głównej (nagłówek)', schema: {
+        h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia. Pytania wybierasz w zakładce FAQ (pole „na głównej”).' },
+        link_label: { type: 'text', label: 'Link – etykieta (puste = ukryj)' },
+        link_href: { type: 'url', label: 'Link – adres' },
+      }},
+      { key: 'home.newsletter', label: 'Newsletter (sekcja zapisu)', schema: {
+        h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia' },
+        text: { type: 'textarea', label: 'Tekst pod nagłówkiem (puste = ukryj)' },
       }},
     ]},
     faq: { label: 'FAQ', previewHref: '/faq/', sections: [] },

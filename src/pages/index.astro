@@ -5,7 +5,7 @@ import { products as fallback, features, reviews, faqs, formatPrice } from '../d
 import { applyPromotions, qtyOptions } from '../lib/promotions';
 import { getPromotions } from '../lib/promotions-db';
 import { getEnv } from '../lib/env';
-import { getCatalog } from '../lib/catalog';
+import { getCatalog, testReviewsFilter } from '../lib/catalog';
 import { db } from '../lib/supabase';
 import { getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
@@ -52,14 +52,39 @@ const hero = at('home.hero', {
   lead: 'Codzienne wsparcie dla zmęczonych oczu. Można stosować przy soczewkach kontaktowych.',
   cta_primary_label: 'Zamów krople', cta_primary_href: '/produkt/krople-can-c/',
   cta_secondary_label: 'Jak stosować', cta_secondary_href: '/stosowanie/',
-  trust: ['Darmowa dostawa InPost i kurier', 'BLIK, Przelewy24, karta', 'Zwrot do 14 dni'],
+  trust_boxes: ['0 zł | InPost i DPD', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'] as string[],
   image_url: null as string | null, image_alt: 'Krople Can-C',
+});
+// H1 w dwóch liniach: „pierwsza | druga” (druga z wcięciem); dawny tekst bez „|” dzielimy jak w projekcie
+const heroH1 = String(hero.h1 || '').includes('|')
+  ? String(hero.h1).split('|').map((x: string) => x.trim()).filter(Boolean)
+  : String(hero.h1 || '') === 'Krople do oczu Can-C z N-acetylokarnozyną' ? ['Krople do oczu Can-C', 'z N-acetylokarnozyną'] : [String(hero.h1 || '')];
+// Boksy zaufania pod hero: „liczba | opis”, ikony wg kolejności
+const TRUST_ICONS = ['truck', 'undo-2', 'credit-card'] as const;
+const trustRaw = ((hero.trust_boxes as string[]) || []).filter((x) => String(x).includes('|'));
+const trustBoxes = (trustRaw.length ? trustRaw : ['0 zł | InPost i DPD', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'])
+  .slice(0, 3).map((x: string, i: number) => { const [num, sub] = x.split('|').map((y) => y.trim()); return { num, sub: sub || '', icon: TRUST_ICONS[i] }; });
+// Nagłówki z łamaniem wiersza: „|” albo nowa linia → <br>
+const lines = (t: unknown) => String(t ?? '').split(/\s*\|\s*|\n/).map((x) => x.trim()).filter(Boolean);
+const productsCms = at('home.products', {
+  h2: 'Produkty', lead: 'Krople do oczu, kapsułki i wersja dla psa. Wszystkie wysyłamy za darmo w ciągu 1 dnia roboczego.',
+  link_label: 'Zobacz wszystkie', link_href: '/sklep/',
+});
+const bundlesCms = at('home.bundles', {
+  h2: 'Kupuj więcej, | płać mniej',
+  lead: 'Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.',
+  badge: 'Polecany', perks: ['Darmowa dostawa'] as string[], button: 'Wybierz zestaw',
+});
+const faqHead = at('home.faq', { h2: 'Najczęstsze | pytania', link_label: 'Wszystkie pytania', link_href: '/faq/' });
+const newsletterCms = at('home.newsletter', {
+  h2: 'Rabaty i nowości | na Twój e-mail',
+  text: 'Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.',
 });
 const why = at('home.why', {
   h2: 'Dlaczego krople Can-C', lead: '', link_label: 'Przeczytaj, jak stosować', link_href: '/stosowanie/',
   features: features as { title: string; text: string }[],
 });
-const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[] });
+const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[], cta_text: 'Kupiłeś Can-C? Podziel się wrażeniami.', cta_label: 'Napisz opinię', cta_href: '/produkt/krople-can-c/#opinia' });
 
 // 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie – teksty z CMS
 type HomeReview = { quote: string; author: string; slug?: string; productName?: string; image?: string };
@@ -67,7 +92,7 @@ const shorten = (t: string, n = 180) => (t.length > n ? t.slice(0, t.lastIndexOf
 let latestReviews: HomeReview[] = [];
 try {
   const rows = await db(env).select<{ product_id: string; author_name: string; body: string }>(
-    'reviews?select=product_id,author_name,body&status=eq.approved&order=created_at.desc&limit=5');
+    `reviews?select=product_id,author_name,body&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=5`);
   latestReviews = rows.map((r) => {
     const prod = products.find((x) => x.slug === r.product_id);
     return { quote: shorten(r.body), author: r.author_name, slug: r.product_id, productName: prod?.name, image: prod?.image };
@@ -141,21 +166,25 @@ const bundleRows = setQtys.map((qty) => {
   <!-- HERO -->
   <section class="container" style="margin-top: 45px">
     <div class="hero" style="position:relative;height:638px">
-      <!-- Kształty tła -->
-      <div class="hero-shape" style="position:absolute;left:64.46%;right:0;top:0;height:545px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:72.38%;height:324px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:0;top:221px;width:35.54%;height:417px;background:var(--image);border-radius:50px"></div>
-      <div class="hero-shape" style="position:absolute;left:calc(64.46% - 50px);top:171px;width:50px;height:50px;background:radial-gradient(circle at 0 0,transparent 49.5px,var(--image) 50px)"></div>
-      <div class="hero-shape" style="position:absolute;left:35.54%;top:545px;width:50px;height:50px;background:radial-gradient(circle at 100% 100%,transparent 49.5px,var(--image) 50px)"></div>
-      {hero.image_url
-        ? <img src={hero.image_url} alt={hero.image_alt} class="hero-shape" style="position:absolute;left:64.46%;right:0;top:0;width:auto;height:545px;object-fit:cover;border-radius:50px" width="462" height="545" loading="eager" />
-        : <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: opakowanie Can-C]</span>}
+      <!-- Kształty tła; zdjęcie z panelu wypełnia cały kształt (każdy fragment pokazuje swoją część tego samego zdjęcia) -->
+      {[
+        { st: 'left:64.46%;right:0;top:0;height:545px;border-radius:50px', l: '-64.46cqw', t: 0 },
+        { st: 'left:0;top:221px;width:72.38%;height:324px;border-radius:50px', l: '0px', t: 221 },
+        { st: 'left:0;top:221px;width:35.54%;height:417px;border-radius:50px', l: '0px', t: 221 },
+        { st: 'left:calc(64.46% - 50px);top:171px;width:50px;height:50px', l: 'calc(50px - 64.46cqw)', t: 171, m: 'radial-gradient(circle at 0 0,transparent 49.5px,#000 50px)' },
+        { st: 'left:35.54%;top:545px;width:50px;height:50px', l: '-35.54cqw', t: 545, m: 'radial-gradient(circle at 100% 100%,transparent 49.5px,#000 50px)' },
+      ].map((sh, i) => (
+        <div class="hero-shape" style={`position:absolute;${sh.st};background:var(--image);overflow:hidden${sh.m ? `;-webkit-mask-image:${sh.m};mask-image:${sh.m}` : ''}`}>
+          {hero.image_url && <img src={hero.image_url} alt={i === 0 ? hero.image_alt : ''} aria-hidden={i === 0 ? undefined : 'true'} class="hero-fill" style={`left:${sh.l};top:-${sh.t}px`} loading="eager" decoding="async" />}
+        </div>
+      ))}
+      {!hero.image_url && <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie z panelu: Strony → Hero]</span>}
+      {hero.image_url && <img src={hero.image_url} alt="" class="hero-mobile-img" loading="eager" />}
       <!-- Tekst -->
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
-        <span class="tag" style="align-self:flex-start;height:36px;padding:0 16px;font-size:16px">{hero.kicker}</span>
+        {hero.kicker && <span class="tag" style="align-self:flex-start;height:36px;padding:0 16px;font-size:16px">{hero.kicker}</span>}
         <h1 style="margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em">
-          <span style="display:block">Krople do oczu Can-C</span>
-          <span style="display:block;padding-left:68px">z N-acetylokarnozyną</span>
+          {heroH1.map((line: string, i: number) => <span style={`display:block${i > 0 ? ';padding-left:68px' : ''}`}>{line}</span>)}
         </h1>
       </div>
       <span aria-hidden="true" style="position:absolute;left:9px;top:169px;width:50px;height:2px;background: var(--primary)"></span>
@@ -165,21 +194,13 @@ const bundleRows = setQtys.map((qty) => {
     <!-- Bloki zaufania + CTA -->
     <div class="hero-bottom">
       <div class="trust">
-        <div class="trust-box">
-          <span class="trust-box__num">0 zł</span>
-          <Icon name="truck" size={36} stroke={1.5} class="trust-box__icon" />
-          <span class="trust-box__sub">InPost i DPD</span>
-        </div>
-        <div class="trust-box">
-          <span class="trust-box__num">14 dni</span>
-          <Icon name="undo-2" size={36} stroke={1.5} class="trust-box__icon" />
-          <span class="trust-box__sub">Na zwrot</span>
-        </div>
-        <div class="trust-box">
-          <span class="trust-box__num">BLIK</span>
-          <Icon name="credit-card" size={36} stroke={1.5} class="trust-box__icon" />
-          <span class="trust-box__sub">Przelewy24, karta</span>
-        </div>
+        {trustBoxes.map((t) => (
+          <div class="trust-box">
+            <span class="trust-box__num">{t.num}</span>
+            <Icon name={t.icon} size={36} stroke={1.5} class="trust-box__icon" />
+            <span class="trust-box__sub">{t.sub}</span>
+          </div>
+        ))}
       </div>
       <span aria-hidden="true" class="hero-bottom__sep"></span>
       <div class="hero-cta">
@@ -197,13 +218,13 @@ const bundleRows = setQtys.map((qty) => {
     <div class="container">
       <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:45px;flex-wrap:wrap">
         <div style="display:flex;flex-direction:column;gap:24px">
-          <h2 class="h2">Produkty</h2>
-          <p class="lead" style="max-width:517px">Krople do oczu, kapsułki i wersja dla psa. Wszystkie wysyłamy za darmo w ciągu 1 dnia roboczego.</p>
+          <h2 class="h2" set:html={lines(productsCms.h2).map(escHtml).join('<br/>')} />
+          {productsCms.lead && <p class="lead" style="max-width:517px">{productsCms.lead}</p>}
         </div>
-        <a href="/sklep/" class="link-arrow">
+        {productsCms.link_label && <a href={productsCms.link_href} class="link-arrow">
           <Icon name="arrow-right" size={16} />
-          Zobacz wszystkie
-        </a>
+          {productsCms.link_label}
+        </a>}
       </div>
       <div class="products-grid" data-list="Strona główna">
         {products.map((p) => (
@@ -244,13 +265,13 @@ const bundleRows = setQtys.map((qty) => {
   <!-- ZESTAWY -->
   <section class="container sec-gap">
     <div class="bundles-head">
-      <h2 class="h2">Kupuj więcej,<br/>płać mniej</h2>
-      <p class="lead bundles-head__p">Jedno opakowanie wystarcza na około miesiąc. Dłuższa kuracja to niższa cena za sztukę, a dostawa zawsze jest darmowa.</p>
+      <h2 class="h2" set:html={lines(bundlesCms.h2).map(escHtml).join('<br/>')} />
+      {bundlesCms.lead && <p class="lead bundles-head__p">{bundlesCms.lead}</p>}
     </div>
     <div class="bundles-grid">
       {bundleRows.map((b, i) => (
         <div class={`bundle-card${i === 1 ? ' bundle-card--featured' : ''}`}>
-          {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? 'Polecany' : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' ')}</span>}
+          {i > 0 && (i === 1 || b.pct > 0) && <span class="tag tag--peach" style="position:absolute;right:24px;top:24px">{[i === 1 ? bundlesCms.badge : '', b.pct ? `−${b.pct}%` : ''].filter(Boolean).join(' ')}</span>}
           <span style="font-size:18px;line-height:27px;font-weight:400">{b.label}</span>
           <div>
             <div style="font-size:3rem;line-height:72px;font-weight:300">{b.total}</div>
@@ -265,12 +286,12 @@ const bundleRows = setQtys.map((qty) => {
               <span class="bullet" aria-hidden="true"></span>
               {b.save !== 'Cena regularna' ? b.save : ''}
             </li>}
-            <li style="display:flex;align-items:center;gap:14px">
+            {((bundlesCms.perks as string[]) || []).filter(Boolean).map((perk: string) => <li style="display:flex;align-items:center;gap:14px">
               <span class="bullet" aria-hidden="true"></span>
-              Darmowa dostawa
-            </li>
+              {perk}
+            </li>)}
           </ul>
-          <a href={`/produkt/krople-can-c/?zestaw=${b.qty}`} class={i === 1 ? 'btn btn--white btn--wide' : 'btn btn--outline btn--wide'}>Wybierz zestaw</a>
+          <a href={`/produkt/krople-can-c/?zestaw=${b.qty}`} class={i === 1 ? 'btn btn--white btn--wide' : 'btn btn--outline btn--wide'}>{bundlesCms.button}</a>
         </div>
       ))}
     </div>
@@ -314,8 +335,8 @@ const bundleRows = setQtys.map((qty) => {
       <div class="home-split__main rv-grid">
         {reviewSlots.map((r) => r === 'cta' ? (
           <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
-            <span style="font-size:1.5rem;line-height:28px;font-weight:400">Kupiłeś Can-C? Podziel się wrażeniami.</span>
-            <a href="/produkt/krople-can-c/#opinia" class="btn btn--outline btn--sm" style="align-self:flex-start">Napisz opinię</a>
+            <span style="font-size:1.5rem;line-height:28px;font-weight:400">{reviewsCms.cta_text}</span>
+            {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="btn btn--outline btn--sm" style="align-self:flex-start">{reviewsCms.cta_label}</a>}
           </div>
         ) : (
           <figure style="margin:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px">
@@ -358,11 +379,11 @@ const bundleRows = setQtys.map((qty) => {
   <!-- FAQ -->
   <section class="container home-split sec-gap">
     <div class="home-side">
-      <h2 class="h2">Najczęstsze<br/>pytania</h2>
-      <a href="/faq/" class="link-arrow">
+      <h2 class="h2" set:html={lines(faqHead.h2).map(escHtml).join('<br/>')} />
+      {faqHead.link_label && <a href={faqHead.link_href} class="link-arrow">
         <Icon name="arrow-right" size={16} />
-        Wszystkie pytania
-      </a>
+        {faqHead.link_label}
+      </a>}
     </div>
     <div class="home-split__main" style="gap:14px">
       {faqList.map((f, i) => (
@@ -375,8 +396,8 @@ const bundleRows = setQtys.map((qty) => {
   <section class="w sec-gap" id="newsletter" style="margin-bottom:90px">
     <div class="row cta-box">
       <div class="fl cta-box__l">
-        <h2 class="h2">Rabaty i nowości<br/>na Twój e-mail</h2>
-        <p class="p">Zapisz się na newsletter – jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.</p>
+        <h2 class="h2" set:html={lines(newsletterCms.h2).map(escHtml).join('<br/>')} />
+        {newsletterCms.text && <p class="p">{newsletterCms.text}</p>}
       </div>
       <div class="fl cta-box__r">
         <NewsletterForm variant="light" title="" lead="" />
@@ -388,13 +409,16 @@ const bundleRows = setQtys.map((qty) => {
 
 <style>
   /* Hero: kształty w px pod kontener 1300 px; węższe ekrany – układ pionowy */
-  .hero { overflow: hidden; }
+  .hero { overflow: hidden; container-type: inline-size; }
+  /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
+  .hero-fill { position: absolute; width: 100cqw; height: 638px; max-width: none; object-fit: cover; display: block; }
+  .hero-mobile-img { display: none; }
   @media (max-width: 1380px) {
     .hero { height: auto !important; display: flex; flex-direction: column; }
     .hero > div.hero-shape, .hero > span.hero-shape, .hero > span[aria-hidden="true"] { display: none; }
     .hero > div[style*="position:absolute;left:0;top:0"] { position: static !important; }
     .hero h1 span { padding-left: 0 !important; }
-    .hero > img.hero-shape { position: static !important; order: 3; width: 100% !important; height: auto !important; aspect-ratio: 4 / 3; max-height: 520px; margin-top: 24px; background: var(--image); object-fit: contain !important; padding: 6%; }
+    .hero-mobile-img { display: block; order: 3; width: 100%; aspect-ratio: 4 / 3; max-height: 520px; margin-top: 24px; object-fit: cover; border-radius: 32px; background: var(--image); }
     .hero > p { position: static !important; width: auto !important; margin-top: 24px; order: 2; }
     .hero-bottom > span[aria-hidden="true"] { display: none; }
   }
