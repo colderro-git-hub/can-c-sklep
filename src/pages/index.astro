@@ -82,9 +82,16 @@ const newsletterCms = at('home.newsletter', {
   text: 'Zapisz się na newsletter - jako pierwszy dowiesz się o promocjach i dostaniesz kody rabatowe dla subskrybentów. Bez spamu, wypisujesz się jednym kliknięciem.',
 });
 const why = at('home.why', {
-  h2: 'Dlaczego krople Can-C', lead: '', link_label: 'Przeczytaj, jak stosować', link_href: '/stosowanie/',
+  h2: 'Dlaczego | krople Can-C', lead: 'Can-C sprzedajemy od 2013 roku. Oto, co wyróżnia te krople.',
+  link_label: 'Przeczytaj, jak stosować', link_href: '/stosowanie/',
+  image_url: null as string | null, image_alt: '',
   features: features as { title: string; text: string }[],
 });
+// 4 punkty (mozaika): pola p1..p4 z panelu, a gdy puste - dawna lista „features”
+const whyPoints = [1, 2, 3, 4].map((n) => ({
+  title: String((why as any)[`p${n}_title`] ?? (why.features as any[])?.[n - 1]?.title ?? ''),
+  text: String((why as any)[`p${n}_text`] ?? (why.features as any[])?.[n - 1]?.text ?? ''),
+})).filter((p) => p.title || p.text);
 const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[], cta_text: 'Kupiłeś Can-C? Podziel się wrażeniami.', cta_label: 'Napisz opinię', cta_href: '/produkt/krople-can-c/#opinia' });
 
 // 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie - teksty z CMS
@@ -305,22 +312,28 @@ const bundleRows = setQtys.map((qty) => {
 
   <!-- DLACZEGO -->
   {visible(why) && (
-  <section class="container home-split sec-gap">
-    <div class="home-side">
-      <div class="why-shape" aria-hidden="true"></div>
-      <h2 class="h2" style={fs(why, 'h2')}>{why.h2}</h2>
+  <section class="container sec-gap why2">
+    <div class="why2__side">
+      <div class="why2__img">
+        {why.image_url
+          ? <img src={imgUrl(why.image_url, 800)} srcset={srcset(why.image_url, [480, 640, 800, 1200])} sizes="(max-width: 1000px) 92vw, 520px" alt={why.image_alt || ''} loading="lazy" />
+          : <span class="ben__ph">[grafika]</span>}
+      </div>
+      <h2 class="h2" style={fs(why, 'h2')} set:html={lines(why.h2).map(escHtml).join('<br/>')} />
       {why.lead && <p class="lead" style={fs(why, 'lead', 'text-align:left')}>{why.lead}</p>}
       {why.link_label && <a href={why.link_href} class="link-arrow">
         <Icon name="arrow-right" size={16} />
         {why.link_label}
       </a>}
     </div>
-    <div class="home-split__main why-grid">
-      {(why.features as {title:string;text:string}[]).map((f, i) => (
-        <div class="why-card">
-          <span class="why-card__n">0{i+1}</span>
-          <h3 style="margin:0;font-size:1.5rem;line-height:28px;font-weight:400">{f.title}</h3>
-          <p class="lead" style="text-align:left">{f.text}</p>
+    <div class="why2__grid">
+      {whyPoints.map((f, i) => (
+        <div class={`why2__card why2__card--${i + 1}`}>
+          <span class="why2__n">0{i + 1}</span>
+          <div class="why2__txt">
+            {f.title && <h3 class="why2__t" style={fs(why, `p${i + 1}_title`)}>{f.title}</h3>}
+            {f.text && <p class="why2__p" style={fs(why, `p${i + 1}_text`)}>{f.text}</p>}
+          </div>
         </div>
       ))}
     </div>
@@ -540,6 +553,33 @@ const bundleRows = setQtys.map((qty) => {
   .ben__body { grid-area: body; display: flex; flex-direction: column; align-items: flex-start; gap: 32px; padding-top: 8px; }
   .ben__list { font-size: 18px; line-height: 28px; gap: 14px; color: var(--muted); }
   .ben__ph { font-size: 14px; font-weight: 300; color: var(--muted); }
+  /* „Dlaczego Can-C” - mozaika: punkt 01 wyróżniony (2 rzędy, turkusowe tło), 04 na całą szerokość; grafika i tekst po prawej */
+  .why2 { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "grid side"; gap: 45px; align-items: stretch; }
+  .why2__grid { grid-area: grid; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .why2__side { grid-area: side; display: flex; flex-direction: column; gap: 24px; }
+  .why2__img { flex: 1; min-height: 320px; border-radius: 32px 240px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .why2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .why2__card { background: var(--band); border-radius: 32px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+  .why2__card--1 { grid-row: span 2; background: var(--accent-soft); justify-content: flex-end; }
+  .why2__card--4 { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 28px; }
+  .why2__n { font-size: 3rem; line-height: 1; font-weight: 200; color: var(--accent); }
+  .why2__card--1 .why2__n { font-size: 4.5rem; }
+  .why2__txt { display: flex; flex-direction: column; gap: 10px; }
+  .why2__t { margin: 0; font-size: 24px; line-height: 28px; font-weight: 400; }
+  .why2__card--1 .why2__t { font-size: 28px; line-height: 32px; }
+  .why2__p { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); }
+  .why2__card--1 .why2__p { font-size: 18px; line-height: 28px; color: var(--ink); }
+  @media (max-width: 1000px) {
+    .why2 { grid-template-columns: minmax(0, 1fr); grid-template-areas: "side" "grid"; gap: 32px; }
+    .why2__img { flex: none; min-height: 0; aspect-ratio: 16 / 9; border-radius: 24px 160px 24px 24px; }
+  }
+  @media (max-width: 600px) {
+    .why2__grid { grid-template-columns: minmax(0, 1fr); }
+    .why2__card--1 { grid-row: auto; }
+    .why2__card--4 { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .why2__card { padding: 22px; border-radius: 24px; }
+    .why2__n, .why2__card--1 .why2__n { font-size: 2.5rem; }
+  }
   .why-shape { width: 269px; height: 169px; background: var(--image); border-radius: 20px 500px 20px 20px; }
   .why-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
   .why-card { border: 1px solid var(--line); border-radius: 20px; padding: 32px; display: flex; flex-direction: column; gap: 14px; }

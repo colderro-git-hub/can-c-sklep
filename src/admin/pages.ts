@@ -44,10 +44,16 @@ export const PAGES_META: Record<string, any> = {
       perks: { type: 'list', label: 'Dodatkowe punkty na każdej karcie (jedna linia = jeden punkt)', hint: 'Np. „Darmowa dostawa”. Punkty „X miesięcy kuracji” i „Oszczędzasz X%” liczą się same z promocji.' },
       button: { type: 'text', label: 'Tekst przycisku na kartach' },
     }},
-    { key: 'home.why', label: '„Dlaczego Can-C"', schema: {
-      h2: { type: 'text', label: 'Nagłówek sekcji' }, lead: { type: 'textarea', label: 'Tekst lead' },
-      link_label: { type: 'text', label: 'Link - etykieta' }, link_href: { type: 'url', label: 'Link - href' },
-      features: { type: 'array', label: 'Kafelki JSON [{title, text}]', hint: 'Tablica obiektów JSON z polami title i text' },
+    { key: 'home.why', label: '„Dlaczego Can-C” (mozaika: punkty po lewej, grafika i tekst po prawej)', schema: {
+      h2: { type: 'text', label: 'Prawa kolumna - nagłówek', hint: '| = nowa linia' },
+      lead: { type: 'textarea', label: 'Prawa kolumna - tekst (puste = ukryj)' },
+      link_label: { type: 'text', label: 'Prawa kolumna - link, etykieta (puste = ukryj)' }, link_href: { type: 'url', label: 'Prawa kolumna - link, adres' },
+      image_url: { type: 'image', label: 'Prawa kolumna - grafika', hint: 'Pionowa albo kwadratowa; prawy górny róg jest mocno zaokrąglony.' },
+      image_alt: { type: 'text', label: 'Alt grafiki' },
+      p1_title: { type: 'text', label: 'Punkt 01 (wyróżniony) - tytuł' }, p1_text: { type: 'textarea', label: 'Punkt 01 - tekst' },
+      p2_title: { type: 'text', label: 'Punkt 02 - tytuł' }, p2_text: { type: 'textarea', label: 'Punkt 02 - tekst' },
+      p3_title: { type: 'text', label: 'Punkt 03 - tytuł' }, p3_text: { type: 'textarea', label: 'Punkt 03 - tekst' },
+      p4_title: { type: 'text', label: 'Punkt 04 (na całą szerokość) - tytuł' }, p4_text: { type: 'textarea', label: 'Punkt 04 - tekst' },
     }},
     { key: 'home.reviews', label: 'Opinie na stronie głównej', schema: {
       h2: { type: 'text', label: 'Nagłówek sekcji' },
