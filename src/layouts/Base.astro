@@ -65,6 +65,16 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     <!-- Animacje (lib/motion.ts): nagłówki z animacją ukryte do startu skryptu, żeby nie mignęły; przy „ogranicz ruch”
          albo gdy skrypt się nie wczyta (3 s) - widoczne od razu -->
     <script is:inline>
+      // Porównanie wyglądu bez cieni: ?cienie=0 (zapamiętane w tej karcie), ?cienie=1 przywraca
+      (function () {
+        try {
+          var c = new URLSearchParams(location.search).get('cienie');
+          if (c === '0' || c === '1') sessionStorage.setItem('canc-cienie', c);
+          if (sessionStorage.getItem('canc-cienie') === '0') document.documentElement.classList.add('no-shadows');
+        } catch (e) {}
+      })();
+    </script>
+    <script is:inline>
       (function () {
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
         var d = document.documentElement;

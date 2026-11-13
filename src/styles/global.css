@@ -591,3 +591,26 @@ a:not(.btn):not(.chip):not(.hd__cart):hover { text-decoration-color: var(--accen
 
 /* Animacje (lib/motion.ts): nagłówek hero czeka na podział na słowa - bez mignięcia pełnego tekstu */
 html.motion:not(.motion-ready) :is(.hero-h1, .us-hero h1, .ip-head h1, .sk-head h1, .fq-head h1, .kt-head h1, .nf__head h1, .nlp__state h1, .pr-title, .ct__title, .co__title, .ty__state h1, .ac__lhead h1, .ac__hello h1) { visibility: hidden; }
+
+/* ----------------------------------------------------------------
+   Delikatny cień zewnętrzny: zamknięte boksy, karty, pola ze zdjęciami, pola w ramkach.
+   Bez cienia: przyciski, checkboxy/radia, pola formularzy, etykiety (badge).
+   Porównanie bez cieni: dopisz do adresu ?cienie=0 (wraca po ?cienie=1).
+   ---------------------------------------------------------------- */
+:root {
+  --shadow-soft: 0 1px 2px rgba(20, 28, 43, .04), 0 8px 24px rgba(20, 28, 43, .06);
+  /* Zdjęcia z wycięciem w rogu (notch): cień tylko w dół, żeby nie odsłonić wyciętego narożnika */
+  --shadow-notch: 0 16px 28px -18px rgba(20, 28, 43, .22);
+}
+html:not(.no-shadows) :is(
+  .pc, .bundle-card, .cta-box, .trust-box,
+  .ben__card, .ben__img, .why2__card, .why2__img, .k9-img, .rv-grid > *, .og__img,
+  .pr-spec, .pr-review, .pr-form form, .pr-also,
+  .fq-item, .fq-comp, .fq-help,
+  .kt-q, .kt-form,
+  .ct__line, .ct__sum, .ct__perks, .ct__upsell,
+  .co__card, .ty__item, .ty__sum, .ty__card,
+  .ac__lcard, .ac__stat, .ac__chartbox, .ac__order, .ac__profile,
+  .us-calc, .ip-card, .ip-prose .card, .nl--card, .nf__card, .empty
+) { box-shadow: var(--shadow-soft); }
+html:not(.no-shadows) :is(.pr-main, .us-step .notch) { box-shadow: var(--shadow-notch); }
