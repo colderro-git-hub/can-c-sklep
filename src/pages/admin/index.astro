@@ -395,6 +395,7 @@ import { FURGONETKA_PANEL_URL } from '../../config';
                     <option value="faq">FAQ</option>
                     <option value="about">O nas</option>
                     <option value="how_to_use">Stosowanie</option>
+                    <option value="product">Karta produktu</option>
                     <option value="footer">Stopka</option>
                   </select>
                   <a class="btn btn--outline btn--sm" data-page-preview href="/" target="_blank" rel="noopener">Podgląd strony</a>
@@ -3148,6 +3149,19 @@ import { FURGONETKA_PANEL_URL } from '../../config';
         image_url: { type: 'image', label: 'Zdjęcie przy sekcji zakraplania' },
         image_alt: { type: 'text', label: 'Alt zdjęcia' },
       },},
+    ]},
+    product: { label: 'Karta produktu', previewHref: '/produkt/krople-can-c/', sections: [
+      { key: 'product.original', label: 'Oryginalny produkt (sekcja pod zakupem)', schema: {
+        products: { type: 'list', label: 'Na których produktach (identyfikatory, jedna linia = jeden)', hint: 'Np. krople-can-c. Puste = na wszystkich.' },
+        badge: { type: 'text', label: 'Etykieta nad nagłówkiem (puste = ukryj)' },
+        h2: { type: 'text', label: 'Nagłówek' },
+        lead: { type: 'textarea', label: 'Tekst pod nagłówkiem' },
+        items: { type: 'list', label: 'Jak rozpoznać oryginał (jedna linia = jeden punkt)' },
+        image_url: { type: 'image', label: 'Zdjęcie (np. opakowanie z oznaczeniem IVP)', hint: 'Najlepiej zbliżenie oznaczenia na pudełku; kadr poziomy lub kwadratowy.' },
+        image_alt: { type: 'text', label: 'Alt zdjęcia' },
+        link_label: { type: 'text', label: 'Link - etykieta (puste = ukryj)' },
+        link_href: { type: 'url', label: 'Link - adres' },
+      }},
     ]},
     footer: { label: 'Stopka', previewHref: '/', sections: [
       { key: 'footer.columns', label: 'Kolumny linków', schema: { columns: { type: 'array', label: 'Kolumny JSON [{title, links:[{href,label}]}]' } } },

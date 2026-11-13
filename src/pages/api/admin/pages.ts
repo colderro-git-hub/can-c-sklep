@@ -7,7 +7,7 @@ import { clearPageCache, type PageKey } from '../../../lib/page-content';
 
 export const prerender = false;
 
-const PAGES: PageKey[] = ['home', 'faq', 'about', 'how_to_use', 'footer'];
+const PAGES: PageKey[] = ['home', 'faq', 'about', 'how_to_use', 'footer', 'product'];
 const str = (v: unknown, max = 200) =>
   typeof v === 'string' ? v.trim().slice(0, max) : '';
 

@@ -12,6 +12,7 @@ import { getPromotions } from '../../lib/promotions-db';
 import { markdown, plainText } from '../../lib/markdown';
 import { getSite } from '../../lib/site-settings';
 import { TURNSTILE_SITE_KEY } from '../../config';
+import OriginalProduct from '../../components/OriginalProduct.astro';
 
 export const prerender = false;
 
@@ -190,6 +191,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       </div>
     </div>
   </section>
+
+  <OriginalProduct productId={p.id} />
 
   <section class="pr-band">
     <div class="w row pr-band__in">

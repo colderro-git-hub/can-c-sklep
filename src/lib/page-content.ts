@@ -3,7 +3,7 @@
 import type { Env } from './env';
 import { db } from './supabase';
 
-export type PageKey = 'home' | 'faq' | 'about' | 'how_to_use' | 'footer';
+export type PageKey = 'home' | 'faq' | 'about' | 'how_to_use' | 'footer' | 'product';
 
 type Row = { key: string; page: string; section: string; sort_order: number; data: Record<string, unknown> };
 
