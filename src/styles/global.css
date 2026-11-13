@@ -590,4 +590,4 @@ a:not(.btn):not(.chip):not(.hd__cart):hover { text-decoration-color: var(--accen
 }
 
 /* Animacje (lib/motion.ts): nagłówek hero czeka na podział na słowa - bez mignięcia pełnego tekstu */
-html.motion:not(.motion-ready) :is(.hero-h1, .us-hero h1, .ip-head h1, .sk-head h1, .fq-head h1, .kt-head h1, .nf__head h1, .nlp__state h1, .pr-title) { visibility: hidden; }
+html.motion:not(.motion-ready) :is(.hero-h1, .us-hero h1, .ip-head h1, .sk-head h1, .fq-head h1, .kt-head h1, .nf__head h1, .nlp__state h1, .pr-title, .ct__title, .co__title, .ty__state h1, .ac__lhead h1, .ac__hello h1) { visibility: hidden; }

@@ -7,9 +7,11 @@ import 'lenis/dist/lenis.css';
 
 const path = location.pathname;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Bez animacji i bez Lenisa: koszyk, zamówienie (z podziękowaniem) i konto - formularze, mapa paczkomatów, płatność
-const NO_SMOOTH = /^\/(zamowienie|koszyk|konto)(\/|$)/.test(path);
-const ANIMATED = !NO_SMOOTH;
+// Koszyk, zamówienie i konto: treść rysuje skrypt po wczytaniu danych - animujemy wejście elementów, gdy się pojawią.
+const APP = /^\/(zamowienie|koszyk|konto)(\/|$)/.test(path);
+// Bez Lenisa tylko formularz zamówienia (mapa paczkomatów i bramka płatności w okienkach - natywne przewijanie pewniejsze)
+const NO_SMOOTH = /^\/zamowienie\/?$/.test(path);
+const ANIMATED = true;
 
 // Grupy elementów odsłanianych przy przewijaniu (kolejno, z małym opóźnieniem)
 const REVEAL_GROUPS = [
@@ -70,6 +72,8 @@ async function start() {
     (window as any).__lenis = lenis;
   }
 
+  if (APP) { appMotion(gsap, SplitText); done(); return; }
+
   // ---------- H1 w hero: słowa wjeżdżają od dołu ----------
   document.querySelectorAll<HTMLElement>(SPLIT_H1).forEach((h) => {
     SplitText.create(h, {
@@ -114,6 +118,42 @@ async function start() {
   document.fonts?.ready.then(() => ScrollTrigger.refresh());
   window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
   done();
+}
+
+// ---------- Koszyk, zamówienie, konto: wejście sekcji, gdy skrypt strony je pokaże ----------
+// Sekcje są ukryte (atrybut hidden) do chwili wczytania danych; obserwujemy ich pojawienie się i dopiero wtedy animujemy.
+const APP_SPLIT = '.ct__title, .co__title, .ty__state h1, .ac__lhead h1, .ac__hello h1';
+const APP_REVEAL = [
+  '.steps',
+  '.ct__main', '.ct__side > *',
+  '.co__grid > *',
+  '.ty__head > :not(.ty__state), .ty__state > :not(h1), .ty__hero > :not(.ty__head)',
+  '.ac__lcard', '.ac__stats > *', '.ac__chartbox',
+];
+function appMotion(gsap: any, SplitText: any) {
+  const seen = new WeakSet<Element>();
+  const shown = (el: HTMLElement) => el.getClientRects().length > 0;
+  const animate = () => {
+    document.querySelectorAll<HTMLElement>(APP_SPLIT).forEach((h) => {
+      if (seen.has(h) || !shown(h)) return;
+      seen.add(h);
+      SplitText.create(h, { type: 'words', mask: 'words', onSplit: (self: any) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.06 }) });
+    });
+    for (const sel of APP_REVEAL) {
+      const els = Array.from(document.querySelectorAll<HTMLElement>(sel)).filter((el) => !seen.has(el) && shown(el));
+      if (!els.length) continue;
+      els.forEach((el) => seen.add(el));
+      gsap.from(els, { opacity: 0, y: 24, duration: 0.7, ease: 'power3.out', stagger: 0.08, clearProps: 'opacity,transform' });
+    }
+  };
+  animate();
+  // Pokazanie sekcji (zdjęcie atrybutu hidden, zmiana stanu strony) - animujemy nowo widoczne elementy
+  let queued = false;
+  new MutationObserver(() => {
+    if (queued) return;
+    queued = true;
+    queueMicrotask(() => { queued = false; animate(); });
+  }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden'] });
 }
 
 start().catch((e) => { console.error('Animacje: ' + (e instanceof Error ? e.message : String(e))); done(); });
