@@ -15,6 +15,7 @@ import Stars from '../components/Stars.astro';
 import NewsletterForm from '../components/NewsletterForm.astro';
 import ProductCard from '../components/ProductCard.astro';
 import FaqItem from '../components/FaqItem.astro';
+import { imgUrl, srcset } from '../lib/img';
 
 // Strona główna z aktualnymi produktami i treściami z bazy; przy awarii bazy - dane zapasowe z kodu
 export const prerender = false;
@@ -175,11 +176,11 @@ const bundleRows = setQtys.map((qty) => {
         { st: 'left:35.54%;top:545px;width:50px;height:50px', l: '-35.54cqw', t: 545, m: 'radial-gradient(circle at 100% 100%,transparent 49.5px,#000 50px)' },
       ].map((sh, i) => (
         <div class="hero-shape" style={`position:absolute;${sh.st};background:var(--image);overflow:hidden${sh.m ? `;-webkit-mask-image:${sh.m};mask-image:${sh.m}` : ''}`}>
-          {hero.image_url && <img src={hero.image_url} alt={i === 0 ? hero.image_alt : ''} aria-hidden={i === 0 ? undefined : 'true'} class="hero-fill" style={`left:${sh.l};top:-${sh.t}px`} loading="eager" decoding="async" />}
+          {hero.image_url && <img src={imgUrl(hero.image_url, 2000)} srcset={srcset(hero.image_url, [800, 1200, 1600, 2000])} sizes="100vw" alt={i === 0 ? hero.image_alt : ''} aria-hidden={i === 0 ? undefined : 'true'} class="hero-fill" style={`left:${sh.l};top:-${sh.t}px`} loading="eager" decoding="async" />}
         </div>
       ))}
       {!hero.image_url && <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie z panelu: Strony → Hero]</span>}
-      {hero.image_url && <img src={hero.image_url} alt="" class="hero-mobile-img" loading="eager" />}
+      {hero.image_url && <img src={imgUrl(hero.image_url, 800)} srcset={srcset(hero.image_url, [480, 640, 800, 1200])} sizes="92vw" alt="" class="hero-mobile-img" loading="lazy" />}
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
         {hero.kicker && <span class="tag" style={fs(hero, 'kicker', 'align-self:flex-start;min-height:36px;padding:0 16px;font-size:16px')}>{hero.kicker}</span>}
         <h1 class="hero-h1" style={fs(hero, 'h1', 'margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em')}>
@@ -242,7 +243,7 @@ const bundleRows = setQtys.map((qty) => {
     <div class="ben__card">
       <div class="ben__card-img">
         {benefits.card_image_url
-          ? <img src={benefits.card_image_url} alt={benefits.card_image_alt || ''} loading="lazy" />
+          ? <img src={imgUrl(benefits.card_image_url, 640)} srcset={srcset(benefits.card_image_url, [320, 480, 640, 800])} sizes="(max-width: 700px) 92vw, 360px" alt={benefits.card_image_alt || ''} loading="lazy" />
           : <span class="ben__ph">[zdjęcie: krople]</span>}
       </div>
       {benefits.card_title && <h3 class="ben__card-t" style={fs(benefits, 'card_title')}>{benefits.card_title}</h3>}
@@ -251,7 +252,7 @@ const bundleRows = setQtys.map((qty) => {
     </div>
     <div class="ben__img">
       {benefits.image_url
-        ? <img src={benefits.image_url} alt={benefits.image_alt} loading="lazy" />
+        ? <img src={imgUrl(benefits.image_url, 800)} srcset={srcset(benefits.image_url, [480, 640, 800, 1200])} sizes="(max-width: 700px) 92vw, (max-width: 1200px) 46vw, 480px" alt={benefits.image_alt} loading="lazy" />
         : <span class="ben__ph">[zdjęcie: zbliżenie oka]</span>}
     </div>
     <div class="ben__head">
@@ -351,7 +352,7 @@ const bundleRows = setQtys.map((qty) => {
             <div style="display:flex;align-items:center;gap:14px">
               {r.slug
                 ? <a href={`/produkt/${r.slug}/`} class="rv-thumb" title={r.productName} aria-label={`Opinia o produkcie: ${r.productName || r.slug}`}>
-                    {r.image ? <img src={r.image} alt="" width="44" height="44" loading="lazy" /> : null}
+                    {r.image ? <img src={imgUrl(r.image, 160)} alt="" width="44" height="44" loading="lazy" /> : null}
                   </a>
                 : <span class="rv-thumb" aria-hidden="true"></span>}
               <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
@@ -370,7 +371,7 @@ const bundleRows = setQtys.map((qty) => {
   <section class="container home-split home-split--center sec-gap">
     <div class="k9-img">
       {k9.image_url
-        ? <img src={k9.image_url} alt={k9.image_alt} style="width:100%;height:100%;object-fit:cover" />
+        ? <img src={imgUrl(k9.image_url, 1200)} srcset={srcset(k9.image_url, [480, 640, 800, 1200, 1600])} sizes="(max-width: 1000px) 92vw, 640px" alt={k9.image_alt} loading="lazy" style="width:100%;height:100%;object-fit:cover" />
         : <span style="font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie: pies]</span>}
     </div>
     <div class="home-split__main">

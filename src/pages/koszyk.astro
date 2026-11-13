@@ -102,6 +102,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   const fromLink = cartFromLink();
   import { trackViewCart, trackRemoveFromCart } from '../lib/analytics';
   import { typoSafe } from '../lib/typography';
+  import { imgUrl } from '../lib/img';
   import { applyPromotions, nextTier, normalizePromotion, promoActive, promoLabel, describeDiscount } from '../lib/promotions';
 
   if (fromLink.added || fromLink.code) {
@@ -151,7 +152,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
         const el = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
         el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = `/produkt/${p.slug}/`; });
-        if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = p.image; img.hidden = false; }
+        if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = imgUrl(p.image, 320); img.hidden = false; }
         el.querySelector('.ct__name')!.innerHTML = typoSafe(p.name);
         const unit = p.price !== null ? `${pln.format(p.price)} / szt.` : '';
         el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat −${pln.format(d)}` : ''].filter(Boolean).join(' · ');

@@ -7,7 +7,7 @@ import { matchRedirect, targetUrl, isProbe, logNotFound, countRedirectHit } from
 import { later } from './lib/background';
 import { typoResponse } from './lib/typography';
 
-const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon)(\/|$|\.ico$)/;
+const SKIP = /^\/(api|admin|_astro|_image|_server-islands|favicon|img)(\/|$|\.ico$)/;
 
 // Typografia (twarde spacje po spójnikach, wyrazy z łącznikiem w jednym wierszu) dla wszystkich stron sklepu -
 // SSR przy każdym żądaniu, statycznych raz przy budowaniu. Panel admina i API bez zmian.

@@ -186,6 +186,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   import { getCart, onCartChange, type CartItem } from '../lib/cart';
   import { ADDED_EVENT } from '../lib/cart-fx';
   import { typoSafe } from '../lib/typography';
+  import { imgUrl } from '../lib/img';
   import { applyPromotions, normalizePromotion, type Promotion } from '../lib/promotions';
 
   type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string; avail?: string };
@@ -239,7 +240,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
       const gross = (p.price ?? 0) * i.qty;
       const disc = promo.discounts[p.slug] ?? 0;
       sum += gross - disc;
-      const img = p.image ? `<img class="pv-img" src="${esc(p.image)}" alt="" loading="lazy">` : '<span class="pv-img"></span>';
+      const img = p.image ? `<img class="pv-img" src="${esc(imgUrl(p.image, 160))}" alt="" loading="lazy">` : '<span class="pv-img"></span>';
       return `<li>${img}<span class="pv-name">${typoSafe(p.name)} × ${i.qty}</span><span class="pv-price">${zl(gross - disc)}${disc ? `<s>${zl(gross)}</s>` : ''}</span></li>`;
     }).join('');
     const pvPromos = document.querySelector<HTMLElement>('[data-pv-promos]');

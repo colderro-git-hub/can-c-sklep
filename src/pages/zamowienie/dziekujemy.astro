@@ -96,6 +96,7 @@ import Base from '../../layouts/Base.astro';
   import { clearCart } from '../../lib/cart';
   import { trackPurchase, calcTax } from '../../lib/analytics';
   import { typoSafe } from '../../lib/typography';
+  import { imgUrl } from '../../lib/img';
   import { icon as lucide } from '../../lib/icons';
 
   type Line = { slug: string; name: string; qty: number; unitPrice: number; discount: number; total: number; image: string | null; leadTime: string };
@@ -128,7 +129,7 @@ import Base from '../../layouts/Base.astro';
 
     q('[data-items]').innerHTML = d.items.map((i) => `
       <div class="ty__item" role="listitem">
-        <a class="ty__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(i.image)}" alt="" width="66" height="66" loading="lazy" />` : ''}</a>
+        <a class="ty__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(imgUrl(i.image, 160))}" alt="" width="66" height="66" loading="lazy" />` : ''}</a>
         <span class="ty__info">
           <a class="ty__name" href="/produkt/${esc(i.slug)}/">${typoSafe(i.name)}</a>
           <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat −${zl(i.discount)}` : ''}</span>

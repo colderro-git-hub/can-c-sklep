@@ -3,6 +3,7 @@
 import Icon from './Icon.astro';
 import { getEnv } from '../lib/env';
 import { getPageContent, getSection, visible, fs } from '../lib/page-content';
+import { imgUrl, srcset } from '../lib/img';
 
 interface Props { productId: string }
 const { productId } = Astro.props;
@@ -30,7 +31,7 @@ const items = ((d.items as string[]) || []).filter(Boolean);
   <section class="w og" aria-labelledby="og-h">
     <div class="og__img">
       {d.image_url
-        ? <img src={d.image_url} alt={d.image_alt || ''} loading="lazy" />
+        ? <img src={imgUrl(d.image_url, 800)} srcset={srcset(d.image_url, [480, 640, 800, 1200])} sizes="(max-width: 900px) 92vw, 560px" alt={d.image_alt || ''} loading="lazy" />
         : <span class="og__ph"><Icon name="shield-check" size={64} stroke={1.25} /></span>}
     </div>
     <div class="og__txt">

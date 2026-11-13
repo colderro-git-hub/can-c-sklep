@@ -138,6 +138,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
   import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
   import { BANK_ACCOUNT, BANK_PROVIDER } from '../../lib/bank-transfer';
   import { typoSafe } from '../../lib/typography';
+  import { imgUrl } from '../../lib/img';
   import { applyPromotions, normalizePromotion } from '../../lib/promotions';
 
   (async () => {
@@ -169,7 +170,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const li = document.createElement('li');
       const img = (p as any).image as string | undefined;
       li.innerHTML = (img ? '<img class="co__thumb" alt="" width="54" height="54" loading="lazy">' : '<span class="co__thumb"></span>') + '<span class="co__lname"></span><span class="co__lprice"></span>';
-      if (img) li.querySelector('img')!.src = img;
+      if (img) li.querySelector('img')!.src = imgUrl(img, 160);
       li.querySelector('.co__lname')!.innerHTML = `${typoSafe(p.name)} × ${it.qty}`;
       li.querySelector('.co__lprice')!.textContent = pln.format(gross - d);
       ul.append(li);

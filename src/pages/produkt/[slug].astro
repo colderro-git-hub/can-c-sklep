@@ -13,6 +13,7 @@ import { markdown, plainText } from '../../lib/markdown';
 import { getSite } from '../../lib/site-settings';
 import { TURNSTILE_SITE_KEY } from '../../config';
 import OriginalProduct from '../../components/OriginalProduct.astro';
+import { imgUrl, srcset } from '../../lib/img';
 
 export const prerender = false;
 
@@ -100,7 +101,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       <div class={`fl pr-gallery${p.avail === 'out_of_stock' ? ' is-out' : ''}`} data-gallery>
         <div class="notch pr-main">
           {images.length
-            ? <img src={images[0].url} alt={images[0].alt || p.name} width="800" height="800" data-main fetchpriority="high" />
+            ? <img src={imgUrl(images[0].url, 1200)} srcset={srcset(images[0].url, [480, 640, 800, 1200, 1600])} sizes="(max-width: 1000px) 92vw, 640px" alt={images[0].alt || p.name} width="800" height="800" data-main fetchpriority="high" />
             : <span class="notch__ph">[Zdjęcie produktu - dodaj w panelu]</span>}
           {p.tags[0] && <span class="pr-flag">{p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1)}</span>}
           <AvailBadge avail={p.avail} />
@@ -113,8 +114,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         {images.length > 1 && (
           <div class="pr-thumbs">
             {images.slice(0, 8).map((im, i) => (
-              <button type="button" class="pr-thumb" aria-label={`Zdjęcie ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'} data-src={im.url} data-alt={im.alt || p.name}>
-                <img src={im.url} alt="" width="160" height="160" loading="lazy" />
+              <button type="button" class="pr-thumb" aria-label={`Zdjęcie ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'} data-src={imgUrl(im.url, 1200)} data-srcset={srcset(im.url, [480, 640, 800, 1200, 1600]) || ''} data-alt={im.alt || p.name}>
+                <img src={imgUrl(im.url, 320)} alt="" width="160" height="160" loading="lazy" />
               </button>
             ))}
           </div>
@@ -304,7 +305,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           {related.map((r) => (
             <a class="pr-also__i" href={`/produkt/${r.id}/`} data-slug={r.id} data-name={r.name} data-price={r.current ?? 0}>
               <span class={`pr-also__img${r.avail === 'out_of_stock' ? ' is-out' : ''}`}>
-                {r.images[0] ? <img src={r.images[0].url} alt={r.images[0].alt || r.name} width="400" height="400" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
+                {r.images[0] ? <img src={imgUrl(r.images[0].url, 640)} srcset={srcset(r.images[0].url, [320, 480, 640, 800])} sizes="(max-width: 700px) 92vw, 400px" alt={r.images[0].alt || r.name} width="400" height="400" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
                 <AvailBadge avail={r.avail} />
               </span>
               <span class="pr-also__n">{r.name}</span>
@@ -397,7 +398,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   const zoom = gallery?.querySelector<HTMLAnchorElement>('[data-zoom]');
   gallery?.querySelectorAll<HTMLButtonElement>('.pr-thumb').forEach((t) => t.addEventListener('click', () => {
     if (!main) return;
-    main.src = t.dataset.src!; main.alt = t.dataset.alt || '';
+    main.srcset = t.dataset.srcset || ''; main.src = t.dataset.src!; main.alt = t.dataset.alt || '';
     if (zoom) zoom.href = t.dataset.src!;
     gallery.querySelectorAll('.pr-thumb').forEach((x) => x.setAttribute('aria-pressed', String(x === t)));
   }));

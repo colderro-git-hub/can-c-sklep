@@ -7,6 +7,7 @@ import { getCatalog } from '../lib/catalog';
 import { applyPromotions } from '../lib/promotions';
 import { getPromotions } from '../lib/promotions-db';
 import { getPageContent, getSection, visible, fs } from '../lib/page-content';
+import { imgUrl, srcset } from '../lib/img';
 
 export const prerender = false;
 
@@ -96,7 +97,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
         return (
           <li class="us-step">
             <div class="notch us-step__img">
-              {img ? <img src={img} alt={`Krok ${i + 1}: ${t}`} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[ilustracja: krok {i + 1}]</span>}
+              {img ? <img src={imgUrl(img, 640)} srcset={srcset(img, [320, 480, 640, 800])} sizes="(max-width: 700px) 92vw, 340px" alt={`Krok ${i + 1}: ${t}`} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[ilustracja: krok {i + 1}]</span>}
               <span aria-hidden="true" class="us-step__n">{i + 1}</span>
             </div>
             <p class="us-step__t"><span class="crumb" style="display:block">Krok {i + 1}</span>{t}</p>
@@ -114,7 +115,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
         <h2 class="h2" style={fs(applying, 'h2')}>{applying.h2}</h2>
         {applying.lead && <p class="p p--lg" style={fs(applying, 'lead')}>{applying.lead}</p>}
         <div class="us-arch">
-          {applying.image_url ? <img src={applying.image_url} alt={applying.image_alt || 'Zakraplanie'} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
+          {applying.image_url ? <img src={imgUrl(applying.image_url, 800)} srcset={srcset(applying.image_url, [480, 640, 800, 1200])} sizes="(max-width: 900px) 92vw, 533px" alt={applying.image_alt || 'Zakraplanie'} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
         </div>
       </div>
       <ol class="us-drops">

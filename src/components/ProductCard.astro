@@ -4,6 +4,7 @@ import { AVAIL_LABEL } from '../lib/catalog';
 import { formatPrice } from '../data/shop';
 import type { Availability } from '../lib/pricing';
 import Icon from './Icon.astro';
+import { imgUrl, srcset } from '../lib/img';
 interface Props {
   slug: string; name: string; tag?: string; flag?: string; image?: string | null; alt?: string;
   avail: Availability; price: number | null; regular?: number | null; onSale?: boolean;
@@ -13,7 +14,7 @@ const href = `/produkt/${slug}/`;
 ---
 <article class="pc" data-slug={slug} data-name={name} data-price={price ?? 0}>
   <div class={`notch pc__img${avail === 'out_of_stock' ? ' is-out' : ''}`}>
-    {image ? <img src={image} alt={alt || name} width="400" height="300" loading="lazy" /> : <span class="notch__ph">[zdjęcie produktu]</span>}
+    {image ? <img src={imgUrl(image, 640)} srcset={srcset(image, [320, 480, 640, 800, 1200])} sizes="(max-width: 700px) 92vw, (max-width: 1200px) 46vw, 440px" alt={alt || name} width="400" height="300" loading="lazy" decoding="async" /> : <span class="notch__ph">[zdjęcie produktu]</span>}
     {/* Na zdjęciu tylko informacja o braku towaru */}
     {avail === 'out_of_stock' && <span class={`p-badge p-badge--${avail}`}>{AVAIL_LABEL[avail]}</span>}
     <a href={href} aria-label={`Zobacz: ${name}`} class="notch__btn" data-select>
