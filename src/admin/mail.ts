@@ -1,6 +1,6 @@
 // Panel admina - moduł „mail” (wydzielony z admin/index.astro).
 import { $, STATUS, api, date, esc, pln, toast } from './core';
-import { act, openOrder } from './orders';
+import { act, openDrawer, openOrder } from './orders';
 import { bindLinks } from './navigation';
 
 // ---------- Podpis w korespondencji (podgląd jak w mailu) ----------
@@ -117,7 +117,14 @@ export async function openThread(id: string, markRead = true) {
       </article>`;
     }).join('')}</div>
     ${t.status === 'spam' ? '' : `<form class="mb__reply" data-mb-reply>
-      <label class="field">Odpowiedź do ${esc(t.contact_email)}<textarea class="input" name="text" required>Dzień dobry,
+      <div class="mb__tpl">
+        <select class="input input--sm" data-mb-tpl aria-label="Wstaw szablon odpowiedzi">
+          <option value="">Wstaw szablon…</option>
+          ${(d.vars?.templates || []).map((tp: any, i: number) => `<option value="${i}">${esc(tp.name)}</option>`).join('')}
+        </select>
+        <button type="button" class="link" data-mb-tpl-edit>Zarządzaj szablonami</button>
+      </div>
+      <label class="field">Odpowiedź do ${esc(t.contact_email)}<textarea class="input" name="text" required>Dzień dobry${d.vars?.imie ? ` ${esc(d.vars.imie)}` : ''},
 
 </textarea></label>
       <div class="mb__sig"><span class="muted small">Podpis (Ustawienia sklepu → Podpis w korespondencji):</span>${d.signature || ''}</div>
@@ -172,7 +179,27 @@ export async function openThread(id: string, markRead = true) {
     input.value = ''; drawFiles();
   });
   const ta = form.querySelector('textarea')!;
-  ta.setSelectionRange(14, 14);
+  const greet = ta.value.indexOf('\n\n') + 2;
+  ta.setSelectionRange(greet, greet);
+
+  // Szablony: wstawienie w miejscu kursora z podstawionymi danymi klienta i zamówienia
+  const fill = (body: string) => {
+    const v = d.vars || {};
+    const map: Record<string, string> = { ...v, status: STATUS[v.status] || v.status || '' };
+    return body.replace(/\{(imie|zamowienie|status|przesylka|email|czas_wysylki)\}/g, (_m, k) => map[k] || `[${k}]`);
+  };
+  box.querySelector<HTMLSelectElement>('[data-mb-tpl]')?.addEventListener('change', (e) => {
+    const sel = e.target as HTMLSelectElement;
+    const tp = d.vars?.templates?.[Number(sel.value)];
+    sel.value = '';
+    if (!tp) return;
+    const text = fill(tp.body);
+    const at = ta.selectionStart ?? ta.value.length;
+    ta.setRangeText(text, at, ta.selectionEnd ?? at, 'end');
+    ta.focus();
+    if (/\[(imie|zamowienie|status|przesylka|email|czas_wysylki)\]/.test(text)) toast('Część danych nie jest znana (w nawiasach kwadratowych) - uzupełnij przed wysłaniem.', true);
+  });
+  box.querySelector('[data-mb-tpl-edit]')?.addEventListener('click', () => openTemplates(() => openThread(id, false)));
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(form);
@@ -191,4 +218,49 @@ api('/api/admin/poczta?folder=inbox').then((d) => setMailBadge(d.counts?.inbox |
 if (location.hash.startsWith('#korespondencja')) {
   const tid = location.hash.split('/')[1];
   setTimeout(() => { document.querySelector<HTMLButtonElement>('[data-tab="mail"]')?.click(); if (tid && /^[0-9a-f-]{36}$/i.test(tid)) openThread(tid); }, 0);
+}
+
+
+// ---------- Szablony odpowiedzi: zarządzanie (szuflada) ----------
+export async function openTemplates(onClose?: () => void) {
+  openDrawer(true);
+  $('[data-d-title]').textContent = 'Szablony odpowiedzi';
+  const body = $('[data-d-body]');
+  body.innerHTML = '<p class="muted">Ładowanie…</p>';
+  let list: { id: string; name: string; body: string }[] = [];
+  try { list = (await api('/api/admin/poczta?templates=1')).templates; } catch (e) { body.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
+  const draw = () => {
+    body.innerHTML = `<p class="muted">Szablon wstawiasz w odpowiedzi z listy „Wstaw szablon…”. Znaczniki zamieniają się na dane z wątku: <code>{imie}</code>, <code>{zamowienie}</code> (np. „nr 1234”), <code>{status}</code>, <code>{przesylka}</code> (link do śledzenia), <code>{email}</code>, <code>{czas_wysylki}</code>. Powitanie i podpis dodają się same - szablon to sama treść.</p>
+      <div class="stack" data-tpl-list>${list.map((t, i) => `<div class="tpl" data-tpl="${i}">
+        <div class="tpl__head"><input class="input" data-tpl-name value="${esc(t.name)}" maxlength="60" aria-label="Nazwa szablonu" />
+          <span class="tpl__tools">
+            <button type="button" class="icon-btn" data-tpl-mv="-1" aria-label="W górę" ${i === 0 ? 'disabled' : ''}><svg viewBox="0 0 24 24"><path d="m6 15 6-6 6 6" /></svg></button>
+            <button type="button" class="icon-btn" data-tpl-mv="1" aria-label="W dół" ${i === list.length - 1 ? 'disabled' : ''}><svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></svg></button>
+            <button type="button" class="icon-btn" data-tpl-del aria-label="Usuń szablon"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg></button>
+          </span></div>
+        <textarea class="input" data-tpl-body rows="4" maxlength="4000" aria-label="Treść szablonu">${esc(t.body)}</textarea>
+      </div>`).join('')}</div>
+      <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-tpl-add>+ Nowy szablon</button><button type="button" class="btn btn--sm" data-tpl-save>Zapisz szablony</button></div>`;
+  };
+  const sync = () => {
+    body.querySelectorAll<HTMLElement>('[data-tpl]').forEach((el) => {
+      const i = Number(el.dataset.tpl);
+      list[i].name = (el.querySelector('[data-tpl-name]') as HTMLInputElement).value;
+      list[i].body = (el.querySelector('[data-tpl-body]') as HTMLTextAreaElement).value;
+    });
+  };
+  draw();
+  body.onclick = async (e) => {
+    const t = e.target as HTMLElement;
+    const row = t.closest<HTMLElement>('[data-tpl]');
+    if (t.closest('[data-tpl-add]')) { sync(); list.push({ id: '', name: '', body: '' }); draw(); body.querySelector<HTMLInputElement>('[data-tpl]:last-child [data-tpl-name]')?.focus(); return; }
+    if (row && t.closest('[data-tpl-del]')) { sync(); if (!confirm('Usunąć ten szablon?')) return; list.splice(Number(row.dataset.tpl), 1); draw(); return; }
+    const mv = t.closest<HTMLElement>('[data-tpl-mv]');
+    if (row && mv) { sync(); const i = Number(row.dataset.tpl), j = i + Number(mv.dataset.tplMv); [list[i], list[j]] = [list[j], list[i]]; draw(); return; }
+    if (t.closest('[data-tpl-save]')) {
+      sync();
+      try { list = (await api('/api/admin/poczta', { action: 'templates_save', templates: list })).templates; toast('Zapisano szablony.'); draw(); if (onClose) onClose(); }
+      catch (err) { toast((err as Error).message, true); }
+    }
+  };
 }

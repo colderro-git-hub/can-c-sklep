@@ -4,6 +4,13 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { addMessage, inboxAddresses, parseAddr, putAttachment, receivingKey, signatureHtml, signatureText, signedAttachmentUrl } from '../../../lib/mailbox';
 import { getSite } from '../../../lib/site-settings';
+import { trackingUrl } from '../../../lib/tracking';
+import { DEFAULT_TEMPLATES, cleanTemplates, type MailTemplate } from '../../../lib/mail-templates';
+
+async function getTemplates(sb: ReturnType<typeof db>): Promise<MailTemplate[]> {
+  const [row] = await sb.select<{ value: MailTemplate[] }>('settings?select=value&key=eq.mail_templates').catch(() => []);
+  return Array.isArray(row?.value) ? row.value : DEFAULT_TEMPLATES;
+}
 
 export const prerender = false;
 
@@ -24,6 +31,9 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
   if (!(await requireAdmin(request, env))) return json(401, { error: 'Brak dostępu.' });
   const sb = db(env);
   try {
+    // Szablony odpowiedzi
+    if (url.searchParams.get('templates')) return json(200, { templates: await getTemplates(sb) });
+
     // Załącznik: link czasowy z własnego magazynu, a gdy kopii nie ma - świeży link z Resend
     const att = url.searchParams.get('att');
     if (att) {
@@ -55,10 +65,23 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
         }
       }
       const [customer] = thread.customer_id ? await sb.select<any>(`customer_stats?select=id,full_name,email,phone,orders_count,total_spent,city&id=eq.${thread.customer_id}`) : [];
-      const orders = await sb.select<any>(`orders?select=id,number,status,total,created_at&email=eq.${encodeURIComponent(thread.contact_email)}&order=created_at.desc&limit=5`);
+      const orders = await sb.select<any>(`orders?select=id,number,status,total,created_at,carrier,tracking_number&email=eq.${encodeURIComponent(thread.contact_email)}&order=created_at.desc&limit=5`);
       // Podgląd podpisu pod polem odpowiedzi
       const signature = signatureHtml(await getSite(env));
-      return json(200, { thread, messages, customer: customer ?? null, orders, signature });
+      // Dane do znaczników w szablonach ({imie}, {zamowienie}, {status}, {przesylka}, …)
+      const [cust] = thread.customer_id ? await sb.select<any>(`customers?select=first_name&id=eq.${thread.customer_id}`).catch(() => []) : [];
+      const site = await getSite(env);
+      const ord = (thread.order_number ? orders.find((o: any) => o.number === thread.order_number) : null) ?? orders[0] ?? null;
+      const vars = {
+        imie: cust?.first_name || String(thread.contact_name || '').split(/\s+/)[0] || '',
+        zamowienie: ord ? `nr ${ord.number}` : thread.order_number ? `nr ${thread.order_number}` : '',
+        status: ord?.status || '',
+        przesylka: ord?.tracking_number ? trackingUrl(ord.carrier || 'inpost', ord.tracking_number) : '',
+        email: site.email || '',
+        czas_wysylki: site.shippingTime || 'w ciągu 1 dnia roboczego',
+        templates: await getTemplates(sb),
+      };
+      return json(200, { thread, messages, customer: customer ?? null, orders, signature, vars });
     }
 
     const folder = FOLDERS[url.searchParams.get('folder') || 'inbox'] ? url.searchParams.get('folder') || 'inbox' : 'inbox';
@@ -97,6 +120,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
   const sb = db(env);
+  const now0 = new Date().toISOString();
+  if (b.action === 'templates_save') {
+      const list = cleanTemplates(b.templates);
+      if ('error' in list) return json(422, { error: list.error });
+      await sb.upsert('settings', { key: 'mail_templates', value: list, updated_at: now0, updated_by: admin }, 'key', 'key');
+      return json(200, { templates: list });
+    }
   const ids = (Array.isArray(b.ids) ? b.ids : [b.id]).map(String).filter((x: string) => UUID.test(x)).slice(0, 200);
   if (!ids.length) return json(400, { error: 'Nieprawidłowy wątek.' });
   const inIds = `id=in.(${ids.join(',')})`;
