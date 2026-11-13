@@ -62,6 +62,16 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     <!-- Poppins z własnego serwera (@fontsource): bez połączenia z Google, szybsze pierwsze wyświetlenie -->
     <link rel="preload" href={poppins300} as="font" type="font/woff2" crossorigin />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Animacje (lib/motion.ts): nagłówki z animacją ukryte do startu skryptu, żeby nie mignęły; przy „ogranicz ruch”
+         albo gdy skrypt się nie wczyta (3 s) - widoczne od razu -->
+    <script is:inline>
+      (function () {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var d = document.documentElement;
+        d.classList.add('motion');
+        setTimeout(function () { d.classList.add('motion-ready'); }, 3000);
+      })();
+    </script>
     <meta name="color-scheme" content="light" />
     <!-- Favicon z panelu (Ustawienia sklepu): wersja zależna od motywu przeglądarki/systemu.
          Atrybut media nie działa we wszystkich przeglądarkach, więc przełączamy go też skryptem. -->
@@ -171,6 +181,9 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
           try { sessionStorage.setItem(KEY, JSON.stringify({ at: Date.now(), site })); } catch { /* tryb prywatny */ }
         }).catch(() => {});
       } catch { /* brak pamięci sesji - zostają dane z config.ts */ }
+    </script>
+      <script>
+      import '../lib/motion';
     </script>
   </body>
 </html>

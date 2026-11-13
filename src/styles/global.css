@@ -588,3 +588,8 @@ a:not(.btn):not(.chip):not(.hd__cart):hover { text-decoration-color: var(--accen
   .input { height: 56px; }
   .acc { font-size: 1.125rem; }
 }
+
+/* Animacje (lib/motion.ts): nagłówek hero czeka na podział na słowa - bez mignięcia pełnego tekstu */
+html.motion:not(.motion-ready) .hero-h1,
+html.motion:not(.motion-ready) .us-hero h1,
+html.motion:not(.motion-ready) .ip-head h1 { visibility: hidden; }
