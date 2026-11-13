@@ -1,5 +1,5 @@
 // Animacje sklepu: GSAP (ScrollTrigger, SplitText) + Lenis (płynne przewijanie). Bez Reacta.
-// Zasady: tylko strony treści (nie karta produktu, koszyk, zamówienie, konto); systemowe „ogranicz ruch” = brak animacji
+// Zasady: wszystkie strony sklepu poza koszykiem, zamówieniem i kontem; systemowe „ogranicz ruch” = brak animacji
 // i natywne przewijanie; treść jest w HTML od początku - animacja ją tylko odsłania.
 // GSAP ładuje się tylko na stronach z animacjami (import dynamiczny); pozostałe strony dostają sam Lenis (kilka kB).
 import Lenis from 'lenis';
@@ -7,10 +7,9 @@ import 'lenis/dist/lenis.css';
 
 const path = location.pathname;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-// Strony z animacjami (reszta: tylko płynne przewijanie albo nic)
-const ANIMATED = path === '/' || /^\/(stosowanie|o-nas)\/?$/.test(path);
-// Bez Lenisa: formularze i strony z mapą/modalami (natywne przewijanie jest tam pewniejsze)
+// Bez animacji i bez Lenisa: koszyk, zamówienie (z podziękowaniem) i konto - formularze, mapa paczkomatów, płatność
 const NO_SMOOTH = /^\/(zamowienie|koszyk|konto)(\/|$)/.test(path);
+const ANIMATED = !NO_SMOOTH;
 
 // Grupy elementów odsłanianych przy przewijaniu (kolejno, z małym opóźnieniem)
 const REVEAL_GROUPS = [
@@ -24,7 +23,20 @@ const REVEAL_GROUPS = [
   '.us-step', '.us-split__l', '.us-sec .h2', '.us-drops',
   '.og > *',
   '.ip-prose > section, .ip-side > *',
+  // Sklep
+  '.sk-head .p', '.sk-gh', '.sk-grid > *',
+  // Karta produktu: tylko sekcje pod blokiem zakupu (zdjęcia, cena i przycisk od razu, bez animacji)
+  '.pr-sec', '.pr-also > *', '.pr-rsum',
+  // FAQ
+  // (lista pytań jako całość - wyszukiwarka FAQ ukrywa i pokazuje pojedyncze pytania)
+  '.fq-head__l > :not(h1)', '.fq-search', '.fq-list', '.fq-side > *',
+  // Kontakt
+  '.kt-head__l > :not(h1)', '.kt-quick > *', '.kt-info', '.kt-form',
+  // 404 i newsletter
+  '.nf__head > :not(h1)', '.nf__grid > *', '.nlp__state:not([hidden]) > :not(h1)',
 ];
+// Nagłówki H1 wjeżdżające słowami
+const SPLIT_H1 = '.hero-h1, .us-hero h1, .ip-head h1, .sk-head h1, .fq-head h1, .kt-head h1, .nf__head h1, .nlp__state:not([hidden]) h1, .pr-title';
 const PARALLAX = '.ben__img img, .why2__img img, .k9-img img, .og__img img';
 
 function done() { document.documentElement.classList.add('motion-ready'); }
@@ -59,7 +71,7 @@ async function start() {
   }
 
   // ---------- H1 w hero: słowa wjeżdżają od dołu ----------
-  document.querySelectorAll<HTMLElement>('.hero-h1, .us-hero h1, .ip-head h1').forEach((h) => {
+  document.querySelectorAll<HTMLElement>(SPLIT_H1).forEach((h) => {
     SplitText.create(h, {
       type: 'words', mask: 'words', autoSplit: true,
       onSplit: (self) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.06, delay: 0.1 }),
