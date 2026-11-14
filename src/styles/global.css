@@ -611,6 +611,6 @@ html:not(.no-shadows) :is(
   .ct__line, .ct__sum, .ct__perks, .ct__upsell,
   .co__card, .ty__item, .ty__sum, .ty__card,
   .ac__lcard, .ac__stat, .ac__chartbox, .ac__order, .ac__profile,
-  .us-calc, .ip-card, .ip-prose .card, .nl--card, .nf__card, .empty
+  .us-calc, .ip-card, .ip-prose .card, .nl--card, .nf__card, .empty, .hero-mobile-img
 ) { box-shadow: var(--shadow-soft); }
 html:not(.no-shadows) :is(.pr-main, .us-step .notch) { box-shadow: var(--shadow-notch); }

@@ -175,6 +175,8 @@ const bundleRows = setQtys.map((qty) => {
   {visible(hero) && (
   <section class="container" style="margin-top: 45px">
     <div class="hero" style="position:relative;height:638px">
+      {/* Kształty w jednej warstwie: cień (drop-shadow) obrysowuje cały kształt, bez szwów między kawałkami */}
+      <div class="hero-art" aria-hidden={hero.image_url ? undefined : 'true'}>
       {[
         { st: 'left:64.46%;right:0;top:0;height:545px;border-radius:50px', l: '-64.46cqw', t: 0 },
         { st: 'left:0;top:221px;width:72.38%;height:324px;border-radius:50px', l: '0px', t: 221 },
@@ -186,6 +188,7 @@ const bundleRows = setQtys.map((qty) => {
           {hero.image_url && <img src={imgUrl(hero.image_url, 2000)} srcset={srcset(hero.image_url, [800, 1200, 1600, 2000])} sizes="100vw" alt={i === 0 ? hero.image_alt : ''} aria-hidden={i === 0 ? undefined : 'true'} class="hero-fill" style={`left:${sh.l};top:-${sh.t}px`} loading="eager" decoding="async" />}
         </div>
       ))}
+      </div>
       {!hero.image_url && <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie z panelu: Strony → Hero]</span>}
       {hero.image_url && <img src={imgUrl(hero.image_url, 800)} srcset={srcset(hero.image_url, [480, 640, 800, 1200])} sizes="92vw" alt="" class="hero-mobile-img" loading="lazy" />}
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
@@ -440,6 +443,9 @@ const bundleRows = setQtys.map((qty) => {
   /* Hero: kształty w px pod kontener 1300 px; węższe ekrany - układ pionowy */
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
+  .hero-art { position: absolute; inset: 0; pointer-events: none; }
+  /* Cień całego kształtu hero (jak --shadow-soft w global.css, ale po obrysie); wyłączany przez ?cienie=0 */
+  :global(html:not(.no-shadows)) .hero-art { filter: drop-shadow(0 1px 1px rgba(20, 28, 43, .05)) drop-shadow(0 10px 22px rgba(20, 28, 43, .08)); }
   .hero-fill { position: absolute; width: 100cqw; height: 638px; max-width: none; object-fit: cover; display: block; }
   .hero-mobile-img { display: none; }
   /* H1 nie wchodzi pod zdjęcie (prawy kształt zaczyna się na 64,46%); druga linia z kreską jak w projekcie */
@@ -448,7 +454,7 @@ const bundleRows = setQtys.map((qty) => {
   .hero-dash { position: absolute; left: 9px; top: 0.56em; width: 50px; height: 2px; background: var(--primary); }
   @media (max-width: 1380px) {
     .hero { height: auto !important; display: flex; flex-direction: column; }
-    .hero > div.hero-shape, .hero > span.hero-shape, .hero > span[aria-hidden="true"] { display: none; }
+    .hero-art, .hero > span.hero-shape, .hero > span[aria-hidden="true"] { display: none; }
     .hero > div[style*="position:absolute;left:0;top:0"] { position: static !important; }
     .hero-h1__2 { padding-left: 0; }
     .hero-dash { display: none; }
