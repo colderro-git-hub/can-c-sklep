@@ -186,6 +186,7 @@ import '../../styles/admin.css';
                 <button type="button" class="tab" data-mb-folder="system" aria-pressed="false">Systemowe <span data-mb-count="system"></span></button>
                 <button type="button" class="tab" data-mb-folder="other" aria-pressed="false">Inne adresy <span data-mb-count="other"></span></button>
                 <button type="button" class="tab" data-mb-folder="spam" aria-pressed="false">Spam</button>
+                <button type="button" class="btn btn--danger btn--sm" data-mb-empty-spam hidden title="Spam starszy niż 30 dni usuwa się automatycznie">Opróżnij spam</button>
               </div>
               <form class="mb__search" data-mb-search role="search">
                 <input class="input" type="search" name="q" placeholder="Szukaj: temat, e-mail, imię, treść" aria-label="Szukaj w korespondencji" />
@@ -596,7 +597,7 @@ import '../../styles/admin.css';
             </div>
             <div class="card" data-errlog>
               <div class="card__head"><h2 class="card__title">Błędy systemu <span class="badge" data-err-count></span></h2>
-                <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-err-all>Oznacz wszystkie jako przejrzane</button></div></div>
+                <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-err-all>Oznacz wszystkie jako przejrzane</button><button type="button" class="btn btn--outline btn--sm" data-err-clean>Usuń przejrzane</button><button type="button" class="btn btn--danger btn--sm" data-err-wipe>Wyczyść listę</button></div></div>
               <p class="muted small" data-err-info></p>
               <div class="table-wrap"><table class="table">
                 <thead><tr><th>Ostatnio</th><th>Obszar</th><th>Treść</th><th class="r">Ile razy</th><th></th></tr></thead>

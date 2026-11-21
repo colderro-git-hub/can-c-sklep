@@ -7,7 +7,7 @@ export async function loadErrors() {
     const d = await api('/api/admin/bledy');
     $('[data-err-count]').textContent = d.open ? String(d.open) : '';
     $('[data-err-info]').textContent = d.alertTo
-      ? `Błędy krytyczne (płatności, zamówienia, maile do klientów, Furgonetka, poczta, automaty, awarie stron) idą też e-mailem na ${d.alertTo} - ten sam błąd najwyżej raz na 6 godzin. Adres zmienisz sekretem ALERT_EMAIL w Workerze.`
+      ? `Błędy krytyczne (płatności, zamówienia, maile do klientów, Furgonetka, poczta, automaty, awarie stron) idą też e-mailem na ${d.alertTo} - ten sam błąd najwyżej raz na 6 godzin. Adres zmienisz sekretem ALERT_EMAIL w Workerze. Przejrzane błędy znikają same po 30 dniach, wszystkie po 90.`
       : 'Brak adresu na alerty: ustaw w Workerze sekret ALERT_EMAIL (albo MAIL_NOTIFY). Do tego czasu błędy są tylko na tej liście.';
     list.innerHTML = d.rows.length ? d.rows.map((r: any) => `<tr${r.resolved_at ? ' class="muted"' : ''}>
         <td class="nowrap">${date(r.last_seen)}</td>
@@ -46,4 +46,13 @@ $('[data-ifirma-sync]').addEventListener('click', async (e) => {
     toast(failed ? 'Synchronizacja zakończona z błędami.' : 'Synchronizacja zakończona.', failed > 0);
   } catch (err) { out.textContent = (err as Error).message; }
   finally { btn.disabled = false; }
+});
+
+// Czyszczenie dziennika (automatycznie: przejrzane po 30 dniach, wszystkie po 90 dniach)
+$('[data-err-clean]').addEventListener('click', async () => {
+  try { await api('/api/admin/bledy', { action: 'delete_resolved' }); toast('Usunięto przejrzane błędy.'); loadErrors(); } catch (e) { toast((e as Error).message, true); }
+});
+$('[data-err-wipe]').addEventListener('click', async () => {
+  if (!confirm('Usunąć cały dziennik błędów?')) return;
+  try { await api('/api/admin/bledy', { action: 'delete_all' }); toast('Dziennik wyczyszczony.'); loadErrors(); } catch (e) { toast((e as Error).message, true); }
 });

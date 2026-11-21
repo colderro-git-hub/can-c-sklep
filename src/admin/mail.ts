@@ -46,6 +46,8 @@ export async function loadMail(keepThread = true) {
     const p = new URLSearchParams({ folder: mb.folder, page: String(mb.page), ...(mb.q ? { q: mb.q } : {}) });
     const d = await api(`/api/admin/poczta?${p}`);
     $('[data-mb-warn]').hidden = !d.fromWarning;
+    // „Opróżnij spam” tylko w folderze Spam
+    $('[data-mb-empty-spam]').hidden = mb.folder !== 'spam' || !d.rows?.length;
     for (const [k, v] of Object.entries(d.counts as Record<string, number>)) { const el = document.querySelector(`[data-mb-count="${k}"]`); if (el) el.textContent = v ? String(v) : ''; }
     setMailBadge(d.counts.inbox || 0);
     list.innerHTML = (d.threads.length ? d.threads.map((t: any) => `<button type="button" class="mb__item${t.unread ? ' is-unread' : ''}" data-mb-id="${t.id}" aria-current="${t.id === mb.current}">
@@ -100,6 +102,7 @@ export async function openThread(id: string, markRead = true) {
         ${t.status === 'spam' ? '<button type="button" class="btn btn--outline btn--sm" data-mb-st="open">To nie spam</button>' : '<button type="button" class="btn btn--outline btn--sm" data-mb-st="spam">Spam</button>'}
         ${t.category !== 'customer' ? '<button type="button" class="btn btn--outline btn--sm" data-mb-cat="customer">Do odebranych</button>' : '<button type="button" class="btn btn--outline btn--sm" data-mb-cat="system">Do systemowych</button>'}
         <button type="button" class="btn btn--outline btn--sm" data-mb-unread>Nieprzeczytane</button>
+        <button type="button" class="btn btn--danger btn--sm" data-mb-del>Usuń</button>
       </div>
     </div>
     <div class="mb__ctx">
@@ -159,6 +162,16 @@ export async function openThread(id: string, markRead = true) {
   };
   box.querySelectorAll<HTMLButtonElement>('[data-mb-st]').forEach((b) => b.addEventListener('click', () => act({ action: 'status', status: b.dataset.mbSt }, b.dataset.mbSt === 'spam' ? 'Przeniesiono do spamu.' : b.dataset.mbSt === 'closed' ? 'Wątek zamknięty.' : 'Wątek otwarty.')));
   box.querySelectorAll<HTMLButtonElement>('[data-mb-cat]').forEach((b) => b.addEventListener('click', () => act({ action: 'category', category: b.dataset.mbCat }, 'Przeniesiono.')));
+  box.querySelector('[data-mb-del]')?.addEventListener('click', async () => {
+    if (!confirm('Usunąć cały wątek razem z załącznikami? Tej operacji nie można cofnąć.')) return;
+    try {
+      await api('/api/admin/poczta', { action: 'delete', id });
+      toast('Usunięto wątek.');
+      $('[data-view="mail"]').classList.remove('is-reading'); mb.current = ''; history.replaceState(null, '', '#korespondencja');
+      $('[data-mb-thread]').innerHTML = '<p class="muted">Wybierz wiadomość z listy.</p>';
+      loadMail(false);
+    } catch (e) { toast((e as Error).message, true); }
+  });
   box.querySelector('[data-mb-unread]')?.addEventListener('click', async () => { try { await api('/api/admin/poczta', { action: 'read', id, unread: true }); toast('Oznaczono jako nieprzeczytane.'); loadMail(); } catch (e) { toast((e as Error).message, true); } });
 
   // Odpowiedź z załącznikami (base64, łącznie do 10 MB)
@@ -264,3 +277,10 @@ export async function openTemplates(onClose?: () => void) {
     }
   };
 }
+
+// Opróżnienie folderu Spam (spam starszy niż 30 dni i tak usuwa się automatycznie raz dziennie)
+document.querySelector('[data-mb-empty-spam]')?.addEventListener('click', async () => {
+  if (!confirm('Usunąć wszystkie wątki ze Spamu razem z załącznikami?')) return;
+  try { const r = await api('/api/admin/poczta', { action: 'empty_spam' }); toast(`Usunięto: ${r.deleted}.`); loadMail(false); }
+  catch (e) { toast((e as Error).message, true); }
+});

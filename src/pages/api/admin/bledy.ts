@@ -28,6 +28,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   let b: any;
   try { b = await request.json(); } catch { return json(400, { error: 'Nieprawidłowe dane.' }); }
   const now = new Date().toISOString();
+  if (b.action === 'delete_resolved') { await db(env).remove('error_log?resolved_at=not.is.null'); return json(200, { ok: true }); }
+  if (b.action === 'delete_all') { await db(env).remove('error_log?id=not.is.null'); return json(200, { ok: true }); }
   if (b.action === 'resolve_all') { await db(env).update('error_log?resolved_at=is.null', { resolved_at: now }, 'id'); return json(200, { ok: true }); }
   if (b.action === 'resolve' && /^[0-9a-f-]{36}$/i.test(b.id || '')) { await db(env).update(`error_log?id=eq.${b.id}`, { resolved_at: now }, 'id'); return json(200, { ok: true }); }
   return json(400, { error: 'Nieznana akcja.' });

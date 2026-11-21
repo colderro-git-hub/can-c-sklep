@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
-import { addMessage, inboxAddresses, parseAddr, putAttachment, receivingKey, signatureHtml, signatureText, signedAttachmentUrl } from '../../../lib/mailbox';
+import { addMessage, inboxAddresses, parseAddr, putAttachment, receivingKey, signatureHtml, signatureText, signedAttachmentUrl, deleteThreads } from '../../../lib/mailbox';
 import { getSite } from '../../../lib/site-settings';
 import { trackingUrl } from '../../../lib/tracking';
 import { DEFAULT_TEMPLATES, cleanTemplates, type MailTemplate } from '../../../lib/mail-templates';
@@ -127,12 +127,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
       await sb.upsert('settings', { key: 'mail_templates', value: list, updated_at: now0, updated_by: admin }, 'key', 'key');
       return json(200, { templates: list });
     }
+  // Opróżnienie folderu Spam (bez listy identyfikatorów)
+  if (b.action === 'empty_spam') {
+    const rows = await sb.select<{ id: string }>('mail_threads?select=id&status=eq.spam&limit=2000');
+    const n = await deleteThreads(env, sb, rows.map((r) => r.id));
+    console.log(`Admin ${admin} opróżnił spam: ${n}`);
+    return json(200, { ok: true, deleted: n });
+  }
   const ids = (Array.isArray(b.ids) ? b.ids : [b.id]).map(String).filter((x: string) => UUID.test(x)).slice(0, 200);
   if (!ids.length) return json(400, { error: 'Nieprawidłowy wątek.' });
   const inIds = `id=in.(${ids.join(',')})`;
   const now = new Date().toISOString();
   try {
     if (b.action === 'read') { await sb.update(`mail_threads?${inIds}`, { unread: b.unread === true ? 1 : 0 }, 'id'); return json(200, { ok: true }); }
+    if (b.action === 'delete') {
+      const n = await deleteThreads(env, sb, ids);
+      console.log(`Admin ${admin} usunął wątki poczty: ${n}`);
+      return json(200, { ok: true, deleted: n });
+    }
     if (b.action === 'status') {
       if (!['open', 'closed', 'spam'].includes(b.status)) return json(400, { error: 'Nieznany status.' });
       await sb.update(`mail_threads?${inIds}`, { status: b.status, ...(b.status !== 'open' ? { unread: 0 } : {}), updated_at: now }, 'id');

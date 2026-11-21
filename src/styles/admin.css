@@ -478,3 +478,4 @@ tr.flash td { background: var(--primary-a16) !important; transition: background 
 .sig-prev-wrap { display: flex; flex-direction: column; gap: 6px; }
 .pages-faq-add { margin-left: auto; }
 .pages-faq-add[hidden] { display: none; }
+.tabs [data-mb-empty-spam] { margin-left: auto; }

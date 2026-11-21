@@ -77,8 +77,9 @@ async function start() {
   // ---------- H1 w hero: słowa wjeżdżają od dołu ----------
   document.querySelectorAll<HTMLElement>(SPLIT_H1).forEach((h) => {
     SplitText.create(h, {
-      type: 'words', mask: 'words', autoSplit: true,
-      onSplit: (self) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.06, delay: 0.1 }),
+      // Po animacji przywracamy zwykły tekst (karuzela hero podmienia potem treść H1)
+      type: 'words', mask: 'words',
+      onSplit: (self: any) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.9, ease: 'power3.out', stagger: 0.06, delay: 0.1, onComplete: () => self.revert() }),
     });
   });
 
@@ -137,7 +138,7 @@ function appMotion(gsap: any, SplitText: any) {
     document.querySelectorAll<HTMLElement>(APP_SPLIT).forEach((h) => {
       if (seen.has(h) || !shown(h)) return;
       seen.add(h);
-      SplitText.create(h, { type: 'words', mask: 'words', onSplit: (self: any) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.06 }) });
+      SplitText.create(h, { type: 'words', mask: 'words', onSplit: (self: any) => gsap.from(self.words, { yPercent: 110, opacity: 0, duration: 0.8, ease: 'power3.out', stagger: 0.06, onComplete: () => self.revert() }) });
     });
     for (const sel of APP_REVEAL) {
       const els = Array.from(document.querySelectorAll<HTMLElement>(sel)).filter((el) => !seen.has(el) && shown(el));

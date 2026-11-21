@@ -60,6 +60,29 @@ const hero = at('home.hero', {
 const heroH1 = String(hero.h1 || '').includes('|')
   ? String(hero.h1).split('|').map((x: string) => x.trim()).filter(Boolean)
   : String(hero.h1 || '') === 'Krople do oczu Can-C z N-acetylokarnozyną' ? ['Krople do oczu Can-C', 'z N-acetylokarnozyną'] : [String(hero.h1 || '')];
+// Karuzela hero: slajd 1 = sekcja „Hero”, kolejne (2-4) z sekcji „Hero - kolejne slajdy”. Zmiana co N sekund.
+const heroSlidesCms = at('home.hero_slides', { interval: '10' } as Record<string, any>);
+const splitH1 = (t: string) => (String(t || '').includes('|') ? String(t).split('|').map((x) => x.trim()).filter(Boolean) : [String(t || '')]);
+const slideImg = (url: string | null) => url ? {
+  src: imgUrl(url, 2000), srcset: srcset(url, [800, 1200, 1600, 2000]) || '',
+  msrc: imgUrl(url, 800), msrcset: srcset(url, [480, 640, 800, 1200]) || '',
+} : null;
+const heroSlides = [
+  { kicker: hero.kicker || '', h1: heroH1, lead: hero.lead || '', img: slideImg(hero.image_url), alt: hero.image_alt || '',
+    c1: { label: hero.cta_primary_label || '', href: hero.cta_primary_href || '/sklep/' }, c2: { label: hero.cta_secondary_label || '', href: hero.cta_secondary_href || '' } },
+  ...(visible(heroSlidesCms) ? [2, 3, 4].map((n) => {
+    const g = (k: string) => String(heroSlidesCms[`s${n}_${k}`] ?? '').trim();
+    if (!g('h1')) return null;
+    return {
+      kicker: g('kicker'), h1: splitH1(g('h1')), lead: g('lead'),
+      img: slideImg(g('image_url') || null) ?? slideImg(hero.image_url), alt: g('image_alt'),
+      c1: { label: g('cta1_label') || hero.cta_primary_label || '', href: g('cta1_href') || hero.cta_primary_href || '/sklep/' },
+      c2: { label: g('cta2_label'), href: g('cta2_href') },
+    };
+  }).filter(Boolean) : []),
+] as any[];
+const heroInterval = Math.min(Math.max(Number(heroSlidesCms.interval) || 10, 4), 30);
+
 // Boksy zaufania pod hero: „liczba | opis”, ikony wg kolejności
 const TRUST_ICONS = ['truck', 'undo-2', 'credit-card'] as const;
 const trustRaw = ((hero.trust_boxes as string[]) || []).filter((x) => String(x).includes('|'));
@@ -193,14 +216,24 @@ const bundleRows = setQtys.map((qty) => {
       {!hero.image_url && <span class="hero-shape" style="position:absolute;left:64.46%;right:0;top:300px;text-align:center;font-size:14px;font-weight:300;color:var(--muted)">[zdjęcie z panelu: Strony → Hero]</span>}
       {hero.image_url && <img src={imgUrl(hero.image_url, 800)} srcset={srcset(hero.image_url, [480, 640, 800, 1200])} sizes="92vw" alt="" class="hero-mobile-img" loading="lazy" />}
       <div style="position:absolute;left:0;top:0;display:flex;flex-direction:column;gap:14px">
-        {hero.kicker && <span class="tag" style={fs(hero, 'kicker', 'align-self:flex-start;min-height:36px;padding:0 16px;font-size:16px')}>{hero.kicker}</span>}
-        <h1 class="hero-h1" style={fs(hero, 'h1', 'margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em')}>
+        <span class="tag" data-hs="kicker" hidden={!hero.kicker} style={fs(hero, 'kicker', 'align-self:flex-start;min-height:36px;padding:0 16px;font-size:16px')}>{hero.kicker}</span>
+        <h1 data-hs="h1" class="hero-h1" style={fs(hero, 'h1', 'margin:0;font-size:clamp(2.5rem,5vw,4.5rem);line-height:1.111;font-weight:300;letter-spacing:-0.05em')}>
           {heroH1.map((line: string, i: number) => i === 0
             ? <span style="display:block">{line}</span>
             : <span class="hero-h1__2"><span class="hero-dash" aria-hidden="true"></span>{line}</span>)}
         </h1>
       </div>
-      {hero.lead && <p style={fs(hero, 'lead', 'position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left')}>{hero.lead}</p>}
+      <p data-hs="lead" class="hero-lead" hidden={!hero.lead} style={fs(hero, 'lead', 'position:absolute;left:39%;right:0;top:590px;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left')}>{hero.lead}</p>
+      {heroSlides.length > 1 && (
+        <div class="hs-nav" data-hs-nav>
+          {heroSlides.map((_, i) => (
+            <button type="button" class="hs-dot" data-hs-go={i} aria-label={`Slajd ${i + 1} z ${heroSlides.length}`} aria-current={i === 0 ? 'true' : undefined}><span class="hs-dot__fill"></span></button>
+          ))}
+          <button type="button" class="hs-pause" data-hs-pause aria-label="Zatrzymaj zmianę slajdów" aria-pressed="false">
+            <Icon name="pause" size={14} class="hs-ico-pause" /><Icon name="play" size={14} class="hs-ico-play" />
+          </button>
+        </div>
+      )}
     </div>
     <div class="hero-bottom">
       <div class="trust">
@@ -214,15 +247,17 @@ const bundleRows = setQtys.map((qty) => {
       </div>
       <span aria-hidden="true" class="hero-bottom__sep"></span>
       <div class="hero-cta">
-        <a href={hero.cta_primary_href} class="btn btn--wide">
-          {hero.cta_primary_label}
+        <a href={hero.cta_primary_href} class="btn btn--wide" data-hs="c1">
+          <span data-hs="c1-label">{hero.cta_primary_label}</span>
           <Icon name="arrow-right" size={20} />
         </a>
-        {hero.cta_secondary_label && <a href={hero.cta_secondary_href} class="btn btn--outline btn--wide">{hero.cta_secondary_label}</a>}
+        <a href={hero.cta_secondary_href || '#'} class="btn btn--outline btn--wide" data-hs="c2" hidden={!hero.cta_secondary_label}>{hero.cta_secondary_label}</a>
       </div>
     </div>
   </section>
   )}
+
+  {heroSlides.length > 1 && <script type="application/json" id="hero-slides" set:html={JSON.stringify({ interval: heroInterval, slides: heroSlides }).replace(/</g, '\\u003c')} />}
 
   <!-- PRODUKTY -->
   {visible(productsCms) && (
@@ -437,6 +472,10 @@ const bundleRows = setQtys.map((qty) => {
     </div>
   </section>
   )}
+<script>
+  // Karuzela hero (src/lib/hero-slider.ts) - działa tylko, gdy w /Strony są kolejne slajdy
+  import '../lib/hero-slider';
+</script>
 </Base>
 
 
@@ -445,6 +484,22 @@ const bundleRows = setQtys.map((qty) => {
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
   .hero-art { position: absolute; inset: 0; pointer-events: none; }
+  /* Karuzela hero: przejście slajdów i znacznik (paski z postępem) */
+  :global(.hs-fade) { transition: opacity .45s ease; }
+  :global(.hs-out) { opacity: 0 !important; }
+  .hs-nav { position: absolute; z-index: 3; right: 40px; top: 490px; display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 99px; background: rgba(255, 255, 255, .78); backdrop-filter: blur(6px); }
+  .hs-dot { all: unset; cursor: pointer; width: 28px; height: 4px; border-radius: 2px; background: rgba(20, 28, 43, .18); overflow: hidden; position: relative; }
+  .hs-dot[aria-current='true'] { width: 44px; }
+  .hs-dot:focus-visible, .hs-pause:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  .hs-dot__fill { position: absolute; inset: 0; width: 0; background: var(--primary); }
+  .hs-dot[aria-current='true'] .hs-dot__fill { animation: hs-progress var(--hs-time, 10s) linear forwards; }
+  .hs-nav.is-paused .hs-dot[aria-current='true'] .hs-dot__fill { animation-play-state: paused; }
+  .hs-nav.is-static .hs-dot[aria-current='true'] .hs-dot__fill { animation: none; width: 100%; }
+  @keyframes hs-progress { to { width: 100%; } }
+  .hs-pause { all: unset; cursor: pointer; width: 22px; height: 22px; display: grid; place-items: center; color: var(--ink); }
+  .hs-pause :global(.hs-ico-play) { display: none; }
+  .hs-pause[aria-pressed='true'] :global(.hs-ico-play) { display: block; }
+  .hs-pause[aria-pressed='true'] :global(.hs-ico-pause) { display: none; }
   /* Cień całego kształtu hero (jak --shadow-soft w global.css, ale po obrysie); wyłączany przez ?cienie=0 */
   :global(html:not(.no-shadows)) .hero-art { filter: drop-shadow(0 1px 1px rgba(20, 28, 43, .05)) drop-shadow(0 10px 22px rgba(20, 28, 43, .08)); }
   .hero-fill { position: absolute; width: 100cqw; height: 638px; max-width: none; object-fit: cover; display: block; }
@@ -460,6 +515,7 @@ const bundleRows = setQtys.map((qty) => {
     .hero-h1__2 { padding-left: 0; }
     .hero-dash { display: none; }
     .hero > div[style*="left:0;top:0"] { max-width: none; }
+    .hs-nav { position: static; order: 4; align-self: flex-start; margin-top: 14px; }
     .hero-mobile-img { display: block; order: 3; width: 100%; aspect-ratio: 4 / 3; max-height: 520px; margin-top: 24px; object-fit: cover; border-radius: 32px; background: var(--image); }
     .hero > p { position: static !important; width: auto !important; margin-top: 24px; order: 2; }
     .hero-bottom > span[aria-hidden="true"] { display: none; }

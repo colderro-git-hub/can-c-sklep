@@ -241,3 +241,31 @@ export function signatureHtml(s: SignatureSite) {
     + (logo ? `<td valign="top" style="padding:2px 14px 0 0;"><img src="${escHtml(logo)}" alt="Can-C" height="28" style="display:block;height:28px;width:auto;border:0;"></td>` : '')
     + `<td valign="top" style="font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.55;color:#545D6E;${logo ? 'padding-left:14px;border-left:1px solid #DCE2EC;' : ''}">${lines.join('<br>')}</td></tr></table>`;
 }
+
+// ---------- Usuwanie wątków (z załącznikami w magazynie „mail”) ----------
+// Wiadomości kasuje baza (on delete cascade), pliki usuwamy z magazynu osobno.
+export async function deleteThreads(env: Env, sb: ReturnType<typeof dbFn>, ids: string[]) {
+  if (!ids.length) return 0;
+  let removed = 0;
+  for (let i = 0; i < ids.length; i += 100) {
+    const chunk = ids.slice(i, i + 100);
+    const msgs = await sb.select<{ attachments: { path?: string }[] }>(`mail_messages?select=attachments&thread_id=in.(${chunk.join(',')})`);
+    const paths = msgs.flatMap((m) => (m.attachments || []).map((a) => a?.path).filter(Boolean)) as string[];
+    for (let j = 0; j < paths.length; j += 500) {
+      const res = await fetch(`${storageBase(env)}/storage/v1/object/mail`, {
+        method: 'DELETE', headers: { ...authHeaders(env), 'Content-Type': 'application/json' }, body: JSON.stringify({ prefixes: paths.slice(j, j + 500) }),
+      });
+      if (!res.ok) console.error(`Poczta: usuwanie załączników - Storage ${res.status}`);
+    }
+    await sb.remove(`mail_threads?id=in.(${chunk.join(',')})`);
+    removed += chunk.length;
+  }
+  return removed;
+}
+
+// Automatyczne czyszczenie: spam starszy niż 30 dni
+export async function purgeOldSpam(env: Env, sb: ReturnType<typeof dbFn>, days = 30) {
+  const before = new Date(Date.now() - days * 864e5).toISOString();
+  const rows = await sb.select<{ id: string }>(`mail_threads?select=id&status=eq.spam&last_message_at=lt.${encodeURIComponent(before)}&limit=1000`);
+  return deleteThreads(env, sb, rows.map((r) => r.id));
+}
