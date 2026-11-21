@@ -175,12 +175,13 @@ const bundleRows = setQtys.map((qty) => {
   {visible(hero) && (
   <section class="container" style="margin-top: 45px">
     <div class="hero" style="position:relative;height:638px">
+      {/* Zaokrąglone tylko zewnętrzne rogi kawałków - wewnętrzne łuki dawały widoczne linie na styku zdjęć */}
       {/* Kształty w jednej warstwie: cień (drop-shadow) obrysowuje cały kształt, bez szwów między kawałkami */}
       <div class="hero-art" aria-hidden={hero.image_url ? undefined : 'true'}>
       {[
-        { st: 'left:64.46%;right:0;top:0;height:545px;border-radius:50px', l: '-64.46cqw', t: 0 },
-        { st: 'left:0;top:221px;width:72.38%;height:324px;border-radius:50px', l: '0px', t: 221 },
-        { st: 'left:0;top:221px;width:35.54%;height:417px;border-radius:50px', l: '0px', t: 221 },
+        { st: 'left:64.46%;right:0;top:0;height:545px;border-radius:50px 50px 50px 0', l: '-64.46cqw', t: 0 },
+        { st: 'left:0;top:221px;width:72.38%;height:324px;border-radius:50px 0 0 0', l: '0px', t: 221 },
+        { st: 'left:0;top:221px;width:35.54%;height:417px;border-radius:50px 0 50px 50px', l: '0px', t: 221 },
         { st: 'left:calc(64.46% - 50px);top:171px;width:50px;height:50px', l: 'calc(50px - 64.46cqw)', t: 171, m: 'radial-gradient(circle at 0 0,transparent 49.5px,#000 50px)' },
         { st: 'left:35.54%;top:545px;width:50px;height:50px', l: '-35.54cqw', t: 545, m: 'radial-gradient(circle at 100% 100%,transparent 49.5px,#000 50px)' },
       ].map((sh, i) => (

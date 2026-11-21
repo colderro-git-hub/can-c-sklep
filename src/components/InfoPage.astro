@@ -72,7 +72,8 @@ const links = [
   .ip-head__l { display: flex; flex-direction: column; gap: 24px; }
   .ip-draft { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); color: var(--ink); font-size: 14px; line-height: 21px; max-width: 819px; }
   .ip-body { margin-top: 90px; margin-bottom: 90px; display: flex; align-items: flex-start; gap: 45px; }
-  .ip-prose { flex-grow: 1; min-width: 0; max-width: 819px; }
+  /* Jak na FAQ i Stosowaniu: treść zajmuje całą szerokość, panel boczny dosunięty do prawej krawędzi */
+  .ip-prose { flex: 1 1 auto; min-width: 0; }
   .ip-prose :global(section) { scroll-margin-top: 24px; padding-top: 45px; margin-top: 45px; border-top: 1px solid var(--line); }
   .ip-prose :global(section:first-child) { padding-top: 0; margin-top: 0; border-top: none; }
   .ip-prose :global(h2) { font-size: clamp(2rem, 3vw, 2.75rem); line-height: 1.1; font-weight: 300; margin-bottom: 24px; }
