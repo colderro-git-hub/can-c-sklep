@@ -106,7 +106,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           {p.tags[0] && <span class="pr-flag">{p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1)}</span>}
           <AvailBadge avail={p.avail} />
           {images.length > 0 && (
-            <a href={images[0].url} class="notch__btn" aria-label="Powiększ zdjęcie" target="_blank" rel="noopener" data-zoom>
+            <a href={images[0].url} class="notch__btn" aria-label="Powiększ zdjęcie" aria-haspopup="dialog" data-zoom>
               <Icon name="arrow-up-right" size={48} stroke={2} />
             </a>
           )}
@@ -316,6 +316,22 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       )}
     </div>
   </section>
+  {/* Powiększenie zdjęć (okno na stronie zamiast nowej karty) */}
+  {images.length > 0 && (
+    <dialog class="lb" data-lightbox aria-label={`Zdjęcia: ${p.name}`}>
+      <div class="lb__in">
+        <button type="button" class="lb__btn lb__close" data-lb-close aria-label="Zamknij"><Icon name="x" size={24} /></button>
+        {images.length > 1 && <button type="button" class="lb__btn lb__prev" data-lb-prev aria-label="Poprzednie zdjęcie"><Icon name="chevron-left" size={28} /></button>}
+        <figure class="lb__fig">
+          <img data-lb-img alt="" />
+          {images.length > 1 && <figcaption class="lb__count" data-lb-count></figcaption>}
+        </figure>
+        {images.length > 1 && <button type="button" class="lb__btn lb__next" data-lb-next aria-label="Następne zdjęcie"><Icon name="chevron-right" size={28} /></button>}
+      </div>
+      <script type="application/json" data-lb-data set:html={JSON.stringify(images.map((im) => ({ src: imgUrl(im.url, 2000), srcset: srcset(im.url, [800, 1200, 1600, 2000]) || '', alt: im.alt || p.name }))).replace(/</g, '\\u003c')} />
+    </dialog>
+  )}
+
   {/* Telefon: pasek z ceną i przyciskiem, gdy główny przycisk zniknie z ekranu */}
   {buyable && (
     <div class="pr-sticky" data-sticky aria-hidden="true" hidden>
@@ -401,7 +417,43 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     main.srcset = t.dataset.srcset || ''; main.src = t.dataset.src!; main.alt = t.dataset.alt || '';
     if (zoom) zoom.href = t.dataset.src!;
     gallery.querySelectorAll('.pr-thumb').forEach((x) => x.setAttribute('aria-pressed', String(x === t)));
+    lbIndex = Array.from(gallery.querySelectorAll('.pr-thumb')).indexOf(t);
   }));
+
+  // Powiększenie: okno (dialog) z dużym zdjęciem; strzałki / klawisze ← → / przesunięcie palcem, Esc i klik w tło zamyka
+  let lbIndex = 0;
+  const lb = document.querySelector<HTMLDialogElement>('[data-lightbox]');
+  const lbData: { src: string; srcset: string; alt: string }[] = JSON.parse(lb?.querySelector('[data-lb-data]')?.textContent || '[]');
+  const lbImg = lb?.querySelector<HTMLImageElement>('[data-lb-img]');
+  const lbShow = (i: number) => {
+    if (!lb || !lbImg || !lbData.length) return;
+    lbIndex = (i + lbData.length) % lbData.length;
+    const d = lbData[lbIndex];
+    lbImg.srcset = d.srcset; lbImg.sizes = '(max-width: 900px) 100vw, 80vw'; lbImg.src = d.src; lbImg.alt = d.alt;
+    const c = lb.querySelector('[data-lb-count]'); if (c) c.textContent = `${lbIndex + 1} / ${lbData.length}`;
+  };
+  zoom?.addEventListener('click', (e) => {
+    if (!lb || typeof lb.showModal !== 'function') return; // stara przeglądarka: zostaje zwykły link
+    e.preventDefault();
+    lbShow(lbIndex);
+    lb.showModal();
+    (window as any).__lenis?.stop?.();
+  });
+  lb?.addEventListener('close', () => { (window as any).__lenis?.start?.(); zoom?.focus(); });
+  lb?.querySelector('[data-lb-close]')?.addEventListener('click', () => lb.close());
+  lb?.querySelector('[data-lb-prev]')?.addEventListener('click', () => lbShow(lbIndex - 1));
+  lb?.querySelector('[data-lb-next]')?.addEventListener('click', () => lbShow(lbIndex + 1));
+  lb?.addEventListener('click', (e) => { if (e.target === lb || (e.target as HTMLElement).classList.contains('lb__in')) lb.close(); });
+  lb?.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') lbShow(lbIndex - 1);
+    if (e.key === 'ArrowRight') lbShow(lbIndex + 1);
+  });
+  let touchX = 0;
+  lb?.addEventListener('touchstart', (e) => { touchX = e.touches[0].clientX; }, { passive: true });
+  lb?.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50 && lbData.length > 1) lbShow(lbIndex + (dx < 0 ? 1 : -1));
+  }, { passive: true });
 
   const root = document.querySelector<HTMLElement>('[data-product]');
   const gaName = root?.dataset.name || document.title;
@@ -441,7 +493,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     });
 
     // Przyklejony pasek na telefonie: pokazuje się, gdy główny przycisk „Dodaj do koszyka” jest poza ekranem
-    // (po przewinięciu w dół do opisu i opinii); kliknięcie wywołuje ten sam przycisk – ta sama ilość, GA4, animacja.
+    // (po przewinięciu w dół do opisu i opinii); kliknięcie wywołuje ten sam przycisk - ta sama ilość, GA4, animacja.
     const sticky = document.querySelector<HTMLElement>('[data-sticky]');
     if (sticky && addBtn && 'IntersectionObserver' in window) {
       const mq = window.matchMedia('(max-width: 900px)');
@@ -549,6 +601,26 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .pr-thumb[aria-pressed='true'] { border-color: var(--primary); }
 
+  /* Okno powiększenia zdjęć */
+  .lb { padding: 0; border: 0; background: transparent; max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; }
+  .lb::backdrop { background: rgba(20, 28, 43, .82); backdrop-filter: blur(4px); }
+  .lb__in { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 56px 72px; box-sizing: border-box; }
+  .lb__fig { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; max-width: 100%; max-height: 100%; }
+  .lb__fig img { max-width: min(1200px, 100%); max-height: calc(100vh - 140px); object-fit: contain; border-radius: var(--r-lg, 24px); background: var(--image); }
+  .lb__count { color: #FFFFFF; font-size: 14px; }
+  .lb__btn { position: absolute; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 0; cursor: pointer; background: rgba(255, 255, 255, .92); color: var(--ink); }
+  .lb__btn:hover { background: #FFFFFF; }
+  .lb__btn:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
+  .lb__close { top: 16px; right: 16px; }
+  .lb__prev { left: 16px; top: 50%; transform: translateY(-50%); }
+  .lb__next { right: 16px; top: 50%; transform: translateY(-50%); }
+  .lb[open] .lb__fig img { animation: lb-in .25s ease-out; }
+  @keyframes lb-in { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+  @media (max-width: 700px) {
+    .lb__in { padding: 64px 12px 24px; }
+    .lb__prev, .lb__next { top: auto; bottom: 16px; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .lb[open] .lb__fig img { animation: none; } }
   /* Przyklejony pasek zakupu (telefon) */
   .pr-sticky {
     position: fixed; z-index: 40; left: 0; right: 0; bottom: 0;
