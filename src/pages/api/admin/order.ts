@@ -191,7 +191,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!ifirmaEnabled(env)) return json(400, { error: 'Brak tokenu ifirma (sekret IFIRMA_ORDERS_TOKEN w Workerze).' });
     try {
       const r = await pushToIfirma(env, db(env), b.id, { by: admin });
-      return r.ok ? json(200, { ok: true, updated: r.updated }) : json(r.skipped ? 409 : 502, { error: r.skipped || r.error });
+      // 422 zamiast 5xx: błąd ifirma jest już w dzienniku jako „ifirma” - bez drugiego alertu „HTTP 502”
+      return r.ok ? json(200, { ok: true, updated: r.updated }) : json(r.skipped ? 409 : 422, { error: r.skipped || r.error });
     } catch (e) { return json(500, { error: e instanceof Error ? e.message : String(e) }); }
   }
   if (b?.action === 'ifirma_sync') {

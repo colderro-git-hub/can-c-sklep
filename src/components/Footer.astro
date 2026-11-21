@@ -16,8 +16,9 @@ try {
   const rows = await getPageContent(env, 'footer');
   const c = getSection<{ columns: Col[] }>(rows, 'footer.columns');
   const b = getSection<{ items: string[] }>(rows, 'footer.badges');
-  if (c?.columns?.length) columns = c.columns;
-  if (b?.items?.length) badges = b.items;
+  // Tylko poprawna lista (zapis z panelu jako tekst dawał błąd „columns.map is not a function” i pustą stronę)
+  if (Array.isArray(c?.columns) && c.columns.length) columns = c.columns.filter((x: any) => x && Array.isArray(x.links));
+  if (Array.isArray(b?.items) && b.items.length) badges = b.items.map(String);
 } catch { /* strona statyczna albo baza niedostępna - treści z kodu */ }
 if (!columns.length) columns = [
   { title: 'Sklep', links: [

@@ -113,7 +113,8 @@ export async function pushToIfirma(env: Env, sb: Sb, orderId: string, opts: { by
 
   const res = await fetch(URL_ORDERS, {
     method: already ? 'PUT' : 'POST',
-    headers: { Authorization: `Bearer ${env.IFIRMA_ORDERS_TOKEN}`, 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json' },
+    // ifirma wymaga nagłówka User-Agent z nazwą integracji (firma / adres sklepu) - bez niego odpowiada 401
+    headers: { Authorization: `Bearer ${env.IFIRMA_ORDERS_TOKEN}`, 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json', 'User-Agent': 'Can-C sklep can-c.pl (Colderro)' },
     body: JSON.stringify(payload),
   });
   const text = (await res.text()).slice(0, 1000);
