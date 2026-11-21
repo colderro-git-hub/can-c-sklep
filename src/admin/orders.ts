@@ -180,7 +180,7 @@ export async function openOrder(id: string, push = true) {
         const ok = ev && ev.type !== 'ifirma_error';
         return `<div class="box ${ev && !ok ? 'box--warn' : 'box--blue'}">
           <strong>ifirma</strong>
-          <span>${!ev ? 'Jeszcze nie wysłane do ifirma.' : ok ? `${ev.type === 'ifirma_sent' ? 'Dodane' : 'Zaktualizowane'} ${date(ev.created_at)} · status w ifirma: ${esc(ev.data?.status || '')}` : `Błąd ${date(ev.created_at)}: ${esc(String(ev.data?.error || '').slice(0, 200))}`}</span>
+          <span>${!ev ? 'Jeszcze nie wysłane do ifirma.' : ok ? `${ev.type === 'ifirma_sent' ? 'Dodane' : 'Zaktualizowane'} ${date(ev.created_at)} · status w ifirma: ${esc(ev.data?.status || '')}${ev.data?.via ? ` <span class="muted small">(${esc(ev.data.via)})</span>` : ''}` : `Błąd ${date(ev.created_at)}: ${esc(String(ev.data?.error || '').slice(0, 200))}`}</span>
           <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-ifirma-push>${ev ? 'Wyślij ponownie' : 'Wyślij do ifirma'}</button></div>
         </div>`;
       })()}

@@ -111,20 +111,29 @@ export async function pushToIfirma(env: Env, sb: Sb, orderId: string, opts: { by
   const sent = await sb.select<any>(`order_events?select=id&order_id=eq.${orderId}&type=eq.ifirma_sent&limit=1`);
   const already = sent.length > 0;
 
-  const res = await fetch(URL_ORDERS, {
-    method: already ? 'PUT' : 'POST',
-    // ifirma wymaga nagłówka User-Agent z nazwą integracji (firma / adres sklepu) - bez niego odpowiada 401
-    headers: { Authorization: `Bearer ${env.IFIRMA_ORDERS_TOKEN}`, 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json', 'User-Agent': 'Can-C sklep can-c.pl (Colderro)' },
-    body: JSON.stringify(payload),
-  });
+  // ifirma wymaga nagłówka User-Agent z nazwą integracji (firma / adres sklepu) - bez niego odpowiada 401
+  const headers = { Authorization: `Bearer ${env.IFIRMA_ORDERS_TOKEN}`, 'Content-Type': 'application/json; charset=utf-8', Accept: 'application/json', 'User-Agent': 'Can-C sklep can-c.pl (Colderro)' };
+  const body = JSON.stringify(payload);
+  // Aktualizacja: dokumentacja podaje PUT na tym samym adresie, ale serwer odpowiada 405 - próbujemy kolejno
+  // PUT /order, PUT /order/{id}, POST /order (nadpisanie); w historii zapisujemy, który wariant zadziałał
+  const tries: [string, string][] = already
+    ? [['PUT', URL_ORDERS], ['PUT', `${URL_ORDERS}/${encodeURIComponent(String(payload.id))}`], ['POST', URL_ORDERS]]
+    : [['POST', URL_ORDERS]];
+  let res!: Response;
+  let via = '';
+  for (const [method, url] of tries) {
+    res = await fetch(url, { method, headers, body });
+    via = `${method} ${url.replace(URL_ORDERS, '/order')}`;
+    if (res.status !== 405 && res.status !== 404) break;
+  }
   const text = (await res.text()).slice(0, 1000);
   if (!res.ok) {
     const error = `HTTP ${res.status}: ${text}`.slice(0, 900);
-    await sb.insert('order_events', { order_id: orderId, type: 'ifirma_error', data: { error, method: already ? 'PUT' : 'POST', by: opts.by ?? null } }, 'id').catch(() => {});
-    console.error(`ifirma: zamówienie ${order.number} - ${error}`);
+    await sb.insert('order_events', { order_id: orderId, type: 'ifirma_error', data: { error, via, by: opts.by ?? null } }, 'id').catch(() => {});
+    console.error(`ifirma: zamówienie ${order.number} (${via}) - ${error}`);
     return { ok: false, error };
   }
-  await sb.insert('order_events', { order_id: orderId, type: already ? 'ifirma_updated' : 'ifirma_sent', data: { status: payload.status, by: opts.by ?? null, response: text.slice(0, 300) } }, 'id').catch(() => {});
+  await sb.insert('order_events', { order_id: orderId, type: already ? 'ifirma_updated' : 'ifirma_sent', data: { status: payload.status, via, by: opts.by ?? null, response: text.slice(0, 300) } }, 'id').catch(() => {});
   return { ok: true, updated: already };
 }
 
