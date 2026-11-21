@@ -7,6 +7,8 @@ import { sendMail, zl } from './mail';
 import { getSite } from './site-settings';
 import { orderConfirmationHtml } from './email-templates';
 import { sendGa4Purchase, shouldSendServerPurchase } from './ga4-mp';
+import { pushToIfirma, ifirmaEnabled } from './ifirma';
+import { later } from './background';
 
 export async function finalizePayment(
   env: Env,
@@ -99,6 +101,9 @@ export async function finalizePayment(
       console.error('E-mail do sklepu (nowe zamówienie) nie wysłany: ' + errMsg(e));
     }
   }
+
+  // ifirma: zamówienie opłacone - aktualizacja stanu płatności w ifirma (w tle)
+  if (ifirmaEnabled(env)) await later(null, pushToIfirma(env, sb, order.id, { by: opts.by || 'płatność' }).catch((e) => console.error('ifirma: ' + errMsg(e))));
 
   return 'paid';
 }

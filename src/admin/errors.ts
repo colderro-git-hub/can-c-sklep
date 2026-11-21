@@ -26,3 +26,24 @@ $('[data-err-all]').addEventListener('click', async () => {
   try { await api('/api/admin/bledy', { action: 'resolve_all' }); toast('Oznaczono jako przejrzane.'); loadErrors(); } catch (e) { toast((e as Error).message, true); }
 });
 document.querySelector('[data-tab="settings"]')?.addEventListener('click', () => loadErrors());
+
+// ifirma: ręczna synchronizacja (brakujące zamówienia i zmiany statusu), po 40 na raz
+$('[data-ifirma-sync]').addEventListener('click', async (e) => {
+  const btn = e.currentTarget as HTMLButtonElement;
+  const out = $('[data-ifirma-result]');
+  btn.disabled = true; out.textContent = 'Wysyłanie…';
+  try {
+    let total = 0, failed = 0, firstError: string | null = null;
+    for (let i = 0; i < 25; i++) {
+      const r = await api('/api/admin/order', { action: 'ifirma_sync', days: Number(($('[data-ifirma-days]') as HTMLInputElement).value) || 60 });
+      if (r.skipped) { out.textContent = r.skipped; break; }
+      total += r.sent; failed += r.failed; firstError ??= r.firstError;
+      out.textContent = `Wysłano: ${total}${failed ? ` · błędy: ${failed}` : ''}${r.left ? ` · zostało: ${r.left}…` : ''}`;
+      if (!r.left || (!r.sent && r.failed)) break;
+      await new Promise((res) => setTimeout(res, 30000)); // limit ifirma: 100 zapytań na minutę
+    }
+    if (firstError) out.textContent += ` · pierwszy błąd: ${firstError}`;
+    toast(failed ? 'Synchronizacja zakończona z błędami.' : 'Synchronizacja zakończona.', failed > 0);
+  } catch (err) { out.textContent = (err as Error).message; }
+  finally { btn.disabled = false; }
+});

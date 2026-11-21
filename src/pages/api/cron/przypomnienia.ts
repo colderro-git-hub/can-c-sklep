@@ -2,6 +2,8 @@ import type { APIRoute } from 'astro';
 import { getEnv, json } from '../../../lib/env';
 import { runTreatmentReminders } from '../../../lib/automations';
 import { runReviewRequests } from '../../../lib/review-requests';
+import { syncIfirma } from '../../../lib/ifirma';
+import { db } from '../../../lib/supabase';
 
 export const prerender = false;
 
@@ -16,7 +18,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Jeden codzienny cron: przypomnienia o kuracji + prośby o opinię (każdy automat ma własny włącznik w panelu)
     const treatment = await runTreatmentReminders(env, origin);
     const reviews = await runReviewRequests(env, origin).catch((e) => ({ sent: 0, error: e instanceof Error ? e.message : String(e) }));
-    return json(200, { ...treatment, reviews });
+    // ifirma: dosłanie brakujących i zmian zrobionych przez bazę (automatyczne anulowanie, „zrealizowane”)
+    const ifirma = await syncIfirma(env, db(env), { days: 30, by: 'cron' }).catch((e) => ({ error: e instanceof Error ? e.message : String(e) }));
+    return json(200, { ...treatment, reviews, ifirma });
   } catch (e) {
     console.error('Cron przypomnienia: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'error' });

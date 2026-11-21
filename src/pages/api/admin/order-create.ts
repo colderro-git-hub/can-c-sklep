@@ -4,6 +4,8 @@ import { db } from '../../../lib/supabase';
 import { requireAdmin } from '../../../lib/admin-auth';
 import { priceCart, PRODUCT_PRICE_FIELDS, type DbProduct } from '../../../lib/pricing';
 import { getPromotions } from '../../../lib/promotions-db';
+import { pushToIfirma, ifirmaEnabled } from '../../../lib/ifirma';
+import { later } from '../../../lib/background';
 import { p24Config, registerTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
 import { sendMail, zl } from '../../../lib/mail';
@@ -121,6 +123,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
     console.log(`Admin ${admin} dodał ręcznie zamówienie ${order.number} (${payment})`);
+    if (ifirmaEnabled(env)) await later(locals, pushToIfirma(env, sb, order.id, { by: admin }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
     return json(200, { id: order.id, number: order.number, total, paymentUrl, mailed });
   } catch (e) {
     console.error('Ręczne zamówienie: ' + (e instanceof Error ? e.message : String(e)));

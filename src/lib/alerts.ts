@@ -10,7 +10,7 @@ let installed = false;
 let origError: (...a: unknown[]) => void = console.error.bind(console);
 
 // Obszary, o których chcesz wiedzieć od razu
-const CRITICAL = /^(P24|Płatność|E-mail do klienta|E-mail do sklepu|Mail przelew|Mail o wysyłce|Mail o kompletowaniu|Mail o zwrocie|Błąd tworzenia zamówienia|Furgonetka|Poczta webhook|Cron|Newsletter paczka|Konfiguracja|Przypomnienia|Prośby o opinię|HTTP 5\d\d)/;
+const CRITICAL = /^(P24|Płatność|E-mail do klienta|E-mail do sklepu|Mail przelew|Mail o wysyłce|Mail o kompletowaniu|Mail o zwrocie|Błąd tworzenia zamówienia|Furgonetka|Poczta webhook|Cron|Newsletter paczka|Konfiguracja|Przypomnienia|Prośby o opinię|ifirma|HTTP 5\d\d)/;
 
 // Przechwycenie console.error (raz na izolat) - istniejący kod loguje „Kontekst: treść”, nic nie trzeba zmieniać
 export function installErrorHook() {

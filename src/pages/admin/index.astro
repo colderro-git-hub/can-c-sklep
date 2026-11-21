@@ -585,6 +585,15 @@ import '../../styles/admin.css';
             </div>
           </section>
           <section data-view="settings" class="stack" hidden>
+            <div class="card" data-ifirma-card>
+              <div class="card__head"><h2 class="card__title">ifirma</h2><span class="muted small">zamówienia do wystawiania faktur</span></div>
+              <p class="muted">Każde zamówienie ze sklepu i z panelu trafia do ifirma (E-commerce → Zamówienia) ze statusem i stanem płatności, a każda zmiana statusu je aktualizuje. Fakturę wystawiasz w ifirma. Raz dziennie sklep dosyła brakujące zamówienia i zmiany zrobione automatycznie (anulowanie nieopłaconych, „zrealizowane”).</p>
+              <div class="actions">
+                <label class="field" style="max-width:220px">Zamówienia z ostatnich (dni)<input class="input" type="number" min="1" max="365" value="60" data-ifirma-days /></label>
+                <button type="button" class="btn btn--sm" data-ifirma-sync style="align-self:flex-end">Synchronizuj z ifirma</button>
+              </div>
+              <p class="small" data-ifirma-result></p>
+            </div>
             <div class="card" data-errlog>
               <div class="card__head"><h2 class="card__title">Błędy systemu <span class="badge" data-err-count></span></h2>
                 <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-err-all>Oznacz wszystkie jako przejrzane</button></div></div>

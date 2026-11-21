@@ -9,6 +9,7 @@ import { clearCatalogCache } from '../../../lib/catalog';
 import { BANK_PROVIDER } from '../../../lib/bank-transfer';
 import { sendGa4Refund, ga4MpConfigured } from '../../../lib/ga4-mp';
 import { later } from '../../../lib/background';
+import { pushToIfirma, ifirmaEnabled, syncIfirma } from '../../../lib/ifirma';
 import { getSite } from '../../../lib/site-settings';
 import { p24Config, getTransaction } from '../../../lib/p24';
 import { finalizePayment } from '../../../lib/payments';
@@ -57,7 +58,7 @@ const ALLOWED: Record<string, { from: string[]; to?: string }> = {
 const BULK = ['pack', 'complete', 'hold', 'unhold', 'cancel'];
 const ORDER_COLS = 'id,number,email,status,total,currency,shipping_method,shipping_point,shipping_address,wants_invoice,source,customers(first_name)';
 
-type Ctx = { env: Env; sb: ReturnType<typeof db>; admin: string; origin: string };
+type Ctx = { env: Env; sb: ReturnType<typeof db>; admin: string; origin: string; locals?: unknown };
 type Result = { ok: true; warning?: string } | { ok: false; status: number; error: string };
 
 // Zmiana statusu (pojedyncza i zbiorcza): warunek na poprzedni status, wpis w historii, e-mail do klienta
@@ -82,6 +83,10 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
   if (!updated.length) return { ok: false, status: 409, error: 'Zamówienie zostało w międzyczasie zmienione. Odśwież.' };
   const message = String(o.message ?? '').replace(/\r/g, '').trim().slice(0, 600);
   await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: rule.to, by: admin, ...(tracking ? { carrier, tracking } : {}), ...(message && action === 'pack' ? { note: message } : {}) } }, 'id');
+  // ifirma: każda zmiana statusu aktualizuje zamówienie w ifirma
+  if (ifirmaEnabled(env)) {
+    await later(ctx.locals, pushToIfirma(env, sb, order.id, { by: admin }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
+  }
 
   if (action === 'ship' && o.notify !== false) {
     try {
@@ -157,7 +162,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!BULK.includes(b.to)) return json(400, { error: 'Tej zmiany nie można wykonać zbiorczo.' });
     try {
       const sb = db(env);
-      const ctx: Ctx = { env, sb, admin, origin: new URL(request.url).origin };
+      const ctx: Ctx = { env, sb, admin, origin: new URL(request.url).origin, locals };
       const orders = await sb.select<any>(`orders?select=${ORDER_COLS}&id=in.(${ids.join(',')})&order=number.asc`);
       let done = 0;
       const failed: { number: number; error: string }[] = [];
@@ -178,6 +183,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.error('Admin zbiorczo: ' + (e instanceof Error ? e.message : String(e)));
       return json(500, { error: 'Błąd zapisu.' });
     }
+  }
+
+  // ifirma: ręczne wysłanie jednego zamówienia i synchronizacja (brakujące albo z innym statusem)
+  if (b?.action === 'ifirma_push') {
+    if (!UUID.test(b.id || '')) return json(400, { error: 'Nieprawidłowe zamówienie.' });
+    if (!ifirmaEnabled(env)) return json(400, { error: 'Brak tokenu ifirma (sekret IFIRMA_ORDERS_TOKEN w Workerze).' });
+    try {
+      const r = await pushToIfirma(env, db(env), b.id, { by: admin });
+      return r.ok ? json(200, { ok: true, updated: r.updated }) : json(r.skipped ? 409 : 502, { error: r.skipped || r.error });
+    } catch (e) { return json(500, { error: e instanceof Error ? e.message : String(e) }); }
+  }
+  if (b?.action === 'ifirma_sync') {
+    if (!ifirmaEnabled(env)) return json(400, { error: 'Brak tokenu ifirma (sekret IFIRMA_ORDERS_TOKEN w Workerze).' });
+    const r = await syncIfirma(env, db(env), { days: Number(b.days) || 60, by: admin });
+    return json(200, r);
   }
 
   const rule = ALLOWED[b?.action];
@@ -216,6 +236,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       };
       await sb.update(`orders?id=eq.${order.id}`, patch, 'id');
       await sb.insert('order_events', { order_id: order.id, type: 'edited', data: { by: admin } }, 'id');
+      if (ifirmaEnabled(env)) await later(locals, pushToIfirma(env, sb, order.id, { by: admin }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
       return json(200, { ok: true });
     }
 
@@ -317,10 +338,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
       if (full.payment_provider !== BANK_PROVIDER) warnings.unshift('Pamiętaj o zleceniu zwrotu w panelu Przelewy24 - zmiana statusu nie przelewa pieniędzy.');
       else warnings.unshift('Pamiętaj o wykonaniu przelewu zwrotnego - zmiana statusu nie przelewa pieniędzy.');
+      // ifirma: zwrot → „Anulowane” w ifirma
+      if (ifirmaEnabled(env)) await later(locals, pushToIfirma(env, sb, order.id, { by: admin }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
       return json(200, { ok: true, warning: warnings.join(' ') });
     }
 
-    const r = await transition({ env, sb, admin, origin: new URL(request.url).origin }, order, b.action, { notify: b.notify, carrier: b.carrier, tracking: b.tracking, message: b.message });
+    const r = await transition({ env, sb, admin, origin: new URL(request.url).origin, locals }, order, b.action, { notify: b.notify, carrier: b.carrier, tracking: b.tracking, message: b.message });
     return r.ok ? json(200, { ok: true, ...(r.warning ? { warning: r.warning } : {}) }) : json(r.status, { error: r.error });
   } catch (e) {
     console.error('Admin akcja: ' + (e instanceof Error ? e.message : String(e)));

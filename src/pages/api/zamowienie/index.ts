@@ -12,6 +12,8 @@ import { getPromotions, findCodePromotion } from '../../../lib/promotions-db';
 import { promoActive } from '../../../lib/promotions';
 import { gaIdsFromCookies } from '../../../lib/ga4-mp';
 import { logConsent } from '../../../lib/newsletter';
+import { pushToIfirma, ifirmaEnabled } from '../../../lib/ifirma';
+import { later } from '../../../lib/background';
 
 export const prerender = false;
 
@@ -195,6 +197,8 @@ W razie pytań odpiszemy na ten adres.`,
     });
     await sb.insert('order_events', { order_id: order.id, type: 'p24_registered', data: {} }, 'id');
 
+    // ifirma: nowe zamówienie od razu w ifirma (stan płatności: nieopłacone; po płatności aktualizacja)
+    if (ifirmaEnabled(env)) await later(locals, pushToIfirma(env, sb, order.id, { by: 'sklep' }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
     return json(200, { redirect, number: order.number });
   } catch (e) {
     console.error('Błąd tworzenia zamówienia: ' + (e instanceof Error ? e.message : String(e)));

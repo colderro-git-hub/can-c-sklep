@@ -173,6 +173,17 @@ export async function openOrder(id: string, push = true) {
         <span class="muted small">Tytuł przelewu: <strong>Zamówienie nr ${o.number} - can-c.pl</strong></span>
       </div>` : ''}
 
+      ${(() => {
+        // ifirma: ostatnie zdarzenie wysyłki (dodane / zaktualizowane / błąd)
+        if (o.source === 'woocommerce') return '';
+        const ev = [...events].reverse().find((e: any) => ['ifirma_sent', 'ifirma_updated', 'ifirma_error'].includes(e.type));
+        const ok = ev && ev.type !== 'ifirma_error';
+        return `<div class="box ${ev && !ok ? 'box--warn' : 'box--blue'}">
+          <strong>ifirma</strong>
+          <span>${!ev ? 'Jeszcze nie wysłane do ifirma.' : ok ? `${ev.type === 'ifirma_sent' ? 'Dodane' : 'Zaktualizowane'} ${date(ev.created_at)} · status w ifirma: ${esc(ev.data?.status || '')}` : `Błąd ${date(ev.created_at)}: ${esc(String(ev.data?.error || '').slice(0, 200))}`}</span>
+          <div class="actions"><button type="button" class="btn btn--outline btn--sm" data-ifirma-push>${ev ? 'Wyślij ponownie' : 'Wyślij do ifirma'}</button></div>
+        </div>`;
+      })()}
       ${o.status === 'refunded' ? `<div class="box box--warn">
         <strong>Zwrot środków</strong>
         <span>${o.refunded_amount ? `Kwota zwrotu: <strong>${pln(o.refunded_amount)}</strong>${o.refunded_amount < o.total ? ` z ${pln(o.total)} (zwrot częściowy)` : ''}` : 'Zamówienie oznaczone jako zwrócone.'}${o.refunded_at ? ` · ${date(o.refunded_at)}` : ''}</span>
@@ -262,6 +273,12 @@ export async function openOrder(id: string, push = true) {
       ev.preventDefault();
       const f = new FormData(ev.target as HTMLFormElement);
       await act({ id, action: 'ship', carrier: f.get('carrier'), tracking: f.get('tracking'), notify: f.get('notify') !== null });
+    });
+    body.querySelector<HTMLButtonElement>('[data-ifirma-push]')?.addEventListener('click', async (ev) => {
+      const btn = ev.currentTarget as HTMLButtonElement;
+      btn.disabled = true;
+      try { const r = await api('/api/admin/order', { action: 'ifirma_push', id }); toast(r.updated ? 'Zaktualizowano w ifirma.' : 'Dodano do ifirma.'); openOrder(id, false); }
+      catch (e) { toast((e as Error).message, true); btn.disabled = false; }
     });
     body.querySelectorAll<HTMLButtonElement>('[data-act]').forEach((b) => b.addEventListener('click', async () => {
       if (b.dataset.act === 'cancel' && !confirm('Anulować zamówienie?')) return;

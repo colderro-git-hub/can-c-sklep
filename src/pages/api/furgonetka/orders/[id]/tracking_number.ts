@@ -6,6 +6,8 @@ import { sendMail } from '../../../../../lib/mail';
 import { trackingUrl, carrierLabel } from '../../../../../lib/tracking';
 import { orderShippedHtml } from '../../../../../lib/email-templates';
 import { getSite } from '../../../../../lib/site-settings';
+import { pushToIfirma, ifirmaEnabled } from '../../../../../lib/ifirma';
+import { later } from '../../../../../lib/background';
 
 export const prerender = false;
 
@@ -36,6 +38,8 @@ export const POST: APIRoute = async ({ request, params, locals }) => {
     await sb.update(`orders?id=eq.${order.id}`, patch, 'id');
     if (becomesShipped) {
       await sb.insert('order_events', { order_id: order.id, type: 'status_change', data: { from: order.status, to: 'shipped', by: 'Furgonetka', carrier, tracking } }, 'id');
+      // ifirma: aktualizacja statusu („Wysłane”) i numeru przesyłki
+      if (ifirmaEnabled(env)) await later(locals, pushToIfirma(env, sb, order.id, { by: 'Furgonetka' }).catch((e) => console.error('ifirma: ' + (e instanceof Error ? e.message : String(e)))));
     }
 
     try {
