@@ -314,7 +314,9 @@ const bundleRows = setQtys.map((qty) => {
 
   <!-- ZESTAWY -->
   {visible(bundlesCms) && (
-  <section class="container sec-gap">
+  {/* Pas tła na całą szerokość (jak sekcja Produkty) - oddziela zestawy od sąsiednich sekcji; karty bez zmian */}
+  <section class="section section--band sec-gap bundles-band">
+    <div class="container">
     <div class="bundles-head">
       <h2 class="h2" style={fs(bundlesCms, 'h2')} set:html={lines(bundlesCms.h2).map(escHtml).join('<br/>')} />
       {bundlesCms.lead && <p class="lead bundles-head__p" style={fs(bundlesCms, 'lead')}>{bundlesCms.lead}</p>}
@@ -346,6 +348,7 @@ const bundleRows = setQtys.map((qty) => {
         </div>
       ))}
     </div>
+  </div>
   </section>
   )}
 
@@ -575,6 +578,8 @@ const bundleRows = setQtys.map((qty) => {
   }
 
   .bundle-card { position: relative; border: 1px solid var(--line); border-radius: 40px; padding: 32px; display: flex; flex-direction: column; gap: 24px; }
+  /* Na pasku tła karty zostają białe, jak wcześniej na białym tle */
+  .bundles-band .bundle-card:not(.bundle-card--featured) { background: var(--surface); }
   .bundle-card--featured { background: var(--primary); color: var(--surface); border-color: var(--primary); }
 
   /* Akcent: etykieta w hero, znaczniki list, ikony */
