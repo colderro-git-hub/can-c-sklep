@@ -614,6 +614,8 @@ html:not(.no-shadows) :is(
   .us-calc, .ip-card, .ip-prose .card, .nl--card, .nf__card, .empty, .hero-mobile-img
 ) { box-shadow: var(--shadow-soft); }
 html:not(.no-shadows) :is(.pr-main, .us-step .notch) { box-shadow: var(--shadow-notch); }
+/* Nagłówek: aktywna pozycja menu i przycisk Koszyk (jedyne przyciski z cieniem) */
+html:not(.no-shadows) :is(.hd__link[aria-current='page'], .hd__cart) { box-shadow: var(--shadow-soft); }
 /* Wybór na karcie produktu: cień tylko na aktywnej miniaturze i zaznaczonym zestawie */
 html:not(.no-shadows) .pr-thumb[aria-pressed='true'],
 html:not(.no-shadows) .pr-sets .opt:has(input:checked) { box-shadow: var(--shadow-soft); }
