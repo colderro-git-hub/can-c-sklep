@@ -138,16 +138,17 @@ export const PAGES_META: Record<string, any> = {
     },},
   ]},
   product: { label: 'Karta produktu', previewHref: '/produkt/krople-can-c/', sections: [
-    { key: 'product.original', label: 'Oryginalny produkt (sekcja pod zakupem)', schema: {
+    { key: 'product.original', label: 'Produkt oryginalny (dymek: etykieta przy tagach, ikona na zdjęciu, „i” przy wyróżniku)', schema: {
       products: { type: 'list', label: 'Na których produktach (identyfikatory, jedna linia = jeden)', hint: 'Np. krople-can-c. Puste = na wszystkich.' },
-      badge: { type: 'text', label: 'Etykieta nad nagłówkiem (puste = ukryj)' },
-      h2: { type: 'text', label: 'Nagłówek' },
-      lead: { type: 'textarea', label: 'Tekst pod nagłówkiem' },
-      items: { type: 'list', label: 'Jak rozpoznać oryginał (jedna linia = jeden punkt)' },
-      image_url: { type: 'image', label: 'Zdjęcie (np. opakowanie z oznaczeniem IVP)', hint: 'Najlepiej zbliżenie oznaczenia na pudełku; kadr poziomy lub kwadratowy.' },
+      badge: { type: 'text', label: 'Tekst etykiety przy tagach', hint: 'Np. „Produkt oryginalny”' },
+      highlight_match: { type: 'text', label: 'Ikona „i” przy wyróżniku zawierającym tekst', hint: 'Fragment tekstu jednego z wyróżników pod „Dodaj do koszyka”. Puste = bez ikony przy wyróżniku.' },
+      title: { type: 'text', label: 'Dymek - tytuł' },
+      lead: { type: 'textarea', label: 'Dymek - opis (1-2 zdania)' },
+      items: { type: 'list', label: 'Dymek - jak rozpoznać oryginał (jedna linia = jeden punkt)', hint: 'Najlepiej 2-3 krótkie punkty.' },
+      image_url: { type: 'image', label: 'Dymek - zdjęcie hologramu', hint: 'Zbliżenie hologramu z pudełka; kadr kwadratowy.' },
       image_alt: { type: 'text', label: 'Alt zdjęcia' },
-      link_label: { type: 'text', label: 'Link - etykieta (puste = ukryj)' },
-      link_href: { type: 'url', label: 'Link - adres' },
+      link_label: { type: 'text', label: 'Dymek - link, etykieta (puste = ukryj)' },
+      link_href: { type: 'url', label: 'Dymek - link, adres' },
     }},
   ]},
   footer: { label: 'Stopka', previewHref: '/', sections: [

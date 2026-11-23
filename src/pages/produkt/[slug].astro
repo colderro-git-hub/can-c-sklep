@@ -12,7 +12,7 @@ import { getPromotions } from '../../lib/promotions-db';
 import { markdown, plainText } from '../../lib/markdown';
 import { getSite } from '../../lib/site-settings';
 import { TURNSTILE_SITE_KEY } from '../../config';
-import OriginalProduct from '../../components/OriginalProduct.astro';
+import { getOriginalInfo } from '../../lib/original';
 import { imgUrl, srcset } from '../../lib/img';
 
 export const prerender = false;
@@ -22,6 +22,9 @@ const slug = Astro.params.slug || '';
 const data = await getProductPage(env, slug).catch((e) => { console.error('Karta produktu: ' + (e instanceof Error ? e.message : String(e))); return null; });
 if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono' });
 const { product: p, reviews, related, dist } = data;
+// „Produkt oryginalny”: dymek z opisem i zdjęciem hologramu (etykieta przy tagach, pieczątka na zdjęciu, „i” przy wyróżniku)
+const og = await getOriginalInfo(env, p.id).catch(() => null);
+const ogMatch = og?.highlight_match ? og.highlight_match.toLowerCase() : '';
 const site = await getSite(env);
 
 const pln = (g: number | null) => (g === null ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
@@ -105,6 +108,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
             : <span class="notch__ph">[Zdjęcie produktu - dodaj w panelu]</span>}
           {p.tags[0] && <span class="pr-flag">{p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1)}</span>}
           <AvailBadge avail={p.avail} />
+          {og && <button type="button" class="og-seal" data-og-trigger aria-controls="og-tip" aria-expanded="false" aria-label={og.badge}><Icon name="shield-check" size={26} stroke={1.75} /></button>}
           {images.length > 0 && (
             <a href={images[0].url} class="notch__btn" aria-label="Powiększ zdjęcie" aria-haspopup="dialog" data-zoom>
               <Icon name="arrow-up-right" size={48} stroke={2} />
@@ -125,7 +129,12 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       <div class="fl pr-buy" data-product={p.id} data-name={p.name} data-price={p.current ?? 0}>
         {p.subtitle && <span class="k">{p.subtitle}</span>}
         <h1 class="h2 pr-title">{p.name}</h1>
-        {p.tags.length > 0 && <div class="pr-tags"><ProductTags tags={p.tags} /></div>}
+        {(p.tags.length > 0 || og) && (
+          <div class="pr-tags">
+            {p.tags.length > 0 && <ProductTags tags={p.tags} />}
+            {og && <button type="button" class="og-tag" data-og-trigger aria-controls="og-tip" aria-expanded="false"><Icon name="shield-check" size={16} />{og.badge}<Icon name="info" size={14} class="og-tag__i" /></button>}
+          </div>
+        )}
         {p.rating.count > 0 && (
           <a href="#opinie" class="pr-rating" aria-label={`Ocena ${p.rating.avg} na 5, ${p.rating.count} ${reviewsWord(p.rating.count)}`}>
             <Stars value={p.rating.avg} /> {p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })} · {p.rating.count} {reviewsWord(p.rating.count)}
@@ -181,7 +190,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           </form>
         )}
 
-        {p.highlights.length > 0 && <ul class="checks pr-hl">{p.highlights.map((h) => <li>{h}</li>)}</ul>}
+        {p.highlights.length > 0 && <ul class="checks pr-hl">{p.highlights.map((h) => (
+          <li>{h}{og && ogMatch && h.toLowerCase().includes(ogMatch) && <button type="button" class="og-i" data-og-trigger aria-controls="og-tip" aria-expanded="false" aria-label={og.badge}><Icon name="info" size={18} /></button>}</li>
+        ))}</ul>}
 
         <div class="pr-perks">
           <div class="trow"><span>InPost Paczkomat 24/7</span><span style="font-weight:400">Darmowa</span></div>
@@ -193,7 +204,21 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     </div>
   </section>
 
-  <OriginalProduct productId={p.id} />
+  {og && (
+    <div id="og-tip" class="og-tip" role="dialog" aria-label={og.title} hidden data-og-tip>
+      <div class="og-tip__img">
+        {og.image_url
+          ? <img src={imgUrl(og.image_url, 320)} srcset={srcset(og.image_url, [160, 320, 480])} sizes="120px" alt={og.image_alt} loading="lazy" />
+          : <Icon name="shield-check" size={40} stroke={1.25} />}
+      </div>
+      <div class="og-tip__txt">
+        <p class="og-tip__t">{og.title}</p>
+        {og.lead && <p class="og-tip__p">{og.lead}</p>}
+        {og.items.length > 0 && <ul class="dots og-tip__list">{og.items.map((i) => <li>{i}</li>)}</ul>}
+        {og.link_label && <a href={og.link_href} class="lnk og-tip__lnk"><Icon name="arrow-right" size={14} />{og.link_label}</a>}
+      </div>
+    </div>
+  )}
 
   <section class="pr-band">
     <div class="w row pr-band__in">
@@ -420,6 +445,44 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     lbIndex = Array.from(gallery.querySelectorAll('.pr-thumb')).indexOf(t);
   }));
 
+  // „Produkt oryginalny”: jeden dymek, trzy wyzwalacze (etykieta, „i” przy wyróżniku, pieczątka na zdjęciu).
+  // Komputer: najechanie; telefon i klawiatura: kliknięcie. Esc albo klik obok zamyka.
+  {
+    const tip = document.querySelector<HTMLElement>('[data-og-tip]');
+    const triggers = Array.from(document.querySelectorAll<HTMLElement>('[data-og-trigger]'));
+    if (tip && triggers.length) {
+      document.body.append(tip); // ponad innymi elementami, pozycja liczona od dokumentu
+      let owner: HTMLElement | null = null, hideT = 0;
+      const place = (t: HTMLElement) => {
+        const r = t.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+        let left = r.left + window.scrollX;
+        left = Math.min(Math.max(16, left), window.scrollX + document.documentElement.clientWidth - w - 16);
+        const below = r.bottom + 10 + h < window.innerHeight || r.top < h + 10;
+        tip.style.left = `${left}px`;
+        tip.style.top = `${(below ? r.bottom + 10 : r.top - h - 10) + window.scrollY}px`;
+      };
+      const show = (t: HTMLElement) => {
+        clearTimeout(hideT);
+        owner?.setAttribute('aria-expanded', 'false');
+        owner = t; t.setAttribute('aria-expanded', 'true');
+        tip.hidden = false; place(t);
+      };
+      const hide = (now = false) => {
+        clearTimeout(hideT);
+        hideT = window.setTimeout(() => { tip.hidden = true; owner?.setAttribute('aria-expanded', 'false'); owner = null; }, now ? 0 : 180);
+      };
+      const hover = window.matchMedia('(hover: hover)').matches;
+      triggers.forEach((t) => {
+        if (hover) { t.addEventListener('mouseenter', () => show(t)); t.addEventListener('mouseleave', () => hide()); }
+        t.addEventListener('click', (e) => { e.preventDefault(); if (owner === t && !tip.hidden) hide(true); else show(t); });
+      });
+      if (hover) { tip.addEventListener('mouseenter', () => clearTimeout(hideT)); tip.addEventListener('mouseleave', () => hide()); }
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !tip.hidden) { const o = owner; hide(true); o?.focus(); } });
+      document.addEventListener('click', (e) => { const el = e.target as Node; if (!tip.hidden && !tip.contains(el) && !triggers.some((t) => t.contains(el))) hide(true); });
+      window.addEventListener('resize', () => { if (owner && !tip.hidden) place(owner); });
+    }
+  }
+
   // Powiększenie: okno (dialog) z dużym zdjęciem; strzałki / klawisze ← → / przesunięcie palcem, Esc i klik w tło zamyka
   let lbIndex = 0;
   const lb = document.querySelector<HTMLDialogElement>('[data-lightbox]');
@@ -601,6 +664,27 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .pr-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .pr-thumb[aria-pressed='true'] { border-color: var(--primary); }
 
+  /* „Produkt oryginalny”: wyzwalacze i dymek */
+  .og-tag { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); font: inherit; font-size: 14px; line-height: 21px; cursor: pointer; }
+  .og-tag :global(svg) { color: var(--accent); }
+  .og-tag :global(.og-tag__i) { color: var(--muted); }
+  .og-tag:hover, .og-tag[aria-expanded='true'] { border-color: var(--accent); }
+  .og-i { all: unset; cursor: pointer; display: inline-grid; place-items: center; vertical-align: -3px; margin-left: 6px; color: var(--accent); border-radius: 50%; }
+  .og-seal { position: absolute; z-index: 2; left: 18px; bottom: 18px; width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--surface); color: var(--accent); box-shadow: var(--shadow-soft); }
+  .og-seal:hover, .og-seal[aria-expanded='true'] { color: var(--accent-text); }
+  .og-tag:focus-visible, .og-i:focus-visible, .og-seal:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  .og-tip { position: absolute; z-index: 60; width: min(380px, calc(100vw - 32px)); display: flex; gap: 14px; padding: 16px; border-radius: 20px; background: var(--surface); box-shadow: 0 12px 32px rgba(20, 28, 43, .16); animation: og-in .15s ease-out; }
+  .og-tip[hidden] { display: none; }
+  .og-tip__img { width: 120px; height: 120px; flex-shrink: 0; border-radius: 14px; background: var(--band); overflow: hidden; display: grid; place-items: center; color: var(--accent); }
+  .og-tip__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .og-tip__txt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+  .og-tip__t { margin: 0; font-size: 18px; line-height: 24px; font-weight: 400; }
+  .og-tip__p { margin: 0; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); }
+  .og-tip__list { font-size: 14px; line-height: 21px; gap: 4px; }
+  .og-tip__lnk { font-size: 14px; }
+  @keyframes og-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 480px) { .og-tip { flex-direction: column; } .og-tip__img { width: 100%; height: 140px; } }
+  @media (prefers-reduced-motion: reduce) { .og-tip { animation: none; } }
   /* Okno powiększenia zdjęć */
   .lb { padding: 0; border: 0; background: transparent; max-width: 100vw; max-height: 100vh; width: 100vw; height: 100vh; }
   .lb::backdrop { background: rgba(20, 28, 43, .82); backdrop-filter: blur(4px); }
@@ -639,7 +723,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   @media (prefers-reduced-motion: reduce) { .pr-sticky { animation: none; } }
   .pr-buy { flex: 1; min-width: 0; display: flex; flex-direction: column; }
   .pr-title { margin-top: 10px; }
-  .pr-tags { margin-top: 24px; }
+  .pr-tags { margin-top: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .pr-rating { display: flex; align-items: center; gap: 10px; margin-top: 14px; font-size: 14px; line-height: 21px; font-weight: 300; color: var(--muted); text-decoration: none; }
   .pr-lead { margin-top: 24px; }
   /* Teksty opisowe karty produktu: 18/28 (opis, wyróżniki, Opis, Stosowanie, Specyfikacja, opinie) */
