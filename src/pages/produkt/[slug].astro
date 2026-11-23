@@ -24,7 +24,10 @@ if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono'
 const { product: p, reviews, related, dist } = data;
 // „Produkt oryginalny”: dymek z opisem i zdjęciem hologramu (etykieta przy tagach, pieczątka na zdjęciu, „i” przy wyróżniku)
 const og = await getOriginalInfo(env, p.id).catch(() => null);
-const ogMatch = og?.highlight_match ? og.highlight_match.toLowerCase() : '';
+// Dopasowanie wyróżnika: bez wielkości liter i bez różnic w spacjach (zwykła / twarda); puste pole = tekst domyślny
+const norm = (t: string) => String(t || '').replace(/[\s\u00a0]+/g, ' ').trim().toLowerCase();
+const ogMatch = og ? norm(og.highlight_match || 'Innovative Vision Products') : '';
+const ogHl = og && ogMatch ? p.highlights.findIndex((h: string) => norm(h).includes(ogMatch)) : -1;
 const site = await getSite(env);
 
 const pln = (g: number | null) => (g === null ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
@@ -190,9 +193,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           </form>
         )}
 
-        {p.highlights.length > 0 && <ul class="checks pr-hl">{p.highlights.map((h) => (
-          <li>{og && ogMatch && h.toLowerCase().includes(ogMatch)
-            ? <button type="button" class="og-hl" data-og-trigger aria-controls="og-tip" aria-expanded="false">{h}<span class="og-hl__i" aria-hidden="true"><Icon name="info" size={14} stroke={2.25} /></span></button>
+        {p.highlights.length > 0 && <ul class="checks pr-hl">{p.highlights.map((h, i) => (
+          <li>{og && i === ogHl
+            ? <button type="button" class="og-hl" data-og-trigger aria-controls="og-tip" aria-expanded="false">{h}<span class="og-hl__i" aria-hidden="true">i</span></button>
             : h}</li>
         ))}</ul>}
 
@@ -676,7 +679,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   /* Wyróżnik z dymkiem: cały tekst klikalny (kropkowane podkreślenie) + okrągła ikona „i” na turkusowym tle */
   .og-hl { all: unset; cursor: pointer; text-decoration: underline dotted var(--accent); text-underline-offset: 4px; }
   .og-hl:hover, .og-hl[aria-expanded='true'] { color: var(--accent-text); }
-  .og-hl__i { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; vertical-align: -3px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); }
+  .og-hl__i { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; vertical-align: 1px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); font-size: 13px; line-height: 1; font-weight: 500; font-style: normal; text-decoration: none; }
   .og-seal { position: absolute; z-index: 2; left: 18px; bottom: 18px; width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--surface); color: var(--accent); box-shadow: var(--shadow-soft); }
   .og-seal:hover, .og-seal[aria-expanded='true'] { color: var(--accent-text); }
   .og-tag:focus-visible, .og-hl:focus-visible, .og-seal:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
