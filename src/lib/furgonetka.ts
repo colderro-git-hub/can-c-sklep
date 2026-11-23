@@ -54,7 +54,7 @@ function splitName(full: string) {
   return { name: parts.shift() || '', surname: parts.join(' ') };
 }
 
-export function toFurgonetkaOrder(o: any) {
+export function toFurgonetkaOrder(o: any, courierService = 'inpostkurier') {
   const a = o.shipping_address || {};
   const person = splitName(a.name || [o.customers?.first_name, o.customers?.last_name].filter(Boolean).join(' '));
   const phone = (a.phone || o.customers?.phone || '').replace(/^\+48/, '');
@@ -76,8 +76,9 @@ export function toFurgonetkaOrder(o: any) {
     sourceOrderId: String(o.number),
     datetimeOrder: toWarsaw(o.created_at),
     sourceDatetimeChange: toWarsaw(o.updated_at),
-    service: locker ? 'inpost' : 'dpd',
-    serviceDescription: locker ? 'InPost Paczkomat' : 'Kurier DPD',
+    // Kurier = InPost Kurier (kod usługi w Furgonetce: inpostkurier; zmiana bez wdrożenia: zmienna FURGONETKA_COURIER_SERVICE)
+    service: locker ? 'inpost' : courierService,
+    serviceDescription: locker ? 'InPost Paczkomat' : 'Kurier InPost',
     status: STATUS[o.status] || o.status,
     totalPrice: r2(o.total / 100),
     shippingCost: r2(o.shipping_cost / 100),

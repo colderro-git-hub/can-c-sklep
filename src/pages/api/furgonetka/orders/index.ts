@@ -23,7 +23,7 @@ export const GET: APIRoute = async ({ request, url, locals }) => {
         `&source=in.(${sources})&status=in.(paid,packing,on_hold,shipped,completed,cancelled)` +
         `&updated_at=gt.${encodeURIComponent(since)}&order=updated_at.asc&limit=${limit}`,
     );
-    return json(200, rows.map(toFurgonetkaOrder));
+    return json(200, rows.map((o) => toFurgonetkaOrder(o, env.FURGONETKA_COURIER_SERVICE || 'inpostkurier')));
   } catch (e) {
     console.error('Furgonetka orders: ' + (e instanceof Error ? e.message : String(e)));
     return json(500, { error: 'Server error' });

@@ -53,7 +53,7 @@ const hero = at('home.hero', {
   lead: 'Codzienne wsparcie dla zmęczonych oczu. Można stosować przy soczewkach kontaktowych.',
   cta_primary_label: 'Zamów krople', cta_primary_href: '/produkt/krople-can-c/',
   cta_secondary_label: 'Jak stosować', cta_secondary_href: '/stosowanie/',
-  trust_boxes: ['0 zł | InPost i DPD', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'] as string[],
+  trust_boxes: ['0 zł | Paczkomat i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'] as string[],
   image_url: null as string | null, image_alt: 'Krople Can-C',
 });
 // H1 w dwóch liniach: „pierwsza | druga” (druga z wcięciem); dawny tekst bez „|” dzielimy jak w projekcie
@@ -86,7 +86,7 @@ const heroInterval = Math.min(Math.max(Number(heroSlidesCms.interval) || 10, 4),
 // Boksy zaufania pod hero: „liczba | opis”, ikony wg kolejności
 const TRUST_ICONS = ['truck', 'undo-2', 'credit-card'] as const;
 const trustRaw = ((hero.trust_boxes as string[]) || []).filter((x) => String(x).includes('|'));
-const trustBoxes = (trustRaw.length ? trustRaw : ['0 zł | InPost i DPD', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'])
+const trustBoxes = (trustRaw.length ? trustRaw : ['0 zł | Paczkomat i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'])
   .slice(0, 3).map((x: string, i: number) => { const [num, sub] = x.split('|').map((y) => y.trim()); return { num, sub: sub || '', icon: TRUST_ICONS[i] }; });
 // Nagłówki z łamaniem wiersza: „|” albo nowa linia → <br>
 const lines = (t: unknown) => String(t ?? '').split(/\s*\|\s*|\n/).map((x) => x.trim()).filter(Boolean);

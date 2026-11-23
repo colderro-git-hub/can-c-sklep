@@ -37,7 +37,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
       ${p.highlights.slice(0, 10).map((h) => `<g:product_highlight>${x(h.slice(0, 150))}</g:product_highlight>`).join('')}
       ${unit ? `<g:unit_pricing_measure>${p.unit_value}${unit}</g:unit_pricing_measure><g:unit_pricing_base_measure>${p.unit_measure === 'g' || (p.unit_measure === 'ml' && (p.unit_value ?? 0) >= 100) ? 100 : 1}${unit}</g:unit_pricing_base_measure>` : ''}
       ${p.weight_g ? `<g:shipping_weight>${p.weight_g} g</g:shipping_weight>` : ''}
-      <g:shipping><g:country>PL</g:country><g:service>InPost / DPD</g:service><g:price>0.00 PLN</g:price></g:shipping>
+      <g:shipping><g:country>PL</g:country><g:service>InPost Paczkomat / Kurier InPost</g:service><g:price>0.00 PLN</g:price></g:shipping>
     </item>`;
   }).join('');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

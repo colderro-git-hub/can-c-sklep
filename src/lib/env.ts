@@ -24,6 +24,8 @@ export type Env = {
   GA4_MEASUREMENT_ID?: string; // G-XXXXXXX - Measurement Protocol (zwroty z panelu)
   GA4_API_SECRET?: string;     // klucz tajny Measurement Protocol dla strumienia www
   SHOW_TEST_REVIEWS?: string;     // 'true' = pokazuj opinie testowe (source=test) - tylko na czas testów
+  P24_BLIK_METHOD?: string;
+  FURGONETKA_COURIER_SERVICE?: string; // kod usługi kuriera w Furgonetce (domyślnie inpostkurier)       // id metody BLIK w Przelewy24 (domyślnie 181)
   IFIRMA_ORDERS_TOKEN?: string;   // token JWT „własnej integracji sklepu” z ifirma (E-commerce → Własna integracja)
   ALERT_EMAIL?: string;           // adres na alerty o błędach (domyślnie MAIL_NOTIFY albo CONTACT_TO)
   MAIL_INBOX?: string;            // adres(y) skrzynki sklepu, np. kontakt@can-c.pl (do testów adres *.resend.app)

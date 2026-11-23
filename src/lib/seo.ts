@@ -30,7 +30,7 @@ export const SEO_PAGES: { path: string; label: string; title: string; descriptio
   { path: "/o-nas/", label: "O nas", title: "O nas | Can-C", description: "Sklep can-c.pl prowadzi firma Colderro Ewa Zimna. Sprzedajemy oryginalne krople Can-C od 2013 roku." },
   { path: "/regulamin/", label: "Regulamin", title: "Regulamin | Can-C", description: "Regulamin sklepu internetowego can-c.pl: zamówienia, płatności, dostawa, zwroty, reklamacje i konto klienta." },
   { path: "/polityka-prywatnosci/", label: "Polityka prywatności", title: "Polityka prywatności | Can-C", description: "Polityka prywatności i plików cookies sklepu can-c.pl: jakie dane zbieramy, w jakim celu, komu je powierzamy i jakie masz prawa." },
-  { path: "/formy-dostawy/", label: "Formy dostawy", title: "Formy dostawy | Can-C", description: "Darmowa dostawa w Polsce: InPost Paczkomat 24/7 i kurier DPD. Czas realizacji i śledzenie przesyłek w sklepie Can-C." },
+  { path: "/formy-dostawy/", label: "Formy dostawy", title: "Formy dostawy | Can-C", description: "Darmowa dostawa w Polsce: InPost Paczkomat 24/7 i kurier InPost. Czas realizacji i śledzenie przesyłek w sklepie Can-C." },
   { path: "/formy-platnosci/", label: "Formy płatności", title: "Formy płatności | Can-C", description: "Płatności w sklepie Can-C: BLIK, szybki przelew, karta płatnicza, Apple Pay i Google Pay przez Przelewy24." },
   { path: "/odstapienie-od-umowy/", label: "Zwroty i reklamacje", title: "Zwroty i reklamacje | Can-C", description: "Odstąpienie od umowy w 14 dni, zwrot produktu i reklamacje w sklepie Can-C. Formularz odstąpienia online." },
 ];
