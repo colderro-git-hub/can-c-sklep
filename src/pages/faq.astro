@@ -7,10 +7,14 @@ import { site } from '../config';
 import { getPageContent, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
 import NewsletterForm from '../components/NewsletterForm.astro';
+import Stars from '../components/Stars.astro';
+import { getReviewSummary } from '../lib/review-summary';
 
 export const prerender = false;
 
 const env = await getEnv(Astro.locals);
+// Moduł opinii w panelu bocznym: średnia, liczba i krótki cytat klienta
+const rv = await getReviewSummary(env);
 const [faqRows, siteDb] = await Promise.all([
   getPageContent(env, 'faq').catch(() => []),
   getSite(env).catch(() => null),
@@ -77,6 +81,19 @@ const jsonLd = {
         <p>Napisz do nas. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
         <a href="/kontakt/" class="btn btn--white" style="align-self:flex-start;margin-top:10px">Napisz do nas</a>
       </div>
+      {rv && (
+        <div class="fq-rv">
+          <div class="fq-rv__score"><span class="fq-rv__avg">{rv.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })}</span><Stars value={rv.avg} size={18} label={`Średnia ocena ${rv.avg} na 5`} /></div>
+          <span class="fq-rv__n">{rv.count} {rv.count === 1 ? 'opinia' : (rv.count % 10 >= 2 && rv.count % 10 <= 4 && (rv.count % 100 < 10 || rv.count % 100 >= 20)) ? 'opinie' : 'opinii'} klientów</span>
+          {rv.quote && (
+            <figure class="fq-rv__q">
+              <blockquote>„{rv.quote.body}”</blockquote>
+              <figcaption>{rv.quote.author}{rv.quote.verified && <span> · zweryfikowany zakup</span>}</figcaption>
+            </figure>
+          )}
+          <a href={`/produkt/${rv.quote?.product || 'krople-can-c'}/#opinie`} class="lnk"><Icon name="arrow-right" size={16} />Wszystkie opinie</a>
+        </div>
+      )}
       <div class="fq-comp">
         <span class="fq-side__t">Skład kropli</span>
         <div style="border-bottom:1px solid var(--line)">
@@ -139,6 +156,14 @@ const jsonLd = {
   .fq-list [hidden] { display: none; }
   .fq-side { width: 436px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px; }
   .fq-side__t { font-size: 28px; line-height: 32px; font-weight: 400; }
+  /* Moduł opinii (wariant B): ocena, liczba i cytat na jasnym turkusowym tle */
+  .fq-rv { background: var(--accent-soft); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .fq-rv__score { display: flex; align-items: center; gap: 14px; }
+  .fq-rv__avg { font-size: 48px; line-height: 1; font-weight: 300; }
+  .fq-rv__n { font-size: 14px; line-height: 21px; color: var(--muted); }
+  .fq-rv__q { margin: 8px 0 4px; display: flex; flex-direction: column; gap: 8px; }
+  .fq-rv__q blockquote { margin: 0; font-size: 18px; line-height: 28px; font-weight: 300; }
+  .fq-rv__q figcaption { font-size: 14px; line-height: 21px; color: var(--muted); }
   .fq-help { background: var(--primary); color: #FFFFFF; border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
   .fq-help p { font-size: 16px; line-height: 24px; font-weight: 300; color: var(--on-dark-soft); }
   .fq-comp { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
