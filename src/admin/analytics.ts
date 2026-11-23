@@ -93,7 +93,7 @@ export async function loadAnalytics() {
   catch (e) { anBody.innerHTML = `<p class="err">${esc((e as Error).message)}</p>`; return; }
   const { kpi, prev, funnel, daily, topProducts, byShipping, byPayment, topCodes } = d;
   const env_ga4_missing = !d.ga4 && true; // ga4 null = brak konfiguracji lub błąd
-  const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier DPD' };
+  const ship: Record<string,string> = { inpost_locker:'InPost Paczkomat', dpd:'Kurier' };
 
   anBody.innerHTML = `<div class="an__body">` + `
     <!-- KPI -->

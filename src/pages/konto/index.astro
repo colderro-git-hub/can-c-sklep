@@ -283,7 +283,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
       const reorderable = o.order_items.some((i: any) => catalog.some((c) => c.slug === i.product_id && c.price !== null));
       const first = o.order_items[0];
       const thumb = first ? imgOf(first.product_id) : '';
-      const ship = o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '');
+      const ship = o.shipping_method === 'dpd' ? 'Kurier' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '');
       const action = o.tracking_number
         ? `<a class="ac__ul" href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">Śledź przesyłkę</a>`
         : o.status === 'pending_payment' && o.payment_provider === 'bank_transfer'

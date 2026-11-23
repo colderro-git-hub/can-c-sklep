@@ -33,7 +33,18 @@ async function api(cfg: Cfg, method: string, path: string, body: unknown) {
 // 1. Rejestracja transakcji → adres strony płatności
 export async function registerTransaction(
   cfg: Cfg,
-  t: { sessionId: string; amount: number; description: string; email: string; client: string; phone?: string; urlReturn: string; urlStatus: string; timeLimit?: number },
+  t: { sessionId: string; amount: number; description: string; email: string; client: string; phone?: string; urlReturn: string; urlStatus: string; timeLimit?: number;
+       method?: number; psu?: { ip: string; userAgent: string } },
+) {
+  return (await registerTransactionToken(cfg, t)).url;
+}
+
+// Rejestracja z tokenem (BLIK na stronie sklepu potrzebuje tokenu do chargeByCode).
+// method = wybrana metoda P24 (BLIK), psu = IP i przeglądarka płacącego - wymagane przez BLIK „kod na stronie”.
+export async function registerTransactionToken(
+  cfg: Cfg,
+  t: { sessionId: string; amount: number; description: string; email: string; client: string; phone?: string; urlReturn: string; urlStatus: string; timeLimit?: number;
+       method?: number; psu?: { ip: string; userAgent: string } },
 ) {
   const sign = await sha384({ sessionId: t.sessionId, merchantId: cfg.merchantId, amount: t.amount, currency: 'PLN', crc: cfg.crc });
   const data = await api(cfg, 'POST', '/transaction/register', {
@@ -52,9 +63,19 @@ export async function registerTransaction(
     urlStatus: t.urlStatus,
     timeLimit: t.timeLimit ?? 30, // minuty; 0 = bez limitu (link wysyłany mailem)
     encoding: 'UTF-8',
+    ...(t.method ? { method: t.method } : {}),
+    ...(t.psu ? { additional: { PSU: { IP: t.psu.ip, userAgent: t.psu.userAgent } } } : {}),
     sign,
   });
-  return `${cfg.host}/trnRequest/${data.data.token}`;
+  const token = String(data.data.token);
+  return { token, url: `${cfg.host}/trnRequest/${token}` };
+}
+
+// BLIK „kod na stronie” (Level 0): obciążenie kodem 6-cyfrowym z aplikacji banku; klient zatwierdza w aplikacji,
+// a wynik przychodzi zwykłym powiadomieniem na urlStatus (finalizePayment).
+export async function blikChargeByCode(cfg: Cfg, token: string, blikCode: string) {
+  const data = await api(cfg, 'POST', '/paymentMethod/blik/chargeByCode', { token, blikCode });
+  return data?.data ?? data;
 }
 
 export type P24Notification = {

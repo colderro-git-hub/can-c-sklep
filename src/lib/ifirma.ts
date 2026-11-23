@@ -90,7 +90,7 @@ export async function buildIfirmaOrder(sb: Sb, orderId: string) {
     paid: Boolean(o.paid_at),
     ...(o.status === 'completed' ? { completed: ifDate(o.updated_at) } : {}),
     ...(o.customer_note ? { message: cut(o.customer_note, 2000) } : {}),
-    deliveryType: o.shipping_method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier InPost',
+    deliveryType: o.shipping_method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier',
     invoiceRequired: Boolean(o.wants_invoice),
     ...(o.tracking_number ? { trackingList: [{ number: cut(o.tracking_number, 50) }] } : {}),
     items: lines,

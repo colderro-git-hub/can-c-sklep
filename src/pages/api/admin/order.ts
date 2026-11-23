@@ -97,7 +97,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
         html: orderShippedHtml({ site: await getSite(env), origin, number: order.number, carrier: carrierLabel(carrier), tracking, trackingUrl: trackingUrl(carrier, tracking) }),
         text: [
           'Dzień dobry,', '',
-          `Twoje zamówienie nr ${order.number} zostało nadane (${carrier === 'dpd' ? 'kurier DPD' : 'InPost'}).`,
+          `Twoje zamówienie nr ${order.number} zostało nadane (${carrier === 'dpd' ? 'kurier' : 'InPost'}).`,
           `Numer przesyłki: ${tracking}`,
           `Śledzenie: ${trackingUrl(carrier, tracking)}`, '',
           'Dziękujemy za zakupy!', 'Zespół Can-C',
@@ -116,7 +116,7 @@ async function transition(ctx: Ctx, order: any, action: string, o: { notify?: bo
       const a = order.shipping_address || {};
       const delivery = order.shipping_method === 'inpost_locker'
         ? `Paczkomat InPost ${order.shipping_point || ''}${a.point_name ? ` (${a.point_name})` : ''}`
-        : `Kurier DPD: ${[a.street, `${a.postcode || ''} ${a.city || ''}`.trim()].filter(Boolean).join(', ')}`;
+        : `Kurier: ${[a.street, `${a.postcode || ''} ${a.city || ''}`.trim()].filter(Boolean).join(', ')}`;
       const firstName = order.customers?.first_name || null;
       await sendMail(env, {
         to: order.email,

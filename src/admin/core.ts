@@ -22,7 +22,7 @@ export const track = (carrier: string, nr: string) => {
   return 'https://furgonetka.pl/zlokalizuj';
 };
 export const trackLink = (carrier: string, nr: string) => `<a href="${track(carrier, nr)}" target="_blank" rel="noopener" data-stop>${esc(nr)}</a>`;
-export const delivery = (o: Order) => o.shipping_method === 'dpd' ? 'Kurier DPD' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '-');
+export const delivery = (o: Order) => o.shipping_method === 'dpd' ? 'Kurier' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '-');
 
 export const state = { status: 'paid', q: '', page: 1, pages: 1 };
 

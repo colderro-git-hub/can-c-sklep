@@ -15,7 +15,7 @@ export const PAGES_META: Record<string, any> = {
       cta_secondary_href: { type: 'url', label: 'Przycisk drugorzędny - link' },
       image_url: { type: 'image', label: 'Zdjęcie w hero', hint: 'Wypełnia cały kształt baneru (szare pola). Poziome, min. 2000 px szerokości; najważniejszy motyw po prawej stronie. Na telefonie pokazuje się pod tekstem w proporcji 4:3.' },
       image_alt: { type: 'text', label: 'Alt zdjęcia' },
-      trust_boxes: { type: 'list', label: 'Boksy pod banerem (3 linie: „liczba | opis”)', hint: 'Np. „0 zł | Paczkomat i kurier”. Ikony wg kolejności: dostawa, zwrot, płatność.' },
+      trust_boxes: { type: 'list', label: 'Boksy pod banerem (3 linie: „liczba | opis”)', hint: 'Np. „0 zł | InPost i kurier”. Ikony wg kolejności: dostawa, zwrot, płatność.' },
     }},
     { key: 'home.hero_slides', label: 'Hero - kolejne slajdy (karuzela)', schema: {
       interval: { type: 'text', label: 'Zmiana slajdu co (sekund)', hint: '4-30, domyślnie 10. Slajd 1 to sekcja „Hero” powyżej; wyłączenie tej sekcji = hero bez karuzeli.' },

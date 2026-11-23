@@ -28,7 +28,7 @@ export const faqItems: { id: string; cat: FaqCategory; q: string; a: string; hom
   { id: 'opakowanie', cat: 'stosowanie', home: true, q: 'Na jak długo wystarcza jedno opakowanie?',
     a: 'Przy standardowym dawkowaniu około miesiąca.' },
   { id: 'dostawa', cat: 'zamowienia', q: 'Ile kosztuje dostawa?',
-    a: 'Dostawa w Polsce jest darmowa: do Paczkomatu InPost lub kurierem InPost.' },
+    a: 'Dostawa w Polsce jest darmowa: do Paczkomatu InPost lub kurierem.' },
   { id: 'wysylka', cat: 'zamowienia', home: true, q: 'Kiedy wyślecie moje zamówienie?',
     a: 'Zamówienia opłacone w dni robocze wysyłamy {shippingTime}. Numer przesyłki dostaniesz e-mailem i zobaczysz w swoim koncie.' },
   { id: 'konto', cat: 'zamowienia', q: 'Czy muszę zakładać konto?',

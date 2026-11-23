@@ -24,6 +24,14 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         <a href="/#produkty" class="btn">Przejdź do produktów</a>
       </div>
 
+      <div class="co__blikwait" data-blik-wait role="alertdialog" aria-live="polite" aria-labelledby="co-blik-t" hidden>
+        <div class="co__blikcard">
+          <span class="co__spin" aria-hidden="true"></span>
+          <p class="co__blikt" id="co-blik-t" data-blik-t>Zatwierdź płatność w aplikacji banku</p>
+          <p class="p" data-blik-p>Otwórz aplikację banku i potwierdź płatność BLIK. Ta strona przejdzie dalej sama, gdy bank ją zatwierdzi.</p>
+          <a class="btn btn-o" data-blik-alt href="#" hidden>Wolę zapłacić na stronie Przelewy24</a>
+        </div>
+      </div>
       <form class="co__form" data-checkout novalidate hidden>
         <h1 class="h2 co__title">Dostawa i płatność</h1>
         <p class="co__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
@@ -45,7 +53,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
               <label class="opt"><input type="radio" name="shippingMethod" value="inpost_locker" checked />
                 <span class="opt__txt"><span class="opt__t">InPost Paczkomat 24/7</span><span class="opt__s">Odbiór o dowolnej porze</span></span><span class="opt__p">0,00 zł</span></label>
               <label class="opt"><input type="radio" name="shippingMethod" value="dpd" />
-                <span class="opt__txt"><span class="opt__t">Kurier DPD</span><span class="opt__s">Dostawa pod wskazany adres</span></span><span class="opt__p">0,00 zł</span></label>
+                <span class="opt__txt"><span class="opt__t">Kurier</span><span class="opt__s">Dostawa pod wskazany adres</span></span><span class="opt__p">0,00 zł</span></label>
 
               <div class="co__sub" data-locker data-map-key={FURGONETKA_MAP_KEY}>
                 <div class="co__pick" data-map-wrap hidden>
@@ -68,8 +76,15 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
             <fieldset class="co__card">
               <legend class="co__ct">3. Płatność</legend>
-              <label class="opt"><input type="radio" name="paymentMethod" value="p24" checked />
-                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">BLIK, karta, przelew online - ponad 150 metod</span></span></label>
+              <label class="opt"><input type="radio" name="paymentMethod" value="blik" checked />
+                <span class="opt__txt"><span class="opt__t">BLIK</span><span class="opt__s">Kod z aplikacji banku - wpisujesz go tutaj, bez przechodzenia na inną stronę</span></span></label>
+              <div class="co__sub co__blik" data-blik>
+                <label class="lbl" for="co-blik">Kod BLIK</label>
+                <input class="fld co__blikin" id="co-blik" name="blikCode" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000 000" pattern="[0-9 ]{6,7}" aria-describedby="co-blik-h" />
+                <span class="k" id="co-blik-h">Otwórz aplikację banku, wygeneruj kod BLIK i wpisz go tu. Po kliknięciu „Zamawiam i płacę” zatwierdź płatność w aplikacji.</span>
+              </div>
+              <label class="opt"><input type="radio" name="paymentMethod" value="p24" />
+                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">Karta, przelew online i inne metody</span></span></label>
               <label class="opt"><input type="radio" name="paymentMethod" value="bank_transfer" />
                 <span class="opt__txt"><span class="opt__t">Przelew bankowy</span><span class="opt__s">Realizacja po zaksięgowaniu wpłaty</span></span></label>
               <div class="co__sub" data-bank hidden>
@@ -277,14 +292,26 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     const bankNr = form.querySelector<HTMLElement>('[data-bank-nr]')!;
     bankNr.textContent = BANK_ACCOUNT;
     const payNote = form.querySelector<HTMLElement>('[data-pay-note]')!;
+    // BLIK: pole kodu (format „123 456”), widoczne przy wybranym BLIK
+    const blikPanel = form.querySelector<HTMLElement>('[data-blik]')!;
+    const blikInput = form.querySelector<HTMLInputElement>('[name="blikCode"]')!;
+    blikInput.addEventListener('input', () => {
+      const d = blikInput.value.replace(/\D/g, '').slice(0, 6);
+      blikInput.value = d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d;
+    });
+    payNote.textContent = 'Płatność BLIK obsługuje Przelewy24. Zatwierdzasz ją w aplikacji swojego banku.';
     form.querySelectorAll<HTMLInputElement>('input[name="paymentMethod"]').forEach((r) =>
       r.addEventListener('change', () => {
         const bank = r.value === 'bank_transfer';
         bankPanel.hidden = !bank;
+        blikPanel.hidden = r.value !== 'blik';
+        if (r.value === 'blik') blikInput.focus();
         submit.textContent = 'Zamawiam i płacę';
         payNote.textContent = bank
           ? 'Po złożeniu zamówienia wyślemy e-mail z numerem konta i kwotą do przelania. Realizacja po zaksięgowaniu wpłaty.'
-          : 'Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.';
+          : r.value === 'blik'
+            ? 'Płatność BLIK obsługuje Przelewy24. Zatwierdzasz ją w aplikacji swojego banku.'
+            : 'Płatność kartą lub przelewem w serwisie Przelewy24. Nie przechowujemy danych kart.';
       }),
     );
     const invoice = form.querySelector<HTMLElement>('[data-invoice]')!;
@@ -372,12 +399,19 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         return cp?.size ? { ...it, item_variant: cp.size } : it;
       });
       trackBeginCheckout(gaItemsWithVariant, gaValue, gaCode);
-      trackAddShippingInfo(gaItemsWithVariant, gaValue, val('shippingMethod') === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD');
-      trackAddPaymentInfo(gaItemsWithVariant, gaValue, val('paymentMethod') === 'bank_transfer' ? 'Przelew bankowy' : 'Przelewy24');
+      trackAddShippingInfo(gaItemsWithVariant, gaValue, val('shippingMethod') === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier');
+      const chosen = val('paymentMethod');
+      const blikCode = blikInput.value.replace(/\D/g, '');
+      if (chosen === 'blik' && blikCode.length !== 6) {
+        error.textContent = 'Wpisz 6-cyfrowy kod BLIK z aplikacji banku.';
+        blikInput.focus();
+        return;
+      }
+      trackAddPaymentInfo(gaItemsWithVariant, gaValue, chosen === 'bank_transfer' ? 'Przelew bankowy' : chosen === 'blik' ? 'BLIK' : 'Przelewy24');
 
-      const paymentMethod = val('paymentMethod') === 'bank_transfer' ? BANK_PROVIDER : 'p24';
+      const paymentMethod = chosen === 'bank_transfer' ? BANK_PROVIDER : chosen === 'blik' ? 'blik' : 'p24';
       submit.disabled = true;
-      submit.textContent = paymentMethod === BANK_PROVIDER ? 'Składanie zamówienia…' : 'Przekierowanie do płatności…';
+      submit.textContent = paymentMethod === BANK_PROVIDER ? 'Składanie zamówienia…' : paymentMethod === 'blik' ? 'Wysyłanie kodu BLIK…' : 'Przekierowanie do płatności…';
       try {
         const res = await fetch('/api/zamowienie', {
           method: 'POST',
@@ -392,6 +426,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             note: val('note'), terms: true, marketing: fd.get('marketing') !== null, website: val('website'),
             discountCode: (window as any).__cancCode?.() || '',
             paymentMethod,
+            ...(paymentMethod === 'blik' ? { blikCode } : {}),
           }),
         });
         const data = await res.json().catch(() => ({}));
@@ -410,6 +445,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         if (paymentMethod === BANK_PROVIDER) {
           // Przelew bankowy: bez przekierowania do P24 → prosto na stronę podziękowania
           location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`;
+        } else if (paymentMethod === 'blik') {
+          // BLIK: czekamy na zatwierdzenie w aplikacji banku (status zamówienia co 2 s, maks. 2 min)
+          await waitForBlik(data);
         } else {
           if (!data.redirect) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
           location.href = data.redirect;
@@ -421,11 +459,51 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       }
     });
   }
+  // Okno „Zatwierdź płatność w aplikacji banku” i sprawdzanie statusu zamówienia
+  async function waitForBlik(data: { blik: boolean; id: string; redirect?: string; error?: string }) {
+    const box = document.querySelector<HTMLElement>('[data-blik-wait]')!;
+    const title = box.querySelector<HTMLElement>('[data-blik-t]')!;
+    const text = box.querySelector<HTMLElement>('[data-blik-p]')!;
+    const alt = box.querySelector<HTMLAnchorElement>('[data-blik-alt]')!;
+    alt.href = data.redirect || '#';
+    alt.hidden = !data.redirect;
+    box.hidden = false;
+    const fail = (msg: string) => {
+      box.classList.add('is-error');
+      title.textContent = 'Płatność BLIK nie została potwierdzona';
+      text.textContent = msg;
+      alt.textContent = 'Zapłać na stronie Przelewy24';
+    };
+    if (!data.blik) { fail(data.error || 'Nie udało się użyć kodu BLIK.'); return; }
+    const until = Date.now() + 120_000;
+    while (Date.now() < until) {
+      await new Promise((r) => setTimeout(r, 2000));
+      try {
+        const res = await fetch(`/api/zamowienie/status?id=${encodeURIComponent(data.id)}`, { cache: 'no-store' });
+        const s = await res.json();
+        if (['paid', 'packing', 'shipped', 'completed'].includes(s.status)) { location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`; return; }
+        if (['cancelled', 'failed'].includes(s.status)) { fail('Płatność została odrzucona w aplikacji banku.'); return; }
+      } catch { /* kolejna próba */ }
+    }
+    fail('Nie dostaliśmy potwierdzenia z banku. Jeśli zatwierdziłeś płatność, sprawdź status za chwilę na stronie zamówienia albo dokończ płatność w Przelewy24.');
+  }
   })();
 </script>
 
 <style>
   .co { background: var(--band); }
+  /* BLIK: pole kodu i okno oczekiwania na zatwierdzenie w banku */
+  .co__blik { display: flex; flex-direction: column; gap: 8px; }
+  .co__blik[hidden] { display: none; }
+  .co__blikin { max-width: 200px; font-size: 24px; letter-spacing: .12em; text-align: center; }
+  .co__blikwait { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 20px; background: rgba(20, 28, 43, .55); backdrop-filter: blur(3px); }
+  .co__blikwait[hidden] { display: none; }
+  .co__blikcard { max-width: 420px; width: 100%; background: var(--surface); border-radius: 32px; padding: 32px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; box-shadow: 0 16px 40px rgba(20, 28, 43, .2); }
+  .co__blikt { margin: 0; font-size: 24px; line-height: 30px; font-weight: 400; }
+  .co__spin { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--accent-soft); border-top-color: var(--accent); animation: co-spin 1s linear infinite; }
+  .co__blikwait.is-error .co__spin { display: none; }
+  @keyframes co-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .co__spin { animation-duration: 3s; } }
   .co__in { padding-top: 45px; padding-bottom: 90px; }
   .co__empty { margin-top: 45px; background: var(--surface); }
   .co__emptyt { font-size: 28px; line-height: 32px; font-weight: 400; }

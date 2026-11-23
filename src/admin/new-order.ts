@@ -27,7 +27,7 @@ export async function openNewOrder() {
         <button type="button" class="btn btn--outline btn--sm" data-no-add>+ Dodaj produkt</button>
       </div>
       <div class="sec"><h3 class="sec__t">Dostawa</h3>
-        <label class="field">Sposób<select class="input" name="shippingMethod" data-no-method><option value="inpost_locker">InPost Paczkomat</option><option value="dpd">Kurier DPD</option></select></label>
+        <label class="field">Sposób<select class="input" name="shippingMethod" data-no-method><option value="inpost_locker">InPost Paczkomat</option><option value="dpd">Kurier</option></select></label>
         <label class="field" data-no-locker>Kod Paczkomatu<input class="input" name="locker" /></label>
         <div data-no-addr hidden><label class="field">Ulica i numer<input class="input" name="street" /></label>
           <div class="row2"><label class="field">Kod pocztowy<input class="input" name="postcode" placeholder="00-000" /></label><label class="field">Miejscowość<input class="input" name="city" /></label></div></div>

@@ -50,7 +50,7 @@ export async function finalizePayment(
     lines = items.map((i) => `• ${i.name} × ${i.qty} - ${zl(i.total)}`).join('\n');
     delivery = order.shipping_method === 'inpost_locker'
       ? `Paczkomat InPost ${order.shipping_point}`
-      : `Kurier DPD: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
+      : `Kurier: ${order.shipping_address?.street}, ${order.shipping_address?.postcode} ${order.shipping_address?.city}`;
   } catch (e) { console.error('Dane do e-maila: ' + errMsg(e)); }
   const origin = opts.origin;
   const site = await getSite(env);

@@ -155,7 +155,7 @@ import Base from '../../layouts/Base.astro';
     const who = [dv.name, dv.phone ? `tel. ${phone(dv.phone)}` : ''].filter(Boolean).map(esc).join('<br>');
     q('[data-delivery]').innerHTML = dv.method === 'inpost_locker'
       ? `<span class="ty__strong">Paczkomat InPost ${esc(dv.point || '')}</span>${dv.pointName ? `<span>${esc(dv.pointName)}</span>` : ''}<span>${who}</span>`
-      : `<span class="ty__strong">Kurier DPD</span><span>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}${dv.phone ? `<br>tel. ${esc(phone(dv.phone))}` : ''}</span>`;
+      : `<span class="ty__strong">Kurier</span><span>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}${dv.phone ? `<br>tel. ${esc(phone(dv.phone))}` : ''}</span>`;
     if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<span class="k">${esc(d.shippingTime)}${paid ? '' : ' Termin liczymy od zaksięgowania płatności.'}</span>`);
 
     const bankData = d.payment.bank;
@@ -175,7 +175,7 @@ import Base from '../../layouts/Base.astro';
 
     // Oś statusu
     const stepNo = paid ? (['shipped', 'completed'].includes(o.status) ? (o.status === 'completed' ? 4 : 3) : 2) : 1;
-    const ship = dv.method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier DPD';
+    const ship = dv.method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier';
     const steps: [string, string][] = [
       ['Przyjęte', when(d.createdAt)],
       ['Opłacone', paid ? (d.paidAt ? when(d.paidAt) : 'opłacone') : (bankData ? 'czekamy na przelew' : 'czekamy na potwierdzenie')],

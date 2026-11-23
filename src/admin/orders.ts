@@ -132,7 +132,7 @@ export async function openOrder(id: string, push = true) {
           <dt>Klient</dt><dd>${o.customer_id ? `<button type="button" class="link" data-open-customer="${o.customer_id}">${esc(name || o.email)}</button>` : esc(name || '-')}</dd>
           <dt>E-mail</dt><dd><a href="mailto:${esc(o.email)}">${esc(o.email)}</a></dd>
           <dt>Telefon</dt><dd>${esc(a.phone || o.customers?.phone || '-')}</dd>
-          <dt>Dostawa</dt><dd>${o.shipping_method === 'dpd' ? `Kurier DPD<br>${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat <strong>${esc(o.shipping_point || '-')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</dd>
+          <dt>Dostawa</dt><dd>${o.shipping_method === 'dpd' ? `Kurier<br>${esc(a.street)}, ${esc(a.postcode)} ${esc(a.city)}` : `Paczkomat <strong>${esc(o.shipping_point || '-')}</strong>${a.point_name ? `<br><span class="muted">${esc(a.point_name)}</span>` : ''}`}</dd>
           ${o.tracking_number ? `<dt>Przesyłka</dt><dd>${esc(o.carrier || '')} ${trackLink(o.carrier || o.shipping_method, o.tracking_number)}</dd>` : ''}
           ${o.billing ? `<dt>Faktura</dt><dd>${esc(o.billing.company || '')}<br>NIP ${esc(o.billing.nip || '-')}<br>${esc(o.billing.street || '')}, ${esc(o.billing.postcode || '')} ${esc(o.billing.city || '')}</dd>` : ''}
         </dl>
@@ -218,7 +218,7 @@ export async function openOrder(id: string, push = true) {
         <form class="sec" data-oedit>
           <div class="row2"><label class="field">Imię i nazwisko<input class="input" name="name" value="${esc(name)}" /></label><label class="field">Telefon<input class="input" name="phone" value="${esc(a.phone || '')}" /></label></div>
           <label class="field">E-mail<input class="input" name="email" type="email" value="${esc(o.email)}" /></label>
-          <label class="field">Dostawa<select class="input" name="shipping_method" data-oedit-method><option value="inpost_locker" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost Paczkomat</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>Kurier DPD</option></select></label>
+          <label class="field">Dostawa<select class="input" name="shipping_method" data-oedit-method><option value="inpost_locker" ${o.shipping_method !== 'dpd' ? 'selected' : ''}>InPost Paczkomat</option><option value="dpd" ${o.shipping_method === 'dpd' ? 'selected' : ''}>Kurier</option></select></label>
           <label class="field" data-oedit-locker>Kod Paczkomatu<input class="input" name="shipping_point" value="${esc(o.shipping_point || '')}" /></label>
           <div data-oedit-addr><label class="field">Ulica i numer<input class="input" name="street" value="${esc(a.street || '')}" /></label>
             <div class="row2"><label class="field">Kod pocztowy<input class="input" name="postcode" value="${esc(a.postcode || '')}" /></label><label class="field">Miejscowość<input class="input" name="city" value="${esc(a.city || '')}" /></label></div></div>
