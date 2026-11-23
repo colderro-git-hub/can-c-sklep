@@ -174,12 +174,14 @@ import Base from '../../layouts/Base.astro';
       + `<span class="${paid ? 'ty__ok' : ''}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</span>`;
 
     // Oś statusu
-    const stepNo = paid ? (['shipped', 'completed'].includes(o.status) ? (o.status === 'completed' ? 4 : 3) : 2) : 1;
+    // Kroki: 1 Przyjęte, 2 Opłacone, 3 Kompletowanie, 4 Wysłane, 5 Dostarczone
+    const stepNo = !paid ? 1 : o.status === 'completed' ? 5 : o.status === 'shipped' ? 4 : o.status === 'packing' ? 3 : 2;
     const ship = dv.method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier';
     const steps: [string, string][] = [
       ['Przyjęte', when(d.createdAt)],
       ['Opłacone', paid ? (d.paidAt ? when(d.paidAt) : 'opłacone') : (bankData ? 'czekamy na przelew' : 'czekamy na potwierdzenie')],
-      ['Wysłane', stepNo >= 3 ? 'w drodze' : (bankData && !paid ? '1 dzień roboczy po wpłacie' : (d.shippingTime || 'wkrótce'))],
+      ['Kompletowanie', stepNo >= 3 ? 'przygotowujemy paczkę' : (bankData && !paid ? 'po zaksięgowaniu wpłaty' : 'wkrótce')],
+      ['Wysłane', stepNo >= 4 ? 'w drodze' : (d.shippingTime || 'wkrótce')],
       ['Dostarczone', ship],
     ];
     const track = q('[data-track]');
@@ -187,7 +189,7 @@ import Base from '../../layouts/Base.astro';
     track.innerHTML = steps.map(([t, sub], i) => {
       const n = i + 1;
       const done = n <= stepNo;
-      const now = n === stepNo + 1 || (stepNo === 4 && n === 4);
+      const now = n === stepNo + 1 || (stepNo === 5 && n === 5);
       const icon = done
         ? `<span class="ty__tn ty__tn--done" aria-hidden="true">${lucide('check', 16, { stroke: 2.5 })}</span>`
         : `<span class="ty__tn${now ? ' ty__tn--now' : ''}" aria-hidden="true">${n}</span>`;
@@ -295,7 +297,7 @@ import Base from '../../layouts/Base.astro';
   .ty__lead :global(strong), .ty__state strong { font-weight: 500; color: var(--ink); }
   .ty__leaf { width: 269px; height: 169px; flex-shrink: 0; background: var(--image); border-radius: 20px 500px 20px 20px; }
   .ty__notice { margin-top: 24px; padding: 14px 18px; border-radius: var(--r-md); background: var(--peach); font-size: 14px; }
-  .ty__track { list-style: none; margin: 45px 0 0; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .ty__track { list-style: none; margin: 45px 0 0; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
   :global(.ty__t) { display: flex; align-items: center; gap: 14px; }
   :global(.ty__t--off) { color: var(--muted); }
   :global(.ty__tn) { width: 42px; height: 42px; flex-shrink: 0; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 400; }
@@ -332,6 +334,10 @@ import Base from '../../layouts/Base.astro';
   :global(.ty__strong) { font-weight: 400; }
   :global(.ty__ok) { color: var(--ok); }
   .ty__pre { white-space: pre-wrap; }
+  /* 5 kroków: na węższych ekranach jeden pod drugim */
+  @media (max-width: 900px) {
+    .ty__track { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  }
   @media (max-width: 1000px) {
     .ty__leaf { display: none; }
     :global(.ty__item) { flex-wrap: wrap; }
