@@ -4,7 +4,7 @@ import { getPageContent, getSection, visible } from './page-content';
 
 export type OriginalInfo = {
   badge: string; title: string; lead: string; items: string[];
-  image_url: string | null; image_alt: string; link_label: string; link_href: string; highlight_match: string;
+  image_url: string | null; image_alt: string; image2_url: string | null; image2_alt: string; highlight_match: string;
 };
 
 const DEFAULTS: OriginalInfo & { products: string[] } = {
@@ -14,7 +14,7 @@ const DEFAULTS: OriginalInfo & { products: string[] } = {
   lead: 'Can-C sprzedajemy od 2013 roku. Każde opakowanie pochodzi bezpośrednio z oficjalnej dystrybucji.',
   items: ['Na pudełku jest hologram producenta', 'Opakowanie fabrycznie zamknięte, z numerem partii i datą ważności'],
   image_url: null, image_alt: 'Hologram na opakowaniu Can-C',
-  link_label: 'Masz wątpliwości? Napisz do nas', link_href: '/kontakt/',
+  image2_url: null, image2_alt: '',
   highlight_match: 'Innovative Vision Products',
 };
 
@@ -32,8 +32,8 @@ export async function getOriginalInfo(env: Env, productId: string): Promise<Orig
     items: (Array.isArray(raw.items) ? raw.items : []).map(String).filter(Boolean),
     image_url: raw.image_url || null,
     image_alt: String(raw.image_alt || DEFAULTS.image_alt),
-    link_label: String(raw.link_label ?? ''),
-    link_href: String(raw.link_href || '/kontakt/'),
+    image2_url: raw.image2_url || null,
+    image2_alt: String(raw.image2_alt || ''),
     highlight_match: String(raw.highlight_match ?? DEFAULTS.highlight_match).trim(),
   };
 }
