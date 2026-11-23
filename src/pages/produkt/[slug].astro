@@ -191,7 +191,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         )}
 
         {p.highlights.length > 0 && <ul class="checks pr-hl">{p.highlights.map((h) => (
-          <li>{h}{og && ogMatch && h.toLowerCase().includes(ogMatch) && <button type="button" class="og-i" data-og-trigger aria-controls="og-tip" aria-expanded="false" aria-label={og.badge}><Icon name="info" size={18} /></button>}</li>
+          <li>{og && ogMatch && h.toLowerCase().includes(ogMatch)
+            ? <button type="button" class="og-hl" data-og-trigger aria-controls="og-tip" aria-expanded="false">{h}<span class="og-hl__i" aria-hidden="true"><Icon name="info" size={14} stroke={2.25} /></span></button>
+            : h}</li>
         ))}</ul>}
 
         <div class="pr-perks">
@@ -671,10 +673,13 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   .og-tag :global(svg) { color: var(--accent); }
   .og-tag :global(.og-tag__i) { color: var(--muted); }
   .og-tag:hover, .og-tag[aria-expanded='true'] { border-color: var(--accent); }
-  .og-i { all: unset; cursor: pointer; display: inline-grid; place-items: center; vertical-align: -3px; margin-left: 6px; color: var(--accent); border-radius: 50%; }
+  /* Wyróżnik z dymkiem: cały tekst klikalny (kropkowane podkreślenie) + okrągła ikona „i” na turkusowym tle */
+  .og-hl { all: unset; cursor: pointer; text-decoration: underline dotted var(--accent); text-underline-offset: 4px; }
+  .og-hl:hover, .og-hl[aria-expanded='true'] { color: var(--accent-text); }
+  .og-hl__i { display: inline-grid; place-items: center; width: 20px; height: 20px; margin-left: 8px; vertical-align: -3px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-text); }
   .og-seal { position: absolute; z-index: 2; left: 18px; bottom: 18px; width: 52px; height: 52px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: var(--surface); color: var(--accent); box-shadow: var(--shadow-soft); }
   .og-seal:hover, .og-seal[aria-expanded='true'] { color: var(--accent-text); }
-  .og-tag:focus-visible, .og-i:focus-visible, .og-seal:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+  .og-tag:focus-visible, .og-hl:focus-visible, .og-seal:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
   .og-tip { position: absolute; z-index: 60; width: min(380px, calc(100vw - 32px)); display: flex; gap: 14px; padding: 16px; border-radius: 20px; background: var(--surface); box-shadow: 0 12px 32px rgba(20, 28, 43, .16); animation: og-in .15s ease-out; }
   .og-tip[hidden] { display: none; }
   .og-tip__imgs { display: flex; flex-direction: column; gap: 10px; flex-shrink: 0; }
