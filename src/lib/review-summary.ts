@@ -34,3 +34,23 @@ export async function getReviewSummary(env: Env): Promise<ReviewSummary | null> 
     return null;
   }
 }
+
+// Opinie na stronie głównej: do 4 wyróżnionych (karta na zdjęciu, zmieniana) i 2 krótkie obok.
+// Te same zasady co cytat w FAQ: bez obietnic leczenia, rozsądna długość, pierwszeństwo zweryfikowanych zakupów.
+export type HomeReviewItem = { body: string; author: string; rating: number; verified: boolean; product: string };
+export async function getHomeReviews(env: Env): Promise<{ featured: HomeReviewItem[]; small: HomeReviewItem[] }> {
+  try {
+    const rows = await db(env).select<any>(`reviews?select=author_name,body,rating,verified_purchase,product_id,created_at&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=60`);
+    const clean = rows.filter((r: any) => r.body && !RISKY.test(r.body)).map((r: any) => ({
+      body: String(r.body).trim(), author: String(r.author_name || 'Klient').split(/\s+/).slice(0, 2).join(' '),
+      rating: Number(r.rating) || 5, verified: Boolean(r.verified_purchase), product: r.product_id,
+    }));
+    const featuredPool = clean.filter((r) => r.rating === 5 && r.body.length >= 30 && r.body.length <= 180);
+    const featured = [...featuredPool.filter((r) => r.verified), ...featuredPool.filter((r) => !r.verified)].slice(0, 4);
+    const small = clean.filter((r) => !featured.includes(r) && r.rating >= 4 && r.body.length <= 90).slice(0, 2);
+    return { featured, small };
+  } catch (e) {
+    console.error('Opinie na głównej: ' + (e instanceof Error ? e.message : String(e)));
+    return { featured: [], small: [] };
+  }
+}

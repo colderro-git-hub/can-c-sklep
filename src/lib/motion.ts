@@ -19,7 +19,7 @@ const REVEAL_GROUPS = [
   '.ben > *',
   '.why2__card', '.why2__side > *',
   '.products-grid > *', '.bundles-grid > *',
-  '.rv-grid > *', '.home-side > *',
+  '.rv2__side > *', '.rv2__art', '.home-side > *',
   '.k9-img, .home-split--center > .home-split__main',
   '.cta-box > *',
   '.us-step', '.us-split__l', '.us-sec .h2', '.us-drops',

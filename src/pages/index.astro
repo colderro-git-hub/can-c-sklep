@@ -6,6 +6,7 @@ import { applyPromotions, qtyOptions } from '../lib/promotions';
 import { getPromotions } from '../lib/promotions-db';
 import { getEnv } from '../lib/env';
 import { getCatalog, testReviewsFilter } from '../lib/catalog';
+import { getHomeReviews, getReviewSummary } from '../lib/review-summary';
 import { db } from '../lib/supabase';
 import { visible, fs, getPageContent, getSection, getSections, applyTokens } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
@@ -115,23 +116,14 @@ const whyPoints = [1, 2, 3, 4].map((n) => ({
   title: String((why as any)[`p${n}_title`] ?? (why.features as any[])?.[n - 1]?.title ?? ''),
   text: String((why as any)[`p${n}_text`] ?? (why.features as any[])?.[n - 1]?.text ?? ''),
 })).filter((p) => p.title || p.text);
-const reviewsCms = at('home.reviews', { h2: 'Opinie klientów', items: reviews as { quote: string; author: string }[], cta_text: 'Kupiłeś Can-C? Podziel się wrażeniami.', cta_label: 'Napisz opinię', cta_href: '/produkt/krople-can-c/#opinia' });
+const reviewsCms = at('home.reviews', { h2: 'Opinie | naszych klientów', lead: 'Can-C kupują u nas od 2013 roku. Oto, co piszą po zakupie.', image_url: null as string | null, image_alt: '', cta_label: 'Napisz opinię', cta_href: '/produkt/krople-can-c/#opinia' } as Record<string, any>);
 
-// 5 najnowszych zatwierdzonych opinii z bazy (z produktem, którego dotyczą); bez opinii w bazie - teksty z CMS
-type HomeReview = { quote: string; author: string; slug?: string; productName?: string; image?: string };
-const shorten = (t: string, n = 180) => (t.length > n ? t.slice(0, t.lastIndexOf(' ', n) > 120 ? t.lastIndexOf(' ', n) : n).trimEnd() + '…' : t);
-let latestReviews: HomeReview[] = [];
-try {
-  const rows = await db(env).select<{ product_id: string; author_name: string; body: string }>(
-    `reviews?select=product_id,author_name,body&status=eq.approved${testReviewsFilter(env)}&order=created_at.desc&limit=5`);
-  latestReviews = rows.map((r) => {
-    const prod = products.find((x) => x.slug === r.product_id);
-    return { quote: shorten(r.body), author: r.author_name, slug: r.product_id, productName: prod?.name, image: prod?.image };
-  });
-} catch { /* baza niedostępna - zostają teksty z CMS */ }
-const homeReviews: HomeReview[] = latestReviews.length ? latestReviews : (reviewsCms.items as HomeReview[]).slice(0, 5);
-// Układ: 3 opinie, karta „Napisz opinię”, kolejne opinie
-const reviewSlots: (HomeReview | 'cta')[] = [...homeReviews.slice(0, 3), 'cta', ...homeReviews.slice(3)];
+// Opinie (wariant 1): wyróżniona karta na zdjęciu (zmienia się) + 2 krótkie opinie obok; średnia ze wszystkich opinii
+const homeRv = await getHomeReviews(env);
+const rvSum = await getReviewSummary(env);
+const rvAvg = rvSum?.avg ?? ratingAvg;
+const rvCount = rvSum?.count ?? ratingCount;
+const opinii = (n: number) => (n === 1 ? 'opinii' : 'opinii');
 const benefitsRaw = at('home.benefits', {
   h2: 'Korzyści używania kropli Can-C',
   lead: 'Krople Can-C z N-acetylokarnozyną wspierają oczy na co dzień - szczególnie gdy wzrok zaczyna odczuwać upływ czasu i zmęczenie ekranem.',
@@ -385,37 +377,55 @@ const bundleRows = setQtys.map((qty) => {
   <!-- OPINIE -->
   {visible(reviewsCms) && (
   <section class="section section--band sec-gap">
-    <div class="container home-split">
-      <div class="home-side">
-        <h2 class="h2" style={fs(reviewsCms, 'h2')}>{reviewsCms.h2}</h2>
-        <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-size:4rem;line-height:64px;font-weight:300">{ratingAvg ? ratingAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : '-'}</span>
-          <div style="display:flex;flex-direction:column;gap:4px">
-            <Stars value={ratingAvg || 5} size={16} label={`Średnia ocena ${ratingAvg || 5} na 5`} />
-            <span style="font-size:14px;font-weight:300;color:var(--muted)">{ratingCount ? `na podstawie ${ratingCount} ${ratingCount === 1 ? 'opinii' : 'opinii'}` : 'opinie klientów'}</span>
+    <div class="container rv2">
+      <div class="rv2__side">
+        <h2 class="h2" style={fs(reviewsCms, 'h2')} set:html={lines(reviewsCms.h2).map(escHtml).join('<br/>')} />
+        {reviewsCms.lead && <p class="lead" style={fs(reviewsCms, 'lead', 'text-align:left')}>{reviewsCms.lead}</p>}
+        {rvCount > 0 && (
+          <div class="rv2__score">
+            <span class="rv2__avg">{rvAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+            <div class="rv2__meta"><Stars value={rvAvg} size={18} label={`Średnia ocena ${rvAvg} na 5`} /><span>na podstawie {rvCount} {opinii(rvCount)}</span></div>
           </div>
-        </div>
+        )}
+        {homeRv.small.length > 0 && (
+          <div class="rv2__small">
+            {homeRv.small.map((r) => (
+              <figure class="rv2__mini">
+                <Stars value={r.rating} size={14} />
+                <blockquote>„{r.body}”</blockquote>
+                <figcaption>{r.author}</figcaption>
+              </figure>
+            ))}
+          </div>
+        )}
+        {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="link-arrow"><Icon name="arrow-right" size={16} />{reviewsCms.cta_label}</a>}
       </div>
-      <div class="home-split__main rv-grid">
-        {reviewSlots.map((r) => r === 'cta' ? (
-          <div style="border-radius:20px;padding:24px;background:var(--image);display:flex;flex-direction:column;justify-content:space-between;gap:24px">
-            <span style={fs(reviewsCms, 'cta_text', 'font-size:1.5rem;line-height:28px;font-weight:400')}>{reviewsCms.cta_text}</span>
-            {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="btn btn--outline btn--sm" style="align-self:flex-start">{reviewsCms.cta_label}</a>}
+      <div class="rv2__art" data-rv>
+        <div class="rv2__img">
+          {reviewsCms.image_url
+            ? <img src={imgUrl(reviewsCms.image_url, 1200)} srcset={srcset(reviewsCms.image_url, [480, 640, 800, 1200, 1600])} sizes="(max-width: 1000px) 92vw, 640px" alt={reviewsCms.image_alt || ''} loading="lazy" />
+            : <span class="ben__ph">[zdjęcie: /Strony → Opinie]</span>}
+        </div>
+        {homeRv.featured.length > 0 && (
+          <div class="rv2__card" aria-live="polite">
+            {homeRv.featured.map((r, i) => (
+              <figure class="rv2__slide" data-rv-slide hidden={i > 0}>
+                <div class="rv2__head">
+                  <figcaption><span class="rv2__name">{r.author}</span>{r.verified && <span class="rv2__ok">zweryfikowany zakup</span>}</figcaption>
+                  <Stars value={r.rating} size={16} label={`Ocena ${r.rating} na 5`} />
+                </div>
+                <div class="rv2__q"><Icon name="quote" size={20} stroke={1.5} style="color:var(--accent);flex-shrink:0" /><blockquote>{r.body}</blockquote></div>
+              </figure>
+            ))}
+            {homeRv.featured.length > 1 && (
+              <div class="rv2__nav">
+                <button type="button" class="rv2__btn" data-rv-prev aria-label="Poprzednia opinia"><Icon name="chevron-left" size={18} /></button>
+                <span class="rv2__count" data-rv-count>1 / {homeRv.featured.length}</span>
+                <button type="button" class="rv2__btn" data-rv-next aria-label="Następna opinia"><Icon name="chevron-right" size={18} /></button>
+              </div>
+            )}
           </div>
-        ) : (
-          <figure style="margin:0;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:24px;display:flex;flex-direction:column;gap:14px">
-            <div style="display:flex;align-items:center;gap:14px">
-              {r.slug
-                ? <a href={`/produkt/${r.slug}/`} class="rv-thumb" title={r.productName} aria-label={`Opinia o produkcie: ${r.productName || r.slug}`}>
-                    {r.image ? <img src={imgUrl(r.image, 160)} alt="" width="44" height="44" loading="lazy" /> : null}
-                  </a>
-                : <span class="rv-thumb" aria-hidden="true"></span>}
-              <figcaption style="font-size:18px;line-height:27px;font-weight:500">{r.author}</figcaption>
-            </div>
-            <Icon name="quote" size={20} stroke={1.5} style="color:var(--accent)" />
-            <blockquote style="margin:0;font-size:16px;line-height:24px;font-weight:300;color:var(--muted);text-align:left">{r.quote}</blockquote>
-          </figure>
-        ))}
+        )}
       </div>
     </div>
   </section>
@@ -478,6 +488,31 @@ const bundleRows = setQtys.map((qty) => {
 <script>
   // Karuzela hero (src/lib/hero-slider.ts) - działa tylko, gdy w /Strony są kolejne slajdy
   import '../lib/hero-slider';
+
+  // Opinie: wyróżniona karta zmienia się co 7 s (pauza po najechaniu / fokusie, „ogranicz ruch” = tylko strzałki)
+  {
+    const box = document.querySelector<HTMLElement>('[data-rv]');
+    const slides = Array.from(box?.querySelectorAll<HTMLElement>('[data-rv-slide]') || []);
+    if (box && slides.length > 1) {
+      let cur = 0, t = 0, hold = false;
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const count = box.querySelector('[data-rv-count]');
+      const show = (n: number) => {
+        cur = (n + slides.length) % slides.length;
+        slides.forEach((s, i) => { s.hidden = i !== cur; });
+        if (count) count.textContent = `${cur + 1} / ${slides.length}`;
+        plan();
+      };
+      const plan = () => { clearTimeout(t); if (!reduced && !hold && !document.hidden) t = window.setTimeout(() => show(cur + 1), 7000); };
+      box.querySelector('[data-rv-prev]')?.addEventListener('click', () => show(cur - 1));
+      box.querySelector('[data-rv-next]')?.addEventListener('click', () => show(cur + 1));
+      ['mouseenter', 'focusin'].forEach((e) => box.addEventListener(e, () => { hold = true; clearTimeout(t); }));
+      ['mouseleave', 'focusout'].forEach((e) => box.addEventListener(e, () => { hold = false; plan(); }));
+      document.addEventListener('visibilitychange', plan);
+      // Start dopiero, gdy sekcja jest na ekranie
+      new IntersectionObserver(([e]) => { if (e.isIntersecting) plan(); else clearTimeout(t); }).observe(box);
+    }
+  }
 </script>
 </Base>
 
@@ -486,6 +521,42 @@ const bundleRows = setQtys.map((qty) => {
   /* Hero: kształty w px pod kontener 1300 px; węższe ekrany - układ pionowy */
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
+  /* Opinie (wariant 1): tekst po lewej, zdjęcie w kształcie łuku (duży zaokrąglony lewy górny róg) z kartą opinii */
+  .rv2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 45px; align-items: center; }
+  .rv2__side { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+  .rv2__score { display: flex; align-items: center; gap: 18px; }
+  .rv2__avg { font-size: 4rem; line-height: 1; font-weight: 300; }
+  .rv2__meta { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+  .rv2__small { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: 100%; }
+  .rv2__mini { margin: 0; background: var(--surface); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .rv2__mini blockquote { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; }
+  .rv2__mini figcaption { font-size: 14px; color: var(--muted); }
+  .rv2__art { position: relative; padding-left: 60px; }
+  .rv2__img { aspect-ratio: 5 / 4; min-height: 380px; border-radius: 90% 32px 32px 32px / 90% 32px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .rv2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .rv2__card { position: absolute; left: 0; bottom: 40px; width: min(430px, 82%); background: var(--surface); border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 16px 40px rgba(20, 28, 43, .12); }
+  .rv2__slide { margin: 0; display: flex; flex-direction: column; gap: 12px; animation: rv-in .4s ease-out; }
+  .rv2__slide[hidden] { display: none; }
+  .rv2__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .rv2__head figcaption { display: flex; flex-direction: column; gap: 2px; }
+  .rv2__name { font-size: 18px; line-height: 24px; font-weight: 500; }
+  .rv2__ok { font-size: 13px; color: var(--accent-text); }
+  .rv2__q { display: flex; gap: 12px; }
+  .rv2__q blockquote { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); }
+  .rv2__nav { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
+  .rv2__btn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--ink); display: grid; place-items: center; cursor: pointer; }
+  .rv2__btn:hover { border-color: var(--accent); color: var(--accent-text); }
+  .rv2__btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .rv2__count { font-size: 13px; color: var(--muted); min-width: 40px; text-align: center; }
+  @keyframes rv-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .rv2__slide { animation: none; } }
+  @media (max-width: 1000px) {
+    .rv2 { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+    .rv2__art { order: -1; padding-left: 0; padding-bottom: 120px; }
+    .rv2__img { min-height: 0; border-radius: 80% 24px 24px 24px / 80% 24px 24px 24px; }
+    .rv2__card { left: 16px; right: 16px; bottom: 0; width: auto; }
+  }
+  @media (max-width: 600px) { .rv2__small { grid-template-columns: minmax(0, 1fr); } }
   .hero-art { position: absolute; inset: 0; pointer-events: none; }
   /* Karuzela hero: przejście slajdów i znacznik (paski z postępem) */
   :global(.hs-fade) { transition: opacity .45s ease; }

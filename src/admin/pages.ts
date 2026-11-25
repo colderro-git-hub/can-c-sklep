@@ -85,12 +85,13 @@ export const PAGES_META: Record<string, any> = {
       p3_title: { type: 'text', label: 'Punkt 03 - tytuł' }, p3_text: { type: 'textarea', label: 'Punkt 03 - tekst' },
       p4_title: { type: 'text', label: 'Punkt 04 (na całą szerokość) - tytuł' }, p4_text: { type: 'textarea', label: 'Punkt 04 - tekst' },
     }},
-    { key: 'home.reviews', label: 'Opinie na stronie głównej', schema: {
-      h2: { type: 'text', label: 'Nagłówek sekcji' },
-      cta_text: { type: 'text', label: 'Karta „Napisz opinię” - tekst' },
-      cta_label: { type: 'text', label: 'Karta „Napisz opinię” - przycisk (puste = ukryj)' },
-      cta_href: { type: 'url', label: 'Karta „Napisz opinię” - link' },
-      items: { type: 'array', label: 'Opinie zapasowe JSON [{quote, author}]', hint: 'Pokazywane tylko, gdy w bazie nie ma żadnej zatwierdzonej opinii.' },
+    { key: 'home.reviews', label: 'Opinie (tekst po lewej, zdjęcie z kartą opinii po prawej)', schema: {
+      h2: { type: 'text', label: 'Nagłówek', hint: '| = nowa linia' },
+      lead: { type: 'textarea', label: 'Tekst pod nagłówkiem (puste = ukryj)' },
+      image_url: { type: 'image', label: 'Zdjęcie po prawej', hint: 'Lewy górny róg jest mocno zaokrąglony (łuk), na zdjęcie nachodzi karta opinii w lewym dolnym rogu. Kadr poziomy.' },
+      image_alt: { type: 'text', label: 'Alt zdjęcia' },
+      cta_label: { type: 'text', label: 'Link „Napisz opinię” - etykieta (puste = ukryj)' },
+      cta_href: { type: 'url', label: 'Link - adres' },
     }},
     { key: 'home.k9', label: 'Sekcja Can-C K9', schema: {
       tag: { type: 'text', label: 'Etykieta (np. „DLA PSA")' }, h2: { type: 'text', label: 'Nagłówek' },
