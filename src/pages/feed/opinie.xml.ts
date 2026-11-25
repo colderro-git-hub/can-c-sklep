@@ -12,7 +12,7 @@ export const GET: APIRoute = async ({ url, locals }) => {
   const env = await getEnv(locals);
   const origin = url.origin;
   const products = await getCatalog(env);
-  const reviews = await db(env).select<any>('reviews?select=id,product_id,author_name,rating,title,body,created_at,verified_purchase&status=eq.approved&order=created_at.desc&limit=5000');
+  const reviews = await db(env).select<any>('reviews?select=id,product_id,author_name,rating,title,body,created_at,verified_purchase&status=eq.approved&source=neq.test&order=created_at.desc&limit=5000' /* opinie testowe nigdy do Google */);
   const byId = new Map(products.map((p) => [p.id, p]));
   const items = reviews.filter((r) => byId.has(r.product_id)).map((r) => {
     const p = byId.get(r.product_id)!;

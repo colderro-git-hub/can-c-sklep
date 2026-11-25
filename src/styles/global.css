@@ -598,6 +598,9 @@ html.motion:not(.motion-ready) :is(.hero-h1, .us-hero h1, .ip-head h1, .sk-head 
    Porównanie bez cieni: dopisz do adresu ?cienie=0 (wraca po ?cienie=1).
    ---------------------------------------------------------------- */
 :root {
+  /* Strona główna: odstęp kolumn wspólnej siatki i pionowy margines sekcji */
+  --gx: 32px;
+  --sec-y: 72px;
   --shadow-soft: 0 1px 2px rgba(20, 28, 43, .04), 0 8px 24px rgba(20, 28, 43, .06);
   /* Zdjęcia z wycięciem w rogu (notch): cień tylko w dół, żeby nie odsłonić wyciętego narożnika */
   --shadow-notch: 0 16px 28px -18px rgba(20, 28, 43, .22);
@@ -619,3 +622,6 @@ html:not(.no-shadows) :is(.hd__link[aria-current='page'], .hd__cart) { box-shado
 /* Wybór na karcie produktu: cień tylko na aktywnej miniaturze i zaznaczonym zestawie */
 html:not(.no-shadows) .pr-thumb[aria-pressed='true'],
 html:not(.no-shadows) .pr-sets .opt:has(input:checked) { box-shadow: var(--shadow-soft); }
+
+@media (max-width: 1000px) { :root { --gx: 24px; --sec-y: 56px; } }
+@media (max-width: 600px) { :root { --gx: 16px; --sec-y: 48px; } }

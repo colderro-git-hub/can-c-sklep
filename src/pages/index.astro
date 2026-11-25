@@ -473,7 +473,7 @@ const bundleRows = setQtys.map((qty) => {
 
   <!-- NEWSLETTER (zapis z obowiązkową zgodą i potwierdzeniem e-mailem) -->
   {visible(newsletterCms) && (
-  <section class="w sec-gap" id="newsletter" style="margin-bottom:90px">
+  <section class="w sec-gap" id="newsletter">
     <div class="row cta-box">
       <div class="fl cta-box__l">
         <h2 class="h2" style={fs(newsletterCms, 'h2')} set:html={lines(newsletterCms.h2).map(escHtml).join('<br/>')} />
@@ -522,19 +522,19 @@ const bundleRows = setQtys.map((qty) => {
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
   /* Opinie (wariant 1): tekst po lewej, zdjęcie w kształcie łuku (duży zaokrąglony lewy górny róg) z kartą opinii */
-  .rv2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 45px; align-items: center; }
+  .rv2 { display: grid; grid-template-columns: calc((100% - 2 * var(--gx)) / 3 * 2 + var(--gx)) minmax(0, 1fr); column-gap: var(--gx); align-items: center; }
   .rv2__side { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
   .rv2__score { display: flex; align-items: center; gap: 18px; }
   .rv2__avg { font-size: 4rem; line-height: 1; font-weight: 300; }
   .rv2__meta { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
-  .rv2__small { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; width: 100%; }
+  .rv2__small { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gx); width: 100%; }
   .rv2__mini { margin: 0; background: var(--surface); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
   .rv2__mini blockquote { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; }
   .rv2__mini figcaption { font-size: 14px; color: var(--muted); }
-  .rv2__art { position: relative; padding-left: 60px; }
+  .rv2__art { position: relative; }
   .rv2__img { aspect-ratio: 5 / 4; min-height: 380px; border-radius: 90% 32px 32px 32px / 90% 32px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .rv2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .rv2__card { position: absolute; left: 0; bottom: 40px; width: min(430px, 82%); background: var(--surface); border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 16px 40px rgba(20, 28, 43, .12); }
+  .rv2__card { position: absolute; left: -64px; bottom: 32px; width: min(400px, calc(100% + 32px)); background: var(--surface); border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 16px 40px rgba(20, 28, 43, .12); }
   .rv2__slide { margin: 0; display: flex; flex-direction: column; gap: 12px; animation: rv-in .4s ease-out; }
   .rv2__slide[hidden] { display: none; }
   .rv2__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -666,7 +666,10 @@ const bundleRows = setQtys.map((qty) => {
   .cta-box__r { width: 493px; }
 
   /* Układ sekcji: kolumna boczna (408 px) + treść; poniżej 1000 px jedna kolumna */
-  .sec-gap { margin-top: 90px; }
+  /* Wspólna siatka sekcji strony głównej: 3 równe kolumny i ten sam odstęp (Korzyści, Dlaczego Can-C, Opinie)
+     oraz te same marginesy górny i dolny każdej sekcji (poza hero i stopką) */
+  .sec-gap { margin-top: 0; padding-top: var(--sec-y); padding-bottom: var(--sec-y); }
+  :global(.section).sec-gap { padding-top: var(--sec-y); padding-bottom: var(--sec-y); }
   .sec-line { border-top: 1px solid var(--line); padding-top: 90px; }
   .bundles-grid { margin-top: 45px; }
   .products-grid { margin-top: 90px; }
@@ -676,8 +679,8 @@ const bundleRows = setQtys.map((qty) => {
   .home-side { width: 408px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
   /* Korzyści (wariant A): siatka z obszarami - na telefonie kolejność nagłówek → zdjęcie → lista → karta */
   .ben {
-    display: grid; gap: 24px 45px; align-items: center;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
+    display: grid; gap: 24px var(--gx); align-items: center;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-rows: 1fr auto auto 1fr;
     grid-template-areas: "card img ." "card img head" "card img body" "card img .";
   }
@@ -693,8 +696,10 @@ const bundleRows = setQtys.map((qty) => {
   .ben__list { font-size: 18px; line-height: 28px; gap: 14px; color: var(--muted); }
   .ben__ph { font-size: 14px; font-weight: 300; color: var(--muted); }
   /* „Dlaczego Can-C” - mozaika: punkt 01 wyróżniony (2 rzędy, turkusowe tło), 04 na całą szerokość; grafika i tekst po prawej */
-  .why2 { display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); grid-template-areas: "grid side"; gap: 45px; align-items: stretch; }
-  .why2__grid { grid-area: grid; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+  .why2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "grid side"; column-gap: var(--gx); align-items: stretch; }
+  /* Mozaika = 2 kolumny siatki: ten sam odstęp wewnątrz co między kolumnami, więc krawędzie kart wyrównują się z innymi sekcjami */
+  .why2 { grid-template-columns: calc((100% - 2 * var(--gx)) / 3 * 2 + var(--gx)) minmax(0, 1fr); }
+  .why2__grid { grid-area: grid; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gx); }
   .why2__side { grid-area: side; display: flex; flex-direction: column; gap: 24px; }
   .why2__img { flex: 1; min-height: 320px; border-radius: 32px 240px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .why2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
@@ -765,7 +770,7 @@ const bundleRows = setQtys.map((qty) => {
   @media (max-width: 700px) {
   }
   @media (max-width: 600px) {
-    .sec-gap { margin-top: 56px; }
+    .sec-gap { margin-top: 0; }
     .sec-line { padding-top: 56px; }
     .products-grid { margin-top: 32px; }
     .bundles-grid { margin-top: 32px; }
