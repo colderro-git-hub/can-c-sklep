@@ -14,6 +14,8 @@ import { getSite } from '../../lib/site-settings';
 import { TURNSTILE_SITE_KEY } from '../../config';
 import { getOriginalInfo } from '../../lib/original';
 import { imgUrl, srcset } from '../../lib/img';
+import { langOf, href as hrefL, price as fmtPrice } from '../../lib/i18n';
+import { t } from '../../i18n/ui';
 
 export const prerender = false;
 
@@ -30,7 +32,12 @@ const ogMatch = og ? norm(og.highlight_match || 'Innovative Vision Products') : 
 const ogHl = og && ogMatch ? p.highlights.findIndex((h: string) => norm(h).includes(ogMatch)) : -1;
 const site = await getSite(env);
 
-const pln = (g: number | null) => (g === null ? '-' : new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100));
+// Język strony (/en/ = angielski): teksty ze słownika, ceny i linki w tym języku
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
+const pln = (g: number | null) => fmtPrice(lang, g);
+const availText = (a: string) => (lang === 'en' ? t(lang, `avail.${a}` as any) : (AVAIL_LABEL as any)[a] || a);
 const buyable = p.current !== null && p.avail !== 'out_of_stock';
 // Termin realizacji: zdanie z produktu, a gdy puste - czas wysyłki z ustawień sklepu
 const leadTime = p.lead_time ? leadTimeText(p.lead_time, site.shippingTime) : site.shippingTime;
@@ -45,8 +52,8 @@ const options = qtys.map((qty, i) => {
   const rate = gross ? disc / gross : 0;
   return {
     qty, rate, total,
-    label: p.bundles ? `${qty} ${many(qty, 'opakowanie', 'opakowania', 'opakowań')}` : `${qty} szt.`,
-    sub: p.bundles ? `${qty} ${many(qty, 'miesiąc', 'miesiące', 'miesięcy')} kuracji` : (p.subtitle || ''),
+    label: p.bundles ? `${qty} ${many(qty, T('pr.packs1'), T('pr.packs2'), T('pr.packs5'))}` : `${qty} ${T('pr.pcs')}`,
+    sub: p.bundles ? `${qty} ${many(qty, T('pr.month1'), T('pr.month2'), T('pr.month5'))} ${T('pr.ofUse')}` : (p.subtitle || ''),
     rec: p.bundles && i === 1 && disc > 0,
   };
 });
@@ -55,9 +62,9 @@ const def = options.find((o) => o.qty === defaultQty)!;
 const salePct = p.onSale && p.price ? Math.round((1 - p.current! / p.price) * 100) : 0;
 const images = p.images.length ? p.images : [];
 const url = new URL(`/produkt/${p.id}/`, Astro.url.origin).toString();
-const reviewsWord = (n: number) => (n === 1 ? 'opinia' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'opinie' : 'opinii');
+const reviewsWord = (n: number) => (n === 1 ? T('pr.review1') : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? T('pr.review2') : T('pr.review5'));
 const navKey = p.id.includes('k9') ? 'k9' : p.id.startsWith('kapsulki') ? 'kapsulki' : 'krople';
-const dateLabel = (iso: string) => new Date(iso).toLocaleDateString('pl-PL');
+const dateLabel = (iso: string) => new Date(iso).toLocaleDateString(lang === 'en' ? 'en-GB' : 'pl-PL');
 
 // Dane strukturalne Google: produkt, oferta, dostawa, zwroty, oceny
 const gtin = (p.ean || '').replace(/\D/g, '');
@@ -101,19 +108,19 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   {TURNSTILE_SITE_KEY && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
 
   <section class="w pr-top">
-    <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / <a href="/sklep/">Sklep</a> / <span aria-current="page">{p.name}</span></nav>
+    <nav class="crumb" aria-label={T('common.crumbs')}><a href={L('/')}>{T('common.home')}</a> / <a href={L('/sklep/')}>{T('shop.title')}</a> / <span aria-current="page">{p.name}</span></nav>
 
     <div class="row pr-grid">
       <div class={`fl pr-gallery${p.avail === 'out_of_stock' ? ' is-out' : ''}`} data-gallery>
         <div class="notch pr-main">
           {images.length
             ? <img src={imgUrl(images[0].url, 1200)} srcset={srcset(images[0].url, [480, 640, 800, 1200, 1600])} sizes="(max-width: 1000px) 92vw, 640px" alt={images[0].alt || p.name} width="800" height="800" data-main fetchpriority="high" />
-            : <span class="notch__ph">[Zdjęcie produktu - dodaj w panelu]</span>}
+            : <span class="notch__ph">{T('pr.photoPh')}</span>}
           {p.tags[0] && <span class="pr-flag">{p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1)}</span>}
           <AvailBadge avail={p.avail} />
           {og && <button type="button" class="og-seal" data-og-trigger aria-controls="og-tip" aria-expanded="false" aria-label={og.badge}><Icon name="shield-check" size={26} stroke={1.75} /></button>}
           {images.length > 0 && (
-            <a href={images[0].url} class="notch__btn" aria-label="Powiększ zdjęcie" aria-haspopup="dialog" data-zoom>
+            <a href={images[0].url} class="notch__btn" aria-label={T('pr.zoom')} aria-haspopup="dialog" data-zoom>
               <Icon name="arrow-up-right" size={48} stroke={2} />
             </a>
           )}
@@ -121,7 +128,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         {images.length > 1 && (
           <div class="pr-thumbs">
             {images.slice(0, 8).map((im, i) => (
-              <button type="button" class="pr-thumb" aria-label={`Zdjęcie ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'} data-src={imgUrl(im.url, 1200)} data-srcset={srcset(im.url, [480, 640, 800, 1200, 1600]) || ''} data-alt={im.alt || p.name}>
+              <button type="button" class="pr-thumb" aria-label={`${T('pr.photo')} ${i + 1}`} aria-pressed={i === 0 ? 'true' : 'false'} data-src={imgUrl(im.url, 1200)} data-srcset={srcset(im.url, [480, 640, 800, 1200, 1600]) || ''} data-alt={im.alt || p.name}>
                 <img src={imgUrl(im.url, 320)} alt="" width="160" height="160" loading="lazy" />
               </button>
             ))}
@@ -139,8 +146,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           </div>
         )}
         {p.rating.count > 0 && (
-          <a href="#opinie" class="pr-rating" aria-label={`Ocena ${p.rating.avg} na 5, ${p.rating.count} ${reviewsWord(p.rating.count)}`}>
-            <Stars value={p.rating.avg} /> {p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })} · {p.rating.count} {reviewsWord(p.rating.count)}
+          <a href="#opinie" class="pr-rating" aria-label={`${T('pr.rating')} ${p.rating.avg} ${T('pr.of5')}, ${p.rating.count} ${reviewsWord(p.rating.count)}`}>
+            <Stars value={p.rating.avg} /> {p.rating.avg.toLocaleString(lang === 'en' ? 'en-GB' : 'pl-PL', { minimumFractionDigits: 1 })} · {p.rating.count} {reviewsWord(p.rating.count)}
           </a>
         )}
         {p.short_description && <p class="p pr-lead">{p.short_description}</p>}
@@ -149,24 +156,24 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           <div class="pr-price__row" aria-live="polite">
             <span class="pr-price__v" data-price>{pln(def.total)}</span>
             {p.onSale && <s class="pr-price__old" data-regular>{pln(p.price === null ? null : p.price * def.qty)}</s>}
-            <span class="peach" data-save hidden={!def.rate && !salePct}>{salePct ? `−${salePct}%` : ''}{def.rate ? ` −${Math.round(def.rate * 100)}% rabatu` : ''}</span>
+            <span class="peach" data-save hidden={!def.rate && !salePct}>{salePct ? `−${salePct}%` : ''}{def.rate ? ` −${Math.round(def.rate * 100)}% ${T('pr.discount')}` : ''}</span>
           </div>
-          <span class="k"><span data-unit>{def.total !== null ? `${pln(Math.round(def.total / def.qty))} / szt.` : ''}</span>{p.unitPrice && <> · {p.unitPrice}</>}</span>
-          {p.lowest30 !== null && <span class="k">{p.onSale ? 'Najniższa cena z 30 dni przed obniżką' : 'Najniższa cena z ostatnich 30 dni'}: {pln(p.lowest30)}</span>}
-          <span class={`pr-avail pr-avail--${p.avail}`}><span class="dot" aria-hidden="true"></span>{AVAIL_LABEL[p.avail] || p.avail}</span>
+          <span class="k"><span data-unit>{def.total !== null ? `${pln(Math.round(def.total / def.qty))} ${T('pr.perPcs')}` : ''}</span>{p.unitPrice && <> · {p.unitPrice}</>}</span>
+          {p.lowest30 !== null && <span class="k">{p.onSale ? T('pr.lowest30sale') : T('pr.lowest30')}: {pln(p.lowest30)}</span>}
+          <span class={`pr-avail pr-avail--${p.avail}`}><span class="dot" aria-hidden="true"></span>{availText(p.avail)}</span>
         </div>
 
         {buyable && (
           <fieldset class="pr-sets">
-            <legend>{p.bundles ? 'Wybierz zestaw' : 'Ilość'}</legend>
+            <legend>{p.bundles ? T('pr.chooseSet') : T('pr.qty')}</legend>
             {options.map((o) => (
               <label class="opt">
                 <input type="radio" name="qty" value={o.qty} checked={o.qty === defaultQty}
                   data-total={pln(o.total)} data-regular={p.onSale && p.price ? pln(p.price * o.qty) : ''}
-                  data-unit={o.total !== null ? `${pln(Math.round(o.total / o.qty))} / szt.` : ''}
-                  data-save={[salePct ? `−${salePct}%` : '', o.rate ? `−${Math.round(o.rate * 100)}% rabatu` : ''].filter(Boolean).join(' ')} />
+                  data-unit={o.total !== null ? `${pln(Math.round(o.total / o.qty))} ${T('pr.perPcs')}` : ''}
+                  data-save={[salePct ? `−${salePct}%` : '', o.rate ? `−${Math.round(o.rate * 100)}% ${T('pr.discount')}` : ''].filter(Boolean).join(' ')} />
                 <span class="opt__txt">
-                  <span class="opt__t">{o.label}{o.rec && <span class="peach peach--s">polecany</span>}</span>
+                  <span class="opt__t">{o.label}{o.rec && <span class="peach peach--s">{T('pr.recommended')}</span>}</span>
                   {o.sub && <span class="opt__s">{o.sub}</span>}
                 </span>
                 <span class="opt__p">{pln(o.total)}</span>
@@ -175,20 +182,20 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
           </fieldset>
         )}
 
-        <button type="button" class="btn btn--wide pr-add" data-add disabled={!buyable}>{buyable ? 'Dodaj do koszyka' : AVAIL_LABEL[p.avail]}</button>
-        <p class="k pr-added" data-added role="status" hidden>Dodano do koszyka. <a href="/koszyk/">Przejdź do koszyka</a></p>
+        <button type="button" class="btn btn--wide pr-add" data-add disabled={!buyable}>{buyable ? T('pr.add') : availText(p.avail)}</button>
+        <p class="k pr-added" data-added role="status" hidden>{T('pr.added')} <a href={L('/koszyk/')}>{T('pr.goCart')}</a></p>
 
         {p.avail === 'out_of_stock' && (
           <form class="pr-notify" data-notify novalidate>
-            <span class="pr-notify__t">Powiadom mnie, gdy produkt będzie dostępny</span>
-            <span class="k" style="color: var(--ink)">Wyślemy jeden e-mail, gdy produkt wróci do sprzedaży. Bez newslettera.</span>
+            <span class="pr-notify__t">{T('pr.notifyT')}</span>
+            <span class="k" style="color: var(--ink)">{T('pr.notifyS')}</span>
             <label class="lbl" for="notify-email" style="margin:10px 0 0">E-mail</label>
             <span class="pr-notify__row">
-              <input id="notify-email" class="fld" type="email" name="email" autocomplete="email" required placeholder="jan@przyklad.pl" />
-              <button class="btn">Powiadom</button>
+              <input id="notify-email" class="fld" type="email" name="email" autocomplete="email" required placeholder={T('pr.emailPh')} />
+              <button class="btn">{T('pr.notifyBtn')}</button>
             </span>
-            <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-            {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl" data-size="compact"></div>}
+            <label class="hp" aria-hidden="true">{T('pr.website')}<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language={lang} data-size="compact"></div>}
             <p class="msg" role="status" data-notify-msg></p>
           </form>
         )}
@@ -200,10 +207,10 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         ))}</ul>}
 
         <div class="pr-perks">
-          <div class="trow"><span>InPost Paczkomat 24/7</span><span style="font-weight:400">Darmowa</span></div>
-          <div class="trow"><span>Kurier</span><span style="font-weight:400">Darmowa</span></div>
-          <div class="trow"><span>Wysyłka</span><span class="pr-muted">{p.lead_time ? leadTime : <span data-site="shippingTime">{leadTime}</span>}</span></div>
-          <div class="trow"><span>Zwrot</span><span class="pr-muted">14 dni (nieotwarte opakowanie)</span></div>
+          <div class="trow"><span>{T('pr.locker')}</span><span style="font-weight:400">{T('pr.free')}</span></div>
+          <div class="trow"><span>{T('pr.courier')}</span><span style="font-weight:400">{T('pr.free')}</span></div>
+          <div class="trow"><span>{T('pr.shipping')}</span><span class="pr-muted">{p.lead_time ? leadTime : <span data-site="shippingTime">{leadTime}</span>}</span></div>
+          <div class="trow"><span>{T('pr.return')}</span><span class="pr-muted">{T('pr.returnV')}</span></div>
         </div>
       </div>
     </div>
@@ -231,57 +238,57 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     <div class="w row pr-band__in">
       <div class="fl pr-details">
         <nav class="pr-chips" aria-label="Sekcje produktu" data-chips>
-          {p.description && <a href="#opis" class="chip">Opis</a>}
-          {p.how_to_use && <a href="#stosowanie" class="chip">Stosowanie</a>}
-          <a href="#specyfikacja" class="chip">Specyfikacja</a>
+          {p.description && <a href="#opis" class="chip">{T('pr.desc')}</a>}
+          {p.how_to_use && <a href="#stosowanie" class="chip">{T('pr.howto')}</a>}
+          <a href="#specyfikacja" class="chip">{T('pr.spec')}</a>
           <a href="#opinie" class="chip">Opinie ({p.rating.count})</a>
         </nav>
 
         {p.description && (
           <section id="opis" class="pr-sec">
-            <h2 class="h3">Opis</h2>
+            <h2 class="h3">{T('pr.desc')}</h2>
             <div class="md" set:html={markdown(p.description)} />
           </section>
         )}
         {p.how_to_use && (
           <section id="stosowanie" class="pr-sec">
-            <h2 class="h3">Stosowanie</h2>
+            <h2 class="h3">{T('pr.howto')}</h2>
             <div class="md md--checks" set:html={markdown(p.how_to_use)} />
-            <a href="/stosowanie/" class="lnk"><Icon name="arrow-right" size={16} />Pełna instrukcja stosowania</a>
+            <a href={L('/stosowanie/')} class="lnk"><Icon name="arrow-right" size={16} />{T('pr.fullHowto')}</a>
           </section>
         )}
         <section id="specyfikacja" class="pr-sec">
-          <h2 class="h3">Specyfikacja</h2>
+          <h2 class="h3">{T('pr.spec')}</h2>
           <dl class="pr-spec">
-            <div class="trow"><dt>Marka</dt><dd>{p.brand}</dd></div>
-            {p.subtitle && <div class="trow"><dt>Opakowanie</dt><dd>{p.subtitle}</dd></div>}
-            {p.unit_value && p.unit_measure && <div class="trow"><dt>Zawartość</dt><dd>{p.unit_value.toLocaleString('pl-PL')} {p.unit_measure === 'szt' ? 'szt.' : p.unit_measure}</dd></div>}
+            <div class="trow"><dt>{T('pr.brand')}</dt><dd>{p.brand}</dd></div>
+            {p.subtitle && <div class="trow"><dt>{T('pr.package')}</dt><dd>{p.subtitle}</dd></div>}
+            {p.unit_value && p.unit_measure && <div class="trow"><dt>{T('pr.content')}</dt><dd>{p.unit_value.toLocaleString(lang === 'en' ? 'en-GB' : 'pl-PL')} {p.unit_measure === 'szt' ? T('pr.pcs') : p.unit_measure}</dd></div>}
             {p.ean && <div class="trow"><dt>EAN</dt><dd>{p.ean}</dd></div>}
-            {p.mpn && <div class="trow"><dt>Kod producenta</dt><dd>{p.mpn}</dd></div>}
-            <div class="trow"><dt>Dostępność</dt><dd>{AVAIL_LABEL[p.avail]}</dd></div>
+            {p.mpn && <div class="trow"><dt>{T('pr.mpn')}</dt><dd>{p.mpn}</dd></div>}
+            <div class="trow"><dt>{T('pr.availability')}</dt><dd>{availText(p.avail)}</dd></div>
           </dl>
         </section>
 
         <section id="opinie" class="pr-sec">
-          <h2 class="h3">Opinie klientów</h2>
+          <h2 class="h3">{T('pr.reviews')}</h2>
           {p.rating.count > 0
             ? <div class="pr-rsum">
                 <div class="pr-avg"><span class="pr-avg__v">{p.rating.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })}</span><span class="k">na podstawie {p.rating.count} {p.rating.count === 1 ? 'opinii' : 'opinii'}</span></div>
                 {/* Rozkład ocen 5★-1★ */}
-                <ul class="pr-dist" aria-label="Rozkład ocen">
+                <ul class="pr-dist" aria-label={T('pr.dist')}>
                   {dist.map((c: number, i: number) => {
                     const total = dist.reduce((a: number, b: number) => a + b, 0) || 1;
-                    return <li><span class="pr-dist__l">{5 - i}<span aria-hidden="true"> ★</span><span class="sr-only"> gwiazdek</span></span><span class="pr-dist__bar" aria-hidden="true"><span style={`width:${Math.round((c / total) * 100)}%`}></span></span><span class="pr-dist__n">{c}</span></li>;
+                    return <li><span class="pr-dist__l">{5 - i}<span aria-hidden="true"> ★</span><span class="sr-only">{T('pr.stars')}</span></span><span class="pr-dist__bar" aria-hidden="true"><span style={`width:${Math.round((c / total) * 100)}%`}></span></span><span class="pr-dist__n">{c}</span></li>;
                   })}
                 </ul>
               </div>
-            : <p class="p">Ten produkt nie ma jeszcze opinii. Bądź pierwszą osobą, która ją doda.</p>}
+            : <p class="p">{T('pr.noReviews')}</p>}
           {p.rating.count > 1 && (
-            <label class="pr-sort"><span class="k">Sortuj:</span>
-              <select class="fld" data-reviews-sort aria-label="Sortuj opinie">
-                <option value="new">Najnowsze</option>
-                <option value="high">Najwyżej oceniane</option>
-                <option value="low">Najniżej oceniane</option>
+            <label class="pr-sort"><span class="k">{T('pr.sort')}</span>
+              <select class="fld" data-reviews-sort aria-label={T('pr.sortLabel')}>
+                <option value="new">{T('pr.sortNew')}</option>
+                <option value="high">{T('pr.sortHigh')}</option>
+                <option value="low">{T('pr.sortLow')}</option>
               </select>
             </label>
           )}
@@ -291,40 +298,40 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
               <div class="pr-review__head">
                 <Stars value={r.rating} size={12} label={`Ocena ${r.rating} na 5`} />
                 <span class="pr-review__name">{r.author_name}</span>
-                {r.verified_purchase && <span class="peach peach--s">Zweryfikowany zakup</span>}
+                {r.verified_purchase && <span class="peach peach--s">{T('pr.verified')}</span>}
                 <span class="k">{dateLabel(r.created_at)}</span>
               </div>
               {r.title && <h3 class="pr-review__title">{r.title}</h3>}
               <p class="p pr-review__body">{r.body}</p>
-              {r.reply && <p class="pr-review__reply"><strong>Odpowiedź sklepu:</strong> {r.reply}</p>}
+              {r.reply && <p class="pr-review__reply"><strong>{T('pr.reply')}</strong> {r.reply}</p>}
             </article>
           ))}
           </div>
           {p.rating.count > reviews.length && (
             <button type="button" class="btn btn-o btn-m pr-more" data-reviews-more data-left={p.rating.count - reviews.length}>
-              Pokaż więcej opinii <span class="k" data-reviews-left>({p.rating.count - reviews.length})</span>
+              {T('pr.more')} <span class="k" data-reviews-left>({p.rating.count - reviews.length})</span>
             </button>
           )}
-          <p class="k">Opinie publikujemy po sprawdzeniu przez moderatora. Oznaczenie „Zweryfikowany zakup” mają opinie osób, które kupiły produkt w naszym sklepie.</p>
+          <p class="k">{T('pr.modNote')}</p>
 
           <details class="pr-form" id="opinia">
-            <summary class="btn btn-o btn-m">Napisz opinię</summary>
+            <summary class="btn btn-o btn-m">{T('pr.write')}</summary>
             <form data-review novalidate>
-              <fieldset class="rate"><legend class="lbl">Twoja ocena</legend>
+              <fieldset class="rate"><legend class="lbl">{T('pr.yourRating')}</legend>
                 {[5, 4, 3, 2, 1].map((n) => <><input type="radio" id={`r${n}`} name="rating" value={n} /><label for={`r${n}`} title={`${n} na 5`}><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24"><path fill="currentColor" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg><span class="sr-only">{n} na 5</span></label></>)}
               </fieldset>
               <div class="g2 pr-form__g">
-                <div><label class="lbl" for="rv-name">Imię lub pseudonim (widoczne)</label><input id="rv-name" class="fld" name="name" maxlength="60" required /></div>
+                <div><label class="lbl" for="rv-name">{T('pr.name')}</label><input id="rv-name" class="fld" name="name" maxlength="60" required /></div>
                 <div><label class="lbl" for="rv-mail">E-mail (niewidoczny, do weryfikacji zakupu)</label><input id="rv-mail" class="fld" name="email" type="email" maxlength="200" /></div>
               </div>
-              <div><label class="lbl" for="rv-title">Tytuł (opcjonalnie)</label><input id="rv-title" class="fld" name="title" maxlength="120" /></div>
-              <div><label class="lbl" for="rv-body">Opinia</label><textarea id="rv-body" class="fld" name="body" rows="4" minlength="10" maxlength="3000" required></textarea></div>
-              <label class="ck"><input type="checkbox" name="consent" required /><span>Akceptuję publikację opinii z podanym imieniem. Opinia trafi na stronę po moderacji. Zasady przetwarzania danych: <a href="/polityka-prywatnosci/">polityka prywatności</a>.</span></label>
+              <div><label class="lbl" for="rv-title">{T('pr.title')}</label><input id="rv-title" class="fld" name="title" maxlength="120" /></div>
+              <div><label class="lbl" for="rv-body">{T('pr.body')}</label><textarea id="rv-body" class="fld" name="body" rows="4" minlength="10" maxlength="3000" required></textarea></div>
+              <label class="ck"><input type="checkbox" name="consent" required /><span>{T('pr.consent1')} <a href={L('/polityka-prywatnosci/')}>{T('pr.consent2')}</a>.</span></label>
               <input type="hidden" name="order" /><input type="hidden" name="orderToken" />
-              <p class="peach peach--s" data-review-verified hidden style="align-self:flex-start">Ocena z linku w mailu - opinia dostanie oznaczenie „Zweryfikowany zakup”.</p>
-              <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-              {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>}
-              <button class="btn btn-m" style="align-self:flex-start">Wyślij opinię</button>
+              <p class="peach peach--s" data-review-verified hidden style="align-self:flex-start">{T('pr.fromMail')}</p>
+              <label class="hp" aria-hidden="true">{T('pr.website')}<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+              {TURNSTILE_SITE_KEY && <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language={lang}></div>}
+              <button class="btn btn-m" style="align-self:flex-start">{T('pr.send')}</button>
               <p class="msg" role="status" data-review-msg></p>
             </form>
           </details>
@@ -332,16 +339,16 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       </div>
 
       {related.length > 0 && (
-        <aside class="fl pr-also" aria-label="Często kupowane razem" data-related>
-          <span class="pr-also__t">Często kupowane razem</span>
+        <aside class="fl pr-also" aria-label={T('pr.also')} data-related>
+          <span class="pr-also__t">{T('pr.also')}</span>
           {related.map((r) => (
             <a class="pr-also__i" href={`/produkt/${r.id}/`} data-slug={r.id} data-name={r.name} data-price={r.current ?? 0}>
               <span class={`pr-also__img${r.avail === 'out_of_stock' ? ' is-out' : ''}`}>
-                {r.images[0] ? <img src={imgUrl(r.images[0].url, 640)} srcset={srcset(r.images[0].url, [320, 480, 640, 800])} sizes="(max-width: 700px) 92vw, 400px" alt={r.images[0].alt || r.name} width="400" height="400" loading="lazy" /> : <span class="k">[zdjęcie produktu]</span>}
+                {r.images[0] ? <img src={imgUrl(r.images[0].url, 640)} srcset={srcset(r.images[0].url, [320, 480, 640, 800])} sizes="(max-width: 700px) 92vw, 400px" alt={r.images[0].alt || r.name} width="400" height="400" loading="lazy" /> : <span class="k">{T('pr.photoS')}</span>}
                 <AvailBadge avail={r.avail} />
               </span>
               <span class="pr-also__n">{r.name}</span>
-              <span class="pr-also__f"><span>{pln(r.current)}</span><span class="pr-also__go">Zobacz <Icon name="arrow-right" size={16} /></span></span>
+              <span class="pr-also__f"><span>{pln(r.current)}</span><span class="pr-also__go">{T('pr.view')} <Icon name="arrow-right" size={16} /></span></span>
             </a>
           ))}
         </aside>
@@ -350,15 +357,15 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
   </section>
   {/* Powiększenie zdjęć (okno na stronie zamiast nowej karty) */}
   {images.length > 0 && (
-    <dialog class="lb" data-lightbox aria-label={`Zdjęcia: ${p.name}`}>
+    <dialog class="lb" data-lightbox aria-label={`${T('pr.photos')}: ${p.name}`}>
       <div class="lb__in">
-        <button type="button" class="lb__btn lb__close" data-lb-close aria-label="Zamknij"><Icon name="x" size={24} /></button>
-        {images.length > 1 && <button type="button" class="lb__btn lb__prev" data-lb-prev aria-label="Poprzednie zdjęcie"><Icon name="chevron-left" size={28} /></button>}
+        <button type="button" class="lb__btn lb__close" data-lb-close aria-label={T('pr.close')}><Icon name="x" size={24} /></button>
+        {images.length > 1 && <button type="button" class="lb__btn lb__prev" data-lb-prev aria-label={T('pr.prev')}><Icon name="chevron-left" size={28} /></button>}
         <figure class="lb__fig">
           <img data-lb-img alt="" />
           {images.length > 1 && <figcaption class="lb__count" data-lb-count></figcaption>}
         </figure>
-        {images.length > 1 && <button type="button" class="lb__btn lb__next" data-lb-next aria-label="Następne zdjęcie"><Icon name="chevron-right" size={28} /></button>}
+        {images.length > 1 && <button type="button" class="lb__btn lb__next" data-lb-next aria-label={T('pr.next')}><Icon name="chevron-right" size={28} /></button>}
       </div>
       <script type="application/json" data-lb-data set:html={JSON.stringify(images.map((im) => ({ src: imgUrl(im.url, 2000), srcset: srcset(im.url, [800, 1200, 1600, 2000]) || '', alt: im.alt || p.name }))).replace(/</g, '\\u003c')} />
     </dialog>
@@ -371,12 +378,16 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         <span class="pr-sticky__name">{p.name}</span>
         <span class="pr-sticky__price" data-sticky-price>{pln(def.total)}</span>
       </div>
-      <button type="button" class="btn pr-sticky__btn" data-sticky-add tabindex="-1">Dodaj do koszyka</button>
+      <button type="button" class="btn pr-sticky__btn" data-sticky-add tabindex="-1">{T('pr.add')}</button>
     </div>
   )}
 </Base>
 
 <script>
+  // Teksty w języku strony (słownik src/i18n/ui.ts)
+  import { t as tt } from '../../i18n/ui';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
+  const T = (k: Parameters<typeof tt>[1]) => tt(LANG, k);
   // „Pokaż więcej opinii”: kolejne 5 z /api/opinie, ten sam wygląd co opinie z serwera
   {
     const box = document.querySelector<HTMLElement>('[data-reviews]');
@@ -406,15 +417,15 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     const STAR = 'M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z';
     const stars = (n: number) => `<span class="stars" role="img" aria-label="Ocena ${n} na 5">${[1, 2, 3, 4, 5].map((i) => `<svg${i > n ? ' class="off"' : ''} width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${STAR}"/></svg>`).join('')}</span>`;
     const card = (r: any) => `<article class="pr-review">
-      <div class="pr-review__head">${stars(Math.round(r.rating))}<span class="pr-review__name">${esc(r.author_name)}</span>${r.verified_purchase ? '<span class="peach peach--s">Zweryfikowany zakup</span>' : ''}<span class="k">${new Date(r.created_at).toLocaleDateString('pl-PL')}</span></div>
+      <div class="pr-review__head">${stars(Math.round(r.rating))}<span class="pr-review__name">${esc(r.author_name)}</span>${r.verified_purchase ? `<span class="peach peach--s">${T('pr.verified')}</span>` : ''}<span class="k">${new Date(r.created_at).toLocaleDateString(LANG === 'en' ? 'en-GB' : 'pl-PL')}</span></div>
       ${r.title ? `<h3 class="pr-review__title">${esc(r.title)}</h3>` : ''}
       <p class="p pr-review__body">${esc(r.body)}</p>
-      ${r.reply ? `<p class="pr-review__reply"><strong>Odpowiedź sklepu:</strong> ${esc(r.reply)}</p>` : ''}
+      ${r.reply ? `<p class="pr-review__reply"><strong>${T('pr.reply')}</strong> ${esc(r.reply)}</p>` : ''}
     </article>`;
     btn?.addEventListener('click', async () => {
       if (!box) return;
       const label = btn.innerHTML;
-      btn.disabled = true; btn.textContent = 'Wczytuję…';
+      btn.disabled = true; btn.textContent = T('pr.loading');
       try {
         const res = await fetch(`/api/opinie?product=${encodeURIComponent(box.dataset.product || '')}&offset=${box.dataset.offset || 0}&sort=${box.dataset.sort || 'new'}`);
         const d = await res.json();
@@ -431,7 +442,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
         if (first) { first.tabIndex = -1; first.focus({ preventScroll: true }); }
       } catch {
         btn.innerHTML = label;
-        btn.insertAdjacentHTML('afterend', '<p class="k" role="status">Nie udało się wczytać opinii. Spróbuj ponownie.</p>');
+        btn.insertAdjacentHTML('afterend', `<p class="k" role="status">${T('pr.loadErr')}</p>`);
       } finally { btn.disabled = false; }
     });
   }
@@ -554,9 +565,9 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       const qty = Number(root.querySelector<HTMLInputElement>('input[name="qty"]:checked')?.value ?? 1);
       addItem(slug, qty);
       q('[data-added]')!.hidden = false;
-      addBtn.textContent = 'Dodano ✓';
+      addBtn.textContent = T('pr.addedShort');
       clearTimeout(resetTimer);
-      resetTimer = window.setTimeout(() => { addBtn.textContent = 'Dodaj do koszyka'; }, 1800);
+      resetTimer = window.setTimeout(() => { addBtn.textContent = T('pr.add'); }, 1800);
       const img = document.querySelector<HTMLImageElement>('[data-main]');
       flyToCart(img || addBtn, img?.src).then(() => announceAdded({ slug, qty }));
       trackAddToCart({ item_id: slug, item_name: gaName, price: gaPrice, quantity: qty, item_brand: 'Can-C' });
@@ -581,15 +592,15 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       const stickyBtn = sticky.querySelector<HTMLButtonElement>('[data-sticky-add]')!;
       stickyBtn.addEventListener('click', () => {
         addBtn.click();
-        stickyBtn.textContent = 'Dodano ✓';
-        window.setTimeout(() => { stickyBtn.textContent = 'Dodaj do koszyka'; }, 1800);
+        stickyBtn.textContent = T('pr.addedShort');
+        window.setTimeout(() => { stickyBtn.textContent = T('pr.add'); }, 1800);
       });
     }
   }
 
   // GA4: select_item w „Często kupowane razem”
   document.querySelectorAll<HTMLAnchorElement>('[data-related] .pr-also__i').forEach((a) => a.addEventListener('click', () => {
-    trackSelectItem({ item_id: a.dataset.slug!, item_name: a.dataset.name || '', price: Number(a.dataset.price || 0) / 100, quantity: 1 }, 'Często kupowane razem');
+    trackSelectItem({ item_id: a.dataset.slug!, item_name: a.dataset.name || '', price: Number(a.dataset.price || 0) / 100, quantity: 1 }, T('pr.also'));
   }));
 
   // Zakładki sekcji: aktywna ta, która jest na ekranie
@@ -629,13 +640,13 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       order: fd.get('order'), orderToken: fd.get('orderToken'),
       token: fd.get('cf-turnstile-response'),
     };
-    msg.className = 'msg'; msg.textContent = 'Wysyłanie…';
+    msg.className = 'msg'; msg.textContent = T('pr.sending');
     try {
       const res = await fetch('/api/opinie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || 'Nie udało się wysłać opinii.');
+      if (!res.ok) throw new Error(d.error || T('pr.sendErr'));
       msg.className = 'msg msg--ok';
-      msg.textContent = `Dziękujemy! Opinia pojawi się po moderacji.${d.verified ? ' Potwierdziliśmy zakup - dostanie oznaczenie „Zweryfikowany zakup”.' : ''}`;
+      msg.textContent = `${T('pr.thanks')}${d.verified ? T('pr.thanksVer') : ''}`;
       form.reset();
       if (fromMail) { form.querySelector<HTMLInputElement>('[name="order"]')!.value = ''; form.querySelector<HTMLInputElement>('[name="orderToken"]')!.value = ''; }
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
@@ -652,8 +663,8 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
     try {
       const res = await fetch('/api/powiadom', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: root?.dataset.product, email: fd.get('email'), website: fd.get('website'), token: fd.get('cf-turnstile-response') }) });
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(d.error || 'Nie udało się zapisać.');
-      msg.className = 'msg msg--ok'; msg.textContent = 'Gotowe - napiszemy, gdy produkt wróci.'; notify.reset();
+      if (!res.ok) throw new Error(d.error || T('pr.saveErr'));
+      msg.className = 'msg msg--ok'; msg.textContent = T('pr.notifyOk'); notify.reset();
     } catch (err) { msg.className = 'msg msg--err'; msg.textContent = (err as Error).message; }
     (window as any).turnstile?.reset();
   });
