@@ -7,6 +7,7 @@ import { matchRedirect, targetUrl, isProbe, logNotFound, countRedirectHit } from
 import { later } from './lib/background';
 import { typoResponse } from './lib/typography';
 import { installErrorHook, queueError, flushErrors } from './lib/alerts';
+import { enToPl } from './lib/i18n';
 
 // Każde console.error trafia do dziennika błędów; krytyczne - na e-mail (lib/alerts.ts)
 installErrorHook();
@@ -40,6 +41,15 @@ async function scheduleFlush(context: APIContext) {
 async function route(context: APIContext, next: MiddlewareNext): Promise<Response> {
   if (context.isPrerendered) return next();
   const { pathname, search } = context.url;
+
+  // Wersja angielska: /en/... → ta sama strona polska z locals.lang = 'en' (adres w przeglądarce zostaje angielski)
+  if (pathname === '/en' || pathname.startsWith('/en/')) {
+    if (pathname === '/en') return new Response(null, { status: 301, headers: { Location: '/en/' } });
+    const pl = enToPl(pathname);
+    (context.locals as any).lang = 'en';
+    (context.locals as any).enPath = pathname;
+    return next(pl ? `${pl}${search}` : '/404');
+  }
   const method = context.request.method;
   if (SKIP.test(pathname) || (method !== 'GET' && method !== 'HEAD')) return next();
 

@@ -16,6 +16,7 @@ import Footer from '../components/Footer.astro';
 import { getEnv } from '../lib/env';
 import { getSeo, seoPath, SEO_PAGES, orgData, orgJsonLd, breadcrumbJsonLd } from '../lib/seo';
 import { getSite } from '../lib/site-settings';
+import { langOf, plToEn, plPathOf } from '../lib/i18n';
 
 interface Props {
   title: string;
@@ -28,7 +29,12 @@ interface Props {
   crumbs?: { name: string; path: string }[]; // okruszki bez strony głównej; domyślnie z rejestru stron SEO
 }
 const { noReferrer = false, nav = '', ogType = 'website' } = Astro.props;
-const canonical = new URL(Astro.url.pathname, 'https://can-c.pl');
+// Język strony: adresy /en/ obsługuje middleware (locals.lang); Astro.url to adres polski tej samej strony
+const lang = langOf(Astro.locals);
+const plPath = plPathOf(Astro.locals, Astro.url.pathname);
+const enPath = plToEn(plPath);
+const canonical = new URL(lang === 'en' ? ((Astro.locals as any).enPath || enPath) : plPath, 'https://can-c.pl');
+// Wersja angielska jest w budowie - poza Google, dopóki nie zostanie włączona
 
 // SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
 // Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu - zostają wartości z kodu.
@@ -56,7 +62,7 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
 
 ---
 <!doctype html>
-<html lang="pl">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
     <!-- Poppins z własnego serwera (@fontsource): bez połączenia z Google, szybsze pierwsze wyświetlenie -->
@@ -100,11 +106,14 @@ const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? bre
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {!noindex && <link rel="alternate" hreflang="pl" href={new URL(plPath, 'https://can-c.pl')} />}
+    {!noindex && <link rel="alternate" hreflang="en" href={new URL(enPath, 'https://can-c.pl')} />}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={new URL(plPath, 'https://can-c.pl')} />}
     <!-- Do startu sklepu staging nie może trafić do Google. W dniu startu: zmienna builda PUBLIC_SITE_INDEXABLE=true -->
-    {(noindex || import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true') && <meta name="robots" content="noindex, nofollow" />}
+    {(noindex || lang === 'en' || import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true') && <meta name="robots" content="noindex, nofollow" />}
     {noReferrer && <meta name="referrer" content="no-referrer" />}
     <meta property="og:type" content={ogType} />
-    <meta property="og:locale" content="pl_PL" />
+    <meta property="og:locale" content={lang === 'en' ? 'en_GB' : 'pl_PL'} />
     <meta property="og:site_name" content={siteName} />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />

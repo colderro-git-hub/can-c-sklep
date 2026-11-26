@@ -4,18 +4,26 @@ import Icon from './Icon.astro';
 // Treści paska i komunikatu: domyślne z kodu, podmieniane w przeglądarce z /api/ustawienia (Base.astro).
 import { CONTENT_DEFAULTS, getSite } from '../lib/site-settings';
 import { getEnv } from '../lib/env';
+import { langOf, href, plToEn, plPathOf } from '../lib/i18n';
+import { t } from '../i18n/ui';
 
 interface Props { nav?: string }
 const { nav = '' } = Astro.props;
 
+// Język strony i linki w tym języku (/en/... dla angielskiej)
+const lang = langOf(Astro.locals);
+const L = (p: string) => href(lang, p);
 const items = [
-  { key: 'krople', label: 'Krople', href: '/produkt/krople-can-c/' },
-  { key: "kapsulki", label: "Kapsułki", href: "/sklep/#kapsulki" },
-  { key: 'k9', label: 'Can-C K9', href: '/produkt/krople-can-c-k9/' },
-  { key: 'stosowanie', label: 'Stosowanie', href: '/stosowanie/' },
-  { key: 'faq', label: 'FAQ', href: '/faq/' },
-  { key: 'kontakt', label: 'Kontakt', href: '/kontakt/' },
+  { key: 'krople', label: t(lang, 'nav.drops'), href: L('/produkt/krople-can-c/') },
+  { key: 'kapsulki', label: t(lang, 'nav.capsules'), href: L('/sklep/#kapsulki') },
+  { key: 'k9', label: t(lang, 'nav.k9'), href: L('/produkt/krople-can-c-k9/') },
+  { key: 'stosowanie', label: t(lang, 'nav.howto'), href: L('/stosowanie/') },
+  { key: 'faq', label: t(lang, 'nav.faq'), href: L('/faq/') },
+  { key: 'kontakt', label: t(lang, 'nav.contact'), href: L('/kontakt/') },
 ];
+// Przełącznik języka: ta sama strona w drugim języku (Astro.url to zawsze adres polski)
+const curPl = plPathOf(Astro.locals, Astro.url.pathname);
+const otherHref = (lang === 'en' ? curPl : plToEn(curPl)) + Astro.url.search;
 const promos = ['promo1', 'promo2', 'promo3'] as const;
 
 // Logo jako obraz z panelu (Ustawienia sklepu). Strony statyczne podmieniają je w przeglądarce (Base.astro).
@@ -32,33 +40,33 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 
 <header class="hd">
   <div class="hd__in">
-    <a href="/" class="hd__logo" aria-label="Can-C - strona główna">
+    <a href={L('/')} class="hd__logo" aria-label={`Can-C - ${t(lang, 'hd.home')}`}>
       <img class="hd__img" data-logo="logoHeader" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
       <span class="hd__txt" data-logo-text="logoHeader" hidden={!!logo}><span class="hd__ring" aria-hidden="true"></span><span class="hd__name">Can-C</span></span>
     </a>
 
     <!-- Telefon/tablet: logo + hamburger; menu, koszyk, konto i EN w rozwijanym panelu -->
-    <button type="button" class="hd__icon hd__burger" aria-controls="hd-panel" aria-expanded="false" aria-label="Otwórz menu" data-burger>
+    <button type="button" class="hd__icon hd__burger" aria-controls="hd-panel" aria-expanded="false" aria-label={t(lang, 'hd.openMenu')} data-burger>
       <Icon name="menu" size={26} stroke={1.75} class="hd__bi hd__bi--open" />
       <Icon name="x" size={26} stroke={1.75} class="hd__bi hd__bi--close" />
       <span class="hd__bdot" data-cart-dot hidden></span>
     </button>
 
     <div class="hd__right" id="hd-panel">
-      <nav aria-label="Menu sklepu" class="hd__nav" id="hd-nav">
+      <nav aria-label={t(lang, 'nav.menu')} class="hd__nav" id="hd-nav">
         {items.map((i) => (
           <a href={i.href} class="hd__link" aria-current={nav === i.key ? 'page' : undefined}>{i.label}</a>
         ))}
       </nav>
 
       <div class="hd__actions">
-        <a href="/konto/" aria-label="Moje konto" class="hd__icon">
+        <a href={L('/konto/')} aria-label={t(lang, 'hd.account')} class="hd__icon">
           <Icon name="user" size={22} stroke={1.75} />
         </a>
 
         <div class="hd__cartwrap" data-cart-wrap>
-          <a href="/koszyk/" class="hd__cart" data-cart-link aria-describedby="hd-preview">
-            Koszyk
+          <a href={L('/koszyk/')} class="hd__cart" data-cart-link aria-describedby="hd-preview">
+            {t(lang, 'hd.cart')}
             <span class="hd__count" data-cart-count aria-label="Liczba produktów w koszyku">0</span>
           </a>
           <div class="hd__preview" id="hd-preview" role="region" aria-label="Podgląd koszyka" data-cart-preview hidden>
@@ -66,11 +74,11 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
             <ul class="hd__pvlist" data-pv-list></ul>
             <div class="hd__pvpromos" data-pv-promos hidden></div>
             <div class="hd__pvsum"><span>Razem</span><strong data-pv-total>0,00 zł</strong></div>
-            <a href="/koszyk/" class="btn btn--wide hd__pvbtn">Przejdź do koszyka</a>
+            <a href={L('/koszyk/')} class="btn btn--wide hd__pvbtn">Przejdź do koszyka</a>
           </div>
         </div>
 
-        <a href="#" lang="en" class="hd__lang" aria-label="English version">EN</a>
+        <a href={otherHref} lang={lang === 'en' ? 'pl' : 'en'} hreflang={lang === 'en' ? 'pl' : 'en'} class="hd__lang" aria-label={t(lang, 'hd.switch')}>{lang === 'en' ? 'PL' : 'EN'}</a>
       </div>
     </div>
   </div>
