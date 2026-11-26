@@ -5,6 +5,11 @@ import { site } from '../config';
 import { getEnv } from '../lib/env';
 import { getPageContent, getSection } from '../lib/page-content';
 import { getSite } from '../lib/site-settings';
+import { langOf, href } from '../lib/i18n';
+import { t } from '../i18n/ui';
+
+const lang = langOf(Astro.locals);
+const L = (p: string) => href(lang, p);
 
 type Col = { title: string; links: { href: string; label: string }[] };
 let columns: Col[] = [];
@@ -13,7 +18,8 @@ let logo = '';
 try {
   const env = await getEnv(Astro.locals);
   if (env.SUPABASE_URL) logo = (await getSite(env)).logoFooter || '';
-  const rows = await getPageContent(env, 'footer');
+  // Kolumny z panelu są po polsku - wersja angielska ma kolumny z kodu (pola EN w panelu: kolejna paczka)
+  const rows = lang === 'en' ? [] : await getPageContent(env, 'footer');
   const c = getSection<{ columns: Col[] }>(rows, 'footer.columns');
   const b = getSection<{ items: string[] }>(rows, 'footer.badges');
   // Tylko poprawna lista (zapis z panelu jako tekst dawał błąd „columns.map is not a function” i pustą stronę)
@@ -21,33 +27,33 @@ try {
   if (Array.isArray(b?.items) && b.items.length) badges = b.items.map(String);
 } catch { /* strona statyczna albo baza niedostępna - treści z kodu */ }
 if (!columns.length) columns = [
-  { title: 'Sklep', links: [
-    { href: '/produkt/krople-can-c/', label: 'Krople Can-C' },
-    { href: '/produkt/krople-can-c-k9/', label: 'Can-C K9 dla psa' },
-    { href: '/sklep/', label: 'Kapsułki 60 i 90' },
-    { href: '/konto/', label: 'Moje konto' },
+  { title: t(lang, 'ft.shop'), links: [
+    { href: '/produkt/krople-can-c/', label: t(lang, 'ft.drops') },
+    { href: '/produkt/krople-can-c-k9/', label: t(lang, 'ft.k9') },
+    { href: '/sklep/', label: t(lang, 'ft.capsules') },
+    { href: '/konto/', label: t(lang, 'ft.account') },
   ] },
-  { title: 'Zakupy', links: [
-    { href: '/formy-dostawy/', label: 'Formy dostawy' },
-    { href: '/formy-platnosci/', label: 'Formy płatności' },
-    { href: '/odstapienie-od-umowy/', label: 'Zwroty i reklamacje' },
-    { href: '/odstapienie-od-umowy/#formularz', label: 'Odstąp od umowy' },
+  { title: t(lang, 'ft.buying'), links: [
+    { href: '/formy-dostawy/', label: t(lang, 'ft.delivery') },
+    { href: '/formy-platnosci/', label: t(lang, 'ft.payments') },
+    { href: '/odstapienie-od-umowy/', label: t(lang, 'ft.returns') },
+    { href: '/odstapienie-od-umowy/#formularz', label: t(lang, 'ft.withdraw') },
   ] },
-  { title: 'Informacje', links: [
-    { href: '/o-nas/', label: 'O nas' },
-    { href: '/regulamin/', label: 'Regulamin' },
-    { href: '/polityka-prywatnosci/', label: 'Polityka prywatności' },
-    { href: '/kontakt/', label: 'Kontakt' },
+  { title: t(lang, 'ft.info'), links: [
+    { href: '/o-nas/', label: t(lang, 'ft.about') },
+    { href: '/regulamin/', label: t(lang, 'ft.terms') },
+    { href: '/polityka-prywatnosci/', label: t(lang, 'ft.privacy') },
+    { href: '/kontakt/', label: t(lang, 'ft.contact') },
   ] },
 ];
-if (!badges.length) badges = ['BLIK', 'Przelewy24', 'Karta', 'InPost Paczkomat', 'Kurier'];
+if (!badges.length) badges = ['BLIK', 'Przelewy24', t(lang, 'badge.card'), t(lang, 'badge.locker'), t(lang, 'badge.courier')];
 const year = new Date().getFullYear();
 ---
 <footer class="ft">
   <div class="ft__in">
     <div class="ft__top">
       <div class="ft__brand">
-        <a href="/" class="ft__logo" aria-label="Can-C - strona główna">
+        <a href={L('/')} class="ft__logo" aria-label={`Can-C - ${t(lang, 'common.home')}`}>
           <img class="ft__img" data-logo="logoFooter" src={logo || undefined} alt="Can-C" width="120" hidden={!logo} />
           <span class="ft__txt" data-logo-text="logoFooter" hidden={!!logo}><span class="ft__ring" aria-hidden="true"></span><span class="ft__name">Can-C</span></span>
         </a>
@@ -59,14 +65,14 @@ const year = new Date().getFullYear();
             <span class="ft__title">{c.title}</span>
             <div class="ft__links">
               {c.links.map((l) => (
-                <a href={l.href}><Icon name="chevron-right" size={14} stroke={1.75} />{l.label}</a>
+                <a href={L(l.href)}><Icon name="chevron-right" size={14} stroke={1.75} />{l.label}</a>
               ))}
             </div>
           </nav>
         ))}
       </div>
     </div>
-    <ul class="ft__chips" aria-label="Metody płatności i dostawy">
+    <ul class="ft__chips" aria-label={t(lang, 'ft.methods')}>
       {badges.map((b) => <li>{b}</li>)}
     </ul>
     <div class="ft__line"></div>

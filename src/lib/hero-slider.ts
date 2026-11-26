@@ -91,7 +91,8 @@ function init(cfg: { interval: number; slides: Slide[] }) {
   pauseBtn.addEventListener('click', () => {
     userPaused = !userPaused;
     pauseBtn.setAttribute('aria-pressed', String(userPaused));
-    pauseBtn.setAttribute('aria-label', userPaused ? 'Wznów zmianę slajdów' : 'Zatrzymaj zmianę slajdów');
+    const en = document.documentElement.lang === 'en';
+    pauseBtn.setAttribute('aria-label', userPaused ? (en ? 'Resume the slideshow' : 'Wznów zmianę slajdów') : (en ? 'Pause the slideshow' : 'Zatrzymaj zmianę slajdów'));
     if (!userPaused) nav.classList.remove('is-static');
     schedule();
   });

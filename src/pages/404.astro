@@ -2,21 +2,24 @@
 import Icon from '../components/Icon.astro';
 // Strona „Nie znaleziono” - adres trafia do dziennika 404 w panelu (SEO → Przekierowania)
 import Base from '../layouts/Base.astro';
+import { langOf, href } from '../lib/i18n';
+import { t } from '../i18n/ui';
 export const prerender = false;
 Astro.response.status = 404;
+const lang = langOf(Astro.locals);
 const links = [
-  { href: '/#produkty', label: 'Produkty', text: 'Krople Can-C, wersja dla psa i kapsułki' },
-  { href: '/stosowanie/', label: 'Stosowanie', text: 'Dawkowanie i zakraplanie krok po kroku' },
-  { href: '/faq/', label: 'FAQ', text: 'Odpowiedzi na najczęstsze pytania' },
-  { href: '/kontakt/', label: 'Kontakt', text: 'Napisz, jeśli szukasz czegoś konkretnego' },
+  { href: href(lang, '/') + '#produkty', label: t(lang, 'nf.products'), text: t(lang, 'nf.productsText') },
+  { href: href(lang, '/stosowanie/'), label: t(lang, 'nf.howto'), text: t(lang, 'nf.howtoText') },
+  { href: href(lang, '/faq/'), label: 'FAQ', text: t(lang, 'nf.faqText') },
+  { href: href(lang, '/kontakt/'), label: t(lang, 'nf.contact'), text: t(lang, 'nf.contactText') },
 ];
 ---
-<Base title="Nie znaleziono strony | Can-C" description="Ta strona nie istnieje albo została przeniesiona." noindex>
+<Base title={t(lang, 'nf.metaTitle')} description={t(lang, 'nf.metaDesc')} noindex>
   <section class="w nf">
     <div class="nf__head">
       <span class="nf__code">404</span>
-      <h1 class="h1">Nie znaleźliśmy<br />tej strony</h1>
-      <p class="p p--lg">Adres mógł się zmienić po przeniesieniu sklepu albo zawiera literówkę. Zacznij od jednej z tych stron:</p>
+      <h1 class="h1">{t(lang, 'nf.title1')}<br />{t(lang, 'nf.title2')}</h1>
+      <p class="p p--lg">{t(lang, 'nf.lead')}</p>
     </div>
     <div class="g4 nf__grid">
       {links.map((l) => (
@@ -27,7 +30,7 @@ const links = [
         </a>
       ))}
     </div>
-    <a href="/" class="btn" style="margin-top:45px">Strona główna</a>
+    <a href={href(lang, '/')} class="btn" style="margin-top:45px">{t(lang, 'common.home')}</a>
   </section>
 </Base>
 

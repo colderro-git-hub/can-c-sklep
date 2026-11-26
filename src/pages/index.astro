@@ -2,6 +2,8 @@
 import Icon from '../components/Icon.astro';
 import Base from '../layouts/Base.astro';
 import { products as fallback, features, reviews, faqs, formatPrice } from '../data/shop';
+import { langOf, href as hrefL, price as fmtPriceL } from '../lib/i18n';
+import { t } from '../i18n/ui';
 import { applyPromotions, qtyOptions } from '../lib/promotions';
 import { getPromotions } from '../lib/promotions-db';
 import { getEnv } from '../lib/env';
@@ -40,6 +42,9 @@ const ratingAvg = ratingCount ? Math.round((products.reduce((n, p) => n + p.rati
 
 // Treści z CMS (strona główna + FAQ)
 const env = await getEnv(Astro.locals);
+// Język strony (/en/ = angielski) i linki w tym języku
+const lang = langOf(Astro.locals);
+const L = (p: string) => hrefL(lang, p);
 const [homeRows, faqRows, site] = await Promise.all([
   getPageContent(env, 'home').catch(() => []),
   getPageContent(env, 'faq').catch(() => []),
@@ -54,7 +59,7 @@ const hero = at('home.hero', {
   lead: 'Codzienne wsparcie dla zmęczonych oczu. Można stosować przy soczewkach kontaktowych.',
   cta_primary_label: 'Zamów krople', cta_primary_href: '/produkt/krople-can-c/',
   cta_secondary_label: 'Jak stosować', cta_secondary_href: '/stosowanie/',
-  trust_boxes: ['0 zł | InPost i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'] as string[],
+  trust_boxes: ['0 zł | Paczkomat i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'] as string[],
   image_url: null as string | null, image_alt: 'Krople Can-C',
 });
 // H1 w dwóch liniach: „pierwsza | druga” (druga z wcięciem); dawny tekst bez „|” dzielimy jak w projekcie
@@ -87,7 +92,7 @@ const heroInterval = Math.min(Math.max(Number(heroSlidesCms.interval) || 10, 4),
 // Boksy zaufania pod hero: „liczba | opis”, ikony wg kolejności
 const TRUST_ICONS = ['truck', 'undo-2', 'credit-card'] as const;
 const trustRaw = ((hero.trust_boxes as string[]) || []).filter((x) => String(x).includes('|'));
-const trustBoxes = (trustRaw.length ? trustRaw : ['0 zł | InPost i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'])
+const trustBoxes = (trustRaw.length ? trustRaw : ['0 zł | Paczkomat i kurier', '14 dni | Na zwrot', 'BLIK | Przelewy24, karta'])
   .slice(0, 3).map((x: string, i: number) => { const [num, sub] = x.split('|').map((y) => y.trim()); return { num, sub: sub || '', icon: TRUST_ICONS[i] }; });
 // Nagłówki z łamaniem wiersza: „|” albo nowa linia → <br>
 const lines = (t: unknown) => String(t ?? '').split(/\s*\|\s*|\n/).map((x) => x.trim()).filter(Boolean);
@@ -157,7 +162,7 @@ const benefits = {
 };
 const bold = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 const k9 = at('home.k9', { tag: 'DLA PSA', h2: 'Krople Can-C K9 z N-acetylokarnozyną', lead: '', cta_label: 'Zobacz Can-C K9', cta_href: '/produkt/krople-can-c-k9/', image_url: null as string | null, image_alt: 'Can-C K9' });
-const faqCatLabel: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
+const faqCatLabel: Record<string, string> = { produkt: t(lang, 'faq.cat.product'), stosowanie: t(lang, 'faq.cat.use'), zamowienia: t(lang, 'faq.cat.orders'), zwroty: t(lang, 'faq.cat.returns') };
 const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const faqCms = getSections<{ cat: string; home: boolean; q: string; a: string; __hidden?: boolean }>(faqRows, 'item')
   .filter((f) => f.home && !f.__hidden && f.q && f.a)
@@ -177,15 +182,15 @@ const bundleRows = setQtys.map((qty) => {
   const total = (gross - disc) / 100;
   return {
     qty, pct,
-    label: `${qty} ${many(qty, 'opakowanie', 'opakowania', 'opakowań')}`,
-    months: `${qty} ${many(qty, 'miesiąc', 'miesiące', 'miesięcy')} kuracji`,
-    total: formatPrice(total),
-    unit: `${formatPrice(total / qty)} za sztukę`,
-    save: pct ? `Oszczędzasz ${pct}%` : 'Cena regularna',
+    label: lang === 'en' ? `${qty} ${qty === 1 ? 'pack' : 'packs'}` : `${qty} ${many(qty, 'opakowanie', 'opakowania', 'opakowań')}`,
+    months: lang === 'en' ? `${qty} ${qty === 1 ? 'month' : 'months'} of use` : `${qty} ${many(qty, 'miesiąc', 'miesiące', 'miesięcy')} kuracji`,
+    total: fmtPriceL(lang, Math.round(total * 100)),
+    unit: `${fmtPriceL(lang, Math.round((total / qty) * 100))} ${t(lang, 'bundle.perUnit')}`,
+    save: pct ? `${t(lang, 'bundle.save')} ${pct}%` : t(lang, 'bundle.regular'),
   };
 });
 ---
-<Base title="Krople do oczu Can-C z N-acetylokarnozyną" description="Oryginalne krople Can-C z N-acetylokarnozyną. Darmowa dostawa, szybka wysyłka.">
+<Base title={t(lang, 'home.metaTitle')} description={t(lang, 'home.metaDesc')}>
   <!-- HERO -->
   {visible(hero) && (
   <section class="container" style="margin-top: 45px">
@@ -219,9 +224,9 @@ const bundleRows = setQtys.map((qty) => {
       {heroSlides.length > 1 && (
         <div class="hs-nav" data-hs-nav>
           {heroSlides.map((_, i) => (
-            <button type="button" class="hs-dot" data-hs-go={i} aria-label={`Slajd ${i + 1} z ${heroSlides.length}`} aria-current={i === 0 ? 'true' : undefined}><span class="hs-dot__fill"></span></button>
+            <button type="button" class="hs-dot" data-hs-go={i} aria-label={`${t(lang, 'home.slide')} ${i + 1} / ${heroSlides.length}`} aria-current={i === 0 ? 'true' : undefined}><span class="hs-dot__fill"></span></button>
           ))}
-          <button type="button" class="hs-pause" data-hs-pause aria-label="Zatrzymaj zmianę slajdów" aria-pressed="false">
+          <button type="button" class="hs-pause" data-hs-pause aria-label={t(lang, 'home.pause')} aria-pressed="false">
             <Icon name="pause" size={14} class="hs-ico-pause" /><Icon name="play" size={14} class="hs-ico-play" />
           </button>
         </div>
@@ -239,11 +244,11 @@ const bundleRows = setQtys.map((qty) => {
       </div>
       <span aria-hidden="true" class="hero-bottom__sep"></span>
       <div class="hero-cta">
-        <a href={hero.cta_primary_href} class="btn btn--wide" data-hs="c1">
+        <a href={L(hero.cta_primary_href)} class="btn btn--wide" data-hs="c1">
           <span data-hs="c1-label">{hero.cta_primary_label}</span>
           <Icon name="arrow-right" size={20} />
         </a>
-        <a href={hero.cta_secondary_href || '#'} class="btn btn--outline btn--wide" data-hs="c2" hidden={!hero.cta_secondary_label}>{hero.cta_secondary_label}</a>
+        <a href={L(hero.cta_secondary_href || '#')} class="btn btn--outline btn--wide" data-hs="c2" hidden={!hero.cta_secondary_label}>{hero.cta_secondary_label}</a>
       </div>
     </div>
   </section>
@@ -260,12 +265,12 @@ const bundleRows = setQtys.map((qty) => {
           <h2 class="h2" style={fs(productsCms, 'h2')} set:html={lines(productsCms.h2).map(escHtml).join('<br/>')} />
           {productsCms.lead && <p class="lead" style={fs(productsCms, 'lead', 'max-width:517px')}>{productsCms.lead}</p>}
         </div>
-        {productsCms.link_label && <a href={productsCms.link_href} class="link-arrow">
+        {productsCms.link_label && <a href={L(productsCms.link_href)} class="link-arrow">
           <Icon name="arrow-right" size={16} />
           {productsCms.link_label}
         </a>}
       </div>
-      <div class="products-grid" data-list="Strona główna">
+      <div class="products-grid" data-list={t(lang, 'common.home')}>
         {products.map((p) => (
           <ProductCard slug={p.slug} name={p.name} tag={p.tag} image={p.image} alt={p.alt} avail={p.avail}
             price={p.price} regular={p.regular} onSale={p.onSale} flag={p.tags[0] ? p.tags[0].charAt(0).toUpperCase() + p.tags[0].slice(1) : undefined} />
@@ -299,7 +304,7 @@ const bundleRows = setQtys.map((qty) => {
     </div>
     <div class="ben__body">
       {benefits.items.length > 0 && <ul class="dots ben__list" style={fs(benefits, 'items')}>{benefits.items.map((item: string) => <li set:html={bold(item)} />)}</ul>}
-      {benefits.cta_label && <a href={benefits.cta_href} class="btn">{benefits.cta_label}</a>}
+      {benefits.cta_label && <a href={L(benefits.cta_href)} class="btn">{benefits.cta_label}</a>}
     </div>
   </section>
   )}
@@ -336,7 +341,7 @@ const bundleRows = setQtys.map((qty) => {
               {perk}
             </li>)}
           </ul>
-          <a href={`/produkt/krople-can-c/?zestaw=${b.qty}`} class={i === 1 ? 'btn btn--white btn--wide' : 'btn btn--outline btn--wide'}>{bundlesCms.button}</a>
+          <a href={L(`/produkt/krople-can-c/?zestaw=${b.qty}`)} class={i === 1 ? 'btn btn--white btn--wide' : 'btn btn--outline btn--wide'}>{bundlesCms.button}</a>
         </div>
       ))}
     </div>
@@ -355,7 +360,7 @@ const bundleRows = setQtys.map((qty) => {
       </div>
       <h2 class="h2" style={fs(why, 'h2')} set:html={lines(why.h2).map(escHtml).join('<br/>')} />
       {why.lead && <p class="lead" style={fs(why, 'lead', 'text-align:left')}>{why.lead}</p>}
-      {why.link_label && <a href={why.link_href} class="link-arrow">
+      {why.link_label && <a href={L(why.link_href)} class="link-arrow">
         <Icon name="arrow-right" size={16} />
         {why.link_label}
       </a>}
@@ -385,10 +390,10 @@ const bundleRows = setQtys.map((qty) => {
         {rvCount > 0 && (
           <div class="rv2__score">
             <span class="rv2__avg">{rvAvg.toLocaleString('pl-PL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
-            <div class="rv2__meta"><Stars value={rvAvg} size={18} label={`Średnia ocena ${rvAvg} na 5`} /><span>na podstawie {rvCount} {opinii(rvCount)}</span></div>
+            <div class="rv2__meta"><Stars value={rvAvg} size={18} label={`${t(lang, 'rv.avg')} ${rvAvg} / 5`} /><span>{t(lang, 'rv.basedOn')} {rvCount} {lang === 'en' ? 'reviews' : opinii(rvCount)}</span></div>
           </div>
         )}
-        {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="link-arrow"><Icon name="arrow-right" size={16} />{reviewsCms.cta_label}</a>}
+        {reviewsCms.cta_label && <a href={L(reviewsCms.cta_href)} class="link-arrow"><Icon name="arrow-right" size={16} />{reviewsCms.cta_label}</a>}
         </div>
         {homeRv.small.length > 0 && (
           <div class="rv2__small">
@@ -421,9 +426,9 @@ const bundleRows = setQtys.map((qty) => {
             ))}
             {homeRv.featured.length > 1 && (
               <div class="rv2__nav">
-                <button type="button" class="rv2__btn" data-rv-prev aria-label="Poprzednia opinia"><Icon name="chevron-left" size={18} /></button>
+                <button type="button" class="rv2__btn" data-rv-prev aria-label={t(lang, 'rv.prev')}><Icon name="chevron-left" size={18} /></button>
                 <span class="rv2__count" data-rv-count>1 / {homeRv.featured.length}</span>
-                <button type="button" class="rv2__btn" data-rv-next aria-label="Następna opinia"><Icon name="chevron-right" size={18} /></button>
+                <button type="button" class="rv2__btn" data-rv-next aria-label={t(lang, 'rv.next')}><Icon name="chevron-right" size={18} /></button>
               </div>
             )}
           </div>
@@ -446,7 +451,7 @@ const bundleRows = setQtys.map((qty) => {
       <h2 class="h2" style={fs(k9, 'h2')}>{k9.h2}</h2>
       {k9.lead && <p class="lead" style={fs(k9, 'lead', 'text-align:left')}>{k9.lead}</p>}
       <div style="display:flex;align-items:center;gap:24px;margin-top:21px;flex-wrap:wrap">
-        <a href={k9.cta_href} class="btn">
+        <a href={L(k9.cta_href)} class="btn">
           {k9.cta_label}
           <Icon name="arrow-right" size={20} />
         </a>
@@ -460,7 +465,7 @@ const bundleRows = setQtys.map((qty) => {
   <section class="container home-split sec-gap">
     <div class="home-side">
       <h2 class="h2" style={fs(faqHead, 'h2')} set:html={lines(faqHead.h2).map(escHtml).join('<br/>')} />
-      {faqHead.link_label && <a href={faqHead.link_href} class="link-arrow">
+      {faqHead.link_label && <a href={L(faqHead.link_href)} class="link-arrow">
         <Icon name="arrow-right" size={16} />
         {faqHead.link_label}
       </a>}

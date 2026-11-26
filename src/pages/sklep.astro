@@ -4,23 +4,26 @@ import Base from '../layouts/Base.astro';
 import ProductCard from '../components/ProductCard.astro';
 import { getEnv } from '../lib/env';
 import { getCatalog } from '../lib/catalog';
+import { langOf, href } from '../lib/i18n';
+import { t } from '../i18n/ui';
 
 export const prerender = false;
 const list = await getCatalog(await getEnv(Astro.locals)).catch(() => []);
 const zl = (g: number | null) => (g === null ? null : g / 100);
 const cap = (t?: string) => (t ? t.charAt(0).toUpperCase() + t.slice(1) : undefined);
+const lang = langOf(Astro.locals);
 const groups = [
-  { id: 'krople', title: 'Krople do oczu', lead: 'Krople Can-C z N-acetylokarnozyną dla ludzi i w wersji dla psów.', items: list.filter((p) => !p.id.startsWith('kapsulki')) },
-  { id: 'kapsulki', title: 'Kapsułki', lead: 'Uzupełnienie kuracji kroplami.', items: list.filter((p) => p.id.startsWith('kapsulki')) },
+  { id: 'krople', title: t(lang, 'shop.drops'), lead: t(lang, 'shop.dropsLead'), items: list.filter((p) => !p.id.startsWith('kapsulki')) },
+  { id: 'kapsulki', title: t(lang, 'shop.capsules'), lead: t(lang, 'shop.capsulesLead'), items: list.filter((p) => p.id.startsWith('kapsulki')) },
 ].filter((g) => g.items.length);
 Astro.response.headers.set('Cache-Control', 'public, max-age=60');
 ---
-<Base title="Sklep | Can-C" description="Wszystkie produkty Can-C: krople do oczu, krople dla psów i kapsułki. Darmowa dostawa w Polsce.">
+<Base title={t(lang, 'shop.metaTitle')} description={t(lang, 'shop.metaDesc')}>
   <section class="w sk-head">
-    <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Sklep</nav>
+    <nav class="crumb" aria-label={t(lang, 'common.crumbs')}><a href={href(lang, '/')}>{t(lang, 'common.home')}</a> / {t(lang, 'shop.title')}</nav>
     <div class="row sk-head__row">
-      <h1 class="h1">Sklep</h1>
-      <p class="p p--lg fl" style="width:517px">Oryginalne produkty Can-C. Wysyłamy za darmo InPostem i kurierem.</p>
+      <h1 class="h1">{t(lang, 'shop.title')}</h1>
+      <p class="p p--lg fl" style="width:517px">{t(lang, 'shop.lead')}</p>
     </div>
   </section>
 
@@ -40,7 +43,7 @@ Astro.response.headers.set('Cache-Control', 'public, max-age=60');
       </div>
     </section>
   ))}
-  {!groups.length && <section class="w"><div class="empty" style="margin-top:45px"><p class="p">Nie udało się wczytać produktów. Odśwież stronę za chwilę.</p></div></section>}
+  {!groups.length && <section class="w"><div class="empty" style="margin-top:45px"><p class="p">{t(lang, 'shop.error')}</p></div></section>}
   <div style="height:90px"></div>
 </Base>
 
