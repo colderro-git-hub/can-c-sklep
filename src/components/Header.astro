@@ -67,14 +67,14 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
         <div class="hd__cartwrap" data-cart-wrap>
           <a href={L('/koszyk/')} class="hd__cart" data-cart-link aria-describedby="hd-preview">
             {t(lang, 'hd.cart')}
-            <span class="hd__count" data-cart-count aria-label="Liczba produktów w koszyku">0</span>
+            <span class="hd__count" data-cart-count aria-label={t(lang, 'pv.count')}>0</span>
           </a>
-          <div class="hd__preview" id="hd-preview" role="region" aria-label="Podgląd koszyka" data-cart-preview hidden>
-            <p class="hd__pvhead" data-pv-head>Twój koszyk</p>
+          <div class="hd__preview" id="hd-preview" role="region" aria-label={t(lang, 'pv.label')} data-cart-preview hidden>
+            <p class="hd__pvhead" data-pv-head>{t(lang, 'pv.head')}</p>
             <ul class="hd__pvlist" data-pv-list></ul>
             <div class="hd__pvpromos" data-pv-promos hidden></div>
-            <div class="hd__pvsum"><span>Razem</span><strong data-pv-total>0,00 zł</strong></div>
-            <a href={L('/koszyk/')} class="btn btn--wide hd__pvbtn">Przejdź do koszyka</a>
+            <div class="hd__pvsum"><span>{t(lang, 'pv.total')}</span><strong data-pv-total>-</strong></div>
+            <a href={L('/koszyk/')} class="btn btn--wide hd__pvbtn">{t(lang, 'pv.go')}</a>
           </div>
         </div>
 
@@ -188,6 +188,9 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
 </style>
 
 <script>
+  import { t as tt } from '../i18n/ui';
+  import { href as hrefL, price as fmtPrice } from '../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
   import { getCart, onCartChange, type CartItem } from '../lib/cart';
   import { ADDED_EVENT } from '../lib/cart-fx';
   import { typoSafe } from '../lib/typography';
@@ -195,7 +198,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   import { applyPromotions, normalizePromotion, type Promotion } from '../lib/promotions';
 
   type P = { slug: string; name: string; price: number | null; image: string | null; imageAlt: string; avail?: string };
-  const zl = (gr: number) => (gr / 100).toFixed(2).replace('.', ',') + ' zł';
+  const zl = (gr: number) => fmtPrice(LANG, gr);
   const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
 
   let catalog: P[] | null = null;
@@ -254,7 +257,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
       pvPromos.hidden = !promo.applied.length;
     }
     total.textContent = zl(sum);
-    if (head) head.textContent = added ? 'Dodano do koszyka' : 'Twój koszyk';
+    if (head) head.textContent = added ? tt(LANG, 'pv.added') : tt(LANG, 'pv.head');
     return true;
   }
   async function show(added = false, autoHide = false) {
@@ -278,7 +281,7 @@ try { const env = await getEnv(Astro.locals); if (env.SUPABASE_URL) logo = (awai
   const setMenu = (open: boolean) => {
     panel?.classList.toggle('is-open', open);
     burger?.setAttribute('aria-expanded', String(open));
-    burger?.setAttribute('aria-label', open ? 'Zamknij menu' : 'Otwórz menu');
+    burger?.setAttribute('aria-label', open ? tt(LANG, 'hd.closeMenu') : tt(LANG, 'hd.openMenu'));
   };
   burger?.addEventListener('click', () => setMenu(!panel?.classList.contains('is-open')));
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && panel?.classList.contains('is-open')) { setMenu(false); burger?.focus(); } });

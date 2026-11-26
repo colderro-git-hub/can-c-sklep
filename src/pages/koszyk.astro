@@ -5,57 +5,62 @@ import Icon from '../components/Icon.astro';
 // Koszyk wg projektu „S7 · Koszyk” (Laluna). Ceny do podglądu; kwotę do zapłaty liczy serwer.
 import Base from '../layouts/Base.astro';
 import { products } from '../data/shop';
+import { langOf, href as hrefL } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 
 // Do przeglądarki trafiają tylko dane potrzebne do podglądu koszyka (zapas, gdy API nie odpowie)
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
-<Base title="Koszyk | Can-C" description="Twój koszyk w sklepie Can-C." noindex>
+<Base title={T('ct.metaTitle')} description={T('ct.metaDesc')} noindex>
   <section class="w ct">
-    <ol class="steps" aria-label="Etapy zamówienia">
-      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">1</span>Koszyk</li>
+    <ol class="steps" aria-label={T('steps.label')}>
+      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">1</span>{T('steps.cart')}</li>
       <li class="steps__sep" aria-hidden="true"></li>
-      <li class="steps__i"><span class="steps__n">2</span>Dostawa i płatność</li>
+      <li class="steps__i"><span class="steps__n">2</span>{T('steps.delivery')}</li>
       <li class="steps__sep" aria-hidden="true"></li>
-      <li class="steps__i"><span class="steps__n">3</span>Potwierdzenie</li>
+      <li class="steps__i"><span class="steps__n">3</span>{T('steps.confirm')}</li>
     </ol>
-    <h1 class="h1 ct__title">Koszyk</h1>
-    <p class="peach ct__reorder" data-reorder hidden>Dodaliśmy produkty z Twojego poprzedniego zamówienia<span data-reorder-code></span>. Możesz zmienić ilości przed zamówieniem.</p>
+    <h1 class="h1 ct__title">{T('ct.title')}</h1>
+    <p class="peach ct__reorder" data-reorder hidden>{T('ct.reorder1')}<span data-reorder-code></span>{T('ct.reorder2')}</p>
     <p class="ct__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
     <div data-empty hidden class="empty ct__empty">
-      <span class="ct__emptyt">Koszyk jest pusty</span>
-      <p class="p">Wybierz krople, kapsułki albo wersję dla psa. Dostawa jest zawsze darmowa.</p>
-      <a href="/#produkty" class="btn">Przejdź do produktów</a>
+      <span class="ct__emptyt">{T('ct.empty')}</span>
+      <p class="p">{T('ct.emptyText')}</p>
+      <a href={L('/') + '#produkty'} class="btn">{T('ct.toProducts')}</a>
     </div>
 
     <div data-filled hidden class="row ct__grid">
       <div class="ct__main">
-        <div class="ct__lines" data-lines aria-label="Produkty w koszyku" role="list"></div>
+        <div class="ct__lines" data-lines aria-label={T('ct.lines')} role="list"></div>
 
         <!-- Dostępne rabaty: progi ilościowe i zestawy, które klient może jeszcze wykorzystać (znikają po skorzystaniu) -->
         <div class="ct__upsells" data-upsells aria-live="polite"></div>
 
-        <a href="/#produkty" class="lnk ct__back">
-          <Icon name="arrow-left" size={16} />Kontynuuj zakupy
+        <a href={L('/') + '#produkty'} class="lnk ct__back">
+          <Icon name="arrow-left" size={16} />{T('ct.continue')}
         </a>
       </div>
 
       <aside class="fl ct__side">
         <div class="ct__sum">
-          <h2 class="ct__sumh">Podsumowanie</h2>
-          <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
+          <h2 class="ct__sumh">{T('ct.summary')}</h2>
+          <div class="srow"><span>{T('ct.products')}</span><span data-subtotal></span></div>
           <div data-promos></div>
-          <div class="srow"><span>Dostawa</span><span style="font-weight:400">Darmowa</span></div>
-          <div class="total-row" style="border-color:var(--image)"><span>Razem</span><span data-total></span></div>
+          <div class="srow"><span>{T('ct.delivery')}</span><span style="font-weight:400">{T('ct.free')}</span></div>
+          <div class="total-row" style="border-color:var(--image)"><span>{T('ct.total')}</span><span data-total></span></div>
           <span class="ct__save" data-save hidden></span>
-          <a href="/zamowienie/" class="btn btn--wide" style="margin-top:10px" data-checkout>Realizuj zamówienie</a>
-          <span class="k ct__blocked" data-blocked hidden role="status">Usuń z koszyka produkty oznaczone jako niedostępne, aby przejść dalej.</span>
-          <span class="k">Ostateczną kwotę potwierdzimy w kolejnym kroku.</span>
+          <a href={L('/zamowienie/')} class="btn btn--wide" style="margin-top:10px" data-checkout>{T('ct.checkout')}</a>
+          <span class="k ct__blocked" data-blocked hidden role="status">{T('ct.blocked')}</span>
+          <span class="k">{T('ct.finalNote')}</span>
         </div>
         <div class="ct__perks">
-          <span><Icon name="truck" size={24} stroke={1.75} />Darmowa dostawa InPost i kurier</span>
-          <span><Icon name="undo-2" size={24} stroke={1.75} />14 dni na zwrot</span>
-          <span><Icon name="credit-card" size={24} stroke={1.75} />BLIK, Przelewy24, karta</span>
+          <span><Icon name="truck" size={24} stroke={1.75} />{T('ct.perkDelivery')}</span>
+          <span><Icon name="undo-2" size={24} stroke={1.75} />{T('ct.perkReturn')}</span>
+          <span><Icon name="credit-card" size={24} stroke={1.75} />{T('ct.perkPay')}</span>
         </div>
       </aside>
     </div>
@@ -64,22 +69,22 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       <article class="ct__line" role="listitem">
         <a class="ct__img" data-link tabindex="-1" aria-hidden="true">
           <img alt="" width="120" height="120" loading="lazy" hidden />
-          <span class="p-badge p-badge--out_of_stock" data-badge hidden>Brak</span>
+          <span class="p-badge p-badge--out_of_stock" data-badge hidden>{T('ct.none')}</span>
         </a>
         <div class="ct__info">
           <a class="ct__name" data-link></a>
           <span class="k" data-meta></span>
           <span class="ct__lead" data-lead hidden><span class="dot" aria-hidden="true"></span><span></span></span>
-          <span class="ct__out" data-out hidden>Chwilowo niedostępny - usuń z koszyka</span>
+          <span class="ct__out" data-out hidden>{T('ct.outLine')}</span>
         </div>
         <div class="ct__qty">
-          <button type="button" class="ct__qb" data-dec aria-label="Zmniejsz ilość"><Icon name="minus" size={18} /></button>
+          <button type="button" class="ct__qb" data-dec aria-label={T('ct.dec')}><Icon name="minus" size={18} /></button>
           <span class="ct__qv" aria-live="polite" data-qty></span>
-          <button type="button" class="ct__qb" data-inc aria-label="Zwiększ ilość"><Icon name="plus" size={18} /></button>
+          <button type="button" class="ct__qb" data-inc aria-label={T('ct.inc')}><Icon name="plus" size={18} /></button>
         </div>
         <div class="ct__right">
           <span class="ct__ltotal" data-ltotal></span>
-          <button type="button" class="ct__rm" data-remove>Usuń</button>
+          <button type="button" class="ct__rm" data-remove>{T('ct.remove')}</button>
         </div>
       </article>
     </template>
@@ -99,6 +104,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <script>
+  import { t as tt } from '../i18n/ui';
+  import { href as hrefL, price as fmtPrice } from '../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
+  const T = (k: Parameters<typeof tt>[1]) => tt(LANG, k);
   import { getCart, setQty, onCartChange, cartFromLink } from '../lib/cart';
   // Link z maila „Zamów ponownie” - przed pierwszym odczytem koszyka
   const fromLink = cartFromLink();
@@ -111,7 +120,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     const box = document.querySelector<HTMLElement>('[data-reorder]');
     if (box) {
       box.hidden = !fromLink.added;
-      if (fromLink.code) box.querySelector('[data-reorder-code]')!.textContent = `, a kod ${fromLink.code} doda się automatycznie w następnym kroku`;
+      if (fromLink.code) box.querySelector('[data-reorder-code]')!.textContent = `${T('ct.reorderCode1')}${fromLink.code}${T('ct.reorderCode2')}`;
     }
   }
 
@@ -120,7 +129,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
     type P = { slug: string; name: string; price: number | null; bundles: boolean; size: string; image?: string | null; imageAlt?: string; avail?: string; leadTime?: string };
     const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
-    const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
+    // Ceny w złotych → format języka strony (PL „369,00 zł”, EN „PLN 369.00”)
+    const pln = { format: (zl: number) => fmtPrice(LANG, Math.round(zl * 100)) };
     const promos = (((await (window as any).__CANC_PROMOS__) || []) as any[]).map(normalizePromotion);
     const gr = (zl: number) => Math.round(zl * 100);
     const many = (n: number, one: string, few: string, lots: string) => (n === 1 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? few : lots);
@@ -153,10 +163,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         discount += d;
 
         const el = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-        el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = `/produkt/${p.slug}/`; });
+        el.querySelectorAll<HTMLAnchorElement>('[data-link]').forEach((a) => { a.href = hrefL(LANG, `/produkt/${p.slug}/`); });
         if (p.image) { const img = el.querySelector<HTMLImageElement>('img')!; img.src = imgUrl(p.image, 320); img.hidden = false; }
         el.querySelector('.ct__name')!.innerHTML = typoSafe(p.name);
-        const unit = p.price !== null ? `${pln.format(p.price)} / szt.` : '';
+        const unit = p.price !== null ? `${pln.format(p.price)} ${T('ct.perPcs')}` : '';
         el.querySelector('[data-meta]')!.textContent = [p.size, unit, d ? `rabat −${pln.format(d)}` : ''].filter(Boolean).join(' · ');
         if (p.leadTime && !out) { const lt = el.querySelector<HTMLElement>('[data-lead]')!; lt.lastElementChild!.textContent = p.leadTime; lt.hidden = false; }
         if (out) {
@@ -190,13 +200,15 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         if (!nt) continue;
         const t = nt.tier;
         const add = t.min - i.qty;
-        const unitWord = p.bundles ? many(t.min, 'opakowanie', 'opakowania', 'opakowań') : 'szt.';
+        const unitWord = p.bundles ? (LANG === 'en' ? (t.min === 1 ? 'pack' : 'packs') : many(t.min, 'opakowanie', 'opakowania', 'opakowań')) : T('ct.pcs');
         offers.push({
           title: t.type === 'percent'
-            ? `Przy ${t.min} ${unitWord} zapłacisz ${t.value}% mniej`
-            : `Przy ${t.min} ${unitWord} zapłacisz ${describeDiscount('amount', t.value).slice(1)} mniej za każde`,
-          text: p.bundles ? `${p.name}: ${t.min} ${many(t.min, 'opakowanie', 'opakowania', 'opakowań')} to około ${t.min} ${many(t.min, 'miesiąc', 'miesiące', 'miesięcy')} kuracji.` : `Dotyczy: ${p.name}.`,
-          btn: add === 1 ? 'Dodaj 1 szt.' : `Uzupełnij do ${t.min}`,
+            ? `${T('up.at')} ${t.min} ${unitWord} ${T('up.payLess')} ${t.value}% ${T('up.less')}`
+            : `${T('up.at')} ${t.min} ${unitWord} ${T('up.payLess')} ${describeDiscount('amount', t.value).slice(1)} ${T('up.less')} ${T('up.each')}`,
+          text: p.bundles
+            ? (LANG === 'en' ? `${p.name}: ${t.min} ${t.min === 1 ? 'pack' : 'packs'} ${T('up.about')} ${t.min} ${t.min === 1 ? 'month' : 'months'} ${T('up.ofUse')}.` : `${p.name}: ${t.min} ${many(t.min, 'opakowanie', 'opakowania', 'opakowań')} to około ${t.min} ${many(t.min, 'miesiąc', 'miesiące', 'miesięcy')} kuracji.`)
+            : `${T('up.applies')} ${p.name}.`,
+          btn: add === 1 ? T('up.add1') : `${T('up.fillTo')} ${t.min}`,
           apply: () => setQty(p.slug, t.min),
         });
       }
@@ -209,8 +221,8 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         if (!missing.length || prods.some((x) => !x || isOut(x))) continue;
         offers.push({
           title: promoLabel(b),
-          text: `Dodaj ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} - za zestaw zapłacisz ${b.type === 'percent' ? `${b.value}%` : describeDiscount('amount', b.value).slice(1)} mniej.`,
-          btn: missing.length === 1 ? 'Dodaj do koszyka' : 'Dodaj zestaw',
+          text: `${T('up.add')} ${missing.map((it, k) => `${prods[k]!.name}${it.qty - qtyOf(it.product_id) > 1 ? ` × ${it.qty - qtyOf(it.product_id)}` : ''}`).join(', ')} ${T('up.forSet')} ${b.type === 'percent' ? `${b.value}%` : describeDiscount('amount', b.value).slice(1)} ${T('up.lessSet')}`,
+          btn: missing.length === 1 ? T('up.addCart') : T('up.addSet'),
           apply: () => missing.forEach((it) => setQty(it.product_id, it.qty)),
         });
       }
@@ -228,7 +240,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       $('[data-total]').textContent = pln.format(subtotal - discount);
       const save = $<HTMLElement>('[data-save]');
       save.hidden = discount <= 0;
-      save.textContent = discount > 0 ? `Oszczędzasz ${pln.format(discount)}` : '';
+      save.textContent = discount > 0 ? `${T('ct.save')} ${pln.format(discount)}` : '';
       const cta = $<HTMLAnchorElement>('[data-checkout]');
       if (blocked) cta.setAttribute('aria-disabled', 'true'); else cta.removeAttribute('aria-disabled');
       $<HTMLElement>('[data-blocked]').hidden = !blocked;
