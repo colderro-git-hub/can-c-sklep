@@ -4,36 +4,41 @@ export const prerender = false;
 import Icon from '../../components/Icon.astro';
 // Potwierdzenie zamówienia wg „S9 · Potwierdzenie” (Laluna). Dane z /api/zamowienie/status.
 import Base from '../../layouts/Base.astro';
+import { langOf, href as hrefL } from '../../lib/i18n';
+import { t } from '../../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 ---
-<Base title="Dziękujemy za zamówienie | Can-C" description="Potwierdzenie zamówienia w sklepie Can-C." noindex noReferrer>
+<Base title={T('ty.metaTitle')} description={T('ty.metaDesc')} noindex noReferrer>
   <section class="w ty" data-thanks>
-    <ol class="steps" aria-label="Etapy zamówienia">
-      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Koszyk</li>
+    <ol class="steps" aria-label={T('steps.label')}>
+      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>{T('steps.cart')}</li>
       <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
-      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Dostawa i płatność</li>
+      <li class="steps__i steps__i--done"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>{T('steps.delivery')}</li>
       <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
-      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">3</span>Potwierdzenie</li>
+      <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">3</span>{T('steps.confirm')}</li>
     </ol>
 
     <div class="row ty__hero">
       <div class="ty__head">
         <div class="ty__state" data-state="checking">
-          <h1 class="h1">Sprawdzamy płatność…</h1>
-          <p class="p p--lg">To zwykle trwa kilka sekund. Nie zamykaj tej strony.</p>
+          <h1 class="h1">{T('ty.checking')}</h1>
+          <p class="p p--lg">{T('ty.checkingP')}</p>
         </div>
         <div class="ty__state" data-state="paid" hidden>
-          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>Płatność przyjęta</span>
-          <h1 class="h1">Dziękujemy<br />za zamówienie</h1>
-          <p class="p p--lg ty__lead">Zamówienie nr <strong data-number></strong> jest opłacone. Potwierdzenie wysłaliśmy na <strong data-email>Twój e-mail</strong>. Gdy paczka zostanie nadana, wyślemy numer przesyłki.</p>
+          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>{T('ty.paidBadge')}</span>
+          <h1 class="h1">{T('ty.thanks1')}<br />{T('ty.thanks2')}</h1>
+          <p class="p p--lg ty__lead">{T('ty.paidLead1')} <strong data-number></strong> {T('ty.paidLead2')} <strong data-email>{T('ty.yourEmail')}</strong>{T('ty.paidLead3')}</p>
         </div>
         <div class="ty__state" data-state="pending" hidden>
-          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>Czekamy na płatność</span>
+          <span class="peach ty__badge"><span class="dot" aria-hidden="true"></span>{T('ty.waitBadge')}</span>
           <h1 class="h1" data-pending-title></h1>
           <div class="p p--lg ty__lead" data-pending-body></div>
         </div>
         <div class="ty__state" data-state="error" hidden>
-          <h1 class="h1">Nie znaleźliśmy<br />zamówienia</h1>
-          <p class="p p--lg">Jeśli płatność została pobrana, <a href="/kontakt/">napisz do nas</a> - wyjaśnimy to od razu.</p>
+          <h1 class="h1">{T('ty.nf1')}<br />{T('ty.nf2')}</h1>
+          <p class="p p--lg">{T('ty.nfP1')} <a href={L('/kontakt/')}>{T('ty.nfP2')}</a> {T('ty.nfP3')}</p>
         </div>
       </div>
       <div class="fl ty__leaf" aria-hidden="true"></div>
@@ -41,60 +46,64 @@ import Base from '../../layouts/Base.astro';
 
     <p class="ty__notice" data-notice-box hidden role="status"></p>
 
-    <ol class="g4 ty__track" aria-label="Status zamówienia" data-track hidden></ol>
+    <ol class="g4 ty__track" aria-label={T('ty.status')} data-track hidden></ol>
 
     <div class="row ty__grid" data-order hidden>
       <div class="ty__main">
         <div class="ty__mhead">
-          <h2 class="ty__h2">Twoje zamówienie</h2>
+          <h2 class="ty__h2">{T('ty.yourOrder')}</h2>
           <span class="k" data-meta></span>
         </div>
-        <div class="ty__items" data-items role="list" aria-label="Zamówione produkty"></div>
+        <div class="ty__items" data-items role="list" aria-label={T('ty.items')}></div>
         <div class="ty__sum" data-totals></div>
         <div class="ty__foot">
-          <span>Masz pytanie albo widzisz błąd w danych? Napisz na <a data-contact-mail href="/kontakt/">adres sklepu</a> i podaj numer zamówienia.</span>
-          <span class="ty__muted">Możesz odstąpić od umowy w ciągu 14 dni od otrzymania paczki. <a href="/odstapienie-od-umowy/">Jak zwrócić produkt</a></span>
+          <span>{T('ty.q1')} <a data-contact-mail href={L('/kontakt/')}>{T('ty.q2')}</a> {T('ty.q3')}</span>
+          <span class="ty__muted">{T('ty.withdraw')} <a href={L('/odstapienie-od-umowy/')}>{T('ty.howReturn')}</a></span>
         </div>
         <div class="ty__actions" data-actions-in></div>
       </div>
 
       <aside class="fl ty__side">
         <div class="ty__dark" data-bank-box hidden>
-          <h2 class="ty__ct">Dane do przelewu</h2>
-          <span class="ty__soft">Przelew bankowy · czeka na potwierdzenie</span>
+          <h2 class="ty__ct">{T('ty.bankData')}</h2>
+          <span class="ty__soft">{T('ty.bankWait')}</span>
           <div data-bank-rows></div>
-          <span class="ty__soft" style="padding-top:10px">Przelej dokładną kwotę na powyższy numer. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty.</span>
+          <span class="ty__soft" style="padding-top:10px">{T('ty.bankNote')}</span>
         </div>
         <div class="ty__card" data-pay-box>
-          <h2 class="ty__ct">Płatność</h2>
+          <h2 class="ty__ct">{T('ty.payment')}</h2>
           <div data-payment></div>
         </div>
         <div class="ty__card">
-          <h2 class="ty__ct">Dostawa</h2>
+          <h2 class="ty__ct">{T('ty.delivery')}</h2>
           <div data-delivery></div>
         </div>
         <div class="ty__card" data-invoice-box hidden>
-          <h2 class="ty__ct">Dane do faktury</h2>
+          <h2 class="ty__ct">{T('ty.invoice')}</h2>
           <div data-invoice></div>
         </div>
         <div class="ty__card" data-note-box hidden>
-          <h2 class="ty__ct">Uwagi do zamówienia</h2>
+          <h2 class="ty__ct">{T('ty.notes')}</h2>
           <p class="ty__pre" data-note></p>
         </div>
       </aside>
     </div>
 
-    <p class="p" data-no-details hidden style="margin-top:45px">Szczegóły zamówienia znajdziesz w e-mailu z potwierdzeniem i na <a href="/konto/">koncie w sklepie</a>.</p>
+    <p class="p" data-no-details hidden style="margin-top:45px">{T('ty.noDetails1')} <a href={L('/konto/')}>{T('ty.noDetails2')}</a>.</p>
 
     <div class="ty__actions" data-actions hidden>
-      <a href="/" class="btn" data-act="shop">Wróć do sklepu</a>
-      <a href="/konto/" class="btn btn-o" data-act="account">Moje zamówienia</a>
-      <a href="/koszyk/" class="btn btn-o" data-act="cart" hidden>Wróć do koszyka</a>
+      <a href={L('/')} class="btn" data-act="shop">{T('ty.backShop')}</a>
+      <a href={L('/konto/')} class="btn btn-o" data-act="account">{T('ty.myOrders')}</a>
+      <a href={L('/koszyk/')} class="btn btn-o" data-act="cart" hidden>{T('ty.backCart')}</a>
     </div>
   </section>
 </Base>
 
 <script>
+  import { t as tt } from '../../i18n/ui';
+  import { href as hrefL, price as fmtPrice } from '../../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
+  const T = (k: Parameters<typeof tt>[1]) => tt(LANG, k);
   import { clearCart } from '../../lib/cart';
   import { trackPurchase, calcTax } from '../../lib/analytics';
   import { typoSafe } from '../../lib/typography';
@@ -114,10 +123,10 @@ import Base from '../../layouts/Base.astro';
 
   const root = document.querySelector<HTMLElement>('[data-thanks]')!;
   const q = <T extends HTMLElement>(s: string) => root.querySelector<T>(s)!;
-  const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
+  const pln = { format: (zl: number) => fmtPrice(LANG, Math.round(zl * 100)) };
   const zl = (g: number) => pln.format(g / 100);
   const esc = (v: unknown) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-  const when = (iso: string) => new Date(iso).toLocaleString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const when = (iso: string) => new Date(iso).toLocaleString(LANG === 'en' ? 'en-GB' : 'pl-PL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   const phone = (p: string) => p.replace(/^\+?48/, '').replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
 
   function renderDetails(o: Status, paid: boolean) {
@@ -127,36 +136,36 @@ import Base from '../../layouts/Base.astro';
     if (!d) return;
     if (d.email) root.querySelectorAll('[data-email]').forEach((el) => { el.textContent = d.email; });
 
-    q('[data-meta]').textContent = `Nr ${o.number} · złożone ${when(d.createdAt)}`;
+    q('[data-meta]').textContent = `${T('ty.no')} ${o.number} · ${T('ty.placed')} ${when(d.createdAt)}`;
 
     q('[data-items]').innerHTML = d.items.map((i) => `
       <div class="ty__item" role="listitem">
         <a class="ty__img" href="/produkt/${esc(i.slug)}/" tabindex="-1" aria-hidden="true">${i.image ? `<img src="${esc(imgUrl(i.image, 160))}" alt="" width="66" height="66" loading="lazy" />` : ''}</a>
         <span class="ty__info">
-          <a class="ty__name" href="/produkt/${esc(i.slug)}/">${typoSafe(i.name)}</a>
-          <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · rabat −${zl(i.discount)}` : ''}</span>
+          <a class="ty__name" href="${hrefL(LANG, `/produkt/${esc(i.slug)}/`)}">${typoSafe(i.name)}</a>
+          <span class="k">${i.qty} × ${zl(i.unitPrice)}${i.discount ? ` · ${T('ty.discount')} −${zl(i.discount)}` : ''}</span>
           ${d.shippingTime ? '' : `<span class="k">${esc(i.leadTime)}</span>`}
         </span>
         <span class="ty__itotal">${zl(i.total)}</span>
       </div>`).join('');
 
-    const rows: [string, string, string?][] = [['Produkty', zl(d.subtotal)]];
+    const rows: [string, string, string?][] = [[T('ty.products'), zl(d.subtotal)]];
     // Promocje po nazwie; starsze zamówienia (bez zapisanych promocji) - jedna suma
     const promos = d.promotions || [];
     if (promos.length) promos.forEach((p) => rows.push([p.name, `−${zl(p.amount)}`]));
-    else if (d.bundleDiscount) rows.push(['Rabat', `−${zl(d.bundleDiscount)}`]);
+    else if (d.bundleDiscount) rows.push([T('ty.rebate'), `−${zl(d.bundleDiscount)}`]);
     if (d.code && d.codeAmount) rows.push([`Kod rabatowy ${d.code}`, `−${zl(d.codeAmount)}`]);
-    rows.push(['Dostawa', d.shipping ? zl(d.shipping) : 'Bezpłatna', d.shipping ? '' : 'b']);
+    rows.push([T('ty.delivery'), d.shipping ? zl(d.shipping) : T('ty.free'), d.shipping ? '' : 'b']);
     q('[data-totals]').innerHTML = rows.map(([k, v, c]) => `<div class="srow"><span>${esc(k)}</span><span${c ? ' style="font-weight:400"' : ''}>${esc(v)}</span></div>`).join('')
-      + `<div class="total-row" style="margin-top:4px;border-color:var(--image)"><span>Razem${paid ? ' zapłacono' : ' do zapłaty'}</span><span>${zl(o.total)}</span></div>`
-      + '<span class="k">Ceny zawierają podatek VAT.</span>';
+      + `<div class="total-row" style="margin-top:4px;border-color:var(--image)"><span>${T('ty.total')}${paid ? T('ty.paidSuffix') : T('ty.dueSuffix')}</span><span>${zl(o.total)}</span></div>`
+      + `<span class="k">${T('ty.vat')}</span>`;
 
     const dv = d.delivery;
     const who = [dv.name, dv.phone ? `tel. ${phone(dv.phone)}` : ''].filter(Boolean).map(esc).join('<br>');
     q('[data-delivery]').innerHTML = dv.method === 'inpost_locker'
-      ? `<span class="ty__strong">Paczkomat InPost ${esc(dv.point || '')}</span>${dv.pointName ? `<span>${esc(dv.pointName)}</span>` : ''}<span>${who}</span>`
-      : `<span class="ty__strong">Kurier</span><span>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}${dv.phone ? `<br>tel. ${esc(phone(dv.phone))}` : ''}</span>`;
-    if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<span class="k">${esc(d.shippingTime)}${paid ? '' : ' Termin liczymy od zaksięgowania płatności.'}</span>`);
+      ? `<span class="ty__strong">${T('ty.lockerPrefix')} ${esc(dv.point || '')}</span>${dv.pointName ? `<span>${esc(dv.pointName)}</span>` : ''}<span>${who}</span>`
+      : `<span class="ty__strong">${T('ty.courier')}</span><span>${[dv.name, dv.street, [dv.postcode, dv.city].filter(Boolean).join(' ')].filter(Boolean).map(esc).join('<br>')}${dv.phone ? `<br>${T('ty.tel')} ${esc(phone(dv.phone))}` : ''}</span>`;
+    if (d.shippingTime) q('[data-delivery]').insertAdjacentHTML('beforeend', `<span class="k">${esc(d.shippingTime)}${paid ? '' : T('ty.timeFromPay')}</span>`);
 
     const bankData = d.payment.bank;
     // Przelew nieopłacony: ciemna karta z danymi do skopiowania; w pozostałych przypadkach zwykła karta płatności
@@ -164,25 +173,25 @@ import Base from '../../layouts/Base.astro';
     q('[data-bank-box]').hidden = !showBank;
     q('[data-pay-box]').hidden = showBank;
     if (showBank && bankData) {
-      const rowsB: [string, string][] = [['Numer rachunku', bankData.account], ['Tytuł przelewu', bankData.title], ['Kwota', zl(bankData.amount)]];
+      const rowsB: [string, string][] = [[T('ty.account'), bankData.account], [T('ty.title'), bankData.title], [T('ty.amount'), zl(bankData.amount)]];
       q('[data-bank-rows]').innerHTML = rowsB.map(([k, v]) => `
         <div class="ty__brow"><span class="ty__soft">${esc(k)}</span>
-          <div class="ty__copy"><span class="ty__bval">${esc(v)}</span><button type="button" class="ty__cb" data-copy="${esc(v)}" aria-label="Kopiuj: ${esc(k)}">Kopiuj</button></div>
+          <div class="ty__copy"><span class="ty__bval">${esc(v)}</span><button type="button" class="ty__cb" data-copy="${esc(v)}" aria-label="${T('ty.copy')}: ${esc(k)}">${T('ty.copy')}</button></div>
         </div>`).join('');
     }
     q('[data-payment]').innerHTML = `<span class="ty__strong">${esc(d.payment.provider)}</span>${d.payment.method ? `<span>${esc(d.payment.method)}</span>` : ''}`
-      + `<span class="${paid ? 'ty__ok' : ''}">${paid ? `Opłacone${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : 'Czeka na potwierdzenie'}</span>`;
+      + `<span class="${paid ? 'ty__ok' : ''}">${paid ? `${T('ty.paid')}${d.paidAt ? ` ${esc(when(d.paidAt))}` : ''}` : T('ty.awaiting')}</span>`;
 
     // Oś statusu
     // Kroki: 1 Przyjęte, 2 Opłacone, 3 Kompletowanie, 4 Wysłane, 5 Dostarczone
     const stepNo = !paid ? 1 : o.status === 'completed' ? 5 : o.status === 'shipped' ? 4 : o.status === 'packing' ? 3 : 2;
-    const ship = dv.method === 'inpost_locker' ? 'InPost Paczkomat' : 'Kurier';
+    const ship = dv.method === 'inpost_locker' ? T('ty.lockerShort') : T('ty.courier');
     const steps: [string, string][] = [
-      ['Przyjęte', when(d.createdAt)],
-      ['Opłacone', paid ? (d.paidAt ? when(d.paidAt) : 'opłacone') : (bankData ? 'czekamy na przelew' : 'czekamy na potwierdzenie')],
-      ['Kompletowanie', stepNo >= 3 ? 'przygotowujemy paczkę' : (bankData && !paid ? 'po zaksięgowaniu wpłaty' : 'wkrótce')],
-      ['Wysłane', stepNo >= 4 ? 'w drodze' : (d.shippingTime || 'wkrótce')],
-      ['Dostarczone', ship],
+      [T('ty.s1'), when(d.createdAt)],
+      [T('ty.s2'), paid ? (d.paidAt ? when(d.paidAt) : T('ty.paidLower')) : (bankData ? T('ty.waitTransfer') : T('ty.waitConfirm'))],
+      [T('ty.s3'), stepNo >= 3 ? T('ty.preparing') : (bankData && !paid ? T('ty.afterPayment') : T('ty.soon'))],
+      [T('ty.s4'), stepNo >= 4 ? T('ty.onTheWay') : (d.shippingTime || T('ty.soon'))],
+      [T('ty.s5'), ship],
     ];
     const track = q('[data-track]');
     track.hidden = false;
@@ -197,7 +206,7 @@ import Base from '../../layouts/Base.astro';
     }).join('');
 
     q('[data-invoice-box]').hidden = !d.invoice;
-    if (d.invoice) q('[data-invoice]').innerHTML = `<p>${esc(d.invoice.company)}<br>NIP ${esc(d.invoice.nip)}<br>${esc(d.invoice.street)}<br>${esc(d.invoice.postcode)} ${esc(d.invoice.city)}</p><p class="muted small">Fakturę wyślemy e-mailem.</p>`;
+    if (d.invoice) q('[data-invoice]').innerHTML = `<p>${esc(d.invoice.company)}<br>${LANG === 'en' ? 'Tax ID' : 'NIP'} ${esc(d.invoice.nip)}<br>${esc(d.invoice.street)}<br>${esc(d.invoice.postcode)} ${esc(d.invoice.city)}</p><p class="muted small">${T('ty.invoiceMail')}</p>`;
     q('[data-note-box]').hidden = !d.note;
     if (d.note) q('[data-note]').textContent = d.note;
 
@@ -208,17 +217,17 @@ import Base from '../../layouts/Base.astro';
     const acts = q('[data-actions]');
     q('[data-actions-in]').append(...[...acts.children]);
     const mail = q<HTMLAnchorElement>('[data-contact-mail]');
-    mail.textContent = d.contact.email; mail.href = `mailto:${d.contact.email}?subject=${encodeURIComponent(`Zamówienie nr ${o.number}`)}`;
+    mail.textContent = d.contact.email; mail.href = `mailto:${d.contact.email}?subject=${encodeURIComponent(`${T('ty.mailSubject')} ${o.number}`)}`;
   }
 
   const fillPending = (o: Status | undefined, el: HTMLElement, bodyEl: HTMLElement) => {
     const bank = !!(o?.details?.payment?.bank);
     if (bank) {
-      el.innerHTML = 'Zamówienie przyjęte -<br>czekamy na przelew';
-      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> zostało przyjęte. Wyślemy je po zaksięgowaniu przelewu. Dane do przelewu wysłaliśmy e-mailem - sprawdź też folder spam.`;
+      el.innerHTML = `${T('ty.bankTitle1')}<br>${T('ty.bankTitle2')}`;
+      bodyEl.innerHTML = `${T('ty.orderWord')} <strong>${o?.number}</strong> ${T('ty.bankBody1')}`;
     } else {
-      el.innerHTML = 'Zamówienie jest<br>zapisane';
-      bodyEl.innerHTML = `Zamówienie nr <strong>${o?.number}</strong> czeka na potwierdzenie płatności z Przelewy24. Gdy wpłata dotrze, wyślemy e-mail z potwierdzeniem.<br><br>Jeśli płatność została przerwana, wróć do koszyka i złóż zamówienie ponownie albo <a href="/kontakt/">napisz do nas</a>. Nieopłacone zamówienie anulujemy automatycznie po 24 godzinach.`;
+      el.innerHTML = `${T('ty.pendTitle1')}<br>${T('ty.pendTitle2')}`;
+      bodyEl.innerHTML = `${T('ty.orderWord')} <strong>${o?.number}</strong> ${T('ty.pendBody1')}<br><br>${T('ty.pendBody2')} <a href="${hrefL(LANG, '/kontakt/')}">${T('ty.nfP2')}</a>${T('ty.pendBody3')}`;
     }
   };
 
@@ -241,7 +250,7 @@ import Base from '../../layouts/Base.astro';
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-copy]');
     if (!b) return;
     try { await navigator.clipboard.writeText(b.dataset.copy!.replace(/\s+zł$/, '')); } catch { /* brak uprawnień */ }
-    root.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((x) => { x.textContent = x === b ? 'Skopiowano' : 'Kopiuj'; });
+    root.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((x) => { x.textContent = x === b ? T('ty.copied') : T('ty.copy'); });
   });
 
   const id = new URLSearchParams(location.search).get('id');
