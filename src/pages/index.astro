@@ -379,6 +379,7 @@ const bundleRows = setQtys.map((qty) => {
   <section class="section section--band sec-gap">
     <div class="container rv2">
       <div class="rv2__side">
+        <div class="rv2__intro">
         <h2 class="h2" style={fs(reviewsCms, 'h2')} set:html={lines(reviewsCms.h2).map(escHtml).join('<br/>')} />
         {reviewsCms.lead && <p class="lead" style={fs(reviewsCms, 'lead', 'text-align:left')}>{reviewsCms.lead}</p>}
         {rvCount > 0 && (
@@ -387,10 +388,12 @@ const bundleRows = setQtys.map((qty) => {
             <div class="rv2__meta"><Stars value={rvAvg} size={18} label={`Średnia ocena ${rvAvg} na 5`} /><span>na podstawie {rvCount} {opinii(rvCount)}</span></div>
           </div>
         )}
+        {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="link-arrow"><Icon name="arrow-right" size={16} />{reviewsCms.cta_label}</a>}
+        </div>
         {homeRv.small.length > 0 && (
           <div class="rv2__small">
-            {homeRv.small.map((r) => (
-              <figure class="rv2__mini">
+            {homeRv.small.map((r, i) => (
+              <figure class={`rv2__mini rv2__mini--${i + 1}`}>
                 <Stars value={r.rating} size={14} />
                 <blockquote>„{r.body}”</blockquote>
                 <figcaption>{r.author}</figcaption>
@@ -398,7 +401,6 @@ const bundleRows = setQtys.map((qty) => {
             ))}
           </div>
         )}
-        {reviewsCms.cta_label && <a href={reviewsCms.cta_href} class="link-arrow"><Icon name="arrow-right" size={16} />{reviewsCms.cta_label}</a>}
       </div>
       <div class="rv2__art" data-rv>
         <div class="rv2__img">
@@ -473,7 +475,7 @@ const bundleRows = setQtys.map((qty) => {
 
   <!-- NEWSLETTER (zapis z obowiązkową zgodą i potwierdzeniem e-mailem) -->
   {visible(newsletterCms) && (
-  <section class="w sec-gap" id="newsletter">
+  <section class="w sec-gap" id="newsletter" style="margin-bottom:90px">
     <div class="row cta-box">
       <div class="fl cta-box__l">
         <h2 class="h2" style={fs(newsletterCms, 'h2')} set:html={lines(newsletterCms.h2).map(escHtml).join('<br/>')} />
@@ -522,19 +524,24 @@ const bundleRows = setQtys.map((qty) => {
   .hero { overflow: hidden; container-type: inline-size; }
   /* Jedno zdjęcie na cały kształt: każdy fragment ma kopię zdjęcia przesuniętą o swoją pozycję (cqw = szerokość hero) */
   /* Opinie (wariant 1): tekst po lewej, zdjęcie w kształcie łuku (duży zaokrąglony lewy górny róg) z kartą opinii */
-  .rv2 { display: grid; grid-template-columns: calc((100% - 2 * var(--gx)) / 3 * 2 + var(--gx)) minmax(0, 1fr); column-gap: var(--gx); align-items: center; }
-  .rv2__side { display: flex; flex-direction: column; align-items: flex-start; gap: 24px; }
+  /* Wspólny schemat sekcji Korzyści, Dlaczego Can-C i Opinie: kolumny 3 : 4 : 5, odstęp 14 px (jak karty produktów i zestawów).
+     Elementy pośrednie (rv2__side, rv2__small, why2__grid) mają display: contents - ich dzieci leżą bezpośrednio w siatce. */
+  .rv2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr); gap: 14px; align-items: stretch; }
+  .rv2__side, .rv2__small { display: contents; }
+  .rv2__intro { grid-column: 1 / 3; grid-row: 1; display: flex; flex-direction: column; align-items: flex-start; gap: 24px; padding-bottom: 18px; }
+  .rv2__mini--1 { grid-column: 1; grid-row: 2; }
+  .rv2__mini--2 { grid-column: 2; grid-row: 2; }
+  .rv2__art { grid-column: 3; grid-row: 1 / 3; align-self: center; }
   .rv2__score { display: flex; align-items: center; gap: 18px; }
   .rv2__avg { font-size: 4rem; line-height: 1; font-weight: 300; }
   .rv2__meta { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
-  .rv2__small { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gx); width: 100%; }
   .rv2__mini { margin: 0; background: var(--surface); border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
   .rv2__mini blockquote { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; }
   .rv2__mini figcaption { font-size: 14px; color: var(--muted); }
   .rv2__art { position: relative; }
   .rv2__img { aspect-ratio: 5 / 4; min-height: 380px; border-radius: 90% 32px 32px 32px / 90% 32px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .rv2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .rv2__card { position: absolute; left: -64px; bottom: 32px; width: min(400px, calc(100% + 32px)); background: var(--surface); border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 16px 40px rgba(20, 28, 43, .12); }
+  .rv2__card { position: absolute; left: -48px; bottom: 32px; width: min(400px, calc(100% + 34px)); background: var(--surface); border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 16px 40px rgba(20, 28, 43, .12); }
   .rv2__slide { margin: 0; display: flex; flex-direction: column; gap: 12px; animation: rv-in .4s ease-out; }
   .rv2__slide[hidden] { display: none; }
   .rv2__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
@@ -551,12 +558,19 @@ const bundleRows = setQtys.map((qty) => {
   @keyframes rv-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   @media (prefers-reduced-motion: reduce) { .rv2__slide { animation: none; } }
   @media (max-width: 1000px) {
-    .rv2 { grid-template-columns: minmax(0, 1fr); gap: 32px; }
-    .rv2__art { order: -1; padding-left: 0; padding-bottom: 120px; }
+    /* Tablet: zdjęcie z kartą na górze, pod nim nagłówek, potem 2 opinie obok siebie */
+    .rv2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .rv2__art { grid-column: 1 / -1; grid-row: 1; padding-bottom: 120px; }
+    .rv2__intro { grid-column: 1 / -1; grid-row: 2; padding: 18px 0 0; }
+    .rv2__mini--1 { grid-column: 1; grid-row: 3; }
+    .rv2__mini--2 { grid-column: 2; grid-row: 3; }
     .rv2__img { min-height: 0; border-radius: 80% 24px 24px 24px / 80% 24px 24px 24px; }
     .rv2__card { left: 16px; right: 16px; bottom: 0; width: auto; }
   }
-  @media (max-width: 600px) { .rv2__small { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 600px) {
+    .rv2 { grid-template-columns: minmax(0, 1fr); }
+    .rv2__mini--1, .rv2__mini--2 { grid-column: 1; grid-row: auto; }
+  }
   .hero-art { position: absolute; inset: 0; pointer-events: none; }
   /* Karuzela hero: przejście slajdów i znacznik (paski z postępem) */
   :global(.hs-fade) { transition: opacity .45s ease; }
@@ -666,10 +680,7 @@ const bundleRows = setQtys.map((qty) => {
   .cta-box__r { width: 493px; }
 
   /* Układ sekcji: kolumna boczna (408 px) + treść; poniżej 1000 px jedna kolumna */
-  /* Wspólna siatka sekcji strony głównej: 3 równe kolumny i ten sam odstęp (Korzyści, Dlaczego Can-C, Opinie)
-     oraz te same marginesy górny i dolny każdej sekcji (poza hero i stopką) */
-  .sec-gap { margin-top: 0; padding-top: var(--sec-y); padding-bottom: var(--sec-y); }
-  :global(.section).sec-gap { padding-top: var(--sec-y); padding-bottom: var(--sec-y); }
+  .sec-gap { margin-top: 90px; }
   .sec-line { border-top: 1px solid var(--line); padding-top: 90px; }
   .bundles-grid { margin-top: 45px; }
   .products-grid { margin-top: 90px; }
@@ -679,8 +690,8 @@ const bundleRows = setQtys.map((qty) => {
   .home-side { width: 408px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; }
   /* Korzyści (wariant A): siatka z obszarami - na telefonie kolejność nagłówek → zdjęcie → lista → karta */
   .ben {
-    display: grid; gap: 24px var(--gx); align-items: center;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: grid; gap: 24px 14px; align-items: center;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr);
     grid-template-rows: 1fr auto auto 1fr;
     grid-template-areas: "card img ." "card img head" "card img body" "card img .";
   }
@@ -691,21 +702,24 @@ const bundleRows = setQtys.map((qty) => {
   .ben__card-p { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); }
   .ben__card-list { margin-top: 10px; }
   .ben__img { grid-area: img; align-self: stretch; min-height: 560px; border-radius: 300px 40px 40px 40px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
-  .ben__head { grid-area: head; display: flex; flex-direction: column; gap: 24px; }
-  .ben__body { grid-area: body; display: flex; flex-direction: column; align-items: flex-start; gap: 32px; padding-top: 8px; }
+  /* Tekst przy zdjęciu: lekkie wcięcie (18 px), żeby przy odstępie 14 px nie przylegał do zdjęcia - tak samo w „Dlaczego Can-C” */
+  .ben__head { grid-area: head; display: flex; flex-direction: column; gap: 24px; padding-left: 18px; }
+  .ben__body { grid-area: body; display: flex; flex-direction: column; align-items: flex-start; gap: 32px; padding-top: 8px; padding-left: 18px; }
   .ben__list { font-size: 18px; line-height: 28px; gap: 14px; color: var(--muted); }
   .ben__ph { font-size: 14px; font-weight: 300; color: var(--muted); }
   /* „Dlaczego Can-C” - mozaika: punkt 01 wyróżniony (2 rzędy, turkusowe tło), 04 na całą szerokość; grafika i tekst po prawej */
-  .why2 { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); grid-template-areas: "grid side"; column-gap: var(--gx); align-items: stretch; }
-  /* Mozaika = 2 kolumny siatki: ten sam odstęp wewnątrz co między kolumnami, więc krawędzie kart wyrównują się z innymi sekcjami */
-  .why2 { grid-template-columns: calc((100% - 2 * var(--gx)) / 3 * 2 + var(--gx)) minmax(0, 1fr); }
-  .why2__grid { grid-area: grid; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--gx); }
-  .why2__side { grid-area: side; display: flex; flex-direction: column; gap: 24px; }
+  .why2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 4fr) minmax(0, 5fr); gap: 14px; align-items: stretch; }
+  .why2__grid { display: contents; }
+  .why2__side { grid-column: 3; grid-row: 1 / 4; display: flex; flex-direction: column; gap: 24px; padding-left: 18px; }
+  .why2__card--1 { grid-column: 1; grid-row: 1 / 3; }
+  .why2__card--2 { grid-column: 2; grid-row: 1; }
+  .why2__card--3 { grid-column: 2; grid-row: 2; }
+  .why2__card--4 { grid-column: 1 / 3; grid-row: 3; }
   .why2__img { flex: 1; min-height: 320px; border-radius: 32px 240px 32px 32px; background: var(--image); overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .why2__img img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .why2__card { background: var(--band); border-radius: 32px; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
-  .why2__card--1 { grid-row: span 2; background: var(--accent-soft); justify-content: flex-end; }
-  .why2__card--4 { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 28px; }
+  .why2__card--1 { background: var(--accent-soft); justify-content: flex-end; }
+  .why2__card--4 { flex-direction: row; align-items: center; gap: 28px; }
   .why2__n { font-size: 3rem; line-height: 1; font-weight: 200; color: var(--accent); }
   .why2__card--1 .why2__n { font-size: 4.5rem; }
   .why2__txt { display: flex; flex-direction: column; gap: 10px; }
@@ -714,12 +728,17 @@ const bundleRows = setQtys.map((qty) => {
   .why2__p { margin: 0; font-size: 16px; line-height: 24px; font-weight: 300; color: var(--muted); }
   .why2__card--1 .why2__p { font-size: 18px; line-height: 28px; color: var(--ink); }
   @media (max-width: 1000px) {
-    .why2 { grid-template-columns: minmax(0, 1fr); grid-template-areas: "side" "grid"; gap: 32px; }
+    .why2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .why2__side { grid-column: 1 / -1; grid-row: 1; padding: 0 0 18px; }
+    .why2__card--1 { grid-column: 1; grid-row: 2 / 4; }
+    .why2__card--2 { grid-column: 2; grid-row: 2; }
+    .why2__card--3 { grid-column: 2; grid-row: 3; }
+    .why2__card--4 { grid-column: 1 / -1; grid-row: 4; }
     .why2__img { flex: none; min-height: 0; aspect-ratio: 16 / 9; border-radius: 24px 160px 24px 24px; }
   }
   @media (max-width: 600px) {
-    .why2__grid { grid-template-columns: minmax(0, 1fr); }
-    .why2__card--1 { grid-row: auto; }
+    .why2 { grid-template-columns: minmax(0, 1fr); }
+    .why2__card--1, .why2__card--2, .why2__card--3, .why2__card--4 { grid-column: 1; grid-row: auto; }
     .why2__card--4 { flex-direction: column; align-items: flex-start; gap: 14px; }
     .why2__card { padding: 22px; border-radius: 24px; }
     .why2__n, .why2__card--1 .why2__n { font-size: 2.5rem; }
@@ -736,7 +755,7 @@ const bundleRows = setQtys.map((qty) => {
 
   /* Tablet: zdjęcie i treść obok siebie, karta pod spodem (zdjęcie w karcie po lewej) */
   @media (max-width: 1200px) {
-    .ben { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "img head" "img body" "card card"; gap: 24px 32px; }
+    .ben { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto; grid-template-areas: "img head" "img body" "card card"; gap: 24px 14px; }
     .ben__img { min-height: 420px; border-radius: 240px 32px 32px 32px; }
     .ben__card { display: grid; grid-template-columns: 200px minmax(0, 1fr); grid-auto-rows: auto; column-gap: 32px; align-items: start; }
     .ben__card-img { grid-row: 1 / span 4; height: 220px; }
@@ -750,6 +769,7 @@ const bundleRows = setQtys.map((qty) => {
     .ben__card-img { height: 180px; }
     .ben__list { font-size: 16px; line-height: 24px; }
     .ben__body { gap: 24px; padding-top: 0; }
+    .ben__head, .ben__body { padding-left: 0; }
     .ben__body .btn { width: 100%; }
   }
   @media (max-width: 1380px) {
@@ -770,7 +790,7 @@ const bundleRows = setQtys.map((qty) => {
   @media (max-width: 700px) {
   }
   @media (max-width: 600px) {
-    .sec-gap { margin-top: 0; }
+    .sec-gap { margin-top: 56px; }
     .sec-line { padding-top: 56px; }
     .products-grid { margin-top: 32px; }
     .bundles-grid { margin-top: 32px; }
