@@ -1,0 +1,213 @@
+---
+// Fonty z paczki @fontsource/poppins (tylko używane wagi, alfabet łaciński + polskie znaki)
+import '@fontsource/poppins/latin-200.css';
+import '@fontsource/poppins/latin-ext-200.css';
+import '@fontsource/poppins/latin-300.css';
+import '@fontsource/poppins/latin-ext-300.css';
+import '@fontsource/poppins/latin-400.css';
+import '@fontsource/poppins/latin-ext-400.css';
+import '@fontsource/poppins/latin-500.css';
+import '@fontsource/poppins/latin-ext-500.css';
+import poppins300 from '@fontsource/poppins/files/poppins-latin-300-normal.woff2?url';
+import '../styles/global.css';
+
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getEnv } from '../lib/env';
+import { getSeo, seoPath, SEO_PAGES, orgData, orgJsonLd, breadcrumbJsonLd } from '../lib/seo';
+import { getSite } from '../lib/site-settings';
+import { langOf, plToEn, plPathOf } from '../lib/i18n';
+
+interface Props {
+  title: string;
+  description: string;
+  noindex?: boolean;     // strony z danymi zamówienia - zawsze poza Google
+  noReferrer?: boolean;  // adres strony zawiera identyfikator zamówienia - nie przekazujemy go dalej
+  nav?: string;          // aktywna pozycja menu: krople | kapsulki | k9 | stosowanie | faq | kontakt
+  ogImage?: string;      // obraz do udostępniania tej strony (np. zdjęcie produktu); pierwszeństwo ma ustawienie z panelu
+  ogType?: 'website' | 'product';
+  crumbs?: { name: string; path: string }[]; // okruszki bez strony głównej; domyślnie z rejestru stron SEO
+}
+const { noReferrer = false, nav = '', ogType = 'website' } = Astro.props;
+// Język strony: adresy /en/ obsługuje middleware (locals.lang); Astro.url to adres polski tej samej strony
+const lang = langOf(Astro.locals);
+const plPath = plPathOf(Astro.locals, Astro.url.pathname);
+const enPath = plToEn(plPath);
+const canonical = new URL(lang === 'en' ? ((Astro.locals as any).enPath || enPath) : plPath, 'https://can-c.pl');
+// Wersja angielska jest w budowie - poza Google, dopóki nie zostanie włączona
+
+// SEO z panelu (zakładka SEO): nadpisania tytułu, opisu, obrazu i indeksowania dla tej ścieżki + ustawienia udostępniania.
+// Strony statyczne (koszyk, zamówienie, konto) nie mają dostępu do bazy przy budowaniu - zostają wartości z kodu.
+let seo: Awaited<ReturnType<typeof getSeo>> = { pages: {}, share: {}, org: {}, ai: {}, llms: {}, verify: {}, indexnow: {} };
+let site: Record<string, any> = {};
+try {
+  const env = await getEnv(Astro.locals);
+  seo = await getSeo(env);
+  if (env.SUPABASE_URL) site = await getSite(env);
+} catch { /* strona statyczna */ }
+const ov = seo.pages[seoPath(Astro.url.pathname)] ?? {};
+const title: string = ov.title || Astro.props.title;
+const description: string = ov.description || Astro.props.description;
+const noindex = Astro.props.noindex || ov.noindex === true;
+const siteName = seo.share.siteName || 'Can-C';
+const ogImage = ov.ogImage || Astro.props.ogImage || seo.share.ogImage || '';
+const twitter = (seo.share.twitter || '').replace(/^@?/, '@');
+
+// Dane strukturalne: firma (strona główna i „O nas”) oraz okruszki (strony indeksowane)
+const path = seoPath(Astro.url.pathname);
+const orgLd = !noindex && site.company && (path === '/' || path === '/o-nas/') ? orgJsonLd(seo, site) : null;
+const reg = SEO_PAGES.find((p) => p.path === path);
+const trail = Astro.props.crumbs ?? (reg && path !== '/' ? [{ name: reg.label, path }] : []);
+const crumbLd = !noindex && trail.length && orgData(seo, site).breadcrumbs ? breadcrumbJsonLd([{ name: 'Strona główna', path: '/' }, ...trail]) : null;
+
+---
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <!-- Poppins z własnego serwera (@fontsource): bez połączenia z Google, szybsze pierwsze wyświetlenie -->
+    <link rel="preload" href={poppins300} as="font" type="font/woff2" crossorigin />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Animacje (lib/motion.ts): nagłówki z animacją ukryte do startu skryptu, żeby nie mignęły; przy „ogranicz ruch”
+         albo gdy skrypt się nie wczyta (3 s) - widoczne od razu -->
+    <script is:inline>
+      // Porównanie wyglądu bez cieni: ?cienie=0 (zapamiętane w tej karcie), ?cienie=1 przywraca
+      (function () {
+        try {
+          var c = new URLSearchParams(location.search).get('cienie');
+          if (c === '0' || c === '1') sessionStorage.setItem('canc-cienie', c);
+          if (sessionStorage.getItem('canc-cienie') === '0') document.documentElement.classList.add('no-shadows');
+        } catch (e) {}
+      })();
+    </script>
+    <script is:inline>
+      (function () {
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        var d = document.documentElement;
+        d.classList.add('motion');
+        setTimeout(function () { d.classList.add('motion-ready'); }, 3000);
+      })();
+    </script>
+    <meta name="color-scheme" content="light" />
+    <!-- Favicon z panelu (Ustawienia sklepu): wersja zależna od motywu przeglądarki/systemu.
+         Atrybut media nie działa we wszystkich przeglądarkach, więc przełączamy go też skryptem. -->
+    <link rel="icon" href="/favicon/light" data-favicon />
+    <link rel="apple-touch-icon" href="/favicon/apple" />
+    <script is:inline>
+      (function () {
+        var link = document.querySelector('link[data-favicon]');
+        if (!link || !window.matchMedia) return;
+        var mq = window.matchMedia('(prefers-color-scheme: dark)');
+        var set = function () { link.href = mq.matches ? '/favicon/dark' : '/favicon/light'; };
+        set();
+        if (mq.addEventListener) mq.addEventListener('change', set); else if (mq.addListener) mq.addListener(set);
+      })();
+    </script>
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {!noindex && <link rel="alternate" hreflang="pl" href={new URL(plPath, 'https://can-c.pl')} />}
+    {!noindex && <link rel="alternate" hreflang="en" href={new URL(enPath, 'https://can-c.pl')} />}
+    {!noindex && <link rel="alternate" hreflang="x-default" href={new URL(plPath, 'https://can-c.pl')} />}
+    <!-- Do startu sklepu staging nie może trafić do Google. W dniu startu: zmienna builda PUBLIC_SITE_INDEXABLE=true -->
+    {(noindex || lang === 'en' || import.meta.env.PUBLIC_SITE_INDEXABLE !== 'true') && <meta name="robots" content="noindex, nofollow" />}
+    {noReferrer && <meta name="referrer" content="no-referrer" />}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:locale" content={lang === 'en' ? 'en_GB' : 'pl_PL'} />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+    {ogImage && <meta property="og:image:alt" content={title} />}
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    {twitter.length > 1 && <meta name="twitter:site" content={twitter} />}
+    {seo.verify?.google && <meta name="google-site-verification" content={seo.verify.google} />}
+    {seo.verify?.bing && <meta name="msvalidate.01" content={seo.verify.bing} />}
+    {seo.verify?.meta && <meta name="facebook-domain-verification" content={seo.verify.meta} />}
+    {orgLd && <script type="application/ld+json" set:html={JSON.stringify(orgLd)} />}
+    {crumbLd && <script type="application/ld+json" set:html={JSON.stringify(crumbLd)} />}
+    <!-- Consent Mode v2 + GTM: ID pobierany z /api/ustawienia (działa na stronach statycznych i SSR) -->
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      // Consent Mode v2 - domyślne wartości przed załadowaniem GTM
+      gtag('consent', 'default', {
+        ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied',
+        analytics_storage: 'denied', functionality_storage: 'denied',
+        personalization_storage: 'denied', security_storage: 'granted',
+        wait_for_update: 500, region: ['PL']
+      });
+      gtag('set', 'ads_data_redaction', true);
+      gtag('set', 'url_passthrough', true);
+      // Załaduj GTM gdy tylko znamy ID (pobieramy z /api/ustawienia z cache 5 min)
+      (function() {
+        var cached = null;
+        try { cached = sessionStorage.getItem('canc_gtm'); } catch(e) {}
+        function loadGTM(id) {
+          if (!id || document.querySelector('script[src*="googletagmanager.com/gtm.js"]')) return;
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer',id);
+        }
+        if (cached) { loadGTM(cached); return; }
+        fetch('/api/ustawienia').then(function(r){ return r.json(); }).then(function(d){
+          var id = d && d.gtmId ? d.gtmId : '';
+          try { sessionStorage.setItem('canc_gtm', id); } catch(e) {}
+          loadGTM(id);
+        }).catch(function(){});
+      })();
+    </script>
+  </head>
+  <body>
+
+    <a class="skip" href="#tresc">Przejdź do treści</a>
+    <Header nav={nav} />
+    <main id="tresc">
+      <slot />
+    </main>
+    <Footer />
+    <script>
+      // Aktualne dane sklepu z panelu admina (kontakt, firma) - podmiana w oznaczonych miejscach strony
+      type SiteData = Record<string, string>;
+      const KEY = 'canc-site-v1';
+      const apply = (s: SiteData) => {
+        document.querySelectorAll<HTMLElement>('[data-site]').forEach((el) => {
+          const v = s[el.dataset.site!];
+          if (typeof v !== 'string') return;
+          if (v) { el.textContent = v.replace(/[\u2013\u2014]/g, '-'); el.hidden = false; }
+          else if (el.hasAttribute('data-site-hide-empty')) el.hidden = true;
+        });
+        document.querySelectorAll<HTMLElement>('[data-notice]').forEach((el) => { el.hidden = !(s as any).noticeActive; });
+        // Logo z panelu: obraz zamiast logo tekstowego (osobno nagłówek i stopka)
+        document.querySelectorAll<HTMLImageElement>('img[data-logo]').forEach((img) => {
+          const key = img.dataset.logo!;
+          const url = typeof s[key] === 'string' ? s[key] : undefined;
+          if (url === undefined) return;
+          if (url && img.getAttribute('src') !== url) img.src = url;
+          img.hidden = !url;
+          document.querySelectorAll<HTMLElement>(`[data-logo-text="${key}"]`).forEach((t) => { t.hidden = !!url; });
+        });
+        document.querySelectorAll<HTMLAnchorElement>('[data-site-href]').forEach((el) => {
+          const href = el.dataset.siteHref!.replace(/\{(\w+)\}/g, (_, k) => (s[k] ?? '').replace(k === 'phone' ? /\s/g : /$^/, ''));
+          if (!/\{|:$/.test(href)) el.href = href;
+        });
+      };
+      try {
+        const cached = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+        if (cached && Date.now() - cached.at < 300_000) apply(cached.site);
+        else fetch('/api/ustawienia').then((r) => (r.ok ? r.json() : null)).then((site) => {
+          if (!site) return;
+          apply(site);
+          try { sessionStorage.setItem(KEY, JSON.stringify({ at: Date.now(), site })); } catch { /* tryb prywatny */ }
+        }).catch(() => {});
+      } catch { /* brak pamięci sesji - zostają dane z config.ts */ }
+    </script>
+      <script>
+      import '../lib/motion';
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip { position: absolute; left: 12px; top: -60px; padding: 12px 20px; background: var(--primary); color: var(--surface); z-index: 50; border-radius: var(--r-pill); }
+  .skip:focus { top: 12px; }
+</style>
