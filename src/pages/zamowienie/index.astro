@@ -5,133 +5,138 @@ import Icon from '../../components/Icon.astro';
 import Base from '../../layouts/Base.astro';
 import { products } from '../../data/shop';
 import { FURGONETKA_MAP_KEY } from '../../config';
+import { langOf, href as hrefL } from '../../lib/i18n';
+import { t } from '../../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 
 const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, name, price, bundles: !!bundles, size }));
 ---
-<Base title="Dostawa i płatność | Can-C" description="Złóż zamówienie w sklepie Can-C." noindex>
+<Base title={T('co.metaTitle')} description={T('co.metaDesc')} noindex>
   <section class="co">
     <div class="w co__in">
-      <ol class="steps" aria-label="Etapy zamówienia">
-        <li class="steps__i steps__i--done"><a href="/koszyk/"><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>Koszyk</a></li>
+      <ol class="steps" aria-label={T('steps.label')}>
+        <li class="steps__i steps__i--done"><a href={L('/koszyk/')}><span class="steps__n"><Icon name="check" size={14} stroke={2.5} /></span>{T('steps.cart')}</a></li>
         <li class="steps__sep steps__sep--done" aria-hidden="true"></li>
-        <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">2</span>Dostawa i płatność</li>
+        <li class="steps__i steps__i--now" aria-current="step"><span class="steps__n">2</span>{T('steps.delivery')}</li>
         <li class="steps__sep" aria-hidden="true"></li>
-        <li class="steps__i"><span class="steps__n">3</span>Potwierdzenie</li>
+        <li class="steps__i"><span class="steps__n">3</span>{T('steps.confirm')}</li>
       </ol>
 
       <div data-empty hidden class="empty co__empty">
-        <h1 class="co__emptyt">Koszyk jest pusty</h1>
-        <a href="/#produkty" class="btn">Przejdź do produktów</a>
+        <h1 class="co__emptyt">{T('co.empty')}</h1>
+        <a href={L('/') + '#produkty'} class="btn">{T('ct.toProducts')}</a>
       </div>
 
       <div class="co__blikwait" data-blik-wait role="alertdialog" aria-live="polite" aria-labelledby="co-blik-t" hidden>
         <div class="co__blikcard">
           <span class="co__spin" aria-hidden="true"></span>
-          <p class="co__blikt" id="co-blik-t" data-blik-t>Zatwierdź płatność w aplikacji banku</p>
-          <p class="p" data-blik-p>Otwórz aplikację banku i potwierdź płatność BLIK. Ta strona przejdzie dalej sama, gdy bank ją zatwierdzi.</p>
-          <a class="btn btn-o" data-blik-alt href="#" hidden>Wolę zapłacić na stronie Przelewy24</a>
+          <p class="co__blikt" id="co-blik-t" data-blik-t>{T('co.blikWaitT')}</p>
+          <p class="p" data-blik-p>{T('co.blikWaitP')}</p>
+          <a class="btn btn-o" data-blik-alt href="#" hidden>{T('co.blikAlt')}</a>
         </div>
       </div>
       <form class="co__form" data-checkout novalidate hidden>
-        <h1 class="h2 co__title">Dostawa i płatność</h1>
+        <h1 class="h2 co__title">{T('co.title')}</h1>
         <p class="co__notice" data-notice hidden role="status"><span data-site="noticeText"></span></p>
 
         <div class="row co__grid">
           <div class="co__main">
             <fieldset class="co__card">
-              <legend class="co__ct">1. Twoje dane</legend>
+              <legend class="co__ct">{T('co.s1')}</legend>
               <div class="g2 co__g2">
                 <div><label class="lbl" for="c-mail">E-mail</label><input id="c-mail" class="fld" type="email" name="email" autocomplete="email" required /></div>
-                <div><label class="lbl" for="c-tel">Telefon (do powiadomień o paczce)</label><input id="c-tel" class="fld" type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder="np. 600 100 200" /></div>
-                <div><label class="lbl" for="c-fn">Imię</label><input id="c-fn" class="fld" type="text" name="firstName" autocomplete="given-name" required /></div>
-                <div><label class="lbl" for="c-ln">Nazwisko</label><input id="c-ln" class="fld" type="text" name="lastName" autocomplete="family-name" required /></div>
+                <div><label class="lbl" for="c-tel">{T('co.phone')}</label><input id="c-tel" class="fld" type="tel" name="phone" autocomplete="tel" inputmode="tel" required placeholder={T('co.phonePh')} /></div>
+                <div><label class="lbl" for="c-fn">{T('co.fn')}</label><input id="c-fn" class="fld" type="text" name="firstName" autocomplete="given-name" required /></div>
+                <div><label class="lbl" for="c-ln">{T('co.ln')}</label><input id="c-ln" class="fld" type="text" name="lastName" autocomplete="family-name" required /></div>
               </div>
             </fieldset>
 
             <fieldset class="co__card">
-              <legend class="co__ct">2. Dostawa</legend>
+              <legend class="co__ct">{T('co.s2')}</legend>
               <label class="opt"><input type="radio" name="shippingMethod" value="inpost_locker" checked />
-                <span class="opt__txt"><span class="opt__t">InPost Paczkomat 24/7</span><span class="opt__s">Odbiór o dowolnej porze</span></span><span class="opt__p">0,00 zł</span></label>
+                <span class="opt__txt"><span class="opt__t">{T('co.locker')}</span><span class="opt__s">{T('co.lockerS')}</span></span><span class="opt__p">{T('co.free')}</span></label>
               <label class="opt"><input type="radio" name="shippingMethod" value="dpd" />
-                <span class="opt__txt"><span class="opt__t">Kurier</span><span class="opt__s">Dostawa pod wskazany adres</span></span><span class="opt__p">0,00 zł</span></label>
+                <span class="opt__txt"><span class="opt__t">{T('co.courier')}</span><span class="opt__s">{T('co.courierS')}</span></span><span class="opt__p">{T('co.free')}</span></label>
 
               <div class="co__sub" data-locker data-map-key={FURGONETKA_MAP_KEY}>
                 <div class="co__pick" data-map-wrap hidden>
                   <div class="co__pickinfo">
-                    <span data-locker-label>Nie wybrano Paczkomatu</span>
+                    <span data-locker-label>{T('co.noLocker')}</span>
                     <span class="k" data-locker-name></span>
                   </div>
-                  <button type="button" class="btn btn-m" data-map-open>Wybierz Paczkomat na mapie</button>
+                  <button type="button" class="btn btn-m" data-map-open>{T('co.pickLocker')}</button>
                 </div>
-                <div data-locker-manual><label class="lbl" for="c-pk">Kod Paczkomatu</label><input id="c-pk" class="fld" type="text" name="locker" placeholder="np. WRO01M" autocapitalize="characters" maxlength="15" /></div>
+                <div data-locker-manual><label class="lbl" for="c-pk">{T('co.lockerCode')}</label><input id="c-pk" class="fld" type="text" name="locker" placeholder={T('co.lockerPh')} autocapitalize="characters" maxlength="15" /></div>
                 <input type="hidden" name="lockerName" />
-                <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener" class="co__link" data-locker-link>Znajdź Paczkomat na mapie InPost</a>
+                <a href="https://inpost.pl/znajdz-paczkomat" target="_blank" rel="noopener" class="co__link" data-locker-link>{T('co.lockerLink')}</a>
               </div>
               <div class="co__sub co__addr" data-address hidden>
-                <div><label class="lbl" for="c-st">Ulica i numer</label><input id="c-st" class="fld" type="text" name="street" autocomplete="street-address" /></div>
-                <div><label class="lbl" for="c-zip">Kod pocztowy</label><input id="c-zip" class="fld" type="text" name="postcode" autocomplete="postal-code" placeholder="00-000" maxlength="6" /></div>
-                <div><label class="lbl" for="c-city">Miejscowość</label><input id="c-city" class="fld" type="text" name="city" autocomplete="address-level2" /></div>
+                <div><label class="lbl" for="c-st">{T('co.street')}</label><input id="c-st" class="fld" type="text" name="street" autocomplete="street-address" /></div>
+                <div><label class="lbl" for="c-zip">{T('co.zip')}</label><input id="c-zip" class="fld" type="text" name="postcode" autocomplete="postal-code" placeholder="00-000" maxlength="6" /></div>
+                <div><label class="lbl" for="c-city">{T('co.city')}</label><input id="c-city" class="fld" type="text" name="city" autocomplete="address-level2" /></div>
               </div>
             </fieldset>
 
             <fieldset class="co__card">
-              <legend class="co__ct">3. Płatność</legend>
+              <legend class="co__ct">{T('co.s3')}</legend>
               <label class="opt"><input type="radio" name="paymentMethod" value="blik" checked />
-                <span class="opt__txt"><span class="opt__t">BLIK</span><span class="opt__s">Kod z aplikacji banku - wpisujesz go tutaj, bez przechodzenia na inną stronę</span></span></label>
+                <span class="opt__txt"><span class="opt__t">BLIK</span><span class="opt__s">{T('co.blikS')}</span></span></label>
               <div class="co__sub co__blik" data-blik>
-                <label class="lbl" for="co-blik">Kod BLIK</label>
+                <label class="lbl" for="co-blik">{T('co.blikCode')}</label>
                 <input class="fld co__blikin" id="co-blik" name="blikCode" inputmode="numeric" autocomplete="one-time-code" maxlength="7" placeholder="000 000" pattern="[0-9 ]{6,7}" aria-describedby="co-blik-h" />
-                <span class="k" id="co-blik-h">Otwórz aplikację banku, wygeneruj kod BLIK i wpisz go tu. Po kliknięciu „Zamawiam i płacę” zatwierdź płatność w aplikacji.</span>
+                <span class="k" id="co-blik-h">{T('co.blikH')}</span>
               </div>
               <label class="opt"><input type="radio" name="paymentMethod" value="p24" />
-                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">Karta, przelew online i inne metody</span></span></label>
+                <span class="opt__txt"><span class="opt__t">Przelewy24</span><span class="opt__s">{T('co.p24S')}</span></span></label>
               <label class="opt"><input type="radio" name="paymentMethod" value="bank_transfer" />
-                <span class="opt__txt"><span class="opt__t">Przelew bankowy</span><span class="opt__s">Realizacja po zaksięgowaniu wpłaty</span></span></label>
+                <span class="opt__txt"><span class="opt__t">{T('co.bank')}</span><span class="opt__s">{T('co.bankS')}</span></span></label>
               <div class="co__sub" data-bank hidden>
-                <span class="co__banktxt">Wpłać na nasze konto i podaj numer zamówienia w tytule. Zamówienie przekażemy do realizacji po zaksięgowaniu wpłaty. Pełne dane do przelewu pokażemy po złożeniu zamówienia i wyślemy e-mailem.</span>
-                <span class="k" style="color: var(--ink)">Numer rachunku</span>
+                <span class="co__banktxt">{T('co.bankTxt')}</span>
+                <span class="k" style="color: var(--ink)">{T('co.bankNr')}</span>
                 <span class="co__banknr" data-bank-nr></span>
               </div>
             </fieldset>
 
             <fieldset class="co__card">
-              <legend class="co__ct">4. Faktura i uwagi</legend>
-              <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="invoice" data-invoice-toggle />Chcę fakturę na firmę</label>
+              <legend class="co__ct">{T('co.s4')}</legend>
+              <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="invoice" data-invoice-toggle />{T('co.invoice')}</label>
               <div class="co__sub co__inv" data-invoice hidden>
-                <div><label class="lbl" for="c-co">Nazwa firmy</label><input id="c-co" class="fld" type="text" name="company" autocomplete="organization" /></div>
-                <div><label class="lbl" for="c-nip">NIP</label><input id="c-nip" class="fld" type="text" name="nip" inputmode="numeric" maxlength="13" /></div>
-                <div><label class="lbl" for="c-ist">Ulica i numer</label><input id="c-ist" class="fld" type="text" name="invStreet" /></div>
-                <div><label class="lbl" for="c-izip">Kod pocztowy</label><input id="c-izip" class="fld" type="text" name="invPostcode" placeholder="00-000" maxlength="6" /></div>
-                <div><label class="lbl" for="c-icity">Miejscowość</label><input id="c-icity" class="fld" type="text" name="invCity" /></div>
+                <div><label class="lbl" for="c-co">{T('co.company')}</label><input id="c-co" class="fld" type="text" name="company" autocomplete="organization" /></div>
+                <div><label class="lbl" for="c-nip">{T('co.nip')}</label><input id="c-nip" class="fld" type="text" name="nip" inputmode="numeric" maxlength="13" /></div>
+                <div><label class="lbl" for="c-ist">{T('co.street')}</label><input id="c-ist" class="fld" type="text" name="invStreet" /></div>
+                <div><label class="lbl" for="c-izip">{T('co.zip')}</label><input id="c-izip" class="fld" type="text" name="invPostcode" placeholder="00-000" maxlength="6" /></div>
+                <div><label class="lbl" for="c-icity">{T('co.city')}</label><input id="c-icity" class="fld" type="text" name="invCity" /></div>
               </div>
-              <div style="margin-top:10px"><label class="lbl" for="c-note">Uwagi do zamówienia (opcjonalnie)</label><textarea id="c-note" class="fld" name="note" rows="3" maxlength="500"></textarea></div>
+              <div style="margin-top:10px"><label class="lbl" for="c-note">{T('co.note')}</label><textarea id="c-note" class="fld" name="note" rows="3" maxlength="500"></textarea></div>
             </fieldset>
-            <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            <label class="hp" aria-hidden="true">{T('pr.website')}<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
           </div>
 
           <aside class="fl co__card co__side">
-            <h2 class="co__ct">Podsumowanie</h2>
+            <h2 class="co__ct">{T('co.summary')}</h2>
             <ul class="co__lines" data-lines></ul>
             <div>
-              <label class="lbl" for="c-code">Kod rabatowy</label>
+              <label class="lbl" for="c-code">{T('co.code')}</label>
               <div class="co__code">
                 <input id="c-code" class="fld" type="text" name="discountCode" autocomplete="off" maxlength="30" />
-                <button type="button" class="btn btn-o co__codebtn" data-apply-code>Użyj</button>
+                <button type="button" class="btn btn-o co__codebtn" data-apply-code>{T('co.use')}</button>
               </div>
               <p class="msg k" role="status" data-code-msg style="margin-top:6px"></p>
             </div>
             <div class="co__sums">
-              <div class="srow"><span>Produkty</span><span data-subtotal></span></div>
+              <div class="srow"><span>{T('co.products')}</span><span data-subtotal></span></div>
               <div data-promos></div>
-              <div class="srow" data-code-line hidden><span data-code-name>Kod rabatowy</span><span data-code-amount></span></div>
-              <div class="srow"><span>Dostawa · <span data-ship-name>InPost</span></span><span style="font-weight:400">Darmowa</span></div>
+              <div class="srow" data-code-line hidden><span data-code-name>{T('co.code')}</span><span data-code-amount></span></div>
+              <div class="srow"><span>{T('co.delivery')} · <span data-ship-name>InPost</span></span><span style="font-weight:400">{T('co.free')}</span></div>
             </div>
-            <div class="total-row"><span>Razem</span><span data-total></span></div>
-            <label class="ck"><input type="checkbox" name="terms" required /><span>Akceptuję <a href="/regulamin/" target="_blank">Regulamin</a> i zapoznałem się z <a href="/polityka-prywatnosci/" target="_blank">Polityką prywatności</a>.</span></label>
-            <label class="ck"><input type="checkbox" name="marketing" /><span>Chcę otrzymywać informacje o promocjach (opcjonalnie).</span></label>
-            <button type="submit" class="btn btn--wide" style="margin-top:10px" data-submit>Zamawiam i płacę</button>
+            <div class="total-row"><span>{T('co.total')}</span><span data-total></span></div>
+            <label class="ck"><input type="checkbox" name="terms" required /><span>{T('co.terms1')} <a href={L('/regulamin/')} target="_blank">{T('co.terms2')}</a> {T('co.terms3')} <a href={L('/polityka-prywatnosci/')} target="_blank">{T('co.terms4')}</a>.</span></label>
+            <label class="ck"><input type="checkbox" name="marketing" /><span>{T('co.marketing')}</span></label>
+            <button type="submit" class="btn btn--wide" style="margin-top:10px" data-submit>{T('co.submit')}</button>
             <p class="msg msg--err" role="alert" data-error></p>
-            <span class="k" data-pay-note>Płatność BLIK, przelewem lub kartą w serwisie Przelewy24. Nie przechowujemy danych kart.</span>
+            <span class="k" data-pay-note>{T('co.payNoteBlik')}</span>
           </aside>
         </div>
       </form>
@@ -151,6 +156,10 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 </script>
 
 <script>
+  import { t as tt } from '../../i18n/ui';
+  import { href as hrefL, price as fmtPrice } from '../../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
+  const T = (k: Parameters<typeof tt>[1]) => tt(LANG, k);
   import { getCart } from '../../lib/cart';
   import { trackBeginCheckout, trackAddShippingInfo, trackAddPaymentInfo, trackFormStart, trackFormFieldClick, trackFormFieldError, trackFormSubmit } from '../../lib/analytics';
   import { BANK_ACCOUNT, BANK_PROVIDER } from '../../lib/bank-transfer';
@@ -163,7 +172,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
   type P = { slug: string; name: string; price: number | null; bundles: boolean };
   const catalog: P[] = (window as any).__CANC_CATALOG__ ?? [];
-  const pln = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' });
+  const pln = { format: (zl: number) => fmtPrice(LANG, Math.round(zl * 100)) };
   const promos = (((await (window as any).__CANC_PROMOS__) || []) as any[]).map(normalizePromotion);
   const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
@@ -205,18 +214,18 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     form.querySelector('[data-apply-code]')!.addEventListener('click', async () => {
       const code = codeInput.value.trim();
       if (!code) { resetCode(); codeMsg.textContent = ''; return; }
-      codeMsg.textContent = 'Sprawdzanie…';
+      codeMsg.textContent = T('co.checking');
       try {
         const res = await fetch('/api/rabat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code, email: String(new FormData(form).get('email') || ''), items }) });
         const d = await res.json();
-        if (!res.ok) { resetCode(); codeMsg.textContent = d.error || 'Nie udało się sprawdzić kodu.'; return; }
+        if (!res.ok) { resetCode(); codeMsg.textContent = d.error || T('co.codeErr'); return; }
         appliedCode = d.code;
         codeLine.hidden = false;
         form.querySelector('[data-code-name]')!.textContent = d.promo ? `${d.promo} (kod ${d.code})` : `Kod ${d.code}`;
         form.querySelector('[data-code-amount]')!.textContent = `−${pln.format(d.amount / 100)}`;
         form.querySelector('[data-total]')!.textContent = pln.format(d.total / 100);
-        codeMsg.textContent = 'Kod dodany.';
-      } catch { codeMsg.textContent = 'Nie udało się sprawdzić kodu.'; }
+        codeMsg.textContent = T('co.codeOk');
+      } catch { codeMsg.textContent = T('co.codeErr'); }
     });
     codeInput.addEventListener('input', () => { if (appliedCode && codeInput.value.trim().toUpperCase() !== appliedCode) { resetCode(); codeMsg.textContent = ''; } });
     (window as any).__cancCode = () => appliedCode;
@@ -249,7 +258,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
         fill('email', session.user.email); fill('phone', p.phone); fill('firstName', p.first_name); fill('lastName', p.last_name);
         fill('locker', p.default_locker); fill('street', p.default_address?.street); fill('postcode', p.default_address?.postcode); fill('city', p.default_address?.city);
         if (p.default_locker) {
-          const label = form.querySelector('[data-locker-label]'); if (label) label.textContent = `Paczkomat ${p.default_locker}`;
+          const label = form.querySelector('[data-locker-label]'); if (label) label.textContent = `${T('co.lockerWord')} ${p.default_locker}`;
         }
         if (p.billing?.nip) {
           const t = form.querySelector<HTMLInputElement>('[data-invoice-toggle]')!; t.checked = true; t.dispatchEvent(new Event('change'));
@@ -282,7 +291,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     form.querySelectorAll<HTMLInputElement>('input[name="shippingMethod"]').forEach((r) =>
       r.addEventListener('change', () => {
         locker.hidden = r.value !== 'inpost_locker'; address.hidden = r.value !== 'dpd';
-        form.querySelector('[data-ship-name]')!.textContent = r.value === 'dpd' ? 'DPD' : 'InPost';
+        form.querySelector('[data-ship-name]')!.textContent = r.value === 'dpd' ? T('co.courier') : 'InPost';
       }),
     );
 
@@ -299,19 +308,19 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const d = blikInput.value.replace(/\D/g, '').slice(0, 6);
       blikInput.value = d.length > 3 ? `${d.slice(0, 3)} ${d.slice(3)}` : d;
     });
-    payNote.textContent = 'Płatność BLIK obsługuje Przelewy24. Zatwierdzasz ją w aplikacji swojego banku.';
+    payNote.textContent = T('co.payNoteBlik');
     form.querySelectorAll<HTMLInputElement>('input[name="paymentMethod"]').forEach((r) =>
       r.addEventListener('change', () => {
         const bank = r.value === 'bank_transfer';
         bankPanel.hidden = !bank;
         blikPanel.hidden = r.value !== 'blik';
         if (r.value === 'blik') blikInput.focus();
-        submit.textContent = 'Zamawiam i płacę';
+        submit.textContent = T('co.submit');
         payNote.textContent = bank
-          ? 'Po złożeniu zamówienia wyślemy e-mail z numerem konta i kwotą do przelania. Realizacja po zaksięgowaniu wpłaty.'
+          ? T('co.payNoteBank')
           : r.value === 'blik'
-            ? 'Płatność BLIK obsługuje Przelewy24. Zatwierdzasz ją w aplikacji swojego banku.'
-            : 'Płatność kartą lub przelewem w serwisie Przelewy24. Nie przechowujemy danych kart.';
+            ? T('co.payNoteBlik')
+            : T('co.payNoteP24');
       }),
     );
     const invoice = form.querySelector<HTMLElement>('[data-invoice]')!;
@@ -347,13 +356,13 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const openBtn = locker.querySelector<HTMLButtonElement>('[data-map-open]')!;
       openBtn.addEventListener('click', async () => {
         const label = openBtn.textContent;
-        openBtn.disabled = true; openBtn.textContent = 'Wczytuję mapę…';
+        openBtn.disabled = true; openBtn.textContent = T('co.mapLoading');
         const F = await loadMap();
         openBtn.disabled = false; openBtn.textContent = label;
         if (!F?.Map) {
           manual.hidden = false;
           locker.querySelector<HTMLElement>('[data-locker-link]')!.hidden = false;
-          errorEl.textContent = 'Mapa nie wczytała się. Wpisz kod Paczkomatu ręcznie (znajdziesz go na mapie InPost).';
+          errorEl.textContent = T('co.mapErr');
           return;
         }
         new F.Map({
@@ -367,9 +376,9 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             errorEl.textContent = '';
             codeInput.value = params.point.code;
             nameInput.value = params.point.name || '';
-            locker.querySelector('[data-locker-label]')!.textContent = `Paczkomat ${params.point.code}`;
+            locker.querySelector('[data-locker-label]')!.textContent = `${T('co.lockerWord')} ${params.point.code}`;
             locker.querySelector('[data-locker-name]')!.textContent = params.point.name || '';
-            locker.querySelector('[data-map-open]')!.textContent = 'Zmień Paczkomat';
+            locker.querySelector('[data-map-open]')!.textContent = T('co.changeLocker');
           },
         }).show();
       });
@@ -382,7 +391,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       error.textContent = '';
       const fd = new FormData(form);
       const val = (k: string) => String(fd.get(k) ?? '');
-      if (!fd.get('terms')) { error.textContent = 'Zaakceptuj regulamin, aby złożyć zamówienie.'; return; }
+      if (!fd.get('terms')) { error.textContent = T('co.termsErr'); return; }
 
       // GA4 events
       const list: any[] = (window as any).__CANC_CATALOG__ || [];
@@ -403,7 +412,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
       const chosen = val('paymentMethod');
       const blikCode = blikInput.value.replace(/\D/g, '');
       if (chosen === 'blik' && blikCode.length !== 6) {
-        error.textContent = 'Wpisz 6-cyfrowy kod BLIK z aplikacji banku.';
+        error.textContent = T('co.blikErr');
         blikInput.focus();
         return;
       }
@@ -411,7 +420,7 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
 
       const paymentMethod = chosen === 'bank_transfer' ? BANK_PROVIDER : chosen === 'blik' ? 'blik' : 'p24';
       submit.disabled = true;
-      submit.textContent = paymentMethod === BANK_PROVIDER ? 'Składanie zamówienia…' : paymentMethod === 'blik' ? 'Wysyłanie kodu BLIK…' : 'Przekierowanie do płatności…';
+      submit.textContent = paymentMethod === BANK_PROVIDER ? T('co.placing') : paymentMethod === 'blik' ? T('co.sendingBlik') : T('co.redirect');
       try {
         const res = await fetch('/api/zamowienie', {
           method: 'POST',
@@ -440,22 +449,22 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
             : errMsg.toLowerCase().includes('paczkomat') ? 'locker_id'
             : 'unknown';
           trackFormFieldError('checkout_form', fieldHint, errMsg.slice(0, 100));
-          throw new Error(errMsg || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+          throw new Error(errMsg || T('co.orderErr'));
         }
         if (paymentMethod === BANK_PROVIDER) {
           // Przelew bankowy: bez przekierowania do P24 → prosto na stronę podziękowania
-          location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`;
+          location.href = `${hrefL(LANG, '/zamowienie/dziekujemy/')}?id=${encodeURIComponent(data.id)}`;
         } else if (paymentMethod === 'blik') {
           // BLIK: czekamy na zatwierdzenie w aplikacji banku (status zamówienia co 2 s, maks. 2 min)
           await waitForBlik(data);
         } else {
-          if (!data.redirect) throw new Error(data.error || 'Nie udało się złożyć zamówienia. Spróbuj ponownie.');
+          if (!data.redirect) throw new Error(data.error || T('co.orderErr'));
           location.href = data.redirect;
         }
       } catch (err) {
         error.textContent = (err as Error).message;
         submit.disabled = false;
-        submit.textContent = 'Zamawiam i płacę';
+        submit.textContent = T('co.submit');
       }
     });
   }
@@ -470,22 +479,22 @@ const catalog = products.map(({ slug, name, price, bundles, size }) => ({ slug, 
     box.hidden = false;
     const fail = (msg: string) => {
       box.classList.add('is-error');
-      title.textContent = 'Płatność BLIK nie została potwierdzona';
+      title.textContent = T('co.blikFailT');
       text.textContent = msg;
-      alt.textContent = 'Zapłać na stronie Przelewy24';
+      alt.textContent = T('co.blikPayP24');
     };
-    if (!data.blik) { fail(data.error || 'Nie udało się użyć kodu BLIK.'); return; }
+    if (!data.blik) { fail(data.error || T('co.blikCodeFail')); return; }
     const until = Date.now() + 120_000;
     while (Date.now() < until) {
       await new Promise((r) => setTimeout(r, 2000));
       try {
         const res = await fetch(`/api/zamowienie/status?id=${encodeURIComponent(data.id)}`, { cache: 'no-store' });
         const s = await res.json();
-        if (['paid', 'packing', 'shipped', 'completed'].includes(s.status)) { location.href = `/zamowienie/dziekujemy/?id=${encodeURIComponent(data.id)}`; return; }
-        if (['cancelled', 'failed'].includes(s.status)) { fail('Płatność została odrzucona w aplikacji banku.'); return; }
+        if (['paid', 'packing', 'shipped', 'completed'].includes(s.status)) { location.href = `${hrefL(LANG, '/zamowienie/dziekujemy/')}?id=${encodeURIComponent(data.id)}`; return; }
+        if (['cancelled', 'failed'].includes(s.status)) { fail(T('co.blikRejected')); return; }
       } catch { /* kolejna próba */ }
     }
-    fail('Nie dostaliśmy potwierdzenia z banku. Jeśli zatwierdziłeś płatność, sprawdź status za chwilę na stronie zamówienia albo dokończ płatność w Przelewy24.');
+    fail(T('co.blikTimeout'));
   }
   })();
 </script>
