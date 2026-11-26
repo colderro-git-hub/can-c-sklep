@@ -5,39 +5,44 @@ import Base from '../../layouts/Base.astro';
 import { products } from '../../data/shop';
 
 const catalog = products.map(({ slug, price }) => ({ slug, price }));
+import { langOf, href as hrefL } from '../../lib/i18n';
+import { t } from '../../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 ---
-<Base title="Moje konto | Can-C" description="Historia zamówień, przesyłki i ponowne zamówienia w sklepie Can-C." noindex>
+<Base title={T('ac.metaTitle')} description={T('ac.metaDesc')} noindex>
   <div class="w ac" data-account>
 
     <!-- Ładowanie sesji -->
-    <p class="p ac__loading" data-state="loading">Ładowanie…</p>
+    <p class="p ac__loading" data-state="loading">{T('ac.loading')}</p>
 
     <!-- Logowanie -->
     <section class="row ac__login" data-state="login" hidden>
       <div class="ac__lhead">
-        <h1 class="h1">Moje konto</h1>
-        <p class="p p--lg">Zaloguj się adresem e-mail użytym przy zamówieniu. Wyślemy link i kod - bez hasła.</p>
+        <h1 class="h1">{T('ac.title')}</h1>
+        <p class="p p--lg">{T('ac.loginLead')}</p>
         <ul class="checks ac__perks">
-          <li>Historia wszystkich zamówień, także z poprzedniej wersji sklepu</li>
-          <li>Śledzenie przesyłek i ponowne zamówienie jednym kliknięciem</li>
-          <li>Twoje kody rabatowe i przypomnienie o końcu kuracji</li>
+          <li>{T('ac.perk1')}</li>
+          <li>{T('ac.perk2')}</li>
+          <li>{T('ac.perk3')}</li>
         </ul>
       </div>
       <div class="fl ac__lcard">
         <form data-login-form novalidate class="ac__lform">
-          <h2 class="ac__ct">Zaloguj się</h2>
-          <div><label class="lbl" for="ac-mail">E-mail</label><input id="ac-mail" class="fld" type="email" name="email" autocomplete="email" required placeholder="jan@przyklad.pl" /></div>
-          <button class="btn btn--wide" data-send>Wyślij link i kod</button>
+          <h2 class="ac__ct">{T('ac.signIn')}</h2>
+          <div><label class="lbl" for="ac-mail">E-mail</label><input id="ac-mail" class="fld" type="email" name="email" autocomplete="email" required placeholder={T('ac.emailPh')} /></div>
+          <button class="btn btn--wide" data-send>{T('ac.send')}</button>
           <p class="msg k" role="status" data-login-msg></p>
         </form>
         <form data-code-form hidden novalidate class="ac__lform">
-          <h2 class="ac__ct">Wpisz kod</h2>
-          <p class="p">Wysłaliśmy wiadomość na <strong data-sent-to></strong>. Kliknij link w mailu albo wpisz kod:</p>
-          <div><label class="lbl" for="ac-code">Kod z maila</label><input id="ac-code" class="fld ac__code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" required placeholder="000000" /></div>
-          <button class="btn btn--wide">Zaloguj się</button>
+          <h2 class="ac__ct">{T('ac.enterCode')}</h2>
+          <p class="p">{T('ac.sent1')} <strong data-sent-to></strong>{T('ac.sent2')}</p>
+          <div><label class="lbl" for="ac-code">{T('ac.codeFromMail')}</label><input id="ac-code" class="fld ac__code" type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" pattern="[0-9]{6,8}" required placeholder="000000" /></div>
+          <button class="btn btn--wide">{T('ac.signIn')}</button>
           <p class="msg k" role="status" data-code-msg></p>
-          <p class="k">Nie widzisz maila? Sprawdź folder Spam albo <button type="button" class="ac__linkbtn" data-resend disabled>wyślij ponownie</button>.</p>
-          <button type="button" class="ac__linkbtn k" data-change-email>Zmień adres e-mail</button>
+          <p class="k">{T('ac.noMail1')} <button type="button" class="ac__linkbtn" data-resend disabled>{T('ac.resend')}</button>.</p>
+          <button type="button" class="ac__linkbtn k" data-change-email>{T('ac.changeEmail')}</button>
         </form>
       </div>
     </section>
@@ -46,34 +51,34 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     <div data-state="dash" hidden>
       <section class="row ac__head">
         <div class="ac__hello">
-          <h1 class="h1" data-hello>Moje konto</h1>
+          <h1 class="h1" data-hello>{T('ac.title')}</h1>
           <span class="p"><span data-email></span><span data-since></span></span>
         </div>
-        <button type="button" class="btn btn-o btn-s" data-logout>Wyloguj</button>
+        <button type="button" class="btn btn-o btn-s" data-logout>{T('ac.logout')}</button>
       </section>
 
       <div class="g4 ac__stats" data-stats hidden>
-        <div class="ac__stat"><span class="ac__sv ac__sv--s" data-s-total></span><span class="ac__sl">Wydane (zł)</span></div>
-        <div class="ac__stat"><span class="ac__sv" data-s-count></span><span class="ac__sl">Zamówień</span></div>
-        <div class="ac__stat"><span class="ac__sv" data-s-packs></span><span class="ac__sl">Opakowań</span></div>
+        <div class="ac__stat"><span class="ac__sv ac__sv--s" data-s-total></span><span class="ac__sl">{T('ac.spent')}</span></div>
+        <div class="ac__stat"><span class="ac__sv" data-s-count></span><span class="ac__sl">{T('ac.orders')}</span></div>
+        <div class="ac__stat"><span class="ac__sv" data-s-packs></span><span class="ac__sl">{T('ac.packs')}</span></div>
         <div class="ac__chartbox">
-          <span class="k">Wydatki w ostatnich 12 miesiącach</span>
-          <div class="ac__chart" role="img" data-chart aria-label="Wydatki w ostatnich 12 miesiącach"></div>
+          <span class="k">{T('ac.chart')}</span>
+          <div class="ac__chart" role="img" data-chart aria-label={T('ac.chart')}></div>
         </div>
       </div>
 
       <div class="row ac__cards" data-cards hidden>
         <div class="ac__cure" data-reminder hidden>
-          <span class="ac__soft">Twoja kuracja</span>
+          <span class="ac__soft">{T('ac.cure')}</span>
           <div class="ac__curerow">
             <span class="ac__curet" data-rem-title></span>
-            <a class="btn btn-s ac__wbtn" data-rem-cta href="/produkt/krople-can-c/">Zamów zawczasu</a>
+            <a class="btn btn-s ac__wbtn" data-rem-cta href={L('/produkt/krople-can-c/')}>{T('ac.orderAhead')}</a>
           </div>
-          <div class="ac__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label="Postęp kuracji" data-rem-bar><div data-rem-fill></div></div>
+          <div class="ac__bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-label={T('ac.cureProgress')} data-rem-bar><div data-rem-fill></div></div>
           <span class="ac__soft" data-rem-sub></span>
         </div>
         <div class="fl ac__codes" data-codes hidden>
-          <span class="k" style="color: var(--ink)">Twój kod rabatowy</span>
+          <span class="k" style="color: var(--ink)">{T('ac.yourCode')}</span>
           <div data-codes-list class="ac__clist"></div>
         </div>
       </div>
@@ -81,46 +86,46 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
       <section class="row ac__grid">
         <div class="ac__orders">
           <div class="row ac__ohead">
-            <h2 class="h2">Zamówienia</h2>
-            <div role="group" aria-label="Filtr zamówień" class="ac__filters" data-filters>
-              <button type="button" class="chip" aria-pressed="true" data-f="all">Wszystkie</button>
-              <button type="button" class="chip" aria-pressed="false" data-f="open">W toku</button>
-              <button type="button" class="chip" aria-pressed="false" data-f="done">Zakończone</button>
+            <h2 class="h2">{T('ac.ordersH')}</h2>
+            <div role="group" aria-label={T('ac.filter')} class="ac__filters" data-filters>
+              <button type="button" class="chip" aria-pressed="true" data-f="all">{T('ac.fAll')}</button>
+              <button type="button" class="chip" aria-pressed="false" data-f="open">{T('ac.fOpen')}</button>
+              <button type="button" class="chip" aria-pressed="false" data-f="done">{T('ac.fDone')}</button>
             </div>
           </div>
           <div class="ac__olist" data-orders></div>
-          <p class="p" data-orders-empty hidden>Nie masz jeszcze zamówień. <a href="/#produkty">Przejdź do sklepu</a>.</p>
-          <p class="p" data-filter-empty hidden>Brak zamówień w tej grupie.</p>
-          <button type="button" class="btn btn-o btn-m" data-more hidden style="align-self:flex-start">Pokaż starsze</button>
+          <p class="p" data-orders-empty hidden>{T('ac.noOrders1')} <a href={L('/') + '#produkty'}>{T('ac.toShop')}</a>.</p>
+          <p class="p" data-filter-empty hidden>{T('ac.noGroup')}</p>
+          <button type="button" class="btn btn-o btn-m" data-more hidden style="align-self:flex-start">{T('ac.older')}</button>
         </div>
 
         <aside class="fl ac__profile">
           <form data-profile-form novalidate class="ac__pform">
-            <h2 class="ac__ct">Twoje dane</h2>
+            <h2 class="ac__ct">{T('ac.yourData')}</h2>
             <div class="ac__g2">
-              <div><label class="lbl" for="a-fn">Imię</label><input id="a-fn" class="fld" name="first_name" autocomplete="given-name" maxlength="60" /></div>
-              <div><label class="lbl" for="a-ln">Nazwisko</label><input id="a-ln" class="fld" name="last_name" autocomplete="family-name" maxlength="60" /></div>
+              <div><label class="lbl" for="a-fn">{T('ac.fn')}</label><input id="a-fn" class="fld" name="first_name" autocomplete="given-name" maxlength="60" /></div>
+              <div><label class="lbl" for="a-ln">{T('ac.ln')}</label><input id="a-ln" class="fld" name="last_name" autocomplete="family-name" maxlength="60" /></div>
             </div>
-            <div><label class="lbl" for="a-tel">Telefon</label><input id="a-tel" class="fld" name="phone" type="tel" autocomplete="tel" maxlength="20" /></div>
-            <div><label class="lbl" for="a-pk">Domyślny Paczkomat</label><input id="a-pk" class="fld" name="default_locker" maxlength="15" placeholder="np. WRO01M" /></div>
-            <span class="ac__sub">Adres dostawy</span>
-            <div><label class="lbl" for="a-st">Ulica i numer</label><input id="a-st" class="fld" name="street" autocomplete="street-address" maxlength="120" /></div>
+            <div><label class="lbl" for="a-tel">{T('ac.phone')}</label><input id="a-tel" class="fld" name="phone" type="tel" autocomplete="tel" maxlength="20" /></div>
+            <div><label class="lbl" for="a-pk">{T('ac.locker')}</label><input id="a-pk" class="fld" name="default_locker" maxlength="15" placeholder={T('ac.lockerPh')} /></div>
+            <span class="ac__sub">{T('ac.address')}</span>
+            <div><label class="lbl" for="a-st">{T('ac.street')}</label><input id="a-st" class="fld" name="street" autocomplete="street-address" maxlength="120" /></div>
             <div class="ac__gzip">
-              <div><label class="lbl" for="a-zip">Kod</label><input id="a-zip" class="fld" name="postcode" maxlength="6" placeholder="00-000" /></div>
-              <div><label class="lbl" for="a-city">Miejscowość</label><input id="a-city" class="fld" name="city" maxlength="60" /></div>
+              <div><label class="lbl" for="a-zip">{T('ac.zip')}</label><input id="a-zip" class="fld" name="postcode" maxlength="6" placeholder="00-000" /></div>
+              <div><label class="lbl" for="a-city">{T('ac.city')}</label><input id="a-city" class="fld" name="city" maxlength="60" /></div>
             </div>
-            <span class="ac__sub">Dane do faktury</span>
-            <div><label class="lbl" for="a-co">Nazwa firmy</label><input id="a-co" class="fld" name="company" autocomplete="organization" maxlength="150" placeholder="Opcjonalnie" /></div>
-            <div><label class="lbl" for="a-nip">NIP</label><input id="a-nip" class="fld" name="nip" inputmode="numeric" maxlength="13" placeholder="Opcjonalnie" /></div>
-            <div><label class="lbl" for="a-ist">Ulica i numer</label><input id="a-ist" class="fld" name="invStreet" maxlength="120" /></div>
+            <span class="ac__sub">{T('ac.invoice')}</span>
+            <div><label class="lbl" for="a-co">{T('ac.company')}</label><input id="a-co" class="fld" name="company" autocomplete="organization" maxlength="150" placeholder={T('ac.optional')} /></div>
+            <div><label class="lbl" for="a-nip">{T('ac.nip')}</label><input id="a-nip" class="fld" name="nip" inputmode="numeric" maxlength="13" placeholder={T('ac.optional')} /></div>
+            <div><label class="lbl" for="a-ist">{T('ac.street')}</label><input id="a-ist" class="fld" name="invStreet" maxlength="120" /></div>
             <div class="ac__gzip">
-              <div><label class="lbl" for="a-izip">Kod</label><input id="a-izip" class="fld" name="invPostcode" maxlength="6" placeholder="00-000" /></div>
-              <div><label class="lbl" for="a-icity">Miejscowość</label><input id="a-icity" class="fld" name="invCity" maxlength="60" /></div>
+              <div><label class="lbl" for="a-izip">{T('ac.zip')}</label><input id="a-izip" class="fld" name="invPostcode" maxlength="6" placeholder="00-000" /></div>
+              <div><label class="lbl" for="a-icity">{T('ac.city')}</label><input id="a-icity" class="fld" name="invCity" maxlength="60" /></div>
             </div>
-            <label class="ck" style="margin-top:10px" id="newsletter"><input type="checkbox" name="marketing_consent" /><span>Chcę otrzymywać informacje o promocjach i kodach rabatowych.</span></label>
-            <button class="btn btn--wide" style="margin-top:10px">Zapisz dane</button>
+            <label class="ck" style="margin-top:10px" id="newsletter"><input type="checkbox" name="marketing_consent" /><span>{T('ac.marketing')}</span></label>
+            <button class="btn btn--wide" style="margin-top:10px">{T('ac.save')}</button>
             <p class="msg k" role="status" data-profile-msg></p>
-            <span class="k">E-mail <span data-email-2></span> służy do logowania. Aby go zmienić lub usunąć konto, <a href="/kontakt/">napisz do nas</a>.</span>
+            <span class="k">{T('ac.emailNote1')} <span data-email-2></span> {T('ac.emailNote2')} <a href={L('/kontakt/')}>{T('ac.writeUs')}</a>.</span>
           </form>
         </aside>
       </section>
@@ -140,6 +145,10 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
 </script>
 
 <script>
+  import { t as tt } from '../../i18n/ui';
+  import { href as hrefL, price as fmtPrice } from '../../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
+  const T = (k: Parameters<typeof tt>[1]) => tt(LANG, k);
   import { sb } from '../../lib/sb-client';
   import { typoSafe } from '../../lib/typography';
   import { imgUrl } from '../../lib/img';
@@ -153,16 +162,16 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
   const show = (state: string) => root.querySelectorAll<HTMLElement>('[data-state]').forEach((el) => (el.hidden = el.dataset.state !== state));
   const esc = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
-  const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
-  const day = (s: string) => new Date(s).toLocaleDateString('pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
+  const pln = (g: number) => fmtPrice(LANG, g);
+  const day = (s: string) => new Date(s).toLocaleDateString(LANG === 'en' ? 'en-GB' : 'pl-PL', { day: 'numeric', month: 'long', year: 'numeric' });
   const catalog: { slug: string; price: number | null }[] = (window as any).__CANC_CATALOG__ ?? [];
 
   const STATUS: Record<string, [string, string, 'open' | 'done']> = {
-    pending_payment: ['Oczekuje na płatność', 'wait', 'open'], paid: ['Przyjęte do realizacji', 'new', 'open'], packing: ['Kompletujemy zamówienie', 'new', 'open'], on_hold: ['W trakcie wyjaśniania', 'wait', 'open'],
-    shipped: ['Wysłane', 'sent', 'open'], completed: ['Zrealizowane', 'done', 'done'], cancelled: ['Anulowane', 'cancel', 'done'], refunded: ['Zwrócone', 'cancel', 'done'], failed: ['Nieudane', 'cancel', 'done'],
+    pending_payment: [T('st.pending'), 'wait', 'open'], paid: [T('st.paid'), 'new', 'open'], packing: [T('st.packing'), 'new', 'open'], on_hold: [T('st.on_hold'), 'wait', 'open'],
+    shipped: [T('st.shipped'), 'sent', 'open'], completed: [T('st.completed'), 'done', 'done'], cancelled: [T('st.cancelled'), 'cancel', 'done'], refunded: [T('st.refunded'), 'cancel', 'done'], failed: [T('st.failed'), 'cancel', 'done'],
   };
   const imgOf = (slug: string) => ((catalog as any[]).find((c) => c.slug === slug)?.image as string | undefined) || '';
-  const PAY: Record<string, string> = { przelewy24: 'Przelewy24', bank_transfer: 'Przelew bankowy' };
+  const PAY: Record<string, string> = { przelewy24: 'Przelewy24', bank_transfer: T('ac.bankTransfer') };
   let filter: 'all' | 'open' | 'done' = 'all';
   const applyFilter = () => {
     const els = [...root.querySelectorAll<HTMLElement>('[data-orders] > article')];
@@ -184,7 +193,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const btn = $<HTMLButtonElement>('[data-resend]');
     cooldown = 60; btn.disabled = true;
     const t = setInterval(() => {
-      cooldown--; btn.textContent = cooldown > 0 ? `wyślij ponownie (${cooldown} s)` : 'wyślij ponownie';
+      cooldown--; btn.textContent = cooldown > 0 ? `${T('ac.resend')} (${cooldown} s)` : T('ac.resend');
       if (cooldown <= 0) { btn.disabled = false; clearInterval(t); }
     }, 1000);
   };
@@ -202,15 +211,15 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const f = e.target as HTMLFormElement;
     const msg = $('[data-login-msg]');
     email = String(new FormData(f).get('email') || '').trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = 'Podaj poprawny adres e-mail.'; return; }
-    const btn = $<HTMLButtonElement>('[data-send]'); btn.disabled = true; msg.textContent = 'Wysyłanie…';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = T('ac.badEmail'); return; }
+    const btn = $<HTMLButtonElement>('[data-send]'); btn.disabled = true; msg.textContent = T('ac.sending');
     try {
       await sendLink();
       f.hidden = true; $('[data-code-form]').hidden = false; $('[data-sent-to]').textContent = email;
       $<HTMLInputElement>('input[name="code"]').focus();
       startCooldown(); msg.textContent = '';
     } catch (err: any) {
-      msg.textContent = /rate|limit|seconds/i.test(err?.message || '') ? 'Zbyt wiele prób. Odczekaj minutę i spróbuj ponownie.' : 'Nie udało się wysłać maila. Spróbuj ponownie za chwilę.';
+      msg.textContent = /rate|limit|seconds/i.test(err?.message || '') ? T('ac.tooMany') : T('ac.sendFail');
       console.error(err);
     } finally { btn.disabled = false; }
   });
@@ -219,15 +228,15 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     e.preventDefault();
     const msg = $('[data-code-msg]');
     const token = String(new FormData(e.target as HTMLFormElement).get('code') || '').replace(/\D/g, '');
-    if (token.length < 6 || token.length > 8) { msg.textContent = 'Wpisz kod z maila (same cyfry).'; return; }
-    msg.textContent = 'Sprawdzanie…';
+    if (token.length < 6 || token.length > 8) { msg.textContent = T('ac.codeDigits'); return; }
+    msg.textContent = T('ac.checking');
     const { error } = await sb().auth.verifyOtp({ email, token, type: 'email' });
-    msg.textContent = error ? 'Kod jest nieprawidłowy albo wygasł. Wyślij nowy.' : '';
+    msg.textContent = error ? T('ac.codeBad') : '';
   });
 
   $('[data-resend]').addEventListener('click', async () => {
-    try { await sendLink(); startCooldown(); $('[data-code-msg]').textContent = 'Wysłaliśmy nowy kod.'; }
-    catch { $('[data-code-msg]').textContent = 'Nie udało się wysłać. Spróbuj za chwilę.'; }
+    try { await sendLink(); startCooldown(); $('[data-code-msg]').textContent = T('ac.newCode'); }
+    catch { $('[data-code-msg]').textContent = T('ac.resendFail'); }
   });
   $('[data-change-email]').addEventListener('click', () => { $('[data-code-form]').hidden = true; $('[data-login-form]').hidden = false; });
   $('[data-logout]').addEventListener('click', async () => { await sb().auth.signOut(); show('login'); });
@@ -242,7 +251,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
       body: body ? JSON.stringify(body) : undefined,
     });
     const out = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(out.error || 'Błąd serwera.');
+    if (!res.ok) throw new Error(out.error || T('ac.serverErr'));
     return out;
   }
 
@@ -271,7 +280,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
       .select('id,number,created_at,paid_at,shipped_at,status,total,shipping_method,shipping_point,tracking_number,carrier,source,payment_provider,order_items(name,qty,product_id)')
       .order('created_at', { ascending: false })
       .range(from, from + PAGE - 1);
-    if (error) { showError('Nie udało się pobrać zamówień. Odśwież stronę.'); console.error(error); return; }
+    if (error) { showError(T('ac.loadErr')); console.error(error); return; }
 
     const list = $('[data-orders]');
     $('[data-orders-empty]').hidden = !(first && data.length === 0);
@@ -283,17 +292,17 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
       const reorderable = o.order_items.some((i: any) => catalog.some((c) => c.slug === i.product_id && c.price !== null));
       const first = o.order_items[0];
       const thumb = first ? imgOf(first.product_id) : '';
-      const ship = o.shipping_method === 'dpd' ? 'Kurier' : o.shipping_point ? `Paczkomat ${esc(o.shipping_point)}` : esc(o.shipping_method || '');
+      const ship = o.shipping_method === 'dpd' ? T('ac.courier') : o.shipping_point ? `${T('ac.lockerWord')} ${esc(o.shipping_point)}` : esc(o.shipping_method || '');
       const action = o.tracking_number
-        ? `<a class="ac__ul" href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">Śledź przesyłkę</a>`
+        ? `<a class="ac__ul" href="${track(o.carrier || o.shipping_method, o.tracking_number)}" target="_blank" rel="noopener">${T('ac.track')}</a>`
         : o.status === 'pending_payment' && o.payment_provider === 'bank_transfer'
-          ? `<a class="ac__ul" href="/zamowienie/dziekujemy/?id=${encodeURIComponent(o.id)}">Pokaż dane do przelewu</a>` : '';
+          ? `<a class="ac__ul" href="${hrefL(LANG, '/zamowienie/dziekujemy/')}?id=${encodeURIComponent(o.id)}">${T('ac.showBank')}</a>` : '';
       const li = document.createElement('article');
       li.className = 'ac__order';
       li.dataset.group = group;
       li.innerHTML = `
         <div class="ac__otop">
-          <div class="ac__ohd"><h3 class="ac__onr">Zamówienie ${o.number}</h3><span class="k">${day(o.created_at)} · ${ship}</span></div>
+          <div class="ac__ohd"><h3 class="ac__onr">${T('ac.order')} ${o.number}</h3><span class="k">${day(o.created_at)} · ${ship}</span></div>
           <span class="ac__st ac__st--${tone}"><span class="dot" aria-hidden="true"></span>${esc(label)}</span>
         </div>
         <div class="ac__oitems">
@@ -306,18 +315,18 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
             ${PAY[o.payment_provider] ? `<span class="k">${PAY[o.payment_provider]}</span>` : ''}
             ${action}
           </div>
-          ${reorderable ? '<button type="button" class="btn btn-o btn-s" data-reorder>Zamów ponownie</button>' : ''}
+          ${reorderable ? `<button type="button" class="btn btn-o btn-s" data-reorder>${T('ac.reorder')}</button>` : ''}
         </div>
         <div class="ac__olinks">
-          <button type="button" class="ac__linkbtn" data-ask aria-expanded="false">Napisz w sprawie zamówienia</button>
-          ${['paid', 'packing', 'shipped', 'completed'].includes(o.status) ? `<a class="k" href="/odstapienie-od-umowy/?nr=${o.number}#odstapienie">Odstąp od umowy</a>` : ''}
+          <button type="button" class="ac__linkbtn" data-ask aria-expanded="false">${T('ac.ask')}</button>
+          ${['paid', 'packing', 'shipped', 'completed'].includes(o.status) ? `<a class="k" href="${hrefL(LANG, '/odstapienie-od-umowy/')}?nr=${o.number}#odstapienie">${T('ac.withdraw')}</a>` : ''}
         </div>
         <form class="ac__ask" data-ask-form hidden>
-          <div><label class="lbl">Temat
-            <select class="fld" name="topic"><option value="pytanie">Pytanie</option><option value="dostawa">Dostawa</option><option value="zwrot">Zwrot</option><option value="reklamacja">Reklamacja</option><option value="faktura">Faktura</option><option value="inne">Inne</option></select></label>
+          <div><label class="lbl">${T('ac.topic')}
+            <select class="fld" name="topic"><option value="pytanie">${T('ac.tQuestion')}</option><option value="dostawa">${T('ac.tDelivery')}</option><option value="zwrot">${T('ac.tReturn')}</option><option value="reklamacja">${T('ac.tComplaint')}</option><option value="faktura">${T('ac.tInvoice')}</option><option value="inne">${T('ac.tOther')}</option></select></label>
           </div>
-          <div><label class="lbl">Wiadomość<textarea class="fld" name="message" rows="3" maxlength="3000" required></textarea></label></div>
-          <div class="ac__askrow"><button class="btn btn-s">Wyślij</button><span class="msg k" role="status" data-ask-msg></span></div>
+          <div><label class="lbl">${T('ac.message')}<textarea class="fld" name="message" rows="3" maxlength="3000" required></textarea></label></div>
+          <div class="ac__askrow"><button class="btn btn-s">${T('ac.sendBtn')}</button><span class="msg k" role="status" data-ask-msg></span></div>
         </form>`;
       const askForm = li.querySelector<HTMLFormElement>('[data-ask-form]')!;
       const askBtn = li.querySelector<HTMLButtonElement>('[data-ask]')!;
@@ -326,10 +335,10 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
         ev.preventDefault();
         const m = askForm.querySelector<HTMLElement>('[data-ask-msg]')!;
         const fd = new FormData(askForm);
-        m.textContent = 'Wysyłanie…';
+        m.textContent = T('ac.sending');
         try {
           await apiUser('/api/konto/wiadomosc', { number: o.number, topic: fd.get('topic'), message: fd.get('message') });
-          m.textContent = 'Wysłano. Odpowiemy na Twój e-mail.'; askForm.reset();
+          m.textContent = T('ac.sentOk'); askForm.reset();
         } catch (err) { m.textContent = (err as Error).message; }
       });
       li.querySelector('[data-reorder]')?.addEventListener('click', () => {
@@ -355,7 +364,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   async function loadProfile() {
     try {
       const p = await apiUser('/api/konto/profil');
-      if (p.first_name) $('[data-hello]').textContent = `Dzień dobry, ${p.first_name}`;
+      if (p.first_name) $('[data-hello]').textContent = `${T('ac.hello')} ${p.first_name}`;
       setVal('first_name', p.first_name); setVal('last_name', p.last_name); setVal('phone', p.phone); setVal('default_locker', p.default_locker);
       setVal('street', p.default_address?.street); setVal('postcode', p.default_address?.postcode); setVal('city', p.default_address?.city);
       setVal('company', p.billing?.company); setVal('nip', p.billing?.nip); setVal('invStreet', p.billing?.street); setVal('invPostcode', p.billing?.postcode); setVal('invCity', p.billing?.city);
@@ -368,8 +377,8 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const fd = new FormData(form);
     const body: Record<string, unknown> = Object.fromEntries([...fd.entries()].map(([k, v]) => [k, String(v)]));
     body.marketing_consent = fd.get('marketing_consent') !== null;
-    msg.textContent = 'Zapisywanie…'; msg.classList.remove('msg--err');
-    try { await apiUser('/api/konto/profil', body); msg.textContent = 'Zapisano.'; }
+    msg.textContent = T('ac.saving'); msg.classList.remove('msg--err');
+    try { await apiUser('/api/konto/profil', body); msg.textContent = T('ac.saved'); }
     catch (err) { msg.textContent = (err as Error).message; msg.classList.add('msg--err'); }
   });
 
@@ -386,8 +395,8 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
             <span class="ac__cval">${c.type === 'percent' ? `−${c.value}%` : `−${pln(c.value)}`}</span>
             <span class="ac__ccode">${esc(c.code)}</span>
           </div>
-          <span class="k" style="color: var(--ink)">${[esc(c.description || ''), c.min_total ? `od ${pln(c.min_total)}` : '', c.ends_at ? `ważny do ${day(c.ends_at)}` : ''].filter(Boolean).join(' · ')}</span>
-          <button type="button" class="btn btn-o btn-s" data-copy="${esc(c.code)}">Kopiuj kod</button>
+          <span class="k" style="color: var(--ink)">${[esc(c.description || ''), c.min_total ? `${T('ac.from')} ${pln(c.min_total)}` : '', c.ends_at ? `${T('ac.validTo')} ${day(c.ends_at)}` : ''].filter(Boolean).join(' · ')}</span>
+          <button type="button" class="btn btn-o btn-s" data-copy="${esc(c.code)}">${T('ac.copyCode')}</button>
         </div>`).join('');
       $('[data-codes-list]').querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => b.addEventListener('click', async () => {
         try { await navigator.clipboard.writeText(b.dataset.copy!); b.textContent = 'Skopiowano'; } catch { /* brak dostępu do schowka */ }
@@ -418,7 +427,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     const max = Math.max(...months.map((x) => x.sum), 1);
     const roman = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     const top = months.reduce((a, b) => (b.sum > a.sum ? b : a), months[0]);
-    $('[data-chart]').setAttribute('aria-label', `Wydatki w ostatnich 12 miesiącach${top.sum ? `: najwyższe w ${roman[top.m]} ${top.y} (${pln(top.sum)})` : ''}`);
+    $('[data-chart]').setAttribute('aria-label', `${T('ac.chart')}${top.sum ? `${T('ac.highest')} ${roman[top.m]} ${top.y} (${pln(top.sum)})` : ''}`);
     $('[data-chart]').innerHTML = months.map((x, k) => `
       <div class="ac__bcol" title="${roman[x.m]} ${x.y}: ${pln(x.sum)}">
         <div class="ac__b${k === 11 ? ' ac__b--now' : x.sum ? ' ac__b--on' : ''}" style="height:${x.sum ? Math.max(6, Math.round((x.sum / max) * 60)) : 3}px"></div>
@@ -439,15 +448,15 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     rem.hidden = false;
     $('[data-cards]').hidden = false;
     $('[data-rem-title]').textContent = left > 0
-      ? `Zostało ok. ${left} ${left === 1 ? 'dnia' : 'dni'} kropli z zamówienia ${last.number}`
-      : `Zapas kropli z zamówienia ${last.number} prawdopodobnie się skończył`;
+      ? `${T('ac.left1')} ${left} ${left === 1 ? T('ac.leftDay') : T('ac.leftDays')} ${T('ac.left2')} ${last.number}`
+      : `${T('ac.over')} ${last.number} ${T('ac.over2')}`;
     const pct = Math.min(100, Math.max(0, Math.round(((Date.now() - start) / (end - start)) * 100)));
     $('[data-rem-bar]').setAttribute('aria-valuenow', String(pct));
     $<HTMLElement>('[data-rem-fill]').style.width = pct + '%';
-    $('[data-rem-sub]').textContent = `Szacunek przy 1-2 kroplach do oka, dwa razy dziennie. ${packs} ${packs === 1 ? 'opakowanie ≈ 1 miesiąc' : packs < 5 ? `opakowania ≈ ${packs} miesiące` : `opakowań ≈ ${packs} miesięcy`}.`;
-    $<HTMLAnchorElement>('[data-rem-cta]').textContent = left > 21 ? 'Zamów ponownie' : 'Zamów zawczasu';
+    $('[data-rem-sub]').textContent = `${T('ac.estimate')} ${packs} ${LANG === 'en' ? (packs === 1 ? 'pack ≈ 1 month' : `packs ≈ ${packs} months`) : packs === 1 ? 'opakowanie ≈ 1 miesiąc' : packs < 5 ? `opakowania ≈ ${packs} miesiące` : `opakowań ≈ ${packs} miesięcy`}.`;
+    $<HTMLAnchorElement>('[data-rem-cta]').textContent = left > 21 ? T('ac.reorder') : T('ac.orderAhead');
     const qty = packs >= 4 ? 4 : packs >= 2 ? 2 : 2;
-    $<HTMLAnchorElement>('[data-rem-cta]').href = `/produkt/krople-can-c/?zestaw=${qty}`;
+    $<HTMLAnchorElement>('[data-rem-cta]').href = `${hrefL(LANG, '/produkt/krople-can-c/')}?zestaw=${qty}`;
   }
 
   const preEmail = new URLSearchParams(location.search).get('email');
@@ -464,7 +473,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
   });
   // Błąd z linku (np. wygasły)
   if (/error_description=/.test(location.hash)) {
-    showError('Link logowania wygasł albo został już użyty. Wyślij nowy.');
+    showError(T('ac.linkExpired'));
     history.replaceState(null, '', location.pathname);
   }
   // ---- GA4: konto ----
@@ -507,7 +516,7 @@ const catalog = products.map(({ slug, price }) => ({ slug, price }));
     // przez MutationObserver na komunikacie błędu
     const msg = $('[data-code-msg]');
     const obs = new MutationObserver(() => {
-      if (msg.textContent?.includes('nieprawidłowy') || msg.textContent?.includes('wygasł')) {
+      if (msg.textContent === T('ac.codeBad')) {
         trackFormFieldError('login_form', 'otp_code', 'Nieprawidłowy lub wygasły kod');
       }
       obs.disconnect();
