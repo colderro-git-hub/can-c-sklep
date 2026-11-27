@@ -1,4 +1,9 @@
 ---
+import { langOf, href as hrefL, plPathOf } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 // Wspólny układ podstron informacyjnych i dokumentów prawnych: nagłówek, spis treści, treść, boczne linki.
 import Base from '../layouts/Base.astro';
 import { site, LEGAL_DRAFT, LEGAL_EFFECTIVE_DATE } from '../config';
@@ -14,13 +19,13 @@ interface Props {
   newsletter?: boolean; // karta zapisu na newsletter w panelu bocznym
 }
 const { title, description, lead, leadStyle, toc = [], legal = false, newsletter = false } = Astro.props;
-const path = Astro.url.pathname;
+const path = plPathOf(Astro.locals, Astro.url.pathname);
 const links = [
-  { href: '/formy-dostawy/', label: 'Formy dostawy' },
-  { href: '/formy-platnosci/', label: 'Formy płatności' },
-  { href: '/odstapienie-od-umowy/', label: 'Zwroty i reklamacje' },
-  { href: '/regulamin/', label: 'Regulamin' },
-  { href: '/polityka-prywatnosci/', label: 'Polityka prywatności' },
+  { href: L('/formy-dostawy/'), pl: '/formy-dostawy/', label: T('ft.delivery') },
+  { href: L('/formy-platnosci/'), pl: '/formy-platnosci/', label: T('ft.payments') },
+  { href: L('/odstapienie-od-umowy/'), pl: '/odstapienie-od-umowy/', label: T('ft.returns') },
+  { href: L('/regulamin/'), pl: '/regulamin/', label: T('ft.terms') },
+  { href: L('/polityka-prywatnosci/'), pl: '/polityka-prywatnosci/', label: T('ft.privacy') },
   { href: '/o-nas/', label: 'O nas' },
 ];
 ---
@@ -28,40 +33,40 @@ const links = [
   <section class="w ip-top">
     <div class="row ip-head">
       <div class="ip-head__l">
-        <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / {title}</nav>
+        <nav class="crumb" aria-label={T('common.crumbs')}><a href={L('/')}>{T('common.home')}</a> / {title}</nav>
         <h1 class="h1">{title}</h1>
-        {legal && <span class="k">Obowiązuje od: {LEGAL_EFFECTIVE_DATE}</span>}
+        {legal && <span class="k">{T('ip.effective')} {LEGAL_EFFECTIVE_DATE}</span>}
       </div>
       {lead && <p class="p p--lg fl" style={`width:533px${leadStyle ? `;${leadStyle}` : ''}`}>{lead}</p>}
     </div>
     {legal && LEGAL_DRAFT && (
-      <p class="ip-draft" role="note">Projekt dokumentu do weryfikacji przez prawnika przed startem sklepu. Treść opisuje działanie nowego sklepu, ale nie stanowi porady prawnej.</p>
+      <p class="ip-draft" role="note">{T('ip.draft')}</p>
     )}
   </section>
 
   <section class="w row ip-body">
     <article class="ip-prose">
       <slot />
-      {legal && <p class="ip-print"><button type="button" class="btn btn-o btn-s" onclick="window.print()">Wydrukuj albo zapisz jako PDF</button></p>}
+      {legal && <p class="ip-print"><button type="button" class="btn btn-o btn-s" onclick="window.print()">{T('ip.print')}</button></p>}
     </article>
 
     <aside class={`fl ip-side${newsletter ? ' ip-side--static' : ''}`}>
       {toc.length > 0 && (
-        <nav class="ip-card" aria-label="Spis treści">
-          <span class="ip-side__t">Na tej stronie</span>
+        <nav class="ip-card" aria-label={T('ip.toc')}>
+          <span class="ip-side__t">{T('ip.onPage')}</span>
           <div class="ip-anc">{toc.map((t) => <a href={`#${t.id}`}>{t.title} <span aria-hidden="true">↓</span></a>)}</div>
         </nav>
       )}
-      <nav class="ip-card" aria-label="Informacje dla klienta">
-        <span class="ip-side__t">Informacje</span>
-        <div class="ip-anc">{links.map((l) => <a href={l.href} aria-current={path === l.href ? 'page' : undefined}>{l.label} <span aria-hidden="true">→</span></a>)}</div>
+      <nav class="ip-card" aria-label={T('ip.info')}>
+        <span class="ip-side__t">{T('ip.info')}</span>
+        <div class="ip-anc">{links.map((l) => <a href={l.href} aria-current={path === l.pl ? 'page' : undefined}>{l.label} <span aria-hidden="true">→</span></a>)}</div>
       </nav>
       <div class="ip-help">
-        <span class="ip-side__t">Masz pytanie?</span>
+        <span class="ip-side__t">{T('ip.question')}</span>
         <p><span data-site="hours">{site.hours}</span><br /><a href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></p>
-        <a href="/kontakt/" class="btn btn--white btn-s" style="align-self:flex-start;margin-top:10px">Napisz do nas</a>
+        <a href={L('/kontakt/')} class="btn btn--white btn-s" style="align-self:flex-start;margin-top:10px">{T('fq.write')}</a>
       </div>
-      {newsletter && <NewsletterForm variant="card" titleSize={24} lead="Promocje, kody rabatowe i nowości - prosto na Twój e-mail." />}
+      {newsletter && <NewsletterForm variant="card" titleSize={24} lead={T('nl.leadCard')} />}
     </aside>
   </section>
 </Base>

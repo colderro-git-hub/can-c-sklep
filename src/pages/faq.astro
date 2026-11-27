@@ -1,4 +1,9 @@
 ---
+import { langOf, href as hrefL } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 import Icon from '../components/Icon.astro';
 import FaqItem from '../components/FaqItem.astro';
 import Base from '../layouts/Base.astro';
@@ -23,8 +28,8 @@ const tokens = { shippingTime: siteDb?.shippingTime ?? '' };
 const slugify = (t: string) => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
 const faqItems = getSections<{ cat: string; home: boolean; q: string; a: string; __hidden?: boolean }>(faqRows, 'item').filter((f) => !f.__hidden && f.q && f.a).map((f) => ({ ...f, id: slugify(f.q) }));
 const faqCategories = [
-  { id: 'produkt', label: 'Produkt' }, { id: 'stosowanie', label: 'Stosowanie' },
-  { id: 'zamowienia', label: 'Zamówienia i dostawa' }, { id: 'zwroty', label: 'Płatności i zwroty' },
+  { id: 'produkt', label: T('faq.cat.product') }, { id: 'stosowanie', label: T('faq.cat.use') },
+  { id: 'zamowienia', label: T('faq.cat.orders') }, { id: 'zwroty', label: T('faq.cat.returns') },
 ];
 const escHtml = (t: string) => t.replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]!);
 const withTokens = (t: string) => {
@@ -41,18 +46,18 @@ const jsonLd = {
   })),
 };
 ---
-<Base title="FAQ: najczęstsze pytania o krople Can-C" description="Skład, dawkowanie, soczewki kontaktowe, dostawa, płatności i zwroty. Odpowiedzi na najczęstsze pytania o krople Can-C." nav="faq">
+<Base title={T('fq.metaTitle')} description={T('fq.metaDesc')} nav="faq">
   <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
 
   <section class="w fq-top">
     <div class="row fq-head">
       <div class="fq-head__l">
-        <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / FAQ</nav>
-        <h1 class="h1">Najczęstsze pytania</h1>
-        <p class="p p--lg">O produkcie, stosowaniu, zamówieniach i zwrotach.</p>
+        <nav class="crumb" aria-label={T('common.crumbs')}><a href={L('/')}>{T('common.home')}</a> / FAQ</nav>
+        <h1 class="h1">{T('fq.title')}</h1>
+        <p class="p p--lg">{T('fq.lead')}</p>
       </div>
       <div class="fl fq-search">
-        <label for="faq-search" class="fq-search__l">Szukaj w pytaniach</label>
+        <label for="faq-search" class="fq-search__l">{T('fq.search')}</label>
         <div class="fq-search__box">
           <Icon name="search" size={20} stroke={1.75} />
           <input id="faq-search" class="fld" type="search" placeholder="np. soczewki, zwrot, faktura" data-search />
@@ -60,7 +65,7 @@ const jsonLd = {
       </div>
     </div>
     <div role="group" aria-label="Kategorie" class="fq-cats" data-cats>
-      <button type="button" class="chip" aria-pressed="true" data-cat="all">Wszystkie <span class="fq-n">{faqItems.length}</span></button>
+      <button type="button" class="chip" aria-pressed="true" data-cat="all">{T('fq.all')} <span class="fq-n">{faqItems.length}</span></button>
       {faqCategories.filter((c) => counts[c.id]).map((c) => (
         <button type="button" class="chip" aria-pressed="false" data-cat={c.id}>{c.label} <span class="fq-n">{counts[c.id]}</span></button>
       ))}
@@ -72,38 +77,38 @@ const jsonLd = {
       {faqItems.map((f, i) => (
         <FaqItem id={f.id} data-cat={f.cat} text={`${f.q} ${f.a}`.toLowerCase()} cat={catLabel[f.cat]} q={f.q} answer={f.a.split('\n\n').map(withTokens).join('\n\n')} open={i === 0} />
       ))}
-      <p class="p" data-empty hidden>Brak pytań pasujących do wyszukiwania. <a href="/kontakt/">Zapytaj nas bezpośrednio</a>.</p>
+      <p class="p" data-empty hidden>{T('fq.empty1')} <a href={L('/kontakt/')}>{T('fq.empty2')}</a>.</p>
     </div>
 
     <aside class="fl fq-side">
       <div class="fq-help">
-        <span class="fq-side__t">Nie znalazłeś odpowiedzi?</span>
-        <p>Napisz do nas. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
-        <a href="/kontakt/" class="btn btn--white" style="align-self:flex-start;margin-top:10px">Napisz do nas</a>
+        <span class="fq-side__t">{T('fq.notFound')}</span>
+        <p>{T('fq.writeP')} <span data-site="replyTime">{site.replyTime}</span>.</p>
+        <a href={L('/kontakt/')} class="btn btn--white" style="align-self:flex-start;margin-top:10px">{T('fq.write')}</a>
       </div>
       {rv && (
         <div class="fq-rv">
-          <div class="fq-rv__score"><span class="fq-rv__avg">{rv.avg.toLocaleString('pl-PL', { minimumFractionDigits: 1 })}</span><Stars value={rv.avg} size={18} label={`Średnia ocena ${rv.avg} na 5`} /></div>
-          <span class="fq-rv__n">{rv.count} {rv.count === 1 ? 'opinia' : (rv.count % 10 >= 2 && rv.count % 10 <= 4 && (rv.count % 100 < 10 || rv.count % 100 >= 20)) ? 'opinie' : 'opinii'} klientów</span>
+          <div class="fq-rv__score"><span class="fq-rv__avg">{rv.avg.toLocaleString(lang === 'en' ? 'en-GB' : 'pl-PL', { minimumFractionDigits: 1 })}</span><Stars value={rv.avg} size={18} label={`${T('fq.avg')} ${rv.avg} ${T('fq.of5')}`} /></div>
+          <span class="fq-rv__n">{rv.count} {lang === 'en' ? `customer ${rv.count === 1 ? 'review' : 'reviews'}` : `${rv.count === 1 ? 'opinia' : (rv.count % 10 >= 2 && rv.count % 10 <= 4 && (rv.count % 100 < 10 || rv.count % 100 >= 20)) ? 'opinie' : 'opinii'} klientów`}</span>
           {rv.quote && (
             <figure class="fq-rv__q">
               <blockquote>„{rv.quote.body}”</blockquote>
               <figcaption>{rv.quote.author}{rv.quote.verified && <span> · zweryfikowany zakup</span>}</figcaption>
             </figure>
           )}
-          <a href={`/produkt/${rv.quote?.product || 'krople-can-c'}/#opinie`} class="lnk"><Icon name="arrow-right" size={16} />Wszystkie opinie</a>
+          <a href={L(`/produkt/${rv.quote?.product || 'krople-can-c'}/#opinie`)} class="lnk"><Icon name="arrow-right" size={16} />{T('fq.allReviews')}</a>
         </div>
       )}
       <div class="fq-comp">
-        <span class="fq-side__t">Skład kropli</span>
+        <span class="fq-side__t">{T('fq.comp')}</span>
         <div style="border-bottom:1px solid var(--line)">
-          <div class="trow"><span>N-acetylokarnozyna</span><span style="font-weight:400">1,0%</span></div>
-          <div class="trow"><span>Gliceryna</span><span style="font-weight:400">1,0%</span></div>
-          <div class="trow"><span>Karboksymetyloceluloza sodowa</span><span style="font-weight:400">0,3%</span></div>
+          <div class="trow"><span>{T('fq.nac')}</span><span style="font-weight:400">{lang === 'en' ? '1.0%' : '1,0%'}</span></div>
+          <div class="trow"><span>{T('fq.gly')}</span><span style="font-weight:400">{lang === 'en' ? '1.0%' : '1,0%'}</span></div>
+          <div class="trow"><span>{T('fq.cmc')}</span><span style="font-weight:400">{lang === 'en' ? '0.3%' : '0,3%'}</span></div>
         </div>
-        <a href="/stosowanie/" class="lnk"><Icon name="arrow-right" size={16} />Jak stosować krople</a>
+        <a href={L('/stosowanie/')} class="lnk"><Icon name="arrow-right" size={16} />{T('fq.howto')}</a>
       </div>
-      <NewsletterForm variant="card" titleSize={28} lead="Promocje, kody rabatowe i nowości - prosto na Twój e-mail." />
+      <NewsletterForm variant="card" titleSize={28} lead={T('nl.leadCard')} />
       <div class="fq-leaf" aria-hidden="true"></div>
     </aside>
   </section>

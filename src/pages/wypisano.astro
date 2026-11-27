@@ -1,16 +1,21 @@
 ---
+import { langOf, href as hrefL } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 // Renderowane przy żądaniu: stopka i dane sklepu z panelu (/admin → Strony) zawsze aktualne
 export const prerender = false;
 import Base from '../layouts/Base.astro';
 ---
-<Base title="Wypisano z wiadomości | Can-C" description="Rezygnacja z wiadomości marketingowych sklepu Can-C.">
+<Base title={T('ws.metaTitle')} description={T('ws.metaDesc')}>
   <section class="section">
     <div class="container" style="max-width: 640px; display: flex; flex-direction: column; gap: 24px;">
-      <h1 data-ok>Wypisano</h1>
-      <p class="lead" data-ok>Nie będziemy już wysyłać Ci przypomnień ani informacji o promocjach. Wiadomości o Twoich zamówieniach (potwierdzenia, wysyłka) będą dochodzić jak dotąd.</p>
-      <p class="muted" data-ok>Zmieniłeś zdanie? Zgodę włączysz ponownie w <a href="/konto/">swoim koncie</a>.</p>
-      <h1 data-err hidden>Link jest nieprawidłowy</h1>
-      <p class="lead" data-err hidden>Nie udało się wypisać tym linkiem. Zmień zgodę w <a href="/konto/">swoim koncie</a> albo <a href="/kontakt/">napisz do nas</a>.</p>
+      <h1 data-ok>{T('ws.title')}</h1>
+      <p class="lead" data-ok>{T('ws.p')}</p>
+      <p class="muted" data-ok>{T('ws.changed1')} <a href={L('/konto/')}>{T('ws.account')}</a>.</p>
+      <h1 data-err hidden>{T('ws.bad')}</h1>
+      <p class="lead" data-err hidden>{T('ws.badP1')} <a href={L('/konto/')}>{T('ws.account')}</a> {T('ws.or')} <a href={L('/kontakt/')}>{T('ws.write')}</a>.</p>
     </div>
   </section>
 </Base>

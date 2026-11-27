@@ -4,30 +4,35 @@ import type { IconName } from '../lib/icons';
 export const prerender = false; // SEO (tytuł, opis, obraz) edytowane w panelu działa od razu
 import Base from '../layouts/Base.astro';
 import { site, TURNSTILE_SITE_KEY } from '../config';
+import { langOf, href as hrefL } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 
 const topics = [
-  { value: 'produkt', label: 'Pytanie o produkt', order: false },
-  { value: 'zamowienie', label: 'Moje zamówienie', order: true },
-  { value: 'zwrot', label: 'Zwrot lub reklamacja', order: true },
-  { value: 'wspolpraca', label: 'Współpraca', order: false },
+  { value: 'produkt', label: T('kt.tProduct'), order: false },
+  { value: 'zamowienie', label: T('kt.tOrder'), order: true },
+  { value: 'zwrot', label: T('kt.tReturn'), order: true },
+  { value: 'wspolpraca', label: T('kt.tCoop'), order: false },
 ];
 
 const quick = [
-  { icon: 'package', href: '/konto/', title: 'Gdzie jest moja paczka?', text: 'Status i numer przesyłki znajdziesz w swoim koncie i w e-mailu z potwierdzeniem wysyłki.', cta: 'Sprawdź zamówienie' },
-  { icon: 'undo-2', href: site.returnsUrl || '/odstapienie-od-umowy/', title: 'Chcę zwrócić produkt', text: 'Masz 14 dni. Zgłoś zwrot online, wydrukuj etykietę i nadaj paczkę.', cta: 'Zgłoś zwrot' },
-  { icon: 'droplet', href: '/faq/', title: 'Jak stosować krople?', text: 'Dawkowanie, czas kuracji i soczewki kontaktowe w najczęstszych pytaniach.', cta: 'Zobacz FAQ' },
+  { icon: 'package', href: L('/konto/'), title: T('kt.q1t'), text: T('kt.q1x'), cta: T('kt.q1c') },
+  { icon: 'undo-2', href: site.returnsUrl || L('/odstapienie-od-umowy/'), title: T('kt.q2t'), text: T('kt.q2x'), cta: T('kt.q2c') },
+  { icon: 'droplet', href: L('/faq/'), title: T('kt.q3t'), text: T('kt.q3x'), cta: T('kt.q3c') },
 ];
 ---
-<Base title="Kontakt | Can-C" description="Kontakt z obsługą klienta sklepu Can-C: pytania o produkty, zamówienia, zwroty i współpracę." nav="kontakt">
+<Base title={T('kt.metaTitle')} description={T('kt.metaDesc')} nav="kontakt">
   <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 
   <section class="w kt-top">
     <div class="row kt-head">
       <div class="kt-head__l">
-        <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Kontakt</nav>
-        <h1 class="h1">Kontakt</h1>
+        <nav class="crumb" aria-label={T('common.crumbs')}><a href={L('/')}>{T('common.home')}</a> / {T('kt.title')}</nav>
+        <h1 class="h1">{T('kt.title')}</h1>
       </div>
-      <p class="p p--lg fl" style="width:533px">Pytania o produkty, zamówienia i zwroty. Odpowiadamy w dni robocze <span data-site="replyTime">{site.replyTime}</span>.</p>
+      <p class="p p--lg fl" style="width:533px">{T('kt.lead1')} <span data-site="replyTime">{site.replyTime}</span>.</p>
     </div>
     <div class="g3 kt-quick">
       {quick.map((q) => (
@@ -44,23 +49,23 @@ const quick = [
   <section class="kt-band">
     <div class="w row kt-pad">
       <div class="fl kt-info">
-        <h2 class="h2">Obsługa<br />klienta</h2>
+        <h2 class="h2">{T('kt.service1')}<br />{T('kt.service2')}</h2>
         <div class="kt-list">
           <div class="kt-row"><span class="kt-ico" aria-hidden="true"><Icon name="mail" size={22} stroke={1.5} /></span>
             <div><div class="kt-l">E-mail</div><a class="kt-v" href={`mailto:${site.email}`} data-site-href="mailto:{email}"><span data-site="email">{site.email}</span></a></div></div>
           <div class="kt-row"><span class="kt-ico" aria-hidden="true"><Icon name="clock" size={22} stroke={1.5} /></span>
-            <div><div class="kt-l">Godziny</div><div class="kt-v"><span data-site="hours">{site.hours}</span></div></div></div>
+            <div><div class="kt-l">{T('kt.hours')}</div><div class="kt-v"><span data-site="hours">{site.hours}</span></div></div></div>
           <div class="kt-row"><span class="kt-ico" aria-hidden="true"><Icon name="facebook" size={22} stroke={1.5} /></span>
             <div><div class="kt-l">Facebook</div><a class="kt-v" href={site.facebook} data-site-href="{facebook}" rel="noopener">krople.canc</a></div></div>
           <div class="kt-row"><span class="kt-ico" aria-hidden="true"><Icon name="store" size={22} stroke={1.5} /></span>
-            <div><div class="kt-l">Sprzedawca</div><div class="kt-v"><span data-site="company">{site.company}</span><br /><span data-site="address">{site.address}</span><br /><span class="p">NIP <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span></span></div></div></div>
+            <div><div class="kt-l">{T('kt.seller')}</div><div class="kt-v"><span data-site="company">{site.company}</span><br /><span data-site="address">{site.address}</span><br /><span class="p">{T('kt.nip')} <span data-site="nip">{site.nip}</span> · REGON <span data-site="regon">{site.regon}</span></span></div></div></div>
         </div>
       </div>
 
       <form id="formularz" class="kt-form" method="post" action="/api/kontakt" data-contact novalidate>
-        <h2 class="kt-form__t">Napisz do nas</h2>
+        <h2 class="kt-form__t">{T('kt.write')}</h2>
         <fieldset class="kt-fs">
-          <legend class="kt-lbl">Czego dotyczy wiadomość?</legend>
+          <legend class="kt-lbl">{T('kt.about')}</legend>
           <div class="kt-chips">
             {topics.map((t, i) => (
               <label class="chip kt-chip"><input type="radio" name="topic" value={t.value} checked={i === 0} data-order={t.order ? '1' : ''} />{t.label}</label>
@@ -68,17 +73,17 @@ const quick = [
           </div>
         </fieldset>
         <div class="g2 kt-g2">
-          <div><label class="kt-lbl" for="k-name">Imię i nazwisko</label><input id="k-name" class="fld" type="text" name="name" autocomplete="name" required maxlength="100" /></div>
-          <div><label class="kt-lbl" for="k-mail">E-mail</label><input id="k-mail" class="fld" type="email" name="email" autocomplete="email" required maxlength="200" placeholder="jan@przyklad.pl" /></div>
+          <div><label class="kt-lbl" for="k-name">{T('kt.name')}</label><input id="k-name" class="fld" type="text" name="name" autocomplete="name" required maxlength="100" /></div>
+          <div><label class="kt-lbl" for="k-mail">E-mail</label><input id="k-mail" class="fld" type="email" name="email" autocomplete="email" required maxlength="200" placeholder={T('pr.emailPh')} /></div>
         </div>
-        <div data-order-field hidden><label class="kt-lbl" for="k-order">Numer zamówienia</label><input id="k-order" class="fld" type="text" name="order" inputmode="numeric" maxlength="20" placeholder="np. 10482" /></div>
-        <div><label class="kt-lbl" for="k-msg">Wiadomość</label><textarea id="k-msg" class="fld" name="message" rows="6" required minlength="10" maxlength="5000" style="height:178px"></textarea></div>
-        <label class="hp" aria-hidden="true">Strona www<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
-        <p class="k">Administratorem danych jest <span data-site="company">{site.company}</span>. Dane z formularza wykorzystamy tylko do odpowiedzi na Twoją wiadomość. Szczegóły w <a href="/polityka-prywatnosci/" style="color:var(--ink)">Polityce prywatności</a>.</p>
-        <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="marketing" value="1" /><span>Chcę też otrzymywać informacje o promocjach (opcjonalnie).</span></label>
-        <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language="pl"></div>
+        <div data-order-field hidden><label class="kt-lbl" for="k-order">{T('kt.order')}</label><input id="k-order" class="fld" type="text" name="order" inputmode="numeric" maxlength="20" placeholder={T('kt.orderPh')} /></div>
+        <div><label class="kt-lbl" for="k-msg">{T('kt.message')}</label><textarea id="k-msg" class="fld" name="message" rows="6" required minlength="10" maxlength="5000" style="height:178px"></textarea></div>
+        <label class="hp" aria-hidden="true">{T('pr.website')}<input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+        <p class="k">{T('kt.gdpr1')} <span data-site="company">{site.company}</span>{T('kt.gdpr2')} <a href={L('/polityka-prywatnosci/')} style="color:var(--ink)">{T('kt.gdpr3')}</a>.</p>
+        <label class="ck" style="font-size:16px;line-height:24px"><input type="checkbox" name="marketing" value="1" /><span>{T('kt.marketing')}</span></label>
+        <div class="cf-turnstile" data-sitekey={TURNSTILE_SITE_KEY} data-language={lang}></div>
         <div class="kt-actions">
-          <button type="submit" class="btn" data-submit>Wyślij wiadomość</button>
+          <button type="submit" class="btn" data-submit>{T('kt.send')}</button>
           <p class="msg" role="status" data-status></p>
         </div>
       </form>
@@ -87,6 +92,8 @@ const quick = [
 </Base>
 
 <script>
+  import { t as tt } from '../i18n/ui';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
   const form = document.querySelector<HTMLFormElement>('[data-contact]');
   if (form) {
     const orderField = form.querySelector<HTMLElement>('[data-order-field]')!;
@@ -106,13 +113,13 @@ const quick = [
       if (!form.reportValidity()) return;
       submit.disabled = true;
       status.className = 'msg';
-      status.textContent = 'Wysyłanie…';
+      status.textContent = tt(LANG, 'kt.sending');
       try {
         const res = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
         const data: any = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || 'Nie udało się wysłać wiadomości. Spróbuj ponownie albo napisz e-mail.');
+        if (!res.ok) throw new Error(data.error || tt(LANG, 'kt.err'));
         status.className = 'msg msg--ok';
-        status.textContent = 'Wysłano. Odpowiemy na podany adres e-mail.';
+        status.textContent = tt(LANG, 'kt.ok');
         form.reset();
         orderField.hidden = true;
       } catch (err) {

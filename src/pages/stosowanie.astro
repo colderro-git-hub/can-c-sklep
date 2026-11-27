@@ -1,4 +1,9 @@
 ---
+import { langOf, href as hrefL } from '../lib/i18n';
+import { t } from '../i18n/ui';
+const lang = langOf(Astro.locals);
+const T = (k: Parameters<typeof t>[1]) => t(lang, k);
+const L = (x: string) => hrefL(lang, x);
 import Icon from '../components/Icon.astro';
 import Base from '../layouts/Base.astro';
 import { getEnv } from '../lib/env';
@@ -16,27 +21,27 @@ const env = await getEnv(Astro.locals);
 const catalog = await getCatalog(env).catch(() => []);
 const dropsDb = catalog.find((p) => p.id === 'krople-can-c');
 const unit = dropsDb?.current ?? (products.find((p) => p.slug === 'krople-can-c')?.price ?? 0) * 100; // grosze
-const pln = (g: number) => new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(g / 100);
-const word = (n: number) => (n === 1 ? 'opakowanie' : n < 5 ? 'opakowania' : 'opakowań');
+const pln = (g: number) => new Intl.NumberFormat(lang === 'en' ? 'en-GB' : 'pl-PL', { style: 'currency', currency: 'PLN', ...(lang === 'en' ? { currencyDisplay: 'code' as const } : {}) }).format(g / 100);
+const word = (n: number) => (lang === 'en' ? (n === 1 ? 'pack' : 'packs') : n === 1 ? 'opakowanie' : n < 5 ? 'opakowania' : 'opakowań');
 const promos = await getPromotions(env).catch(() => []);
 const plan = [
-  { label: '1 miesiąc', qty: 1, set: 1 }, { label: '2 miesiące', qty: 2, set: 2 },
-  { label: '3-4 miesiące', qty: 4, set: 4 }, { label: '6 miesięcy', qty: 6, set: 4 },
+  { label: T('us.m1'), qty: 1, set: 1 }, { label: T('us.m2'), qty: 2, set: 2 },
+  { label: T('us.m34'), qty: 4, set: 4 }, { label: T('us.m6'), qty: 6, set: 4 },
 ].map((p) => {
   const regular = unit * p.qty;
   const saved = applyPromotions([{ product_id: 'krople-can-c', qty: p.qty, unit_price: unit }], promos).total;
   const total = regular - saved;
   return {
     ...p,
-    packs: p.qty === 6 ? '6 opakowań (4 + 2)' : `${p.qty} ${word(p.qty)}`,
+    packs: p.qty === 6 ? T('us.p6') : `${p.qty} ${word(p.qty)}`,
     price: pln(total),
-    save: saved ? `Oszczędzasz ${pln(saved)} (${Math.round((saved / regular) * 100)}%)` : 'Cena regularna',
+    save: saved ? `${T('us.save')} ${pln(saved)} (${Math.round((saved / regular) * 100)}%)` : T('us.regular'),
   };
 });
 const defaultPlan = 2;
 const tocAll = [
-  { href: '#dawkowanie', label: 'Dawkowanie' }, { href: '#fiolka', label: 'Otwieranie fiolki' },
-  { href: '#zakraplanie', label: 'Zakraplanie' }, { href: '#ile', label: 'Ile opakowań potrzebujesz' },
+  { href: '#dawkowanie', label: T('us.tDose') }, { href: '#fiolka', label: T('us.tOpen') },
+  { href: '#zakraplanie', label: T('us.tApply') }, { href: '#ile', label: T('us.tHow') },
 ];
 const rows = await getPageContent(env, 'how_to_use').catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
@@ -48,16 +53,16 @@ const applying = at('how_to_use.applying', { h2: 'Zakraplanie', lead: 'Najważni
 const toc = tocAll.filter((x) => (x.href === '#dawkowanie' ? visible(dosage) : x.href === '#fiolka' ? visible(opening) : x.href === '#zakraplanie' ? visible(applying) : true));
 const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.h1, step: (applying.steps as {title:string;desc:string}[]).map((s, i) => ({ '@type': 'HowToStep', position: i + 1, name: s.title, text: s.desc })) };
 ---
-<Base title="Jak stosować krople Can-C | Dawkowanie i aplikacja" description="Dawkowanie kropli Can-C, otwieranie fiolki i prawidłowe zakraplanie krok po kroku. Sprawdź, ile opakowań potrzebujesz na kurację." nav="stosowanie">
+<Base title={T('us.metaTitle')} description={T('us.metaDesc')} nav="stosowanie">
   <script type="application/ld+json" set:html={JSON.stringify(howTo)} />
 
   <section class="w row us-hero">
     <div class="fl us-hero__l">
-      <nav class="crumb" aria-label="Okruszki"><a href="/">Strona główna</a> / Stosowanie</nav>
+      <nav class="crumb" aria-label={T('common.crumbs')}><a href={L('/')}>{T('common.home')}</a> / {T('us.crumb')}</nav>
       <h1 class="h1" style={fs(intro, 'h1')}>{intro.h1}</h1>
       <p class="p p--lg" style={fs(intro, 'lead', 'max-width:560px')}>{intro.lead}</p>
     </div>
-    <nav class="fl us-toc" aria-label="Spis treści">
+    <nav class="fl us-toc" aria-label={T('us.toc')}>
       {toc.map((t) => <a href={t.href} class="us-anc">{t.label} <span aria-hidden="true">↓</span></a>)}
     </nav>
   </section>
@@ -115,7 +120,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
         <h2 class="h2" style={fs(applying, 'h2')}>{applying.h2}</h2>
         {applying.lead && <p class="p p--lg" style={fs(applying, 'lead')}>{applying.lead}</p>}
         <div class="us-arch">
-          {applying.image_url ? <img src={imgUrl(applying.image_url, 800)} srcset={srcset(applying.image_url, [480, 640, 800, 1200])} sizes="(max-width: 900px) 92vw, 533px" alt={applying.image_alt || 'Zakraplanie'} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
+          {applying.image_url ? <img src={imgUrl(applying.image_url, 800)} srcset={srcset(applying.image_url, [480, 640, 800, 1200])} sizes="(max-width: 900px) 92vw, 533px" alt={applying.image_alt || T('us.tApply')} width="533" height="431" loading="lazy" /> : <span class="k">[ilustracja: odchylona głowa, zakraplanie]</span>}
         </div>
       </div>
       <ol class="us-drops">
@@ -132,12 +137,12 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
 
   <section id="ile" class="w row us-split us-last">
     <div class="fl us-split__l">
-      <h2 class="h2">Ile opakowań<br />potrzebujesz</h2>
-      <p class="p p--lg">Jedno opakowanie (2 × 5 ml) wystarcza na około miesiąc przy standardowym dawkowaniu.</p>
+      <h2 class="h2">{T('us.howMany1')}<br />{T('us.howMany2')}</h2>
+      <p class="p p--lg">{T('us.howManyP')}</p>
       <div class="us-leaf" aria-hidden="true"></div>
     </div>
     <div class="us-calc" data-calc>
-      <span class="us-calc__q" id="kuracja-label">Jak długo planujesz kurację?</span>
+      <span class="us-calc__q" id="kuracja-label">{T('us.plan')}</span>
       <div role="group" aria-labelledby="kuracja-label" class="us-calc__chips">
         {plan.map((p, i) => (
           <button type="button" class="chip" aria-pressed={i === defaultPlan ? 'true' : 'false'}
@@ -145,15 +150,15 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
         ))}
       </div>
       <div class="us-calc__res" aria-live="polite">
-        <span class="k">Polecamy</span>
+        <span class="k">{T('us.recommend')}</span>
         <span class="us-calc__packs" data-packs-out>{plan[defaultPlan].packs}</span>
         <div class="us-calc__row">
           <span class="us-calc__price" data-price-out>{plan[defaultPlan].price}</span>
           <span class="peach" data-save-out>{plan[defaultPlan].save}</span>
         </div>
       </div>
-      <a href={`/produkt/krople-can-c/?zestaw=${plan[defaultPlan].set}`} class="btn" style="align-self:flex-start" data-go>
-        Przejdź do zamówienia
+      <a href={`${L('/produkt/krople-can-c/')}?zestaw=${plan[defaultPlan].set}`} class="btn" style="align-self:flex-start" data-go>
+        {T('us.goOrder')}
         <Icon name="arrow-right" size={20} />
       </a>
     </div>
@@ -161,6 +166,8 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
 </Base>
 
 <script>
+  import { href as hrefL } from '../lib/i18n';
+  const LANG = document.documentElement.lang === 'en' ? 'en' : 'pl';
   const calc = document.querySelector<HTMLElement>('[data-calc]');
   if (calc) {
     const out = (s: string) => calc.querySelector<HTMLElement>(s)!;
@@ -171,7 +178,7 @@ const howTo = { '@context': 'https://schema.org', '@type': 'HowTo', name: intro.
       out('[data-packs-out]').textContent = b.dataset.packs ?? '';
       out('[data-price-out]').textContent = b.dataset.price ?? '';
       out('[data-save-out]').textContent = b.dataset.save ?? '';
-      go.href = `/produkt/krople-can-c/?zestaw=${b.dataset.set}`;
+      go.href = `${hrefL(LANG, '/produkt/krople-can-c/')}?zestaw=${b.dataset.set}`;
     }));
   }
 </script>
