@@ -46,8 +46,8 @@ const env = await getEnv(Astro.locals);
 const lang = langOf(Astro.locals);
 const L = (p: string) => hrefL(lang, p);
 const [homeRows, faqRows, site] = await Promise.all([
-  getPageContent(env, 'home').catch(() => []),
-  getPageContent(env, 'faq').catch(() => []),
+  getPageContent(env, 'home', lang).catch(() => []),
+  getPageContent(env, 'faq', lang).catch(() => []),
   getSite(env).catch(() => null),
 ]);
 const tokens = site ? { company: site.company, hours: site.hours, email: site.email, shippingTime: site.shippingTime } : {};

@@ -479,3 +479,7 @@ tr.flash td { background: var(--primary-a16) !important; transition: background 
 .pages-faq-add { margin-left: auto; }
 .pages-faq-add[hidden] { display: none; }
 .tabs [data-mb-empty-spam] { margin-left: auto; }
+
+/* Strony: przełącznik języka treści i podpowiedź z tekstem polskim w wersji EN */
+.pages-lang { display: inline-flex; gap: 4px; }
+.pl-hint { display: block; font-style: italic; overflow-wrap: anywhere; }

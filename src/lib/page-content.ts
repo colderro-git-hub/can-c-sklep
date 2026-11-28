@@ -5,25 +5,42 @@ import { db } from './supabase';
 
 export type PageKey = 'home' | 'faq' | 'about' | 'how_to_use' | 'footer' | 'product';
 
-type Row = { key: string; page: string; section: string; sort_order: number; data: Record<string, unknown> };
+type Row = { key: string; page: string; section: string; sort_order: number; data: Record<string, unknown>; en?: boolean };
+
+// Wersja angielska sekcji to osobny wiersz „<klucz>@en”. Puste pola EN = tekst polski;
+// widoczność (__hidden), rozmiary (__sizes), liczby i przełączniki zawsze z wersji polskiej.
+export const EN_SUFFIX = '@en';
+const filled = (v: unknown) => (typeof v === 'string' ? v.trim() !== '' : Array.isArray(v) ? v.some((x) => (typeof x === 'string' ? x.trim() !== '' : x != null)) : false);
+export function mergeEn(pl: Record<string, unknown>, en: Record<string, unknown> | undefined) {
+  if (!en) return pl;
+  const out: Record<string, unknown> = { ...pl };
+  for (const [k, v] of Object.entries(en)) if (!k.startsWith('__') && filled(v)) out[k] = v;
+  return out;
+}
+function forLang(rows: Row[], lang: 'pl' | 'en'): Row[] {
+  const base = rows.filter((r) => !r.key.endsWith(EN_SUFFIX));
+  if (lang !== 'en') return base;
+  const en = new Map(rows.filter((r) => r.key.endsWith(EN_SUFFIX)).map((r) => [r.key.slice(0, -EN_SUFFIX.length), r.data]));
+  return base.map((r) => (en.has(r.key) ? { ...r, data: mergeEn(r.data, en.get(r.key)), en: true } : r));
+}
 
 const cache = new Map<PageKey, { at: number; rows: Row[] }>();
 const TTL = 60_000;
 
-export async function getPageContent(env: Env, page: PageKey): Promise<Row[]> {
+export async function getPageContent(env: Env, page: PageKey, lang: 'pl' | 'en' = 'pl'): Promise<Row[]> {
   // Bez SUPABASE_URL nie ma sensu próbować - zwracamy puste (strony użyją fallbacku z kodu)
-  if (!env?.SUPABASE_URL) return cache.get(page)?.rows ?? [];
+  if (!env?.SUPABASE_URL) return forLang(cache.get(page)?.rows ?? [], lang);
   const hit = cache.get(page);
-  if (hit && Date.now() - hit.at < TTL) return hit.rows;
+  if (hit && Date.now() - hit.at < TTL) return forLang(hit.rows, lang);
   try {
     const rows = await db(env).select<Row>(
       `page_content?select=key,page,section,sort_order,data&page=eq.${page}&order=sort_order.asc`,
     );
     cache.set(page, { at: Date.now(), rows });
-    return rows;
+    return forLang(rows, lang);
   } catch (e) {
     console.error(`page_content(${page}): ${e instanceof Error ? e.message : String(e)}`);
-    return hit?.rows ?? []; // stary cache albo puste przy zimnym starcie
+    return forLang(hit?.rows ?? [], lang); // stary cache albo puste przy zimnym starcie
   }
 }
 

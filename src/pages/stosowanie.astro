@@ -43,7 +43,7 @@ const tocAll = [
   { href: '#dawkowanie', label: T('us.tDose') }, { href: '#fiolka', label: T('us.tOpen') },
   { href: '#zakraplanie', label: T('us.tApply') }, { href: '#ile', label: T('us.tHow') },
 ];
-const rows = await getPageContent(env, 'how_to_use').catch(() => []);
+const rows = await getPageContent(env, 'how_to_use', lang).catch(() => []);
 const at = (key: string, fb: any) => getSection(rows, key) ?? fb;
 const intro = at('how_to_use.intro', { h1: 'Jak stosować krople Can-C', lead: 'Pierwsze efekty mogą pojawić się po miesiącu.' });
 const dosage = at('how_to_use.dosage', { h2: 'Dawkowanie', note: 'Krople Can-C nie zastępują leczenia.', doses: [{ num: '1-2', title: 'krople do oka, dwa razy dziennie', desc: 'Standardowe dawkowanie.' }, { num: '4', title: 'krople do oka dziennie to maksimum', desc: 'Większa dawka nie daje korzyści.' }, { num: '1', title: 'kropla raz dziennie, profilaktycznie', desc: 'Po zakończeniu kuracji.' }] });

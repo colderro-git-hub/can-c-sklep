@@ -24,12 +24,6 @@ const slug = Astro.params.slug || '';
 const data = await getProductPage(env, slug).catch((e) => { console.error('Karta produktu: ' + (e instanceof Error ? e.message : String(e))); return null; });
 if (!data) return new Response(null, { status: 404, statusText: 'Nie znaleziono' });
 const { product: p, reviews, related, dist } = data;
-// „Produkt oryginalny”: dymek z opisem i zdjęciem hologramu (etykieta przy tagach, pieczątka na zdjęciu, „i” przy wyróżniku)
-const og = await getOriginalInfo(env, p.id).catch(() => null);
-// Dopasowanie wyróżnika: bez wielkości liter i bez różnic w spacjach (zwykła / twarda); puste pole = tekst domyślny
-const norm = (t: string) => String(t || '').replace(/[\s\u00a0]+/g, ' ').trim().toLowerCase();
-const ogMatch = og ? norm(og.highlight_match || 'Innovative Vision Products') : '';
-const ogHl = og && ogMatch ? p.highlights.findIndex((h: string) => norm(h).includes(ogMatch)) : -1;
 const site = await getSite(env);
 
 // Język strony (/en/ = angielski): teksty ze słownika, ceny i linki w tym języku
@@ -38,6 +32,12 @@ const T = (k: Parameters<typeof t>[1]) => t(lang, k);
 const L = (x: string) => hrefL(lang, x);
 const pln = (g: number | null) => fmtPrice(lang, g);
 const availText = (a: string) => (lang === 'en' ? t(lang, `avail.${a}` as any) : (AVAIL_LABEL as any)[a] || a);
+// „Produkt oryginalny” (po ustaleniu języka - treść EN z panelu)
+const og = await getOriginalInfo(env, p.id, lang).catch(() => null);
+// Dopasowanie wyróżnika: bez wielkości liter i bez różnic w spacjach (zwykła / twarda); puste pole = tekst domyślny
+const norm = (t: string) => String(t || '').replace(/[\s\u00a0]+/g, ' ').trim().toLowerCase();
+const ogMatch = og ? norm(og.highlight_match || 'Innovative Vision Products') : '';
+const ogHl = og && ogMatch ? p.highlights.findIndex((h: string) => norm(h).includes(ogMatch)) : -1;
 const buyable = p.current !== null && p.avail !== 'out_of_stock';
 // Termin realizacji: zdanie z produktu, a gdy puste - czas wysyłki z ustawień sklepu
 const leadTime = p.lead_time ? leadTimeText(p.lead_time, site.shippingTime) : site.shippingTime;

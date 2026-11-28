@@ -18,8 +18,9 @@ let logo = '';
 try {
   const env = await getEnv(Astro.locals);
   if (env.SUPABASE_URL) logo = (await getSite(env)).logoFooter || '';
-  // Kolumny z panelu są po polsku - wersja angielska ma kolumny z kodu (pola EN w panelu: kolejna paczka)
-  const rows = lang === 'en' ? [] : await getPageContent(env, 'footer');
+  // Wersja angielska: kolumny z panelu tylko, gdy wypełniono ich wersję EN - inaczej kolumny z kodu (po angielsku)
+  const all = await getPageContent(env, 'footer', lang);
+  const rows = lang === 'en' ? all.filter((r) => r.en) : all;
   const c = getSection<{ columns: Col[] }>(rows, 'footer.columns');
   const b = getSection<{ items: string[] }>(rows, 'footer.badges');
   // Tylko poprawna lista (zapis z panelu jako tekst dawał błąd „columns.map is not a function” i pustą stronę)

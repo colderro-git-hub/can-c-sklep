@@ -1,6 +1,11 @@
 // Panel admina - moduł „pages” (wydzielony z admin/index.astro).
 import { $, api, date, esc, toast } from './core';
 import { fileFrom, shrink } from './products';
+import { plToEn } from '../lib/i18n';
+
+// Język edytowanych treści: PL (podstawowy) albo EN (wiersze „<klucz>@en”; puste pole = tekst polski)
+let pagesLang: 'pl' | 'en' = 'pl';
+const EN_HIDE = /(href)$/; // adresy linków są wspólne (wersja EN przelicza je sama na /en/)
 
 // ---------- Strony (CMS) ----------
 export const PAGES_META: Record<string, any> = {
@@ -169,10 +174,11 @@ export const pagePreview = $<HTMLAnchorElement>('[data-page-preview]');
 export async function loadPages(page = pageSelect?.value ?? 'home') {
   if (!pagesList) return;
   pagesList.innerHTML = '<p class="muted">Ładowanie…</p>';
-  if (pagePreview) pagePreview.href = PAGES_META[page]?.previewHref ?? '/';
+  const prev = PAGES_META[page]?.previewHref ?? '/';
+  if (pagePreview) pagePreview.href = pagesLang === 'en' ? plToEn(prev.split('#')[0]) : prev;
   // „Dodaj pytanie” w pasku obok „Podgląd strony” - tylko dla FAQ
   const faqAdd = document.querySelector<HTMLButtonElement>('[data-faq-add]');
-  if (faqAdd) faqAdd.hidden = page !== 'faq';
+  if (faqAdd) faqAdd.hidden = page !== 'faq' || pagesLang === 'en';
   try {
     const { rows } = await api(`/api/admin/pages?page=${encodeURIComponent(page)}`);
     renderPageSections(page, rows);
@@ -193,12 +199,16 @@ export function imgSlot(name: string, url: string, caption = ''): string {
   </div>`;
 }
 
-export function fieldHtml(fk: string, schema: any, value: unknown, size?: number | null): string {
+export function fieldHtml(fk: string, schema: any, value: unknown, size?: number | null, plValue?: unknown): string {
   const val = value === null || value === undefined ? '' : value;
-  // Rozmiar tekstu (px) dla pól tekstowych - puste = jak w projekcie
-  const sizable = ['text', 'textarea', 'markdown', 'list', undefined].includes(schema.type) && !NO_SIZE.test(fk);
+  const en = plValue !== undefined;
+  // Rozmiar tekstu (px) dla pól tekstowych - puste = jak w projekcie (w wersji EN rozmiary są wspólne z PL)
+  const sizable = !en && ['text', 'textarea', 'markdown', 'list', undefined].includes(schema.type) && !NO_SIZE.test(fk);
   const sz = sizable ? `<span class="fsz" title="Rozmiar tekstu w px (puste = jak w projekcie). Na telefonie duże rozmiary same się zmniejszają."><input class="input" type="number" name="${fk}__size" min="10" max="160" step="1" value="${size ?? ''}" placeholder="auto" aria-label="Rozmiar tekstu ${esc(schema.label)} (px)" /> px</span>` : '';
-  const hint = (schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '') + sz;
+  // W wersji EN pod etykietą tekst polski jako podpowiedź (puste pole EN = ten tekst na stronie)
+  const plTxt = en && typeof plValue === 'string' ? plValue : en && Array.isArray(plValue) && plValue.every((x) => typeof x === 'string') ? (plValue as string[]).join(' / ') : '';
+  const plHint = en && plTxt ? `<span class="muted small pl-hint">PL: ${esc(plTxt.length > 160 ? plTxt.slice(0, 160) + '…' : plTxt)}</span>` : '';
+  const hint = (schema.hint ? `<span class="muted small">${esc(schema.hint)}</span>` : '') + plHint + sz;
   switch (schema.type) {
     case 'textarea': case 'markdown':
       return `<label class="field">${esc(schema.label)}${hint}<textarea class="input mono" name="${fk}" rows="4">${esc(String(val))}</textarea></label>`;
@@ -246,6 +256,36 @@ export function renderPageSections(page: string, rows: any[]) {
   const meta = PAGES_META[page];
   if (!meta || !pagesList) return;
   const rowMap = Object.fromEntries(rows.map((r: any) => [r.key, r]));
+  const en = pagesLang === 'en';
+  const enOf = (k: string) => rowMap[`${k}@en`]?.data ?? {};
+  rows = rows.filter((r: any) => !String(r.key).endsWith('@en'));
+
+  if (page === 'faq' && en) {
+    // FAQ po angielsku: tylko pytanie i odpowiedź (kategoria, kolejność, widoczność wspólne z PL)
+    pagesList.innerHTML = `<div class="faq-cms">
+      <p class="muted small" style="margin:0">Wersja angielska pytań. Puste pola = pytanie po polsku. Kategorię, kolejność i widoczność zmieniasz w wersji PL.</p>
+      <div data-faq-list>
+        ${rows.map((r) => { const e = enOf(r.key); return `<details class="faq-cms__item" data-faq-key="${esc(r.key)}">
+          <summary class="faq-cms__q"><span class="faq-cms__label">${esc(e.q || r.data.q || '(bez pytania)')}</span>${e.q ? '<span class="pill pill--ok">EN</span>' : '<span class="pill pill--warn">brak EN</span>'}</summary>
+          <form class="faq-cms__form">
+            <label class="field">Question<span class="muted small pl-hint">PL: ${esc(r.data.q || '')}</span><input class="input" name="q" value="${esc(e.q || '')}" /></label>
+            <label class="field">Answer <span class="muted small">(pusta linia = nowy akapit; {shippingTime} = czas wysyłki)</span><textarea class="input mono" name="a" rows="5">${esc(e.a || '')}</textarea></label>
+            <div class="actions"><button class="btn btn--sm">Zapisz EN</button></div>
+          </form>
+        </details>`; }).join('')}
+      </div>
+    </div>`;
+    pagesList.querySelectorAll<HTMLFormElement>('[data-faq-list] .faq-cms__form').forEach((form) => {
+      const key = form.closest<HTMLElement>('[data-faq-key]')!.dataset.faqKey!;
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        try { await api('/api/admin/pages', { key: `${key}@en`, data: { q: String(fd.get('q') || '').trim(), a: String(fd.get('a') || '').trim() } }); toast('Zapisano wersję EN.'); loadPages('faq'); }
+        catch (err) { toast((err as Error).message, true); }
+      });
+    });
+    return;
+  }
 
   if (page === 'faq') {
     const cats: Record<string, string> = { produkt: 'Produkt', stosowanie: 'Stosowanie', zamowienia: 'Zamówienia i dostawa', zwroty: 'Płatności i zwroty' };
@@ -293,15 +333,18 @@ export function renderPageSections(page: string, rows: any[]) {
     return;
   }
 
-  pagesList.innerHTML = meta.sections.map((sec: any) => {
-    const data = rowMap[sec.key]?.data ?? {};
-    const fields = Object.entries(sec.schema).map(([fk, fSchema]: [string, any]) => fieldHtml(fk, fSchema, data[fk], data.__sizes?.[fk])).join('');
-    const hidden = data.__hidden === true;
+  pagesList.innerHTML = (en ? '<p class="muted small" style="margin:0 0 12px">Wersja angielska. Puste pole = tekst polski (podany pod etykietą). Widoczność sekcji, rozmiary tekstów i adresy linków są wspólne z wersją PL.</p>' : '') + meta.sections.map((sec: any) => {
+    const plData = rowMap[sec.key]?.data ?? {};
+    const data = en ? enOf(sec.key) : plData;
+    const fields = Object.entries(sec.schema)
+      .filter(([fk, fSchema]: [string, any]) => !en || (!EN_HIDE.test(fk) && fSchema.type !== 'url'))
+      .map(([fk, fSchema]: [string, any]) => fieldHtml(fk, fSchema, data[fk], data.__sizes?.[fk], en ? (plData[fk] ?? '') : undefined)).join('');
+    const hidden = plData.__hidden === true;
     const missing = !rowMap[sec.key];
     return `<form class="card${hidden ? ' is-off' : ''}" data-page-form="${esc(sec.key)}">
       <div class="card__head"><h2 class="card__title">${esc(sec.label)}</h2>
         <span class="actions">${rowMap[sec.key]?.updated_at ? `<span class="muted small">Zmienione: ${date(rowMap[sec.key].updated_at)}</span>` : ''}
-        ${ALWAYS_ON.has(sec.key) ? '' : `<label class="check sec-vis"><input type="checkbox" name="__visible" ${hidden ? '' : 'checked'} /> Sekcja widoczna</label>`}</span></div>
+        ${ALWAYS_ON.has(sec.key) || en ? (en ? '<span class="pill">EN</span>' : '') : `<label class="check sec-vis"><input type="checkbox" name="__visible" ${hidden ? '' : 'checked'} /> Sekcja widoczna</label>`}</span></div>
       ${missing ? '<p class="err small">Tej sekcji nie ma jeszcze w bazie - uruchom najnowszy skrypt SQL z paczki (supabase/), inaczej zapis się nie uda.</p>' : ''}
       ${fields}
       <div class="actions"><button class="btn btn--sm">Zapisz sekcję</button></div>
@@ -311,7 +354,9 @@ export function renderPageSections(page: string, rows: any[]) {
   const saveSection = async (form: HTMLFormElement, msg?: string) => {
     const key = form.dataset.pageForm!;
     const sec = meta.sections.find((s: any) => s.key === key)!;
-    await api('/api/admin/pages', { key, data: collectData(form, sec.schema) });
+    // EN: tylko pola widoczne w formularzu (adresy linków i ustawienia zostają z PL)
+    const schema = en ? Object.fromEntries(Object.entries(sec.schema).filter(([fk, f]: [string, any]) => !EN_HIDE.test(fk) && f.type !== 'url')) : sec.schema;
+    await api('/api/admin/pages', { key: en ? `${key}@en` : key, data: collectData(form, schema) });
     toast(msg || `Zapisano „${sec.label}".`);
   };
   pagesList.querySelectorAll<HTMLFormElement>('[data-page-form]').forEach((form) => {
@@ -370,6 +415,12 @@ export function renderPageSections(page: string, rows: any[]) {
 }
 
 pageSelect?.addEventListener('change', () => loadPages());
+// Przełącznik języka treści (PL / EN)
+document.querySelectorAll<HTMLButtonElement>('[data-page-lang] [data-lang]').forEach((b) => b.addEventListener('click', () => {
+  pagesLang = b.dataset.lang === 'en' ? 'en' : 'pl';
+  document.querySelectorAll('[data-page-lang] [data-lang]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+  loadPages();
+}));
 document.querySelector('[data-tab="pages"]')?.addEventListener('click', () => setTimeout(() => loadPages(), 50));
 
 // Nowe pytanie FAQ (przycisk w pasku narzędzi Stron, jeden nasłuch na stałe)

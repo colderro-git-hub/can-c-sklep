@@ -21,7 +21,7 @@ const env = await getEnv(Astro.locals);
 // Moduł opinii w panelu bocznym: średnia, liczba i krótki cytat klienta
 const rv = await getReviewSummary(env);
 const [faqRows, siteDb] = await Promise.all([
-  getPageContent(env, 'faq').catch(() => []),
+  getPageContent(env, 'faq', lang).catch(() => []),
   getSite(env).catch(() => null),
 ]);
 const tokens = { shippingTime: siteDb?.shippingTime ?? '' };

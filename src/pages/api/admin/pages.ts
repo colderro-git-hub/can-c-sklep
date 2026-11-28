@@ -53,6 +53,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!/^faq\.[a-z0-9_-]+$/.test(k)) return json(400, { error: 'Nieprawidłowe pytanie.' });
     try {
       await db(env).remove(`page_content?key=eq.${encodeURIComponent(k)}&page=eq.faq&section=eq.item`);
+      await db(env).remove(`page_content?key=eq.${encodeURIComponent(k + '@en')}`); // wersja angielska pytania
       clearPageCache('faq');
       console.log(`Admin ${admin} usunął pytanie FAQ ${k}`);
       return json(200, { ok: true });
@@ -63,7 +64,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   const key = str(b.key, 100);
-  if (!key || !/^[a-z_]+\.[a-z0-9_-]+$/.test(key)) return json(400, { error: 'Nieprawidłowy klucz sekcji.' });
+  // Wersja angielska: klucz „<sekcja>@en” (tworzony przy pierwszym zapisie na podstawie sekcji polskiej)
+  if (!key || !/^[a-z_]+\.[a-z0-9_-]+(@en)?$/.test(key)) return json(400, { error: 'Nieprawidłowy klucz sekcji.' });
+  const isEn = key.endsWith('@en');
+  const baseKey = isEn ? key.slice(0, -3) : key;
   const page = key.split('.')[0] as PageKey;
   if (!PAGES.includes(page)) return json(400, { error: 'Nieprawidłowa strona.' });
 
@@ -76,9 +80,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Sprawdź czy klucz istnieje (musi - nie tworzymy nowych kluczy z panelu)
   const sb = db(env);
   const [existing] = await sb.select<{ key: string; sort_order: number; section: string }>(
-    `page_content?select=key,sort_order,section&key=eq.${encodeURIComponent(key)}`,
+    `page_content?select=key,sort_order,section&key=eq.${encodeURIComponent(baseKey)}`,
   );
   if (!existing) return json(404, { error: 'Nieznana sekcja. Nowe sekcje dodaje deweloper przez SQL.' });
+  if (isEn) {
+    // Bez pól technicznych (widoczność, rozmiary) - te zawsze z wersji polskiej
+    const data = Object.fromEntries(Object.entries(b.data).filter(([k]) => !k.startsWith('__')));
+    try {
+      await sb.upsert('page_content', { key, page, section: `${existing.section}@en`, sort_order: existing.sort_order, data, updated_at: new Date().toISOString(), updated_by: admin }, 'key', 'key');
+      clearPageCache(page);
+      console.log(`Admin ${admin} zaktualizował treść EN ${baseKey}`);
+      return json(200, { ok: true, key });
+    } catch (e) {
+      console.error('pages POST en: ' + (e instanceof Error ? e.message : String(e)));
+      return json(500, { error: 'Błąd zapisu treści EN.' });
+    }
+  }
 
   try {
     await sb.update(
